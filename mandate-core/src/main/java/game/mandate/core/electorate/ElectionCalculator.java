@@ -1,6 +1,6 @@
 package game.mandate.core.electorate;
 
-import game.mandate.core.rng.RngStreams;
+import game.mandate.core.rng.DeterministicRandomManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,16 +16,16 @@ import java.util.function.ToDoubleFunction;
  * five independent coin flips.
  */
 public final class ElectionCalculator {
-    /** Standard deviations in points, roughly the size of historical polling misses. */
-    public static final double NATIONAL_ERROR_SD = 2.6;
-    public static final double STATE_ERROR_SD = 2.5;
-
     private final StateCatalog states;
     private final ElectorateModel model;
+    private final double nationalErrorSd, stateErrorSd;
 
-    public ElectionCalculator(StateCatalog states, ElectorateModel model) {
+    /** Error standard deviations are in points, roughly the size of historical polling misses (tuning: election.*ErrorSd). */
+    public ElectionCalculator(StateCatalog states, ElectorateModel model, double nationalErrorSd, double stateErrorSd) {
         this.states = states;
         this.model = model;
+        this.nationalErrorSd = nationalErrorSd;
+        this.stateErrorSd = stateErrorSd;
     }
 
     /** Expected (error-free) margins: what a perfect poll would show today. */
@@ -37,12 +37,12 @@ public final class ElectionCalculator {
 
     /** Draws a realised result. The {@code systematicError} is the hidden polling miss fixed at game start. */
     public ElectionResult resolve(int year, double nationalSwing, ToDoubleFunction<String> localShift,
-                                  double systematicError, RngStreams rng, String stream) {
-        double nationalNoise = rng.gaussian(stream) * NATIONAL_ERROR_SD + systematicError;
+                                  double systematicError, DeterministicRandomManager rng, String stream) {
+        double nationalNoise = rng.gaussian(stream) * nationalErrorSd + systematicError;
         Map<String, Double> realised = new LinkedHashMap<>();
         for (UsState s : states.all()) {
             double expected = model.expectedMargin(s, nationalSwing, localShift.applyAsDouble(s.code()));
-            realised.put(s.code(), expected + nationalNoise * s.elasticity() + rng.gaussian(stream) * STATE_ERROR_SD);
+            realised.put(s.code(), expected + nationalNoise * s.elasticity() + rng.gaussian(stream) * stateErrorSd);
         }
         return tally(year, realised);
     }
@@ -56,7 +56,7 @@ public final class ElectionCalculator {
             weighted += m * s.voteWeight();
             weights += s.voteWeight();
         }
-        return new ElectionResult(year, Map.copyOf(margins), dem, rep, weighted / weights, tippingPoint(margins, dem >= rep));
+        return new ElectionResult(year, java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(margins)), dem, rep, weighted / weights, tippingPoint(margins, dem >= rep));
     }
 
     /** Sort the winner's states from safest to closest and find the one that crosses 270. */

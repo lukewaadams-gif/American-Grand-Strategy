@@ -2,7 +2,10 @@ package game.mandate.core.congress;
 
 import game.mandate.core.state.Party;
 
-/** Seat counts and Senate rules. Blocs are derived from seats, so a midterm reshapes the whip count. */
+/**
+ * Seat counts and Senate rules: the congressional composition. Blocs are derived from seats, so a midterm
+ * reshapes the whip count. Only the {@link CongressEngine} changes it (setters are package-private).
+ */
 public final class Congress {
     public static final int HOUSE_SIZE = 435, SENATE_SIZE = 100, HOUSE_MAJORITY = 218, CLOTURE = 60;
 
@@ -18,8 +21,8 @@ public final class Congress {
     public int house(Party p) { return p == Party.DEMOCRAT ? houseDem : HOUSE_SIZE - houseDem; }
     public int senate(Party p) { return p == Party.DEMOCRAT ? senateDem : SENATE_SIZE - senateDem; }
 
-    public void setHouse(Party p, int seats) { houseDem = clamp(p == Party.DEMOCRAT ? seats : HOUSE_SIZE - seats, 0, HOUSE_SIZE); }
-    public void setSenate(Party p, int seats) { senateDem = clamp(p == Party.DEMOCRAT ? seats : SENATE_SIZE - seats, 0, SENATE_SIZE); }
+    void setHouse(Party p, int seats) { houseDem = clamp(p == Party.DEMOCRAT ? seats : HOUSE_SIZE - seats, 0, HOUSE_SIZE); }
+    void setSenate(Party p, int seats) { senateDem = clamp(p == Party.DEMOCRAT ? seats : SENATE_SIZE - seats, 0, SENATE_SIZE); }
 
     public Party houseMajority() { return houseDem >= HOUSE_MAJORITY ? Party.DEMOCRAT : Party.REPUBLICAN; }
 
@@ -32,7 +35,8 @@ public final class Congress {
     public boolean unified(Party president) { return houseMajority() == president && senateMajority(president) == president; }
 
     public boolean filibuster() { return filibuster; }
-    public void abolishFilibuster() { filibuster = false; }
+    void abolishFilibuster() { filibuster = false; }
+    void setFilibuster(boolean f) { filibuster = f; }
 
     @Override
     public String toString() {

@@ -1,0 +1,19 @@
+# id,name,role,stock,production_per_month,transferable
+# US stocks (theater + global) and monthly production in 2027, from First Island Chain's munitions tables
+# (IslandChain.java Setup.pool/prod), which cite CSIS "Empty Bins" (2023) and "Rebuilding the US Missile Inventory" (2026).
+# transferable: can be handed to Taiwan under an arm-and-sanction policy.
+LRASM,AGM-158C LRASM,antiship,560,12,false
+MST,Maritime Strike Tomahawk,antiship,70,4,false
+NSM,Naval/Joint Strike Missile,antiship,280,10,true
+HARPOON,Harpoon,antiship,700,4,true
+MK48,Mk 48 torpedo,antiship,800,8,false
+JASSM_ER,AGM-158B JASSM-ER,landattack,2600,45,false
+JASSM,AGM-158A JASSM,landattack,1000,15,false
+TLAM,Tomahawk Block IV/V,landattack,1320,16,false
+PRSM,Precision Strike Missile,landattack,300,50,true
+SM6,SM-6,airdefense,640,16,false
+SM2,SM-2,airdefense,1200,10,false
+SM3,SM-3,airdefense,140,4,false
+ESSM,ESSM,airdefense,1000,15,false
+PAC3,PAC-3 MSE,airdefense,860,45,true
+THAAD,THAAD interceptor,airdefense,258,8,false

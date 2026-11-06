@@ -1,0 +1,8 @@
+# party,name,ideology,share,loyalty,deficit_hawk
+# Three ideological blocs per party caucus (Resolute Desk). Shares are of the party's seats in each chamber.
+DEMOCRAT,Progressives,-0.70,0.35,0.85,false
+DEMOCRAT,Mainstream Democrats,-0.40,0.45,0.92,false
+DEMOCRAT,Moderate Democrats,-0.12,0.20,0.70,true
+REPUBLICAN,Moderate Republicans,0.20,0.15,0.70,false
+REPUBLICAN,Mainstream Republicans,0.50,0.50,0.90,true
+REPUBLICAN,Freedom Caucus,0.85,0.35,0.75,true

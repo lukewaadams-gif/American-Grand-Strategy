@@ -24,4 +24,19 @@ public record ElectionResult(int year, Map<String, Double> stateMargins, int dem
     public int electoralVotes(Party p) { return p == Party.DEMOCRAT ? demElectoralVotes : repElectoralVotes; }
 
     public double marginFor(Party p) { return popularMargin * p.sign(); }
+
+    public java.util.Map<String, Object> toJson() {
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("year", year); m.put("margins", new java.util.TreeMap<>(stateMargins)); m.put("dem", demElectoralVotes);
+        m.put("rep", repElectoralVotes); m.put("popular", popularMargin); m.put("tippingPoint", tippingPoint);
+        return m;
+    }
+
+    public static ElectionResult fromJson(java.util.Map<String, Object> m) {
+        java.util.Map<String, Double> margins = new java.util.LinkedHashMap<>();
+        game.mandate.core.data.Json.object(m.get("margins")).forEach((k, v) -> margins.put(k, game.mandate.core.data.Json.num(v)));
+        return new ElectionResult(game.mandate.core.data.Json.integer(m.get("year")), java.util.Collections.unmodifiableMap(margins),
+                game.mandate.core.data.Json.integer(m.get("dem")), game.mandate.core.data.Json.integer(m.get("rep")),
+                game.mandate.core.data.Json.num(m.get("popular")), (String) m.get("tippingPoint"));
+    }
 }

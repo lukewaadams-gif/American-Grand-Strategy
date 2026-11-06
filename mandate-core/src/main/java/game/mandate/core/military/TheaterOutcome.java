@@ -1,4 +1,4 @@
-package game.mandate.core.world;
+package game.mandate.core.military;
 
 /**
  * What the presidential game receives back from a war, whichever engine fought it.
@@ -10,7 +10,8 @@ package game.mandate.core.world;
  * @param deterrenceAfter     Pacific deterrence after the war, 0-100
  */
 public record TheaterOutcome(TaiwanStatus status, int durationWeeks, int usKilled, double growthShock,
-                             double inflationShock, double approvalShift, double deterrenceAfter, String summary) {
+                             double inflationShock, double approvalShift, double deterrenceAfter, String summary,
+                             int shipsLost, int carriersLost, int aircraftLost, int munitionsExpended) {
 
     public enum TaiwanStatus { DEFENDED, STALEMATE, FALLEN }
 }

@@ -1,7 +1,7 @@
 package game.mandate.core;
 
 import game.mandate.core.ai.AutoPilot;
-import game.mandate.core.game.Game;
+import game.mandate.core.engine.GameEngine;
 import game.mandate.core.game.GameSetup;
 import game.mandate.core.game.Scenario;
 import game.mandate.core.state.Party;
@@ -19,7 +19,7 @@ class BalanceTest {
         for (int i = 0; i < n; i++) {
             Party p = i % 2 == 0 ? Party.DEMOCRAT : Party.REPUBLICAN;
             String d = dems[i % 4], r = reps[(i / 4) % 4];
-            Game g = new Game(new GameSetup(500 + i, p, p == Party.DEMOCRAT ? d : r, p == Party.DEMOCRAT ? r : d,
+            GameEngine g = new GameEngine(new GameSetup(500 + i, p, p == Party.DEMOCRAT ? d : r, p == Party.DEMOCRAT ? r : d,
                     Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD));
             while (!g.over()) AutoPilot.playTurn(g);
             if (g.result2028().orElseThrow().winner() == Party.DEMOCRAT) demWins++;

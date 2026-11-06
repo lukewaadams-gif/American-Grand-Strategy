@@ -1,23 +1,25 @@
 package game.mandate.core.campaign;
 
+import game.mandate.core.data.Json;
 import game.mandate.core.state.Party;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
-/** One campaign's resources and accumulated investment in each state. */
+/** One campaign's resources and accumulated investment in each state. Changed only by the election engine. */
 public final class CampaignSide {
     private final Party party;
     private final Candidate candidate;
-    private double cash;
-    private double momentum;
-    private Issue lastMessage;
-    private int weeksOnMessage;
-    private final Map<String, Double> adPressure = new HashMap<>();
-    private final Map<String, Double> field = new HashMap<>();
-    private final Map<String, Double> visits = new HashMap<>();
+    double cash;
+    double momentum;
+    Issue lastMessage;
+    int weeksOnMessage;
+    final Map<String, Double> adPressure = new TreeMap<>();
+    final Map<String, Double> field = new TreeMap<>();
+    final Map<String, Double> visits = new TreeMap<>();
 
-    public CampaignSide(Party party, Candidate candidate, double cash) {
+    CampaignSide(Party party, Candidate candidate, double cash) {
         this.party = party;
         this.candidate = candidate;
         this.cash = cash;
@@ -29,27 +31,38 @@ public final class CampaignSide {
     public double momentum() { return momentum; }
     public Issue lastMessage() { return lastMessage; }
     public int weeksOnMessage() { return weeksOnMessage; }
-
-    public void addCash(double m) { cash += m; }
-    public void addMomentum(double m) { momentum += m; }
+    public double ads(String state) { return adPressure.getOrDefault(state, 0.0); }
+    public double field(String state) { return field.getOrDefault(state, 0.0); }
+    public double visits(String state) { return visits.getOrDefault(state, 0.0); }
 
     void setMessage(Issue issue) {
         weeksOnMessage = issue == lastMessage ? weeksOnMessage + 1 : 1;
         lastMessage = issue;
     }
 
-    void decay() {
-        momentum *= 0.80;
-        adPressure.replaceAll((k, v) -> v * 0.55);
-        field.replaceAll((k, v) -> v * 0.97);
-        visits.replaceAll((k, v) -> v * 0.60);
+    void decay(CampaignParams p) {
+        momentum *= p.momentumDecay();
+        adPressure.replaceAll((k, v) -> v * p.adDecay());
+        field.replaceAll((k, v) -> v * p.fieldDecay());
+        visits.replaceAll((k, v) -> v * p.visitDecay());
     }
 
-    void addAds(String state, double m) { adPressure.merge(state, m, Double::sum); }
-    void addField(String state, double m) { field.merge(state, m, Double::sum); }
-    void addVisit(String state) { visits.merge(state, 1.0, Double::sum); }
+    Map<String, Object> toJson() {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("party", party); m.put("candidate", candidate.id()); m.put("cash", cash); m.put("momentum", momentum);
+        m.put("lastMessage", lastMessage == null ? null : lastMessage.name()); m.put("weeksOnMessage", weeksOnMessage);
+        m.put("ads", new LinkedHashMap<>(adPressure)); m.put("field", new LinkedHashMap<>(field)); m.put("visits", new LinkedHashMap<>(visits));
+        return m;
+    }
 
-    public double ads(String state) { return adPressure.getOrDefault(state, 0.0); }
-    public double field(String state) { return field.getOrDefault(state, 0.0); }
-    public double visits(String state) { return visits.getOrDefault(state, 0.0); }
+    static CampaignSide fromJson(Map<String, Object> m, CandidateCatalog catalog) {
+        CampaignSide s = new CampaignSide(Party.valueOf((String) m.get("party")), catalog.get((String) m.get("candidate")), Json.num(m.get("cash")));
+        s.momentum = Json.num(m.get("momentum"));
+        s.lastMessage = m.get("lastMessage") == null ? null : Issue.valueOf((String) m.get("lastMessage"));
+        s.weeksOnMessage = Json.integer(m.get("weeksOnMessage"));
+        Json.object(m.get("ads")).forEach((k, v) -> s.adPressure.put(k, Json.num(v)));
+        Json.object(m.get("field")).forEach((k, v) -> s.field.put(k, Json.num(v)));
+        Json.object(m.get("visits")).forEach((k, v) -> s.visits.put(k, Json.num(v)));
+        return s;
+    }
 }

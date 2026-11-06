@@ -14,11 +14,11 @@ import game.mandate.core.congress.LegislativeStrategy;
 import game.mandate.core.congress.WhipCount;
 import game.mandate.core.events.EventOption;
 import game.mandate.core.events.PendingEvent;
-import game.mandate.core.game.Game;
+import game.mandate.core.engine.GameEngine;
 import game.mandate.core.game.GameSetup;
 import game.mandate.core.game.Scenario;
 import game.mandate.core.state.Party;
-import game.mandate.core.world.HotSpot;
+import game.mandate.core.diplomacy.HotSpot;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -70,7 +70,7 @@ public final class Main {
     }
 
     static void auto(long seed, Party party) {
-        Game g = new Game(defaultSetup(seed, party, Scenario.TOSS_UP));
+        GameEngine g = new GameEngine(defaultSetup(seed, party, Scenario.TOSS_UP));
         while (!g.over()) AutoPilot.playTurn(g);
         g.log().forEach(System.out::println);
         g.legacy().ifPresent(l -> l.lines().forEach(s -> System.out.println("  " + s)));
@@ -81,7 +81,7 @@ public final class Main {
     static final class Interactive {
         private final BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         private final long seed;
-        private Game g;
+        private GameEngine g;
         private int logShown;
 
         Interactive(long seed) { this.seed = Math.abs(seed); }
@@ -98,7 +98,7 @@ public final class Main {
             Scenario[] sc = Scenario.values();
             for (int i = 0; i < sc.length; i++) System.out.println("  " + (i + 1) + ". " + sc[i].label() + " - " + sc[i].description());
             Scenario scenario = sc[ask("Scenario", sc.length) - 1];
-            g = new Game(new GameSetup(seed, party, me.id(), opp.id(), scenario, GameSetup.Difficulty.STANDARD));
+            g = new GameEngine(new GameSetup(seed, party, me.id(), opp.id(), scenario, GameSetup.Difficulty.STANDARD));
 
             while (!g.over()) {
                 printNewLog();
@@ -186,7 +186,7 @@ public final class Main {
         private void governingTurn() throws IOException {
             var e = g.economy().orElseThrow();
             System.out.printf("%n--- %s | approval %.0f%% | capital %.0f | attention %d | growth %.1f%% unemployment %.1f%% inflation %.1f%% | Taiwan tension %.0f ---%n",
-                    g.date(), g.approval(), g.capital(), g.attention(), e.growth(), e.unemployment(), e.inflation(), g.world().tension(HotSpot.TAIWAN_STRAIT));
+                    g.date(), g.approval(), g.capital(), g.attention(), e.growth(), e.unemployment(), e.inflation(), g.diplomacy().tension(HotSpot.TAIWAN_STRAIT));
             int c = ask("1. Push a bill (2 attention)  2. Address the nation (1)  3. Bolster Pacific deterrence (1)  4. Diplomacy (1)  5. End the month", 5);
             switch (c) {
                 case 1 -> {
@@ -211,7 +211,7 @@ public final class Main {
                 case 3 -> g.apply(new Command.BolsterDeterrence());
                 case 4 -> {
                     HotSpot[] hs = HotSpot.values();
-                    for (int i = 0; i < hs.length; i++) System.out.printf("  %d. %s (tension %.0f)%n", i + 1, hs[i].label(), g.world().tension(hs[i]));
+                    for (int i = 0; i < hs.length; i++) System.out.printf("  %d. %s (tension %.0f)%n", i + 1, hs[i].label(), g.diplomacy().tension(hs[i]));
                     g.apply(new Command.Diplomacy(hs[ask("Where", hs.length) - 1]));
                 }
                 default -> g.apply(new Command.EndTurn());

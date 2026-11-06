@@ -1,0 +1,12 @@
+# id,name,category,count,crew_killed_if_lost
+# US forces available to the Indo-Pacific in 2027, rounded, from First Island Chain's order of battle
+# (IslandChain.java Setup: 5 carrier strike groups, 20 attack submarines + 1 SSGN, ~212 land-based combat
+# aircraft forward, 4 B-52H forward). Surface combatants are the carrier escorts plus DESRON 15, the LCS
+# division and the 3rd Fleet SAG. crew_killed_if_lost is a planning factor, not a crew count.
+CARRIER,Carrier strike group,carrier,5,1200
+SUBMARINE,Attack submarine,submarine,21,130
+SURFACE,Surface combatant,surface,26,150
+AMPHIBIOUS,Amphibious ready group,amphibious,2,400
+FIGHTER,Land-based combat aircraft,aircraft,212,1
+CARRIER_AIR,Carrier air wing aircraft,aircraft,220,1
+BOMBER,Bomber (forward),aircraft,4,4

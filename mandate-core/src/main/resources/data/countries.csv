@@ -1,0 +1,10 @@
+# id,name,linked_hotspot,start_relation,tension_link
+# Relations run -100 (hostile) .. +100 (closest ally). Linked countries drift with their flashpoint's tension.
+CHN,China,TAIWAN_STRAIT,-30,0.8
+TWN,Taiwan,TAIWAN_STRAIT,70,0.0
+JPN,Japan,TAIWAN_STRAIT,75,-0.1
+IRN,Iran,MIDDLE_EAST,-70,0.5
+ISR,Israel,MIDDLE_EAST,70,0.0
+RUS,Russia,EASTERN_EUROPE,-60,0.6
+UKR,Ukraine,EASTERN_EUROPE,65,0.0
+EUR,European Union,EASTERN_EUROPE,70,-0.1

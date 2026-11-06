@@ -1,12 +1,16 @@
 package game.mandate.core.effects;
 
 import game.mandate.core.campaign.Issue;
-import game.mandate.core.world.HotSpot;
+import game.mandate.core.diplomacy.HotSpot;
+import game.mandate.core.politics.Coalition;
+import game.mandate.core.state.Party;
 
 /**
- * Everything content can do to the simulation. Events, bills, crises and decisions all express their
- * consequences as lists of effects, so new content never needs new engine code, every consequence can
- * be shown to the player before and after it happens, and balance tools can sum effects offline.
+ * State transitions. Everything content can do to the simulation, and everything one engine asks of another,
+ * is an effect: events, bills, crises, elections and wars express their consequences as effects, and the
+ * {@code GameEngine} routes each one to the single engine that owns the state it changes. No engine writes
+ * another engine's variables directly (state setters are package-private), so every cross-system consequence
+ * passes through here and is recorded in the consequence ledger.
  */
 public sealed interface Effect {
 
@@ -56,6 +60,51 @@ public sealed interface Effect {
     /** Deficit change as percent of GDP (positive = bigger deficit). */
     record Deficit(double pctGdp) implements Effect {
         public String describe() { return signed("Deficit (% of GDP)", pctGdp); }
+    }
+
+    /** Approval of one voter coalition. {@code lasting} effects enter the record and do not fade. */
+    record CoalitionApproval(Coalition coalition, double points, boolean lasting) implements Effect {
+        public String describe() { return signed(coalition.label() + " approval" + (lasting ? " (lasting)" : ""), points); }
+    }
+
+    /** Opposition leaders' goodwill toward the president, which sets their strategy. */
+    record Goodwill(double delta) implements Effect {
+        public String describe() { return signed("Opposition goodwill", delta); }
+    }
+
+    /** The mood of one wing (0 = base wing, 1 = moderate wing) of the president's party. */
+    record WingMood(int wing, double delta) implements Effect {
+        public String describe() { return signed((wing == 0 ? "Base wing" : "Moderate wing") + " mood", delta); }
+    }
+
+    /** The president publicly leans on the Fed: credibility falls, a close call tilts toward a cut. */
+    record FedPressure() implements Effect {
+        public String describe() { return "Fed credibility falls"; }
+    }
+
+    /** Strategic Petroleum Reserve release: knocks this many dollars off the oil price, tapering weekly. */
+    record OilRelease(double dollars) implements Effect {
+        public String describe() { return signed("Oil price ($)", -dollars); }
+    }
+
+    /** A munitions production surge, as a fraction of the current rate. */
+    record Munitions(double surge) implements Effect {
+        public String describe() { return signed("Munitions production (%)", surge * 100); }
+    }
+
+    /** A war has ended; deterrence is reset to what the outcome left. */
+    record WarEnded(double deterrenceAfter) implements Effect {
+        public String describe() { return "Deterrence after the war: " + Math.round(deterrenceAfter); }
+    }
+
+    /** New seat counts produced by an election. */
+    record CongressElected(int houseDem, int senateDem) implements Effect {
+        public String describe() { return "Congress: House D " + houseDem + ", Senate D " + senateDem; }
+    }
+
+    /** A president takes office. */
+    record PresidentInaugurated(String candidateId, Party party, int electoralVotes) implements Effect {
+        public String describe() { return "A " + party.adjective() + " president takes office (" + electoralVotes + " electoral votes)"; }
     }
 
     private static String signed(String label, double v) { return label + " " + fmt(v); }

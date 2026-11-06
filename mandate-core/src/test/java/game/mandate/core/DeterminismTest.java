@@ -1,7 +1,7 @@
 package game.mandate.core;
 
 import game.mandate.core.ai.AutoPilot;
-import game.mandate.core.game.Game;
+import game.mandate.core.engine.GameEngine;
 import game.mandate.core.game.GameSetup;
 import game.mandate.core.game.Scenario;
 import game.mandate.core.state.Party;
@@ -16,8 +16,8 @@ class DeterminismTest {
         return new GameSetup(seed, Party.DEMOCRAT, "d_reyes", "r_marsh", Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD);
     }
 
-    static Game playOut(long seed) {
-        Game g = new Game(setup(seed));
+    static GameEngine playOut(long seed) {
+        GameEngine g = new GameEngine(setup(seed));
         int guard = 0;
         while (!g.over() && guard++ < 500) AutoPilot.playTurn(g);
         assertTrue(g.over(), "game should finish");
@@ -36,8 +36,8 @@ class DeterminismTest {
 
     @Test
     void replayingTheCommandLogReproducesTheGame() {
-        Game original = playOut(7);
-        Game replayed = Game.replay(setup(7), original.history());
+        GameEngine original = playOut(7);
+        GameEngine replayed = GameEngine.replay(setup(7), original.history());
         assertEquals(original.log(), replayed.log());
         assertEquals(original.legacy(), replayed.legacy());
     }

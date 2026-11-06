@@ -1,4 +1,4 @@
-package game.mandate.core.world;
+package game.mandate.core.military;
 
 /**
  * Everything a theater model needs from the presidential game when a war over Taiwan begins.
@@ -11,9 +11,10 @@ package game.mandate.core.world;
  * @param japanBasing     whether Japan has agreed to US combat operations from its bases
  * @param warningMonths   months between the blockade and the shooting war (preparation time)
  * @param commitment      how far the president commits US forces
+ * @param defenseCompetence competence of the Defense secretary, 0-100
  */
 public record TheaterScenario(double deterrence, double munitions, boolean japanBasing, int warningMonths,
-                              Commitment commitment) {
+                              Commitment commitment, double defenseCompetence) {
 
     public enum Commitment {
         /** Full US intervention with air, naval and missile forces. */

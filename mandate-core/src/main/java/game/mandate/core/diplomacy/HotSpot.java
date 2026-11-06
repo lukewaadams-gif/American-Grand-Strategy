@@ -1,4 +1,4 @@
-package game.mandate.core.world;
+package game.mandate.core.diplomacy;
 
 /** Foreign flashpoints tracked as tension 0-100. The MVP models three; more are data, not code. */
 public enum HotSpot {

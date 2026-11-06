@@ -6,8 +6,8 @@ import game.mandate.core.campaign.Candidate;
 import game.mandate.core.campaign.DebatePosture;
 import game.mandate.core.campaign.Issue;
 import game.mandate.core.electorate.UsState;
-import game.mandate.core.game.Game;
-import game.mandate.core.rng.RngStreams;
+import game.mandate.core.engine.GameEngine;
+import game.mandate.core.rng.DeterministicRandomManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -23,7 +23,7 @@ import java.util.Map;
 public final class CampaignAi {
     private CampaignAi() {}
 
-    public static CampaignWeekPlan plan(Game g, CampaignSide side, double resources) {
+    public static CampaignWeekPlan plan(GameEngine g, CampaignSide side, double resources) {
         Map<String, Double> polls = g.statePolls();
         int sign = side.party().sign();
         List<UsState> targets = new ArrayList<>(g.states().all());
@@ -54,7 +54,7 @@ public final class CampaignAi {
         return s.electoralVotes() / (1.0 + Math.abs(myMargin - 1.0));
     }
 
-    public static Issue bestMessage(Game g, CampaignSide side) {
+    public static Issue bestMessage(GameEngine g, CampaignSide side) {
         Issue best = Issue.ECONOMY;
         double bestScore = Double.NEGATIVE_INFINITY;
         for (Issue i : Issue.values()) {
@@ -65,7 +65,7 @@ public final class CampaignAi {
     }
 
     /** Usually plays to its strength; sometimes counters the opponent's tendency instead. */
-    public static DebatePosture debatePosture(Candidate self, Candidate opponent, RngStreams rng) {
+    public static DebatePosture debatePosture(Candidate self, Candidate opponent, DeterministicRandomManager rng) {
         if (rng.chance("ai.debate", 0.35)) {
             DebatePosture theirs = DebatePosture.tendencyOf(opponent);
             for (DebatePosture p : DebatePosture.values()) if (p.counters(theirs)) return p;

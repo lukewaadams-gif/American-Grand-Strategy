@@ -1,0 +1,5 @@
+# type,competence,loyalty,controversy
+# Resolute Desk's transition team offers a loyalist, an expert, or a figure from the other side.
+LOYALIST,55,90,0.55
+EXPERT,85,60,0.20
+CROSSOVER,72,45,0.0

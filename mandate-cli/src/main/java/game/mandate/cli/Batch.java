@@ -2,10 +2,10 @@ package game.mandate.cli;
 
 import game.mandate.core.ai.AutoPilot;
 import game.mandate.core.electorate.ElectionResult;
-import game.mandate.core.game.Game;
+import game.mandate.core.engine.GameEngine;
 import game.mandate.core.game.Scenario;
 import game.mandate.core.state.Party;
-import game.mandate.core.world.TheaterOutcome;
+import game.mandate.core.military.TheaterOutcome;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -27,7 +27,7 @@ final class Batch {
         long t0 = System.currentTimeMillis();
         for (int i = 0; i < runs; i++) {
             Party party = i % 2 == 0 ? Party.DEMOCRAT : Party.REPUBLICAN;
-            Game g = new Game(Main.defaultSetup(10_000L + i, party, scenario));
+            GameEngine g = new GameEngine(Main.defaultSetup(10_000L + i, party, scenario));
             while (!g.over()) AutoPilot.playTurn(g);
             int p = party.ordinal();
             played[p]++;
@@ -42,7 +42,7 @@ final class Batch {
                 governed[p]++;
                 lawSum += g.laws().size();
                 approvalSum += g.approval();
-                if (g.world().rung() != null) crises++;
+                if (g.diplomacy().rung() != null) crises++;
                 if (g.war().isPresent()) { wars++; warResults.merge(g.war().get().status(), 1, Integer::sum); }
                 if (g.result2032().map(x -> x.winner() == party).orElse(false)) reelected[p]++;
             }

@@ -16,7 +16,7 @@ import game.mandate.core.opening.Types.OppositionStrategy;
 import game.mandate.core.opening.Types.PayFor;
 import game.mandate.core.opening.Types.Post;
 import game.mandate.core.opening.Types.SeatStatus;
-import game.mandate.core.rng.RngStreams;
+import game.mandate.core.rng.DeterministicRandomManager;
 import game.mandate.core.state.Party;
 
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ public final class OpeningTerm {
 
     private final OpeningSetup setup;
     private final Party party;
-    private final RngStreams rng;
+    private final DeterministicRandomManager rng;
     private final Congress congress;
     private final List<OpeningAction> history = new ArrayList<>();
     private final List<String> log = new ArrayList<>();
@@ -126,7 +126,7 @@ public final class OpeningTerm {
     public OpeningTerm(OpeningSetup setup) {
         this.setup = setup;
         this.party = setup.party();
-        this.rng = new RngStreams(setup.seed());
+        this.rng = new DeterministicRandomManager(setup.seed());
         this.congress = setup.unified()
                 ? new Congress(party == Party.DEMOCRAT ? 222 : 213, party == Party.DEMOCRAT ? 51 : 49)
                 : new Congress(party == Party.DEMOCRAT ? 208 : 227, party == Party.DEMOCRAT ? 48 : 52);
@@ -135,7 +135,7 @@ public final class OpeningTerm {
         for (Party p : Party.values()) for (Bloc b : Bloc.defaultsFor(p)) relationship.put(b.name(), 0.0);
         for (Post p : Post.values()) seat.put(p, SeatStatus.VACANT);
         this.crisisKind = rng.chance("crisis.kind", 0.5) ? CrisisKind.TAIWAN : CrisisKind.GULF;
-        this.crisisWeek = 3 + rng.stream("crisis.week").nextInt(3);
+        this.crisisWeek = 3 + rng.nextInt("crisis.week", 3);
         this.resolve = 0.35 + 0.45 * rng.uniform("crisis.resolve");
         log("Week 1. You take the oath with " + congress + ". Approval " + Math.round(approval()) + "%.");
     }

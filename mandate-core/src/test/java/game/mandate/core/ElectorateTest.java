@@ -27,7 +27,7 @@ class ElectorateTest {
 
     @Test
     void zeroSwingReproduces2024() {
-        ElectionCalculator calc = new ElectionCalculator(states, new UniformSwingModel());
+        ElectionCalculator calc = new ElectionCalculator(states, new UniformSwingModel(), 2.6, 2.5);
         ElectionResult r = calc.tally(2024, calc.expectedMargins(0, s -> 0));
         // Maine's and Nebraska's district electors are not split in the foundation; they cancel out in 2024.
         assertEquals(226, r.demElectoralVotes());

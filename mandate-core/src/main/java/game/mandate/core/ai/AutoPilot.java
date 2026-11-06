@@ -8,8 +8,8 @@ import game.mandate.core.congress.WhipCount;
 import game.mandate.core.effects.Effect;
 import game.mandate.core.events.EventOption;
 import game.mandate.core.events.PendingEvent;
-import game.mandate.core.game.Game;
-import game.mandate.core.world.HotSpot;
+import game.mandate.core.engine.GameEngine;
+import game.mandate.core.diplomacy.HotSpot;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -24,8 +24,12 @@ public final class AutoPilot {
     private AutoPilot() {}
 
     /** Issue every command for the current turn, ending with EndTurn. */
-    public static void playTurn(Game g) {
+    public static void playTurn(GameEngine g) {
         for (PendingEvent p : g.pendingEvents()) g.apply(new Command.ResolveEvent(p.instanceId(), chooseOption(p)));
+        if (g.operationsActive()) {         // operational turns: the war is fought turn by turn
+            g.apply(new Command.EndTurn());
+            return;
+        }
         switch (g.phase()) {
             case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> {
                 if (g.debateThisWeek().isPresent())
@@ -65,19 +69,23 @@ public final class AutoPilot {
                 case Effect.EconomyShock s -> s.growthPoints() - s.inflationPoints();
                 case Effect.Deficit d -> -d.pctGdp() * 3;
                 case Effect.Salience s -> 0;
+                case Effect.CoalitionApproval c -> c.points() * 0.34;
+                case Effect.Goodwill gw -> gw.delta() / 10;
+                case Effect.WingMood m -> m.delta() / 10;
+                default -> 0;
             };
         }
         return v;
     }
 
-    static List<String> chooseAgenda(Game g) {
+    static List<String> chooseAgenda(GameEngine g) {
         List<Bill> mine = new ArrayList<>(g.bills().availableTo(g.player().party()));
         mine.sort(Comparator.comparingDouble((Bill b) -> g.whip(b.id(), LegislativeStrategy.PARTY_LINE, 0).passChance() * (2 + b.publicAppeal())).reversed());
         return mine.subList(0, 3).stream().map(Bill::id).toList();
     }
 
-    static void governMonth(Game g) {
-        if (g.world().tension(HotSpot.TAIWAN_STRAIT) > 55 && g.attention() >= 1) g.apply(new Command.BolsterDeterrence());
+    static void governMonth(GameEngine g) {
+        if (g.diplomacy().tension(HotSpot.TAIWAN_STRAIT) > 55 && g.attention() >= 1) g.apply(new Command.BolsterDeterrence());
         // Try the best-odds bill this month if it is a reasonable bet.
         Bill best = null;
         LegislativeStrategy bestStrategy = null;

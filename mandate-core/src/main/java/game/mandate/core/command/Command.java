@@ -4,7 +4,7 @@ import game.mandate.core.campaign.CampaignWeekPlan;
 import game.mandate.core.campaign.DebatePosture;
 import game.mandate.core.campaign.Issue;
 import game.mandate.core.congress.LegislativeStrategy;
-import game.mandate.core.world.HotSpot;
+import game.mandate.core.diplomacy.HotSpot;
 
 import java.util.List;
 

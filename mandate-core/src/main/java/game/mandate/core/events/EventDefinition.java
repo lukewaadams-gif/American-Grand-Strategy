@@ -1,6 +1,5 @@
 package game.mandate.core.events;
 
-import game.mandate.core.game.Game;
 import game.mandate.core.time.Phase;
 
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.function.ToDoubleFunction;
  * a shutdown threat only under divided government, a market panic more likely when the economy is weak.
  */
 public record EventDefinition(String id, String title, String body, Set<Phase> phases, boolean repeatable,
-                              ToDoubleFunction<Game> chancePerTurn, List<EventOption> options) {
+                              ToDoubleFunction<WorldView> chancePerTurn, List<EventOption> options) {
 
     public EventDefinition {
         phases = Set.copyOf(phases);

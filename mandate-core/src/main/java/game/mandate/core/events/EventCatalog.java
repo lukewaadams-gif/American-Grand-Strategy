@@ -3,8 +3,8 @@ package game.mandate.core.events;
 import game.mandate.core.campaign.Issue;
 import game.mandate.core.effects.Effect;
 import game.mandate.core.time.Phase;
-import game.mandate.core.world.HotSpot;
-import game.mandate.core.world.World;
+import game.mandate.core.diplomacy.Escalation;
+import game.mandate.core.diplomacy.HotSpot;
 
 import java.util.List;
 import java.util.Set;
@@ -24,7 +24,7 @@ public final class EventCatalog {
         return List.of(
                 new EventDefinition("gaffe", "A hot-mic moment",
                         "A private remark about voters in a swing state leaks.",
-                        CAMPAIGNS, true, g -> 0.06 * (11 - g.player().candidate().discipline()) / 5.0,
+                        CAMPAIGNS, true, g -> 0.06 * (11 - g.playerDiscipline()) / 5.0,
                         List.of(
                                 EventOption.of("Apologise at once", new Effect.CampaignSwing(-0.3)),
                                 EventOption.gamble("Double down: it's true", 0.4,
@@ -83,7 +83,7 @@ public final class EventCatalog {
 
                 new EventDefinition("oil_spike", "Oil spikes",
                         "Attacks on shipping in the Gulf send crude above $110.",
-                        GOVERNING, true, g -> g.world().tension(HotSpot.MIDDLE_EAST) > 65 ? 0.15 : 0.01,
+                        GOVERNING, true, g -> g.tension(HotSpot.MIDDLE_EAST) > 65 ? 0.15 : 0.01,
                         List.of(
                                 EventOption.of("Release the strategic reserve", new Effect.EconomyShock(-0.2, 0.4, 6), new Effect.Approval(0.5)),
                                 EventOption.of("Send the Navy to escort tankers", new Effect.EconomyShock(-0.3, 0.6, 6),
@@ -99,8 +99,15 @@ public final class EventCatalog {
         );
     }
 
+    /** Finds any event by id, including the ladder's (save files store ids, not definitions). */
+    public static EventDefinition byId(String id) {
+        for (EventDefinition d : standard()) if (d.id().equals(id)) return d;
+        for (Escalation e : Escalation.values()) { EventDefinition d = escalation(e); if (d.id().equals(id)) return d; }
+        throw new IllegalArgumentException("Unknown event " + id);
+    }
+
     /** Decision events for each rung of the Taiwan ladder. */
-    public static EventDefinition escalation(World.Escalation e) {
+    public static EventDefinition escalation(Escalation e) {
         Set<Phase> any = Set.of(Phase.GOVERNING);
         return switch (e) {
             case DRILLS -> new EventDefinition("taiwan_drills", "Live-fire drills around Taiwan",
