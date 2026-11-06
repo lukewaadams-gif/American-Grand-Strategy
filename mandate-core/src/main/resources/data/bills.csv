@@ -1,0 +1,21 @@
+# id,name,sponsor_party,ideology,issue,annual_cost_bn,public_appeal,growth_impulse,inflation_impulse,deficit_pct_gdp,needs_60
+# ideology: -1 left .. +1 right. public_appeal: net approval effect if signed (-5..+5).
+# growth_impulse / inflation_impulse: percentage points over the following year (decaying).
+# deficit_pct_gdp: change in annual deficit as % of GDP (positive = larger deficit).
+# needs_60: true when Byrd-rule restrictions keep the bill out of reconciliation.
+lower_costs,Lower Costs Act (child care and drug prices),DEMOCRAT,-0.45,COST_OF_LIVING,120,3,0.2,0.1,0.35,false
+public_option,A Public Health Option,DEMOCRAT,-0.65,HEALTHCARE,90,2,0.1,0.05,0.30,false
+billionaire_tax,Billionaire Minimum Tax,DEMOCRAT,-0.55,ECONOMY,-80,2,-0.05,0.0,-0.25,false
+clean_energy,Clean Energy Buildout,DEMOCRAT,-0.50,CLIMATE_ENERGY,70,1,0.25,0.05,0.25,false
+voting_rights,Voting Rights Act,DEMOCRAT,-0.60,DEMOCRACY,0,1,0.0,0.0,0.0,true
+tax_cut,Middle-Class Tax Cut Extension,REPUBLICAN,0.50,ECONOMY,150,2,0.35,0.15,0.50,false
+border_security,Border Security and Enforcement Act,REPUBLICAN,0.60,IMMIGRATION,25,2,0.0,0.0,0.08,true
+energy_dominance,Energy Production Act,REPUBLICAN,0.55,CLIMATE_ENERGY,-10,1,0.15,-0.10,-0.03,false
+school_choice,School Choice Act,REPUBLICAN,0.65,EDUCATION,20,0,0.0,0.0,0.07,true
+spending_cuts,Discretionary Spending Cuts,REPUBLICAN,0.70,ECONOMY,-120,-1,-0.20,-0.05,-0.40,false
+housing,Build More Homes Act,BIPARTISAN,0.0,COST_OF_LIVING,40,3,0.20,-0.05,0.13,true
+chips_china,Chips and China Act,BIPARTISAN,0.10,CHINA,30,2,0.15,0.0,0.10,true
+ai_safety,AI Safety Standards Act,BIPARTISAN,-0.10,AI_TECH,5,2,0.0,0.0,0.02,true
+infrastructure,Infrastructure Renewal,BIPARTISAN,-0.05,ECONOMY,60,2,0.20,0.05,0.20,true
+immigration_deal,Comprehensive Immigration Compromise,BIPARTISAN,0.0,IMMIGRATION,10,1,0.10,-0.05,0.03,true
+social_security,Social Security Solvency Deal,BIPARTISAN,0.0,ECONOMY,-30,0,-0.05,0.0,-0.10,true

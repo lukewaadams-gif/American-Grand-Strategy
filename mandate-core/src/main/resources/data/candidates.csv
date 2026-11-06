@@ -1,0 +1,11 @@
+# id,party,name,home_state,charisma,debate,fundraising,policy,discipline,ideology
+# Fictional default cast. Real politicians are deliberately excluded from the commercial build
+# (see RISK_REGISTER.md R-03). Ratings 1-10; ideology -1 (left) .. +1 (right).
+d_reyes,DEMOCRAT,Elena Reyes,AZ,7,6,6,7,8,-0.25
+d_whitfield,DEMOCRAT,Thomas Whitfield,PA,6,7,7,6,7,-0.15
+d_okafor,DEMOCRAT,Grace Okafor,GA,8,8,5,6,6,-0.45
+d_lindqvist,DEMOCRAT,Erik Lindqvist,MN,5,6,6,8,9,-0.30
+r_calloway,REPUBLICAN,Jack Calloway,OH,8,7,6,5,5,0.45
+r_marsh,REPUBLICAN,Diane Marsh,FL,6,7,8,7,7,0.40
+r_benton,REPUBLICAN,Wade Benton,TX,7,6,7,6,6,0.50
+r_harlan,REPUBLICAN,Claire Harlan,NH,6,6,5,8,8,0.20

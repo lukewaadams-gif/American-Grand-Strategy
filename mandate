@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Runs the text front end. Builds first if the classes are missing.
+set -euo pipefail
+cd "$(dirname "$0")"
+if [ ! -d mandate-cli/target/classes ] || [ ! -d mandate-core/target/classes ]; then
+  mvn -q -B -DskipTests package
+fi
+exec java -cp mandate-core/target/classes:mandate-cli/target/classes game.mandate.cli.Main "$@"

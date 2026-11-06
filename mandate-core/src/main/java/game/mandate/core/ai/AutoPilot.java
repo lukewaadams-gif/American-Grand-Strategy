@@ -1,0 +1,105 @@
+package game.mandate.core.ai;
+
+import game.mandate.core.campaign.DebatePosture;
+import game.mandate.core.command.Command;
+import game.mandate.core.congress.Bill;
+import game.mandate.core.congress.LegislativeStrategy;
+import game.mandate.core.congress.WhipCount;
+import game.mandate.core.effects.Effect;
+import game.mandate.core.events.EventOption;
+import game.mandate.core.events.PendingEvent;
+import game.mandate.core.game.Game;
+import game.mandate.core.world.HotSpot;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+/**
+ * Plays the player's side with simple heuristics. Used by balance batches, soak tests and the
+ * "let the chief of staff handle it" delegation feature. It must only use public game APIs and
+ * commands, so anything it can do, a player can do.
+ */
+public final class AutoPilot {
+    private AutoPilot() {}
+
+    /** Issue every command for the current turn, ending with EndTurn. */
+    public static void playTurn(Game g) {
+        for (PendingEvent p : g.pendingEvents()) g.apply(new Command.ResolveEvent(p.instanceId(), chooseOption(p)));
+        switch (g.phase()) {
+            case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> {
+                if (g.debateThisWeek().isPresent())
+                    g.apply(new Command.ChooseDebatePosture(DebatePosture.tendencyOf(g.player().candidate())));
+            }
+            case TRANSITION -> g.apply(new Command.SetAgenda(chooseAgenda(g)));
+            case GOVERNING -> governMonth(g);
+            default -> { }
+        }
+        g.apply(new Command.EndTurn());
+        // Events raised during resolution are answered at the start of the next call.
+    }
+
+    static int chooseOption(PendingEvent p) {
+        List<EventOption> os = p.definition().options();
+        int best = 0;
+        double bestValue = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < os.size(); i++) {
+            EventOption o = os.get(i);
+            double v = o.successChance() * value(o.effects()) + (1 - o.successChance()) * value(o.failureEffects());
+            if (o.hook().isPresent()) v = o.hook().get().endsWith("INTERVENE") ? 1 : 0;
+            if (v > bestValue) { bestValue = v; best = i; }
+        }
+        return best;
+    }
+
+    static double value(List<Effect> effects) {
+        double v = 0;
+        for (Effect e : effects) {
+            v += switch (e) {
+                case Effect.Approval a -> a.points();
+                case Effect.CampaignSwing s -> s.points() * 2;
+                case Effect.Capital c -> c.points() / 5;
+                case Effect.Cash c -> c.millions() / 20;
+                case Effect.Deterrence d -> d.delta() / 6;
+                case Effect.Tension t -> t.hotSpot() == HotSpot.TAIWAN_STRAIT ? -t.delta() / 8 : -t.delta() / 15;
+                case Effect.EconomyShock s -> s.growthPoints() - s.inflationPoints();
+                case Effect.Deficit d -> -d.pctGdp() * 3;
+                case Effect.Salience s -> 0;
+            };
+        }
+        return v;
+    }
+
+    static List<String> chooseAgenda(Game g) {
+        List<Bill> mine = new ArrayList<>(g.bills().availableTo(g.player().party()));
+        mine.sort(Comparator.comparingDouble((Bill b) -> g.whip(b.id(), LegislativeStrategy.PARTY_LINE, 0).passChance() * (2 + b.publicAppeal())).reversed());
+        return mine.subList(0, 3).stream().map(Bill::id).toList();
+    }
+
+    static void governMonth(Game g) {
+        if (g.world().tension(HotSpot.TAIWAN_STRAIT) > 55 && g.attention() >= 1) g.apply(new Command.BolsterDeterrence());
+        // Try the best-odds bill this month if it is a reasonable bet.
+        Bill best = null;
+        LegislativeStrategy bestStrategy = null;
+        double bestScore = 0.45;
+        double capital = Math.min(g.capital(), 25);
+        for (Bill b : g.bills().all()) {
+            if (g.laws().contains(b.id())) continue;
+            for (LegislativeStrategy s : List.of(LegislativeStrategy.PARTY_LINE, LegislativeStrategy.BIPARTISAN_DEAL, LegislativeStrategy.RECONCILIATION)) {
+                if (!b.availableTo(g.player().party()) && s != LegislativeStrategy.BIPARTISAN_DEAL) continue;
+                if (s == LegislativeStrategy.RECONCILIATION && (b.requires60() || !g.unifiedGovernment())) continue;
+                WhipCount w = g.whip(b.id(), s, capital);
+                double score = w.passChance() * s.payoff() * (g.agenda().contains(b.id()) ? 1.5 : 1.0);
+                if (score > bestScore) { bestScore = score; best = b; bestStrategy = s; }
+            }
+        }
+        if (best != null && g.attention() >= 2) {
+            try {
+                g.apply(new Command.PushBill(best.id(), bestStrategy, capital));
+            } catch (RuntimeException ignored) {
+                // e.g. reconciliation already used this year: fall through to other actions
+            }
+        }
+        while (g.attention() >= 1) g.apply(new Command.PublicAddress(game.mandate.core.ai.CampaignAi.bestMessage(g, g.player())));
+    }
+}
