@@ -3,9 +3,9 @@ package game.mandate.core.opening;
 import game.mandate.core.opening.Types.BillSize;
 import game.mandate.core.opening.Types.Concession;
 import game.mandate.core.opening.Types.Domain;
-import game.mandate.core.opening.Types.NomineeType;
+import game.mandate.core.executive.NomineeType;
 import game.mandate.core.opening.Types.PayFor;
-import game.mandate.core.opening.Types.Post;
+import game.mandate.core.executive.Post;
 
 /**
  * Player commands in the prototype. As in the main game, the state changes only through these, so a

@@ -1,5 +1,7 @@
 package game.mandate.core.opening;
 
+import game.mandate.core.executive.Post;
+
 /**
  * Vocabulary of the 12-week governing prototype. Kept in one file so the whole decision space can be
  * read at a glance: if a choice is not listed here, the player cannot make it.
@@ -46,31 +48,10 @@ public final class Types {
     /** RD's path of a bill, minus the auto-passing conference stage (see GAMEPLAY_DESIGN.md, change C-07). */
     public enum BillStage { NOT_DRAFTED, COMMITTEE, HOUSE_FLOOR, SENATE_FLOOR, LAW, DEAD }
 
-    /** The three posts that matter most in a first quarter. (RD has 21; see change C-04.) */
-    public enum Post { TREASURY, DEFENSE, STATE }
-
-    /** RD's transition team: a loyalist, an expert, or a figure from the other side. */
-    public enum NomineeType {
-        LOYALIST(55, 90, 0.55), EXPERT(85, 60, 0.20), CROSSOVER(72, 45, 0.0);
-
-        public final int competence;
-        public final int loyalty;
-        public final double controversy;
-
-        NomineeType(int competence, int loyalty, double controversy) {
-            this.competence = competence;
-            this.loyalty = loyalty;
-            this.controversy = controversy;
-        }
-    }
-
     public enum SeatStatus { VACANT, NOMINATED, HEARINGS_DONE, CONFIRMED, ACTING }
 
     /** Concessions offered to a bloc. (RD: "calls, projects back home, appointments, endorsements or threats".) */
     public enum Concession { PROJECT, APPOINTMENT, THREAT }
-
-    /** RD's opposition strategy, re-evaluated weekly with hysteresis instead of quarterly (change C-09). */
-    public enum OppositionStrategy { COOPERATE, SELECTIVE, OBSTRUCT }
 
     public enum CrisisKind {
         TAIWAN("Taiwan Strait", new String[]{"Live-fire drills", "Coast guard quarantine", "Blockade threat", "Shots fired", "Armed clash"}),

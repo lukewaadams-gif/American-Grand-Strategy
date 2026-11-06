@@ -10,9 +10,9 @@ import game.mandate.core.opening.Types.BillSize;
 import game.mandate.core.opening.Types.BillStage;
 import game.mandate.core.opening.Types.Concession;
 import game.mandate.core.opening.Types.Domain;
-import game.mandate.core.opening.Types.NomineeType;
+import game.mandate.core.executive.NomineeType;
 import game.mandate.core.opening.Types.PayFor;
-import game.mandate.core.opening.Types.Post;
+import game.mandate.core.executive.Post;
 import game.mandate.core.opening.WhipRead;
 import game.mandate.core.state.Party;
 

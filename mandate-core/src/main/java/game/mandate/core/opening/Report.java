@@ -2,7 +2,7 @@ package game.mandate.core.opening;
 
 import game.mandate.core.opening.Types.BillStage;
 import game.mandate.core.opening.Types.CrisisOutcome;
-import game.mandate.core.opening.Types.OppositionStrategy;
+import game.mandate.core.politics.OppositionStrategy;
 
 /**
  * The 12-week report card. There is deliberately no single score: the prototype asks whether different

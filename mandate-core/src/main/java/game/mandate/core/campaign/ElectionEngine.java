@@ -155,6 +155,12 @@ public final class ElectionEngine {
         return new Effect.CongressElected(houseD, senateD);
     }
 
+    /** Expected House seat change for the president's party at a midterm held today (no noise): the same formula as {@link #midterm}. */
+    public int midtermSeatOutlook(double approval, double growth) {
+        double presidentMargin = p.midApproval() * (approval - p.midApprovalPivot()) + p.midGrowth() * (growth - p.midGrowthPivot()) + p.midPenalty();
+        return (int) Math.round(p.housePerPoint() * presidentMargin);
+    }
+
     /** Resolves one Senate class through the shared electorate model. Returns Democratic wins. */
     private int senateRaces(boolean class2028, double nationalSwing, DeterministicRandomManager rng) {
         int wonD = 0;

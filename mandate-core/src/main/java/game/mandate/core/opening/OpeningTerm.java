@@ -1,6 +1,29 @@
 package game.mandate.core.opening;
 
 import game.mandate.core.congress.Bloc;
+import game.mandate.core.campaign.CampaignParams;
+import game.mandate.core.campaign.CandidateCatalog;
+import game.mandate.core.campaign.ElectionEngine;
+import game.mandate.core.congress.VoteModel;
+import game.mandate.core.congress.VoteParams;
+import game.mandate.core.data.Tuning;
+import game.mandate.core.diplomacy.Country;
+import game.mandate.core.diplomacy.DiplomacyEngine;
+import game.mandate.core.diplomacy.DiplomacyState;
+import game.mandate.core.economy.BudgetState;
+import game.mandate.core.economy.EconomyEngine;
+import game.mandate.core.economy.EconomyParams;
+import game.mandate.core.economy.EconomyState;
+import game.mandate.core.economy.MarketContext;
+import game.mandate.core.effects.Effect;
+import game.mandate.core.electorate.StateCatalog;
+import game.mandate.core.politics.Coalition;
+import game.mandate.core.politics.OpinionInputs;
+import game.mandate.core.politics.PoliticsEngine;
+import game.mandate.core.politics.PoliticsParams;
+import game.mandate.core.politics.PoliticsState;
+import game.mandate.core.time.CampaignCalendar;
+import java.time.LocalDate;
 import game.mandate.core.congress.Congress;
 import game.mandate.core.opening.Decision.Option;
 import game.mandate.core.opening.Types.BillSize;
@@ -11,10 +34,10 @@ import game.mandate.core.opening.Types.CrisisMove;
 import game.mandate.core.opening.Types.CrisisOutcome;
 import game.mandate.core.opening.Types.Domain;
 import game.mandate.core.opening.Types.FundingOffer;
-import game.mandate.core.opening.Types.NomineeType;
-import game.mandate.core.opening.Types.OppositionStrategy;
+import game.mandate.core.executive.NomineeType;
+import game.mandate.core.politics.OppositionStrategy;
 import game.mandate.core.opening.Types.PayFor;
-import game.mandate.core.opening.Types.Post;
+import game.mandate.core.executive.Post;
 import game.mandate.core.opening.Types.SeatStatus;
 import game.mandate.core.rng.DeterministicRandomManager;
 import game.mandate.core.state.Party;
@@ -40,7 +63,7 @@ import java.util.Set;
  * <li><b>Cabinet</b>: three posts confirmed by the Senate; their competence drives markets, diplomacy and the military.</li>
  * <li><b>Budget and economy</b>: a stopgap funding deadline, two Fed meetings, weekly markets and monthly data releases.</li>
  * <li><b>Crisis and escalation</b>: a foreign crisis with a hidden adversary resolve and an escalation ladder.</li>
- * <li><b>Political reaction</b>: two wings of your party, an opposition that picks a strategy, and voters in three groups.</li>
+ * <li><b>Political reaction</b>: two wings of your party, an pol.opposition() that picks a strategy, and voters in three groups.</li>
  * </ul>
  * Each system reads the others: the pay-for moves bond yields, the crisis moves oil, gas and inflation, the Fed
  * responds to inflation and the deficit, mortgage rates move swing voters, the opposition's strategy follows your
@@ -50,8 +73,8 @@ public final class OpeningTerm {
     public static final int WEEKS = 12;
     public static final int ATTENTION_PER_WEEK = 3;
     public static final int FUNDING_DECISION_WEEK = 6, FUNDING_DEADLINE_WEEK = 8;
-    public static final Set<Integer> FED_WEEKS = Set.of(2, 8), JOBS_WEEKS = Set.of(2, 6, 10), CPI_WEEKS = Set.of(3, 7, 11);
-    static final double ACTING_COMPETENCE = 45;
+    /** Week 1 starts the Monday after the inauguration; Fed meetings and data releases follow the calendar. */
+    public static final LocalDate START = LocalDate.of(2029, 1, 22);
     /** Escalations needed to reach an armed clash: three steps past the opening incident. */
     public static final int CLASH_RUNG = 3;
 
@@ -70,19 +93,29 @@ public final class OpeningTerm {
 
     private int week = 1;
     private int attention = ATTENTION_PER_WEEK;
-    private double capital;
 
-    // ---- public opinion and party ---------------------------------------------------------------
-    private double base = 85, swing = 52, opp = 14;
-    private double modBase, modSwing, modOpp;          // decaying event effects, by group
-    private double recordBase, recordSwing;            // lasting effects of what you have done (laws, crisis outcomes)
-    private double honeymoon = 7;
-    private final double[] wingMood = {60, 60};        // [0] = the base wing, [1] = the moderate wing
+    // ---- authoritative systems: the prototype owns none of their formulas -----------------------
+    private final PoliticsEngine politicsEngine;
+    private final EconomyEngine economyEngine;
+    private final DiplomacyEngine diplomacyEngine;
+    private final VoteModel votes;
+    private final CampaignCalendar calendar;
+    private final ElectionEngine elections;
+    private final double actingCompetence, actingLoyalty;
+    private final PoliticsState pol;
+    private final EconomyState econ;
+    private final BudgetState budget;
+    private final DiplomacyState dip;
+
+    // ---- prototype-specific state ----------------------------------------------------------------
     private final boolean[] revolted = {false, false};
-    private double goodwill;                           // opposition leaders' view of you, -50..50
-    private OppositionStrategy opposition = OppositionStrategy.SELECTIVE;
     private double publicPressure;
-    private double recentAddresses;
+    private double oilShock, stressShock;               // crisis shocks fed to the economy as context
+    private boolean reserveReleased;
+    /** The prototype has no candidate; addresses use an average president's charisma. */
+    static final double PRESIDENT_CHARISMA = 6.0;
+    /** Share of a live bill's deficit the bond market prices in before it passes. */
+    static final double PENDING_DEFICIT_WEIGHT = 0.6;
 
     // ---- the flagship bill -----------------------------------------------------------------------
     private BillStage stage = BillStage.NOT_DRAFTED;
@@ -102,11 +135,6 @@ public final class OpeningTerm {
     private final Map<Post, Integer> nominatedWeek = new EnumMap<>(Post.class);
     private final Map<Post, Double> controversyBump = new EnumMap<>(Post.class);
 
-    // ---- economy ---------------------------------------------------------------------------------
-    private double inflation = 2.8, unemployment = 4.4, fedRate = 3.75, tenYear = 4.10, oil = 75, confidence = 100;
-    private double deficitChange, demandImpulse, fedCredibility = 1.0, sprRelief;
-    private boolean leanedOnFed;
-    private double reportedInflation = 2.8, reportedUnemployment = 4.4;
 
     // ---- crisis and budget -----------------------------------------------------------------------
     private final CrisisKind crisisKind;
@@ -115,7 +143,6 @@ public final class OpeningTerm {
     private CrisisOutcome crisis = CrisisOutcome.NONE;
     private int escalation;
     private int crisisWeeks;
-    private double deterrence = 50;
     private double intelEstimate = Double.NaN;
     private double lastEscalationRisk;
     private FundingOffer fundingOffer;
@@ -130,8 +157,21 @@ public final class OpeningTerm {
         this.congress = setup.unified()
                 ? new Congress(party == Party.DEMOCRAT ? 222 : 213, party == Party.DEMOCRAT ? 51 : 49)
                 : new Congress(party == Party.DEMOCRAT ? 208 : 227, party == Party.DEMOCRAT ? 48 : 52);
-        this.capital = setup.unified() ? 40 : 30;
-        this.goodwill = setup.unified() ? 0 : -5;
+        Tuning tuning = Tuning.defaults();
+        this.politicsEngine = new PoliticsEngine(PoliticsParams.from(tuning));
+        this.economyEngine = new EconomyEngine(EconomyParams.from(tuning));
+        this.diplomacyEngine = new DiplomacyEngine(tuning, Country.load());
+        this.votes = new VoteModel(VoteParams.from(tuning));
+        this.calendar = CampaignCalendar.load();
+        this.elections = new ElectionEngine(StateCatalog.load(), CandidateCatalog.load(), CampaignParams.from(tuning));
+        this.actingCompetence = tuning.d("executive.actingCompetence");
+        this.actingLoyalty = tuning.d("executive.actingLoyalty");
+        this.pol = politicsEngine.newPolitics(CandidateCatalog.load(), 0);
+        this.econ = economyEngine.newEconomy();
+        this.budget = economyEngine.newBudget();
+        this.dip = diplomacyEngine.newDiplomacy();
+        politicsEngine.apply(pol, new Effect.PresidentInaugurated("prototype-president", party, 270));
+        politicsEngine.setInitialTerms(pol, congress.unified(party));
         for (Party p : Party.values()) for (Bloc b : Bloc.defaultsFor(p)) relationship.put(b.name(), 0.0);
         for (Post p : Post.values()) seat.put(p, SeatStatus.VACANT);
         this.crisisKind = rng.chance("crisis.kind", 0.5) ? CrisisKind.TAIWAN : CrisisKind.GULF;
@@ -210,8 +250,8 @@ public final class OpeningTerm {
         payFor = p;
         wingReact(s, p, +1, "amending");
         // Changing course mid-fight costs credibility with everyone a little (BG's flip-flop penalty).
-        wingMood[0] -= 1.5;
-        wingMood[1] -= 1.5;
+        mood(0, -(1.5));
+        mood(1, -(1.5));
         consequence("You rewrite the bill: now " + s.name().toLowerCase() + ", paid for by " + p.label.toLowerCase() + ". Both wings grumble about the change of course.");
     }
 
@@ -219,16 +259,16 @@ public final class OpeningTerm {
         Bloc b = bloc(bloc);
         switch (c) {
             case PROJECT -> {
-                require(capital >= 4, "Not enough political capital");
-                capital -= 4;
-                deficitChange += 0.01;
+                require(pol.capital() >= 4, "Not enough political capital");
+                capital(-(4));
+                deficit(0.01);
                 relationship.merge(b.name(), 0.35 * efficiency, Double::sum);
                 consequence("Projects back home for the " + b.name() + " (capital -4).");
             }
             case APPOINTMENT -> {
                 require(appointmentTokens > 0, "No appointments left to promise");
-                require(capital >= 6, "Not enough political capital");
-                capital -= 6;
+                require(pol.capital() >= 6, "Not enough political capital");
+                capital(-(6));
                 appointmentTokens--;
                 relationship.merge(b.name(), 0.6 * efficiency, Double::sum);
                 consequence("You promise one of the " + b.name() + " an appointment (capital -6, " + appointmentTokens + " left).");
@@ -237,7 +277,7 @@ public final class OpeningTerm {
                 require(b.party() == party, "Threats only work on your own party");
                 relationship.merge(b.name(), -0.2, Double::sum);
                 pressured.put(b.name(), 0.15);
-                if (wingOf(b) >= 0) wingMood[wingOf(b)] -= 3; else { wingMood[0] -= 1.5; wingMood[1] -= 1.5; }
+                if (wingOf(b) >= 0) mood(wingOf(b), -(3)); else { mood(0, -(1.5)); mood(1, -(1.5)); }
                 consequence("You warn the " + b.name() + " that a primary is possible. They will vote with you this time, and they will remember.");
             }
         }
@@ -247,12 +287,9 @@ public final class OpeningTerm {
     private void goPublic() {
         require(stage == BillStage.COMMITTEE || stage == BillStage.HOUSE_FLOOR || stage == BillStage.SENATE_FLOOR, "Nothing to campaign for");
         publicPressure += 1.0;
-        double gain = 0.8 * Math.pow(0.5, recentAddresses);
-        recentAddresses += 1;
-        modSwing += gain * 0.5;
-        modBase += gain * 0.5;
-        goodwill -= 2;
-        consequence(String.format("You take the bill on the road. Pressure on wavering members rises; opposition leaders call it a campaign stunt (approval +%.1f among your voters).", gain * 0.5));
+        double gain = politicsEngine.address(pol, PRESIDENT_CHARISMA, 0, null);
+        goodwill(-(2));
+        consequence(String.format("You take the bill on the road. Pressure on wavering members rises; opposition leaders call it a campaign stunt (approval +%.1f among your voters).", gain));
     }
 
     void callVote(boolean insist) {
@@ -264,43 +301,43 @@ public final class OpeningTerm {
         if (refused) {
             if (!insist) throw new IllegalStateException(String.format(
                     "The leader will not call a vote expected to fail (%.0f%%). Insist for 8 capital, or work the votes first.", chance * 100));
-            require(capital >= 8, "Not enough political capital to insist");
+            require(pol.capital() >= 8, "Not enough political capital to insist");
         }
         billActedThisWeek = true;
         if (refused) {
-            capital -= 8;
-            goodwill -= 3;
+            capital(-(8));
+            goodwill(-(3));
             insistedThisWeek = true;
         }
         boolean house = stage == BillStage.HOUSE_FLOOR;
         double expected = expectedYes(house);
-        int yes = (int) Math.round(expected + (house ? 4.0 : 1.6) * rng.gaussian("congress"));
+        int yes = (int) Math.round(expected + votes.noise(house) * rng.gaussian("congress"));
         int needed = house ? Congress.HOUSE_MAJORITY : senateNeeded();
         pressured.clear();
         if (yes >= needed) {
             consequence((house ? "The House" : "The Senate") + " passes the " + billName() + ", " + yes + "-" + ((house ? 435 : 100) - yes) + ".");
-            capital += 4;
+            capital(4);
             if (house) stage = BillStage.SENATE_FLOOR;
             else sign();
         } else {
             consequence((house ? "The House" : "The Senate") + " rejects the " + billName() + ": " + yes + " votes of " + needed + " needed.");
-            capital = Math.max(0, capital - 6);
-            modSwing -= 1.0;
-            modBase -= 1.0;
+            capital(-6);
+            opinion(Coalition.SWING, -(1.0));
+            opinion(Coalition.BASE, -(1.0));
             billFailed(house);
         }
     }
 
     private void committee() {
         boolean ownChair = congress.houseMajority() == party;
-        double chance = ownChair ? 1.0 : switch (opposition) { case COOPERATE -> 0.85; case SELECTIVE -> 0.4; case OBSTRUCT -> 0.0; };
+        double chance = ownChair ? 1.0 : switch (pol.opposition()) { case COOPERATE -> 0.85; case SELECTIVE -> 0.4; case OBSTRUCT -> 0.0; };
         if (rng.chance("congress.committee", chance)) {
             stage = BillStage.HOUSE_FLOOR;
             consequence("The committee reports the bill to the House floor.");
         } else {
             consequence("The committee chairman, from the other party, refuses to hold a markup.");
             raise(Decision.Kind.BOTTLED_IN_COMMITTEE, "Bottled up in committee",
-                    "The chairman sits on your bill. Opposition leaders are " + opposition.name().toLowerCase() + ".",
+                    "The chairman sits on your bill. Opposition leaders are " + pol.opposition().name().toLowerCase() + ".",
                     List.of(new Option("File a discharge petition", "Capital -10. Works only with 218 House supporters on the whip count."),
                             new Option("Negotiate with the chairman", "The bill shrinks one size; opposition goodwill +6; your base wing is unhappy."),
                             new Option("Wait a week", "Nothing changes unless the opposition's mood does.")));
@@ -320,7 +357,7 @@ public final class OpeningTerm {
         require(stage == BillStage.HOUSE_FLOOR || stage == BillStage.SENATE_FLOOR || stage == BillStage.COMMITTEE, "No live bill");
         require(canReconcile(), "Reconciliation needs your party to control both chambers, and can be used once");
         reconciliation = true;
-        goodwill -= 10;
+        goodwill(-(10));
         consequence("You move the bill to budget reconciliation: a simple Senate majority, but the Byrd rule will strip 15% of it.");
     }
 
@@ -334,14 +371,14 @@ public final class OpeningTerm {
         double impl = 0.6 + 0.4 * competence(Post.TREASURY) / 100.0;
         policyDelivered = size.value * payoff;
         double deficit = size.deficit * payFor.deficitShare;
-        deficitChange += deficit;
-        demandImpulse += size.growth * payFor.growthFactor * impl;
-        modBase += 2.0 * size.value;
-        modSwing += 1.2 * size.value * impl - (payFor == PayFor.CUTS ? 1.5 : 0) + (payFor == PayFor.REVENUE ? 0.5 : 0);
-        recordBase += 1.5 * policyDelivered;
-        recordSwing += 0.8 * policyDelivered * impl - (payFor == PayFor.CUTS ? 0.8 : 0);
-        modOpp += payFor == PayFor.CUTS ? 1.0 : 0;
-        capital += 6;
+        deficit(deficit);
+        economyEngine.apply(econ, budget, new Effect.EconomyShock(size.growth * payFor.growthFactor * impl, 0, 12));
+        opinion(Coalition.BASE, 2.0 * size.value);
+        opinion(Coalition.SWING, 1.2 * size.value * impl - (payFor == PayFor.CUTS ? 1.5 : 0) + (payFor == PayFor.REVENUE ? 0.5 : 0));
+        lasting(Coalition.BASE, 1.5 * policyDelivered);
+        lasting(Coalition.SWING, 0.8 * policyDelivered * impl - (payFor == PayFor.CUTS ? 0.8 : 0));
+        opinion(Coalition.OPPOSITION, payFor == PayFor.CUTS ? 1.0 : 0);
+        capital(6);
         consequence(String.format("You sign the %s. Deficit %+.2f%% of GDP; implementation quality %.0f%% (Treasury).", billName(), deficit, impl * 100));
     }
 
@@ -355,9 +392,9 @@ public final class OpeningTerm {
         nominatedWeek.put(post, week);
         controversyBump.put(post, 0.0);
         switch (type) {
-            case LOYALIST -> { wingMood[0] += 4; wingMood[1] -= 2; goodwill -= 3; }
-            case EXPERT -> { wingMood[1] += 2; goodwill += 2; }
-            case CROSSOVER -> { wingMood[0] -= 6; wingMood[1] += 1; goodwill += 8; }
+            case LOYALIST -> { mood(0, 4); mood(1, -(2)); goodwill(-(3)); }
+            case EXPERT -> { mood(1, 2); goodwill(2); }
+            case CROSSOVER -> { mood(0, -(6)); mood(1, 1); goodwill(8); }
         }
         consequence("You nominate " + (type == NomineeType.EXPERT ? "an " : "a ") + type.name().toLowerCase() + " for " + postName(post) + ". Hearings next week, a Senate vote the week after.");
     }
@@ -366,7 +403,7 @@ public final class OpeningTerm {
         for (Post p : Post.values()) {
             if (seat.get(p) == SeatStatus.NOMINATED && week == nominatedWeek.get(p) + 1) {
                 NomineeType t = nominee.get(p);
-                boolean stumble = rng.chance("cabinet.hearing", 0.15 + 0.35 * t.controversy);
+                boolean stumble = rng.chance("cabinet.hearing", 0.15 + 0.35 * t.controversy());
                 if (stumble) controversyBump.put(p, 0.10);
                 seat.put(p, SeatStatus.HEARINGS_DONE);
                 consequence("Hearings for " + postName(p) + ": " + (stumble ? "a rough day; an old statement resurfaces." : "a steady performance."));
@@ -376,13 +413,13 @@ public final class OpeningTerm {
                 if (yes >= 50) {
                     seat.put(p, SeatStatus.CONFIRMED);
                     consequence("The Senate confirms your " + postName(p) + ", " + yes + "-" + (100 - yes) + ".");
-                    capital += 2;
+                    capital(2);
                 } else {
                     seat.put(p, SeatStatus.ACTING);
-                    capital = Math.max(0, capital - 6);
-                    modSwing -= 0.8;
+                    capital(-6);
+                    opinion(Coalition.SWING, -(0.8));
                     consequence("The Senate rejects your nominee for " + postName(p) + ", " + yes + "-" + (100 - yes) + ". A career official is acting.");
-                    raise(Decision.Kind.NOMINEE_REJECTED, "Nominee rejected: " + postName(p), "The department is run by an acting official (competence " + (int) ACTING_COMPETENCE + ").",
+                    raise(Decision.Kind.NOMINEE_REJECTED, "Nominee rejected: " + postName(p), "The department is run by an acting official (competence " + (int) actingCompetence + ").",
                             List.of(new Option("Send an expert", "Competent, easier to confirm. Two more weeks."),
                                     new Option("Send a crossover pick", "Confirms easily; your base wing is unhappy; opposition goodwill rises."),
                                     new Option("Leave the acting official", "No more fights; the department stays weak.")));
@@ -394,57 +431,40 @@ public final class OpeningTerm {
     public double confirmationExpected(Post p) {
         NomineeType t = nominee.get(p);
         if (t == null) return 0;
-        double controversy = t.controversy + controversyBump.getOrDefault(p, 0.0);
-        double total = 0;
-        for (Party side : Party.values()) {
-            Bloc[] blocs = Bloc.defaultsFor(side);
-            for (Bloc b : blocs) {
-                double s;
-                double moderation = 1.0 - Math.min(1, Math.abs(b.ideology()) / 0.8);  // moderates weigh controversy most
-                if (side == party) {
-                    // Own-party senators back routine picks; defections grow with controversy above a threshold.
-                    s = 0.99 - Math.max(0, controversy - 0.15) * (0.1 + 0.35 * moderation) - (wingMood[1] < 40 ? 0.1 * moderation : 0);
-                } else {
-                    double baseOpp = t == NomineeType.CROSSOVER ? 0.85
-                            : (0.05 + 0.5 * (1 - controversy)) * switch (opposition) { case COOPERATE -> 0.7; case SELECTIVE -> 0.35; case OBSTRUCT -> 0.08; };
-                    s = baseOpp * (0.3 + 0.7 * moderation);
-                }
-                total += congress.senate(side) * b.share() * clamp01(s);
-            }
-        }
-        return total;
+        return votes.confirmationExpected(party, congress, t.controversy() + controversyBump.getOrDefault(p, 0.0), t == NomineeType.CROSSOVER,
+                pol.opposition(), wing(1));
     }
 
     public double competence(Post p) {
-        return seat.get(p) == SeatStatus.CONFIRMED ? nominee.get(p).competence : ACTING_COMPETENCE;
+        return seat.get(p) == SeatStatus.CONFIRMED ? nominee.get(p).competence() : actingCompetence;
     }
 
     public double loyalty(Post p) {
-        return seat.get(p) == SeatStatus.CONFIRMED ? nominee.get(p).loyalty : 70;
+        return seat.get(p) == SeatStatus.CONFIRMED ? nominee.get(p).loyalty() : actingLoyalty;
     }
 
     // ---- other presidential actions --------------------------------------------------------------
 
     private void meetOpposition() {
-        goodwill += 5;
-        wingMood[0] -= 1;
+        goodwill(5);
+        mood(0, -(1));
         consequence("You host opposition leaders at the White House. Goodwill +5; your base wing notices.");
     }
 
     private void leanOnFed() {
-        require(!leanedOnFed, "You have already leaned on the Fed before this meeting");
-        leanedOnFed = true;
-        fedCredibility -= 0.12;
-        wingMood[0] += 3;
-        wingMood[1] -= 2;
+        require(!econ.fedPressured(), "You have already leaned on the Fed before this meeting");
+        economyEngine.apply(econ, budget, new Effect.FedPressure());
+        mood(0, 3);
+        mood(1, -(2));
         consequence("You publicly call for rate cuts. Your base cheers; bond traders worry about the Fed's independence.");
     }
 
     private void releaseReserve() {
-        require(oil > 80, "Oil is not high enough to justify a release");
-        require(sprRelief == 0, "The reserve is already being released");
-        sprRelief = 8;
-        deterrence -= 2;
+        require(oil() > 80, "Oil is not high enough to justify a release");
+        require(!reserveReleased, "The reserve is already being released");
+        reserveReleased = true;
+        economyEngine.apply(econ, budget, new Effect.OilRelease(8));
+        deterrence(-(2));
         consequence("You release oil from the Strategic Petroleum Reserve. Gas prices should ease; hawks warn the reserve is for emergencies.");
     }
 
@@ -479,8 +499,8 @@ public final class OpeningTerm {
                 if (smaller != size) { wingReact(size, payFor, -1, "scaling back"); size = smaller; wingReact(size, payFor, +1, "scaling back"); }
                 consequence("You scale the bill back to " + size.name().toLowerCase() + ".");
             }
-            case 1 -> { wingMood[0] += 5; goodwill -= 8; consequence("You blame the opposition. Your base wing rallies; the opposition digs in."); }
-            case 2 -> { stage = BillStage.DEAD; capital += 5; wingMood[0] -= 6; consequence("You shelve the bill."); }
+            case 1 -> { mood(0, 5); goodwill(-(8)); consequence("You blame the opposition. Your base wing rallies; the opposition digs in."); }
+            case 2 -> { stage = BillStage.DEAD; capital(5); mood(0, -(6)); consequence("You shelve the bill."); }
             case 3 -> useReconciliation();
             default -> throw new IllegalStateException();
         }
@@ -489,9 +509,9 @@ public final class OpeningTerm {
     private void committeeFollowUp(int option) {
         switch (option) {
             case 0 -> {
-                require(capital >= 10, "Not enough capital for a discharge petition");
-                capital -= 10;
-                goodwill -= 4;
+                require(pol.capital() >= 10, "Not enough capital for a discharge petition");
+                capital(-(10));
+                goodwill(-(4));
                 if (expectedYes(true) >= Congress.HOUSE_MAJORITY) { stage = BillStage.HOUSE_FLOOR; consequence("The discharge petition reaches 218 signatures. The bill goes to the floor."); }
                 else consequence("The discharge petition falls short of 218 signatures.");
             }
@@ -499,7 +519,7 @@ public final class OpeningTerm {
                 wingReact(size, payFor, -1, "the chairman's deal");
                 size = size.smaller();
                 wingReact(size, payFor, +1, "the chairman's deal");
-                goodwill += 6;
+                goodwill(6);
                 stage = BillStage.HOUSE_FLOOR;
                 consequence("The chairman agrees to a markup of a smaller bill.");
             }
@@ -521,14 +541,14 @@ public final class OpeningTerm {
     private void revoltFollowUp(Decision d, int option) {
         int w = d.title().contains(wingName(0)) ? 0 : 1;
         if (option == 0) {
-            require(capital >= 5, "Not enough capital");
-            capital -= 5;
-            wingMood[w] += 12;
-            goodwill -= 3;
+            require(pol.capital() >= 5, "Not enough capital");
+            capital(-(5));
+            mood(w, 12);
+            goodwill(-(3));
             consequence("You make amends with the " + wingName(w) + ".");
         } else {
-            wingMood[w] -= 5;
-            modSwing += 1.0;
+            mood(w, -(5));
+            opinion(Coalition.SWING, 1.0);
             for (Bloc b : Bloc.defaultsFor(party)) if (wingOf(b) == w) relationship.merge(b.name(), -0.3, Double::sum);
             consequence("You face down the " + wingName(w) + ". Independents notice; the wing does not forget.");
         }
@@ -546,32 +566,32 @@ public final class OpeningTerm {
                     if (escalation == 0) { endCrisis(CrisisOutcome.DEAL, "A back-channel deal ends the " + crisisKind.label + " crisis."); }
                     else { escalation--; consequence("Diplomacy lowers the temperature: " + rung() + "."); }
                 } else {
-                    deterrence -= 3;
+                    deterrence(-(3));
                     consequence("The back channel goes quiet. " + (crisisKind == CrisisKind.TAIWAN ? "Beijing" : "Tehran") + " reads hesitation.");
                 }
-                wingMood[0] += 2;
-                wingMood[1] -= 2;
+                mood(0, 2);
+                mood(1, -(2));
                 push = -0.05;
             }
             case HOLD -> {
-                deterrence += 2;
-                confidence -= 1;
+                deterrence(2);
+                stressShock += 1;
                 push = 0.05;
                 consequence("You coordinate sanctions and warnings with allies. Markets dip.");
             }
             case SHOW_FORCE -> {
-                deterrence += 5;
-                deficitChange += 0.02;
-                oil += crisisKind == CrisisKind.GULF ? 4 : 1;
-                wingMood[0] -= 2;
-                wingMood[1] += 2;
+                deterrence(5);
+                deficit(0.02);
+                oilShock += crisisKind == CrisisKind.GULF ? 4 : 1;
+                mood(0, -(2));
+                mood(1, 2);
                 push = 0.08 + (competence(Post.DEFENSE) - 60) / 400.0;
                 consequence("A carrier group moves into the " + crisisKind.label + ". Oil jumps on the risk.");
             }
             case STRIKE -> {
-                deterrence += 12;
-                wingMood[0] -= 5;
-                wingMood[1] += 1;
+                deterrence(12);
+                mood(0, -(5));
+                mood(1, 1);
                 push = 0.22 + (competence(Post.DEFENSE) - 60) / 300.0;
                 consequence("You order a limited strike. The world waits for the response.");
             }
@@ -587,8 +607,8 @@ public final class OpeningTerm {
             boolean advocatesOther = (p == Post.STATE) != (chosen == CrisisMove.DE_ESCALATE);
             if (seat.get(p) == SeatStatus.CONFIRMED && advocatesOther && chosen != CrisisMove.HOLD && loyalty(p) < 55
                     && rng.chance("cabinet.leak", 0.3)) {
-                modSwing -= 1.5;
-                modBase -= 0.5;
+                opinion(Coalition.SWING, -(1.5));
+                opinion(Coalition.BASE, -(0.5));
                 reaction("LEAK: your " + postName(p) + " tells reporters the decision was a mistake.");
             }
         }
@@ -599,9 +619,9 @@ public final class OpeningTerm {
      * with high resolve (a security dilemma), so the intelligence estimate, not a fixed rule, decides the right move.
      */
     private void adversaryResponds(double push, CrisisMove m) {
-        double pressure = (deterrence - 50) / 100.0 + push - (resolve - 0.5) + 0.15 * rng.gaussian("crisis.adversary");
+        double pressure = (deterrence() - 50) / 100.0 + push - (resolve - 0.5) + 0.15 * rng.gaussian("crisis.adversary");
         double forcefulness = switch (m) { case DE_ESCALATE -> 0.0; case HOLD -> 0.1; case SHOW_FORCE -> 0.35; case STRIKE -> 0.6; };
-        double escalateChance = clamp(0.04 + 0.9 * (resolve - 0.5) + forcefulness * (resolve - 0.35) * 2.0 - (deterrence - 50) / 200.0, 0.02, 0.85);
+        double escalateChance = clamp(0.04 + 0.9 * (resolve - 0.5) + forcefulness * (resolve - 0.35) * 2.0 - (deterrence() - 50) / 200.0, 0.02, 0.85);
         lastEscalationRisk = escalateChance;
         if (pressure > 0.22 && !(forcefulness > 0.3 && rng.chance("crisis.provoked", Math.max(0, resolve - 0.55) * 1.5))) {
             endCrisis(CrisisOutcome.BACKED_DOWN, "The other side stands down. The " + crisisKind.label + " crisis is over.");
@@ -609,10 +629,10 @@ public final class OpeningTerm {
             escalation++;
             if (escalation >= CLASH_RUNG) {
                 endCrisis(CrisisOutcome.CLASH, "An armed clash in the " + crisisKind.label + ": American sailors are killed.");
-                modBase += 1.5;
-                modSwing += 1.0;   // a brief rally, outweighed by the lasting cost in the record, markets and oil
-                oil += crisisKind == CrisisKind.GULF ? 18 : 6;
-                confidence -= 8;
+                opinion(Coalition.BASE, 1.5);
+                opinion(Coalition.SWING, 1.0);   // a brief rally, outweighed by the lasting cost in the record, markets and oil
+                oilShock += crisisKind == CrisisKind.GULF ? 18 : 6;
+                stressShock += 8;
                 raise(Decision.Kind.AFTERMATH, "After the clash in the " + crisisKind.label,
                         "Americans are dead. The country, the markets and the other side are waiting for your next move.",
                         List.of(new Option("Retaliate and hold the line", "Deterrence +10, oil up, your hawks and base rally, swing voters worry, deficit +0.05."),
@@ -628,10 +648,10 @@ public final class OpeningTerm {
 
     private void endCrisis(CrisisOutcome o, String text) {
         crisis = o;
-        if (o == CrisisOutcome.BACKED_DOWN) { modSwing += 2; modBase += 2; deterrence += 5; recordSwing += 1.0; }
-        if (o == CrisisOutcome.DEAL) { modSwing += 1; recordSwing += 1.0; }
-        if (o == CrisisOutcome.STALEMATE) { deterrence -= 5; modSwing -= 1; recordSwing -= 0.5; }
-        if (o == CrisisOutcome.CLASH) { recordSwing -= 2.5; recordBase -= 1.0; }
+        if (o == CrisisOutcome.BACKED_DOWN) { opinion(Coalition.SWING, 2); opinion(Coalition.BASE, 2); deterrence(5); lasting(Coalition.SWING, 1.0); }
+        if (o == CrisisOutcome.DEAL) { opinion(Coalition.SWING, 1); lasting(Coalition.SWING, 1.0); }
+        if (o == CrisisOutcome.STALEMATE) { deterrence(-(5)); opinion(Coalition.SWING, -(1)); lasting(Coalition.SWING, -(0.5)); }
+        if (o == CrisisOutcome.CLASH) { lasting(Coalition.SWING, -(2.5)); lasting(Coalition.BASE, -(1.0)); }
         consequence(text);
     }
 
@@ -656,7 +676,7 @@ public final class OpeningTerm {
         }
         raise(Decision.Kind.CRISIS, "Crisis in the " + crisisKind.label + ": " + rung(),
                 String.format("Intelligence rates the other side's resolve %s (%.0f%%, +/- %.0f). Deterrence %.0f.",
-                        intelEstimate > 0.65 ? "high" : intelEstimate > 0.45 ? "moderate" : "low", intelEstimate * 100, noise * 100, deterrence),
+                        intelEstimate > 0.65 ? "high" : intelEstimate > 0.45 ? "moderate" : "low", intelEstimate * 100, noise * 100, deterrence()),
                 options);
     }
 
@@ -664,13 +684,13 @@ public final class OpeningTerm {
 
     private void aftermath(int option) {
         switch (option) {
-            case 0 -> { deterrence += 10; oil += crisisKind == CrisisKind.GULF ? 5 : 2; modBase += 2; wingMood[1] += 3; wingMood[0] -= 4;
-                        modSwing -= 1; deficitChange += 0.05; consequence("You retaliate. The other side absorbs the blow; the region braces."); }
+            case 0 -> { deterrence(10); oilShock += crisisKind == CrisisKind.GULF ? 5 : 2; opinion(Coalition.BASE, 2); mood(1, 3); mood(0, -(4));
+                        opinion(Coalition.SWING, -(1)); deficit(0.05); consequence("You retaliate. The other side absorbs the blow; the region braces."); }
             case 1 -> {
-                if (rng.chance("crisis.ceasefire", ceasefireChance())) { recordSwing += 1.5; oil -= 4; consequence("Allies broker a ceasefire. Markets exhale."); }
-                else { deterrence -= 5; modSwing -= 1; consequence("The ceasefire talks collapse before they begin."); }
+                if (rng.chance("crisis.ceasefire", ceasefireChance())) { lasting(Coalition.SWING, 1.5); oilShock -= 4; consequence("Allies broker a ceasefire. Markets exhale."); }
+                else { deterrence(-(5)); opinion(Coalition.SWING, -(1)); consequence("The ceasefire talks collapse before they begin."); }
             }
-            case 2 -> { require(capital >= 6, "Not enough capital"); capital -= 6; goodwill += 6; modSwing += 1; modOpp += 1.5;
+            case 2 -> { require(pol.capital() >= 6, "Not enough capital"); capital(-(6)); goodwill(6); opinion(Coalition.SWING, 1); opinion(Coalition.OPPOSITION, 1.5);
                         consequence("Congress debates an authorization. For a week, Washington looks united."); }
             default -> throw new IllegalStateException();
         }
@@ -696,15 +716,15 @@ public final class OpeningTerm {
         fundingOffer = o;
         switch (o) {
             case CLEAN -> { }
-            case PRIORITIES -> { wingMood[0] += 4; goodwill -= 6; }
-            case ACCEPT_CUTS -> { wingMood[0] -= 6; wingMood[1] += 2; goodwill += 8; deficitChange -= 0.05; modSwing -= 0.5; }
-            case DEFENSE_DEAL -> { deterrence += 10; deficitChange += 0.05; wingMood[0] -= 3; wingMood[1] += 3; goodwill += 3; }
+            case PRIORITIES -> { mood(0, 4); goodwill(-(6)); }
+            case ACCEPT_CUTS -> { mood(0, -(6)); mood(1, 2); goodwill(8); deficit(-(0.05)); opinion(Coalition.SWING, -(0.5)); }
+            case DEFENSE_DEAL -> { deterrence(10); deficit(0.05); mood(0, -(3)); mood(1, 3); goodwill(3); }
         }
         consequence("Your stopgap offer: " + o.label.toLowerCase() + ".");
     }
 
     public double fundingPassChance(FundingOffer o) {
-        int i = opposition.ordinal();
+        int i = pol.opposition().ordinal();
         double[] p = switch (o) {
             case CLEAN -> new double[]{0.9, 0.6, 0.25};
             case PRIORITIES -> new double[]{0.5, 0.3, 0.05};
@@ -718,7 +738,7 @@ public final class OpeningTerm {
         if (week == FUNDING_DECISION_WEEK && fundingOffer == null) {
             List<Option> options = new ArrayList<>();
             for (FundingOffer o : FundingOffer.values()) options.add(new Option(o.label, String.format("Passes about %.0f%% of the time while the opposition is %s.",
-                    fundingPassChance(o) * 100, opposition.name().toLowerCase())));
+                    fundingPassChance(o) * 100, pol.opposition().name().toLowerCase())));
             raise(Decision.Kind.FUNDING, "Government funding runs out at the end of week " + FUNDING_DEADLINE_WEEK,
                     "Choose what you will send Congress. The odds are re-rolled against the opposition's mood on the deadline.", options);
         }
@@ -730,10 +750,10 @@ public final class OpeningTerm {
         }
         if (shutdown) {
             shutdownWeeks++;
-            boolean blamed = goodwill < -10;
-            modSwing -= blamed ? 2.0 : 1.0;
-            confidence -= 3;
-            unemployment += 0.03;
+            boolean blamed = pol.goodwill() < -10;
+            opinion(Coalition.SWING, -(blamed ? 2.0 : 1.0));
+            stressShock += 3;
+            economyEngine.apply(econ, budget, new Effect.EconomyShock(-0.15, 0, 1));
             reaction("Shutdown, week " + shutdownWeeks + (blamed ? ": voters mostly blame you." : ": voters blame both sides."));
             raise(Decision.Kind.SHUTDOWN, "The shutdown continues", "Week " + shutdownWeeks + " of the shutdown.",
                     List.of(new Option("Hold firm", "The opposition may cave (more likely while swing voters back you)."),
@@ -744,14 +764,14 @@ public final class OpeningTerm {
     private void shutdownChoice(int option) {
         if (option == 1) {
             shutdown = false;
-            wingMood[0] -= 6;
-            goodwill += 6;
-            deficitChange -= 0.05;
+            mood(0, -(6));
+            goodwill(6);
+            deficit(-(0.05));
             consequence("You accept cuts. The government reopens.");
-        } else if (rng.chance("budget.cave", 0.2 + Math.max(0, swing - 48) * 0.03)) {
+        } else if (rng.chance("budget.cave", 0.2 + Math.max(0, pol.approval(Coalition.SWING) - 48) * 0.03)) {
             shutdown = false;
-            wingMood[0] += 4;
-            goodwill -= 4;
+            mood(0, 4);
+            goodwill(-(4));
             consequence("The opposition caves. The government reopens on your terms.");
         } else {
             consequence("You hold firm. The shutdown goes on.");
@@ -770,7 +790,6 @@ public final class OpeningTerm {
         cabinetWeek();
         economyWeek();
         politicalReaction();
-        capital = Math.max(0, Math.min(120, capital + (approval() - 45) * 0.2 + 1));
 
         Briefing b = new Briefing(week, headline(), weekConsequences, weekReactions, intelligenceLines());
         briefings.add(b);
@@ -782,83 +801,50 @@ public final class OpeningTerm {
         billActedThisWeek = false;
         insistedThisWeek = false;
         publicPressure *= 0.8;
-        recentAddresses *= 0.5;
-        if (FED_WEEKS.contains(week - 1)) leanedOnFed = false;
         if (week <= WEEKS) {
             crisisWeek();
             fundingWeek();
         }
     }
 
+    /** The authoritative economy, stepped one week, with the crisis and the bill fed in as context. */
     private void economyWeek() {
-        // Oil follows the crisis; gas follows oil.
-        double premium = crisis == CrisisOutcome.ACTIVE ? (crisisKind == CrisisKind.GULF ? 6 : 2) * (escalation + 1) : 0;
-        double oilTarget = 75 + premium - sprRelief;
-        oil += 0.4 * (oilTarget - oil) + 1.2 * rng.gaussian("economy.oil");
-        if (sprRelief > 0) sprRelief = Math.max(0, sprRelief - 1);
-        double gas = gas();
-
-        // Inflation and jobs move slowly; markets move fast.
-        double expectedInflation = 2.0 + 0.4 * (inflation - 2.0) + (1 - fedCredibility) * 1.5;
-        double inflationTarget = 2.55 + 0.25 * (gas - 3.2) + 0.3 * demandImpulse + (1 - fedCredibility) * 0.8;
-        inflation += 0.06 * (inflationTarget - inflation) + 0.02 * rng.gaussian("economy.prices");
-        double uTarget = 4.4 - 0.3 * demandImpulse + (shutdown ? 0.1 : 0) + (crisis == CrisisOutcome.CLASH ? 0.15 : 0);
-        unemployment += 0.06 * (uTarget - unemployment) + 0.015 * rng.gaussian("economy.jobs");
-        double treasury = (70 - competence(Post.TREASURY)) * 0.004;
-        // Bond markets price a live bill's deficit before it passes, weighted by the odds it becomes law.
+        LocalDate from = weekStart(week), to = from.plusWeeks(1);
+        double premium = (crisis == CrisisOutcome.ACTIVE ? (crisisKind == CrisisKind.GULF ? 6 : 2) * (escalation + 1) : 0) + oilShock;
+        double stress = (shutdown ? 3 : 0) + 2 * (crisis == CrisisOutcome.ACTIVE ? escalation + 1 : 0) + stressShock;
         boolean live = stage == BillStage.COMMITTEE || stage == BillStage.HOUSE_FLOOR || stage == BillStage.SENATE_FLOOR;
-        double pendingDeficit = live ? size.deficit * payFor.deficitShare * 0.6 : 0;
-        double tenTarget = 0.55 * fedRate + 0.45 * (1.5 + expectedInflation) + 0.6 * Math.max(0, deficitChange) + 0.6 * pendingDeficit + treasury
-                + (1 - fedCredibility) * 0.6;
-        tenYear += 0.3 * (tenTarget - tenYear) + 0.03 * rng.gaussian("economy.bonds");
-        double confTarget = 100 - 6 * (gas - 3.2) - 4 * (inflation - 2.8) - (shutdown ? 3 : 0) - 2 * (crisis == CrisisOutcome.ACTIVE ? escalation + 1 : 0);
-        confidence += 0.3 * (confTarget - confidence);
-
-        // The Fed meets twice: a Taylor-style rule on the data it sees.
-        if (FED_WEEKS.contains(week)) {
-            double target = 0.6 + reportedInflation + 0.5 * (reportedInflation - 2.0) + (4.4 - reportedUnemployment) + 0.5 * deficitChange;
-            double threshold = leanedOnFed ? 0.15 : 0.2; // pressure nudges a close call, and costs credibility
-            double before = fedRate;
-            if (target - fedRate > threshold) fedRate += 0.25;
-            else if (fedRate - target > threshold) fedRate -= 0.25;
-            consequence(fedRate > before ? String.format("The Fed raises rates to %.2f%%, citing inflation and the deficit.", fedRate)
-                    : fedRate < before ? String.format("The Fed cuts rates to %.2f%%.", fedRate)
-                    : String.format("The Fed holds at %.2f%%.", fedRate));
+        double pendingDeficit = live ? size.deficit * payFor.deficitShare * PENDING_DEFICIT_WEIGHT : 0;
+        economyEngine.step(econ, budget, 1.0 / EconomyEngine.WEEKS_PER_MONTH, new MarketContext(premium, pendingDeficit, competence(Post.TREASURY), stress), rng);
+        oilShock *= 0.6;
+        stressShock *= 0.7;
+        for (int i = 0; i < calendar.fomcMeetings(from, to); i++) {
+            double change = economyEngine.fedMeeting(econ, budget);
+            consequence(change > 0 ? String.format("The Fed raises rates to %.2f%%, citing inflation and the deficit.", econ.fedRate())
+                    : change < 0 ? String.format("The Fed cuts rates to %.2f%%.", econ.fedRate())
+                    : String.format("The Fed holds at %.2f%%.", econ.fedRate()));
         }
-        if (JOBS_WEEKS.contains(week)) {
-            double was = reportedUnemployment;
-            reportedUnemployment = Math.round((unemployment + 0.08 * rng.gaussian("economy.release")) * 10) / 10.0;
-            modSwing -= 2.0 * (reportedUnemployment - was);
-            consequence(String.format("Jobs report: unemployment %.1f%% (was %.1f%%).", reportedUnemployment, was));
+        for (int i = 0; i < CampaignCalendar.releases(from, to, true); i++) {
+            double change = economyEngine.jobsReport(econ, rng);
+            politicsEngine.onRelease(pol, change);
+            consequence(String.format("Jobs report: unemployment %.1f%% (was %.1f%%).", econ.reportedUnemployment(), econ.reportedUnemployment() - change));
         }
-        if (CPI_WEEKS.contains(week)) {
-            double was = reportedInflation;
-            reportedInflation = Math.round((inflation + 0.08 * rng.gaussian("economy.release")) * 10) / 10.0;
-            modSwing -= 2.0 * (reportedInflation - was);
-            consequence(String.format("Inflation report: %.1f%% over the year (was %.1f%%).", reportedInflation, was));
+        for (int i = 0; i < CampaignCalendar.releases(from, to, false); i++) {
+            double change = economyEngine.inflationReport(econ, rng);
+            politicsEngine.onRelease(pol, change);
+            consequence(String.format("Inflation report: %.1f%% over the year (was %.1f%%).", econ.reportedInflation(), econ.reportedInflation() - change));
         }
     }
 
+    /** The authoritative public-opinion step, then the prototype's revolt and reaction lines. */
     private void politicalReaction() {
-        // Voters in three groups.
-        honeymoon *= 0.85;
-        modBase *= 0.85;
-        modSwing *= 0.85;
-        modOpp *= 0.85;
-        double gas = gas(), mortgage = tenYear + 1.9;
-        double econ = -4 * (gas - 3.2) - 2 * (inflation - 2.8) - 2 * (unemployment - 4.4) - 1.5 * (mortgage - 6.0) + 0.05 * (confidence - 100);
-        double avgMood = (wingMood[0] + wingMood[1]) / 2;
-        double baseTarget = 82 + (avgMood - 60) * 0.4 + 0.3 * econ + modBase + recordBase;
-        double swingTarget = 50 + honeymoon + econ + goodwill * 0.08 + modSwing + recordSwing;
-        double oppTarget = 12 + goodwill * 0.12 + 0.3 * econ + modOpp;
-        base += 0.3 * (clamp(baseTarget, 40, 97) - base) + 0.5 * rng.gaussian("opinion");
-        swing += 0.3 * (clamp(swingTarget, 15, 85) - swing) + 0.8 * rng.gaussian("opinion");
-        opp += 0.3 * (clamp(oppTarget, 2, 50) - opp) + 0.5 * rng.gaussian("opinion");
+        OppositionStrategy before = pol.opposition();
+        EconomyParams ep = economyEngine.params();
+        politicsEngine.step(pol, 1.0, new OpinionInputs(economyEngine.gas(econ), ep.gas(ep.oilBase()), econ.inflation(), econ.unemployment(),
+                econ.mortgageRate(ep), econ.confidence(), econ.growth()), rng);
 
         // Party wings drift back toward neutral slowly, and revolt once if pushed too far.
         for (int w = 0; w < 2; w++) {
-            wingMood[w] = clamp(wingMood[w] + 0.05 * (60 - wingMood[w]), 0, 100);
-            if (wingMood[w] < 32 && !revolted[w] && week < WEEKS) {
+            if (wing(w) < 32 && !revolted[w] && week < WEEKS) {
                 revolted[w] = true;
                 reaction("The " + wingName(w) + " are in open revolt.");
                 raise(Decision.Kind.FACTION_REVOLT, "Revolt: the " + wingName(w),
@@ -868,16 +854,8 @@ public final class OpeningTerm {
             }
         }
 
-        // The opposition chooses a strategy (RD), with hysteresis so it does not flip-flop weekly.
-        // Events outside the president's control (primaries, scandals elsewhere) jostle the opposition a little.
-        goodwill = clamp(goodwill * 0.96 + 2.0 * rng.gaussian("opposition.mood"), -50, 50);
-        double score = goodwill + 0.5 * (swing - 50) - 4 + (week <= 3 ? 8 : 0);
-        OppositionStrategy before = opposition;
-        double coopLine = opposition == OppositionStrategy.COOPERATE ? 5 : 10;
-        double obstructLine = opposition == OppositionStrategy.OBSTRUCT ? -5 : -10;
-        opposition = score > coopLine ? OppositionStrategy.COOPERATE : score < obstructLine ? OppositionStrategy.OBSTRUCT : OppositionStrategy.SELECTIVE;
-        if (opposition != before) reaction("Opposition leaders shift to " + opposition.name().toLowerCase()
-                + (opposition == OppositionStrategy.OBSTRUCT ? ": they will fight everything." : opposition == OppositionStrategy.COOPERATE ? ": they will deal." : ": they will pick their fights."));
+        if (pol.opposition() != before) reaction("Opposition leaders shift to " + pol.opposition().name().toLowerCase()
+                + (pol.opposition() == OppositionStrategy.OBSTRUCT ? ": they will fight everything." : pol.opposition() == OppositionStrategy.COOPERATE ? ": they will deal." : ": they will pick their fights."));
     }
 
     // =============================================================================================
@@ -900,26 +878,16 @@ public final class OpeningTerm {
     }
 
     double support(Bloc b, double ideology) {
-        double fit = 1.0 - 0.9 * Math.abs(ideology - b.ideology());
-        double party;
-        if (b.party() == this.party) {
-            double mood = wingOf(b) < 0 ? (wingMood[0] + wingMood[1]) / 2 : wingMood[wingOf(b)];
-            party = 0.5 * b.loyalty() * (0.5 + mood / 100.0);
-        } else {
-            party = b.loyalty() * switch (opposition) { case COOPERATE -> -0.10; case SELECTIVE -> -0.30; case OBSTRUCT -> -0.50; };
-        }
-        double rel = 0.25 * relationship.get(b.name());
-        double deficit = size.deficit * payFor.deficitShare;
-        double hawk = b.deficitHawk() && deficit > 0.1 ? -0.6 * deficit : 0;
-        double moderate = Math.abs(b.ideology()) < 0.3 ? 0.04 * publicPressure * Math.max(0, (swing - 40) / 10.0) : 0;
-        return clamp01(fit + party + rel + hawk + moderate + pressured.getOrDefault(b.name(), 0.0));
+        double mood = wingOf(b) < 0 ? (wing(0) + wing(1)) / 2 : wing(wingOf(b));
+        return votes.support(b, new VoteModel.BillInputs(party, ideology, size.deficit * payFor.deficitShare, false, pol.opposition(),
+                approval(), pol.approval(Coalition.SWING), publicPressure, 0, mood, relationship.get(b.name()), pressured.getOrDefault(b.name(), 0.0), false));
     }
 
     private String wants(Bloc b, double ideology) {
         boolean own = b.party() == party;
         if (b.deficitHawk() && size.deficit * payFor.deficitShare > 0.1) return "a smaller deficit: a different pay-for or a smaller bill";
         if (own && wingOf(b) == 0) return size == BillSize.LARGE ? "projects back home" : "a bigger bill";
-        if (!own && opposition == OppositionStrategy.OBSTRUCT) return "nothing you can offer while their leaders obstruct";
+        if (!own && pol.opposition() == OppositionStrategy.OBSTRUCT) return "nothing you can offer while their leaders obstruct";
         if (Math.abs(ideology - b.ideology()) > 0.5) return own ? "a more moderate bill" : "a bill closer to their views";
         return "projects or an appointment";
     }
@@ -931,9 +899,7 @@ public final class OpeningTerm {
         boolean house = s == BillStage.HOUSE_FLOOR;
         double expected = expectedYes(house);
         int needed = house ? Congress.HOUSE_MAJORITY : senateNeeded();
-        double sd = house ? 4.0 : 1.6;
-        double z = (expected - (needed - 0.5)) / sd;
-        return 1.0 / (1.0 + Math.exp(-1.7 * z));
+        return votes.passChance(expected, needed, house);
     }
 
     private List<String> intelligenceLines() {
@@ -942,8 +908,8 @@ public final class OpeningTerm {
             lines.add(String.format("Whip: %.0f%% to pass the %s (%s).", passChance(stage) * 100, stage == BillStage.HOUSE_FLOOR ? "House" : "Senate",
                     stage == BillStage.SENATE_FLOOR ? senateNeeded() + " votes needed" : "218 needed"));
         lines.add(String.format("Approval %.0f%% (your voters %.0f, swing %.0f, opposition voters %.0f). Opposition: %s.",
-                approval(), base, swing, opp, opposition.name().toLowerCase()));
-        lines.add(String.format("Gas $%.2f, 10-year %.2f%%, mortgages %.2f%%, Fed %.2f%%.", gas(), tenYear, tenYear + 1.9, fedRate));
+                approval(), pol.approval(Coalition.BASE), pol.approval(Coalition.SWING), pol.approval(Coalition.OPPOSITION), pol.opposition().name().toLowerCase()));
+        lines.add(String.format("Gas $%.2f, 10-year %.2f%%, mortgages %.2f%%, Fed %.2f%%.", gas(), econ.tenYear(), econ.mortgageRate(economyEngine.params()), econ.fedRate()));
         return lines;
     }
 
@@ -954,25 +920,42 @@ public final class OpeningTerm {
     }
 
     public Report report() {
-        int confirmed = (int) seat.values().stream().filter(s -> s == SeatStatus.CONFIRMED).count();
+        int confirmed = (int) seat.values().stream().filter(st -> st == SeatStatus.CONFIRMED).count();
         double avgComp = (competence(Post.TREASURY) + competence(Post.DEFENSE) + competence(Post.STATE)) / 3.0;
-        double midtermMargin = 0.6 * (approval() - 48) - 2.5;
         double partial = stage == BillStage.SENATE_FLOOR ? 0.25 * size.value : 0;
-        return new Report(approval(), base, swing, opp, stage, policyDelivered + partial, confirmed, avgComp, inflation, unemployment,
-                tenYear, gas(), deficitChange, crisis, deterrence, wingMood[0], wingMood[1], opposition, goodwill, capital, shutdownWeeks,
-                (int) Math.round(5.5 * midtermMargin));
+        return new Report(approval(), pol.approval(Coalition.BASE), pol.approval(Coalition.SWING), pol.approval(Coalition.OPPOSITION), stage,
+                policyDelivered + partial, confirmed, avgComp, econ.inflation(), econ.unemployment(), econ.tenYear(), gas(), budget.policyDeficit(),
+                crisis, deterrence(), wing(0), wing(1), pol.opposition(), pol.goodwill(), pol.capital(), shutdownWeeks,
+                elections.midtermSeatOutlook(approval(), econ.growth()));
     }
+
+    // =============================================================================================
+    //  Transitions into the authoritative systems
+    // =============================================================================================
+
+    private void mood(int w, double d) { politicsEngine.apply(pol, new Effect.WingMood(w, d)); }
+    private void goodwill(double d) { politicsEngine.apply(pol, new Effect.Goodwill(d)); }
+    private void capital(double d) { politicsEngine.apply(pol, new Effect.Capital(d)); }
+    private void opinion(Coalition c, double d) { politicsEngine.apply(pol, new Effect.CoalitionApproval(c, d, false)); }
+    private void lasting(Coalition c, double d) { politicsEngine.apply(pol, new Effect.CoalitionApproval(c, d, true)); }
+    private void deficit(double d) { economyEngine.apply(econ, budget, new Effect.Deficit(d)); }
+    private void deterrence(double d) { diplomacyEngine.apply(dip, new Effect.Deterrence(d)); }
+    private double wing(int w) { return pol.party(party).wingMood(w); }
+    public double deterrence() { return dip.deterrence(); }
+
+    /** The date a prototype week starts (week 1 = the Monday after the inauguration). */
+    public LocalDate weekStart(int w) { return START.plusWeeks(w - 1); }
 
     // =============================================================================================
     //  Accessors and helpers
     // =============================================================================================
 
-    public double approval() { return 0.33 * base + 0.34 * swing + 0.33 * opp; }
-    public double gas() { return 1.3 + 0.0255 * oil; }
+    public double approval() { return politicsEngine.approval(pol); }
+    public double gas() { return economyEngine.gas(econ); }
     public boolean over() { return week > WEEKS; }
     public int week() { return week; }
     public int attention() { return attention; }
-    public double capital() { return capital; }
+    public double capital() { return pol.capital(); }
     public Party party() { return party; }
     public OpeningSetup setup() { return setup; }
     public Congress congress() { return congress; }
@@ -982,25 +965,25 @@ public final class OpeningTerm {
     public boolean reconciliation() { return reconciliation; }
     public SeatStatus seat(Post p) { return seat.get(p); }
     public Optional<NomineeType> nominee(Post p) { return Optional.ofNullable(nominee.get(p)); }
-    public double wingMood(int w) { return wingMood[w]; }
+    public double wingMood(int w) { return wing(w); }
     public String wingName(int w) {
         if (party == Party.DEMOCRAT) return w == 0 ? "Progressives" : "Moderates";
         return w == 0 ? "Populists" : "Traditionalists";
     }
-    public OppositionStrategy opposition() { return opposition; }
-    public double goodwill() { return goodwill; }
+    public OppositionStrategy opposition() { return pol.opposition(); }
+    public double goodwill() { return pol.goodwill(); }
     public CrisisOutcome crisis() { return crisis; }
     public CrisisKind crisisKind() { return crisisKind; }
     public int escalation() { return escalation; }
-    public double deterrence() { return deterrence; }
+
     public double intelEstimate() { return intelEstimate; }
     public double lastEscalationRisk() { return lastEscalationRisk; }
     double hiddenResolve() { return resolve; }
-    public double oil() { return oil; }
-    public double tenYear() { return tenYear; }
-    public double inflation() { return inflation; }
-    public double fedRate() { return fedRate; }
-    public double fedCredibility() { return fedCredibility; }
+    public double oil() { return econ.oil(); }
+    public double tenYear() { return econ.tenYear(); }
+    public double inflation() { return econ.inflation(); }
+    public double fedRate() { return econ.fedRate(); }
+    public double fedCredibility() { return econ.credibility(); }
     public boolean shutdown() { return shutdown; }
     public Optional<FundingOffer> fundingOffer() { return Optional.ofNullable(fundingOffer); }
     public Set<Domain> delegated() { return Collections.unmodifiableSet(delegated); }
@@ -1047,8 +1030,8 @@ public final class OpeningTerm {
             a += switch (p) { case CUTS -> 2; case BORROW -> 0; case REVENUE -> -4; };
             bm += switch (p) { case CUTS -> 3; case BORROW -> -4; case REVENUE -> -2; };
         }
-        wingMood[0] += sign * a;
-        wingMood[1] += sign * bm;
+        mood(0, sign * a);
+        mood(1, sign * bm);
     }
 
     String postName(Post p) {

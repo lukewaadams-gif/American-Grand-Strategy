@@ -89,7 +89,7 @@ public final class AutoPilot {
         // Try the best-odds bill this month if it is a reasonable bet.
         Bill best = null;
         LegislativeStrategy bestStrategy = null;
-        double bestScore = 0.45;
+        double bestScore = 0.5;
         double capital = Math.min(g.capital(), 25);
         for (Bill b : g.bills().all()) {
             if (g.laws().contains(b.id())) continue;
@@ -97,7 +97,8 @@ public final class AutoPilot {
                 if (!b.availableTo(g.player().party()) && s != LegislativeStrategy.BIPARTISAN_DEAL) continue;
                 if (s == LegislativeStrategy.RECONCILIATION && (b.requires60() || !g.unifiedGovernment())) continue;
                 WhipCount w = g.whip(b.id(), s, capital);
-                double score = w.passChance() * s.payoff() * (g.agenda().contains(b.id()) ? 1.5 : 1.0);
+                // The other party's agenda angers the base wing, so it is worth less to a sensible president.
+                double score = w.passChance() * s.payoff() * (g.agenda().contains(b.id()) ? 1.5 : 1.0) * (b.availableTo(g.player().party()) ? 1.0 : 0.5);
                 if (score > bestScore) { bestScore = score; best = b; bestStrategy = s; }
             }
         }

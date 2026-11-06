@@ -10,7 +10,7 @@ public record VoteParams(double slope, double ownPull, double oppPullCooperate, 
                          double dealIdeologyFactor, double confirmBase, double confirmControversyThreshold, double confirmControversyBase,
                          double confirmControversyModerate, double confirmMoodLine, double confirmMoodPenalty, double confirmCrossover,
                          double confirmOppBase, double confirmOppSpread, double confirmOppCooperate, double confirmOppSelective,
-                         double confirmOppObstruct, double confirmOppModerateFloor, double confirmNoise) {
+                         double confirmOppObstruct, double confirmOppModerateFloor, double confirmNoise, double opposingAgendaPull) {
 
     public static VoteParams from(Tuning t) {
         return new VoteParams(t.d("votes.slope"), t.d("votes.ownPull"), t.d("votes.oppPull.cooperate"), t.d("votes.oppPull.selective"),
@@ -21,6 +21,6 @@ public record VoteParams(double slope, double ownPull, double oppPullCooperate, 
                 t.d("votes.dealIdeologyFactor"), t.d("confirm.base"), t.d("confirm.controversyThreshold"), t.d("confirm.controversyBase"),
                 t.d("confirm.controversyModerate"), t.d("confirm.moodLine"), t.d("confirm.moodPenalty"), t.d("confirm.crossover"),
                 t.d("confirm.oppBase"), t.d("confirm.oppSpread"), t.d("confirm.opp.cooperate"), t.d("confirm.opp.selective"),
-                t.d("confirm.opp.obstruct"), t.d("confirm.oppModerateFloor"), t.d("confirm.noise"));
+                t.d("confirm.opp.obstruct"), t.d("confirm.oppModerateFloor"), t.d("confirm.noise"), t.d("votes.opposingAgendaPull"));
     }
 }

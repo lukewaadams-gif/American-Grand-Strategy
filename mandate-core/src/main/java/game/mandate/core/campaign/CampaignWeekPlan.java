@@ -17,8 +17,10 @@ public record CampaignWeekPlan(List<String> rallyStates, int fundraisers, Map<St
 
     public CampaignWeekPlan {
         rallyStates = List.copyOf(rallyStates);
-        adSpend = Map.copyOf(adSpend);
-        fieldSpend = Map.copyOf(fieldSpend);
+        // Sorted, not Map.copyOf: Map.copyOf iterates in a per-JVM random order, and summing doubles in a different
+        // order can change the last bit of a result, which would make saves and replays differ between runs.
+        adSpend = java.util.Collections.unmodifiableMap(new java.util.TreeMap<>(adSpend));
+        fieldSpend = java.util.Collections.unmodifiableMap(new java.util.TreeMap<>(fieldSpend));
         if (fundraisers < 0) throw new IllegalArgumentException("fundraisers < 0");
         if (rallyStates.size() + fundraisers > STOPS) throw new IllegalArgumentException("At most " + STOPS + " stops a week");
         if (adSpend.values().stream().anyMatch(v -> v < 0) || fieldSpend.values().stream().anyMatch(v -> v < 0))

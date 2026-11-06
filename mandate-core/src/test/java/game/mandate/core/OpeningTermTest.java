@@ -11,9 +11,9 @@ import game.mandate.core.opening.Types.BillStage;
 import game.mandate.core.opening.Types.CrisisKind;
 import game.mandate.core.opening.Types.Domain;
 import game.mandate.core.opening.Types.FundingOffer;
-import game.mandate.core.opening.Types.NomineeType;
+import game.mandate.core.executive.NomineeType;
 import game.mandate.core.opening.Types.PayFor;
-import game.mandate.core.opening.Types.Post;
+import game.mandate.core.executive.Post;
 import game.mandate.core.opening.Types.SeatStatus;
 import game.mandate.core.opening.TestAccess;
 import game.mandate.core.opening.WhipRead;
@@ -130,11 +130,15 @@ class OpeningTermTest {
         advanceTo(force, crisisWeek, 1);
         Decision dt = talk.pending().stream().filter(d -> d.kind() == Decision.Kind.CRISIS).findFirst().orElseThrow();
         Decision df = force.pending().stream().filter(d -> d.kind() == Decision.Kind.CRISIS).findFirst().orElseThrow();
-        double before = force.oil();
         talk.apply(new OpeningAction.Decide(dt.id(), 0));
         force.apply(new OpeningAction.Decide(df.id(), 2));
-        assertTrue(force.oil() > before, "a show of force in the Gulf should move oil immediately");
-        assertTrue(force.oil() > talk.oil());
+        // Oil reacts through the economy's weekly market step (the economy owns prices), so compare after the week.
+        answerAll(talk, 1);
+        answerAll(force, 1);
+        talk.apply(new OpeningAction.EndWeek());
+        force.apply(new OpeningAction.EndWeek());
+        assertTrue(force.oil() > talk.oil(), "a show of force in the Gulf should raise oil: " + force.oil() + " vs " + talk.oil());
+        assertTrue(force.gas() > talk.gas(), "and gas follows oil");
     }
 
     @Test

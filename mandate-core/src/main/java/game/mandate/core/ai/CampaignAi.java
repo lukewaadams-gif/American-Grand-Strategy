@@ -11,7 +11,6 @@ import game.mandate.core.rng.DeterministicRandomManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +36,7 @@ public final class CampaignAi {
         for (int i = 0; i < Math.min(CampaignWeekPlan.STOPS - fundraisers, targets.size()); i++) rallies.add(targets.get(i).code());
 
         double budget = Math.max(0, side.cash()) * 0.30 * resources;
-        Map<String, Double> ads = new HashMap<>(), field = new HashMap<>();
+        Map<String, Double> ads = new java.util.TreeMap<>(), field = new java.util.TreeMap<>();
         List<UsState> top = targets.subList(0, Math.min(8, targets.size()));
         double total = top.stream().mapToDouble(s -> value(s, polls.get(s.code()) * sign)).sum();
         boolean early = g.date().getMonthValue() <= 8;

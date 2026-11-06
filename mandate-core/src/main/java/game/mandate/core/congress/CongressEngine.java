@@ -21,7 +21,7 @@ public final class CongressEngine {
     private final VoteModel votes;
     private final double agendaCapital, courtBlockChance, passCapital, failCapital, failApproval, lastingShare, lawSalience;
     private final double goodwillDeal, goodwillPartyLine, goodwillReconciliation, goodwillOrder;
-    private final double moodDealBase, moodDealModerate, moodPartyLineBase, moodOrderBase;
+    private final double moodDealBase, moodDealModerate, moodPartyLineBase, moodOrderBase, moodOtherAgenda;
     private final int economicMonths;
 
     public CongressEngine(Tuning t) {
@@ -41,6 +41,7 @@ public final class CongressEngine {
         moodDealModerate = t.d("congress.mood.dealModerate");
         moodPartyLineBase = t.d("congress.mood.partyLineBase");
         moodOrderBase = t.d("congress.mood.orderBase");
+        moodOtherAgenda = t.d("congress.mood.otherAgendaBase");
         economicMonths = t.i("congress.economicMonths");
     }
 
@@ -77,7 +78,8 @@ public final class CongressEngine {
                 int w = b.wing();
                 double mood = w < 0 ? (ctx.wingMood()[0] + ctx.wingMood()[1]) / 2 : ctx.wingMood()[w];
                 double support = votes.support(b, new VoteModel.BillInputs(ctx.president(), ideology, bill.deficitPctGdp(), bipartisan,
-                        ctx.opposition(), ctx.approval(), ctx.swingApproval(), 0, capital, mood, s.relationship(b.name()), 0));
+                        ctx.opposition(), ctx.approval(), ctx.swingApproval(), 0, capital, mood, s.relationship(b.name()), 0,
+                        !bill.availableTo(ctx.president())));
                 int hm = (int) Math.round(s.congress.house(side) * b.share());
                 int sm = (int) Math.round(s.congress.senate(side) * b.share());
                 house.add(new WhipCount.BlocRead(b.name(), hm, hm * support));
@@ -139,6 +141,7 @@ public final class CongressEngine {
         }
         if (houseOk && senateOk) {
             out.addAll(enact(policy, b, strategy, ctx, date));
+            if (!b.availableTo(ctx.president())) out.add(new Effect.WingMood(0, moodOtherAgenda));
             out.add(new Effect.Capital(passCapital));
             if (strategy == LegislativeStrategy.PARTY_LINE || strategy == LegislativeStrategy.RECONCILIATION) out.add(new Effect.WingMood(0, moodPartyLineBase));
             return new Passage(true, why, out);

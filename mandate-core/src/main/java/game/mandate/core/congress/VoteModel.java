@@ -23,16 +23,18 @@ public final class VoteModel {
      * Everything one bloc weighs.
      * @param wingMood    mood (0-100) of the president's-party wing this bloc belongs to; ignored for the other party
      * @param threatBonus one-vote bonus from a primary threat (prototype); 0 otherwise
+     * @param opposingAgenda the bill belongs to the other party's agenda: the president's own members resist it
      */
     public record BillInputs(Party president, double ideology, double deficit, boolean bipartisan, OppositionStrategy opposition,
                              double approval, double swingApproval, double publicPressure, double capital, double wingMood,
-                             double relationship, double threatBonus) {}
+                             double relationship, double threatBonus, boolean opposingAgenda) {}
 
     public double support(Bloc b, BillInputs in) {
         double fit = 1.0 - p.slope() * Math.abs(in.ideology() - b.ideology());
         double party;
         if (b.party() == in.president()) {
-            party = p.ownPull() * b.loyalty() * (0.5 + in.wingMood() / 100.0) + p.approvalOwn() * (in.approval() - p.approvalOwnPivot());
+            party = p.ownPull() * b.loyalty() * (0.5 + in.wingMood() / 100.0) * (in.opposingAgenda() ? p.opposingAgendaPull() : 1.0)
+                    + p.approvalOwn() * (in.approval() - p.approvalOwnPivot());
         } else {
             double pull = switch (in.opposition()) {
                 case COOPERATE -> p.oppPullCooperate();
