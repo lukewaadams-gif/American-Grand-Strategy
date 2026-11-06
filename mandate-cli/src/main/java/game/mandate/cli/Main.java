@@ -46,9 +46,17 @@ public final class Main {
         String mode = args.length > 0 ? args[0] : "play";
         switch (mode) {
             case "auto" -> auto(longArg(args, 1, 2028), args.length > 2 ? Party.valueOf(args[2].equals("R") ? "REPUBLICAN" : "DEMOCRAT") : Party.DEMOCRAT);
+            case "compare" -> {
+                Compare.run((int) longArg(args, 1, 200), true);
+                System.out.println();
+                Compare.run((int) longArg(args, 1, 200), false);
+            }
+            case "weeks" -> new WeeksCli(longArg(args, 1, System.nanoTime() % 100000),
+                    args.length > 2 && args[2].equals("R") ? Party.REPUBLICAN : Party.DEMOCRAT,
+                    !(args.length > 3 && args[3].equals("divided"))).run();
             case "batch" -> Batch.run((int) longArg(args, 1, 200), args.length > 2 ? Scenario.valueOf(args[2]) : Scenario.TOSS_UP);
             case "play" -> new Main.Interactive(longArg(args, 1, System.nanoTime() % 100000)).run();
-            default -> System.out.println("usage: mandate [play [seed] | auto [seed] [D|R] | batch [runs] [SCENARIO]]");
+            default -> System.out.println("usage: mandate [play [seed] | auto [seed] [D|R] | batch [runs] [SCENARIO] | weeks [seed] [D|R] [unified|divided] | compare [seeds]]");
         }
     }
 

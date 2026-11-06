@@ -130,7 +130,7 @@ We **port models, not code**. The source files are monoliths with static state, 
 
 | Layer | Today | Gate |
 |---|---|---|
-| Unit (models, rules) | 18 tests: electorate, rules, economy response, theater monotonicity, RNG independence, the no-UI-import rule | every commit |
+| Unit (models, rules) | 42 tests: electorate, rules, economy response, theater monotonicity, RNG independence, the no-UI-import rule, and the 12-week prototype's interconnections, failure follow-ups, delegation and strategy-probe guard rails | every commit |
 | Determinism | same seed → same log; replay(history) → same game and legacy | every commit |
 | Balance | `BalanceTest`: Toss-up Democratic win rate within 35-65% over 240 games | every commit; tighten to 45-55% at 1.0 |
 | Batch report | `mandate batch N SCENARIO`: win rates per party, re-election rate, EV spread, laws, war frequency, tipping points | nightly in CI; results tracked over time |

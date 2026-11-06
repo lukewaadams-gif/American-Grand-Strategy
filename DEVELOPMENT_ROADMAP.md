@@ -78,6 +78,12 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 | B-33 | P2 | S | Approval during the campaign phase keeps moving (economy and events still step monthly during the 2032 campaign) | Approval no longer freezes from July to November 2032 |
 | B-34 | P2 | S | Event-writing pass: no near-identical options (e.g. "A weak jobs report" today) | Lint + design review |
 | B-38 | P1 | S | Retune Taiwan drills frequency (78% of terms reach a rung; target 30-50%) without losing the war-frequency gate | Batch gates |
+| B-39 | P0 | S | Run the 12-week prototype playtest (GAMEPLAY_DESIGN.md §8, H1-H7) with 8-12 players | Each hypothesis reported pass or fail with evidence |
+| B-40 | P1 | M | Decide governing cadence (monthly with weekly zoom for set pieces) from H7 results (O-1) | ADR recorded |
+| B-41 | P1 | L | Fold prototype systems into `Game`: bloc whip with "wants", cabinet posts, stopgap, multi-week crises, group approval (O-3) | Foundation batch gates still pass |
+| B-42 | P1 | S | Bipartisan bills can die: opposition primary season and outside events (O-2) | Dealmaker law rate below 95% in divided government |
+| B-43 | P1 | M | Several bills in flight, competing for attention (O-4) | The strategy-probe tests still pass |
+| B-44 | P2 | S | Move crisis kinds, nominee archetypes and stopgap offers to content files (O-5) | No engine change to add a crisis kind |
 | B-35 | P3 | L | Command Mode (E1) | |
 | B-36 | P3 | L | Primaries (E1b) | |
 | B-37 | P3 | M | Web demo via TeaVM (ADR-5) | |

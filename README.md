@@ -13,6 +13,7 @@ This repository is the **foundation**. It contains a deterministic, UI-free simu
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Modules, command model, determinism, formulas, porting plan, ADRs |
 | [RISK_REGISTER.md](RISK_REGISTER.md) | Risks, scores, mitigations |
 | [DEVELOPMENT_ROADMAP.md](DEVELOPMENT_ROADMAP.md) | Milestones, release gates, prioritised backlog |
+| [GAMEPLAY_DESIGN.md](GAMEPLAY_DESIGN.md) | Loop audits, the core loop, the 12-week governing prototype, mechanic change log, probe evidence, playtest plan |
 | [docs/SOURCE_AUDIT.md](docs/SOURCE_AUDIT.md) | Source commit SHAs, build checks, licensing, what is actually implemented |
 
 ## Build and run
@@ -23,7 +24,7 @@ Requires Java 21 and Maven 3.9.
 mvn verify
 ```
 
-This builds the code and runs the 18 tests.
+This builds the code and runs the 42 tests.
 
 Play interactively in the terminal:
 
@@ -44,6 +45,16 @@ Run a balance report over many autopilot games:
 ```
 
 `batch` also accepts the `BLUE_ENVIRONMENT` and `RED_ENVIRONMENT` scenarios.
+
+Play the 12-week governing prototype, or compare scripted strategies across seeds:
+
+```bash
+./mandate weeks 5 D unified
+```
+
+```bash
+./mandate compare 300
+```
 
 ## What the foundation plays today
 
