@@ -45,6 +45,8 @@ public final class WorldState {
     EventScheduler scheduler;
     ConsequenceLedger ledger;
     final List<String> log = new ArrayList<>();
+    /** The indicators at the end of each governing turn, for charts. */
+    final List<IndicatorPoint> indicators = new ArrayList<>();
     boolean midtermsHeld;
     /** Index in the command history of the command that inaugurated the president; -1 before. */
     int inaugurationCommand = -1;
@@ -68,6 +70,7 @@ public final class WorldState {
     public EventScheduler scheduler() { return scheduler; }
     public ConsequenceLedger ledger() { return ledger; }
     public List<String> log() { return Collections.unmodifiableList(log); }
+    public List<IndicatorPoint> indicators() { return List.copyOf(indicators); }
     public boolean midtermsHeld() { return midtermsHeld; }
     public int inaugurationCommand() { return inaugurationCommand; }
     public Legacy legacy() { return legacy; }
@@ -81,6 +84,9 @@ public final class WorldState {
         m.put("diplomacy", diplomacy.toJson()); m.put("military", military.toJson()); m.put("election", election.toJson());
         m.put("hundredDays", hundredDays == null ? null : hundredDays.toJson());
         m.put("scheduler", scheduler.toJson()); m.put("ledger", ledger.toJson()); m.put("log", new ArrayList<>(log));
+        List<Object> ind = new ArrayList<>();
+        for (IndicatorPoint p : indicators) ind.add(p.toJson());
+        m.put("indicators", ind);
         m.put("midtermsHeld", midtermsHeld); m.put("inaugurationCommand", inaugurationCommand); m.put("legacy", legacy == null ? null : legacy.toJson()); m.put("commandsApplied", commandsApplied);
         return m;
     }
@@ -102,6 +108,7 @@ public final class WorldState {
         w.scheduler = EventScheduler.fromJson(Json.object(m.get("scheduler")));
         w.ledger = ConsequenceLedger.fromJson(Json.object(m.get("ledger")));
         for (Object o : Json.array(m.get("log"))) w.log.add((String) o);
+        if (m.get("indicators") != null) for (Object o : Json.array(m.get("indicators"))) w.indicators.add(IndicatorPoint.fromJson(Json.object(o)));
         w.midtermsHeld = (Boolean) m.get("midtermsHeld");
         w.inaugurationCommand = m.get("inaugurationCommand") == null ? -1 : Json.integer(m.get("inaugurationCommand"));
         w.legacy = m.get("legacy") == null ? null : Legacy.fromJson(Json.object(m.get("legacy")));

@@ -111,5 +111,7 @@ public final class DiplomacyEngine {
 
     public double threshold(Escalation e) { return threshold.get(e); }
 
+    public List<Country> countries() { return List.copyOf(countries); }
+
     private static double clamp(double v) { return Math.max(0, Math.min(100, v)); }
 }

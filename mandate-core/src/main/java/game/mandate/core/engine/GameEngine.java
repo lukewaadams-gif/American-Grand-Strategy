@@ -402,9 +402,16 @@ public final class GameEngine implements WorldView {
         log("Inauguration Day. " + player().candidate().name() + " takes the oath with " + myEv + " electoral votes and " + congress()
                 + ". Approval " + Math.round(approval()) + "%, political capital " + Math.round(capital()) + ".");
         w.inaugurationCommand = history.size();      // this EndTurn is appended after it completes
+        recordIndicators();
         w.clock.set(hundredDaysStart());
         w.hundredDays = HundredDays.begin(host);
         log("The first hundred days begin. Your flagship: the " + host.flagship().name() + ".");
+    }
+
+    private void recordIndicators() {
+        EconomyState e = w.economy;
+        w.indicators.add(new IndicatorPoint(date(), approval(), e.unemployment(), e.inflation(), e.growth(), economyEngine.gas(e), e.tenYear(), e.fedRate(),
+                economyEngine.deficit(e, w.budget), w.diplomacy.deterrence()));
     }
 
     /** The Monday the first week of the hundred days starts. */
@@ -423,6 +430,7 @@ public final class GameEngine implements WorldView {
         for (int i = logged; i < w.hundredDays.log().size(); i++) log(w.hundredDays.log().get(i));
         if (a instanceof OpeningAction.EndWeek) {
             w.clock.advance();
+            recordIndicators();
             if (w.hundredDays.week() > w.hundredDays.weeks()) endHundredDays();
         }
     }
@@ -539,6 +547,7 @@ public final class GameEngine implements WorldView {
 
         rollEvents();
         w.clock.advance();
+        recordIndicators();
         executiveEngine.newTurn(w.government);
 
         if (!w.midtermsHeld && !date().isBefore(calendar.midterms())) holdMidterms();
@@ -768,6 +777,13 @@ public final class GameEngine implements WorldView {
     public boolean over() { return w.phase == Phase.EPILOGUE || w.phase == Phase.GAME_OVER; }
     public double competence(Post p) { return executiveEngine.competence(w.government, p); }
     public double deficit() { return economyEngine.deficit(w.economy, w.budget); }
+    /** Gas, dollars a gallon, from the economy as it stands (also before the inauguration). */
+    public double gas() { return economyEngine.gas(w.economy); }
+    public double mortgageRate() { return w.economy.mortgageRate(economyEngine.params()); }
+    public List<Country> countries() { return diplomacyEngine.countries(); }
+    /** The next scheduled Fed meeting on or after today, if the calendar has one. */
+    public Optional<LocalDate> nextFedMeeting() { return calendar.fomc().stream().filter(d -> !d.isBefore(date())).findFirst(); }
+    public List<IndicatorPoint> indicators() { return w.indicators(); }
 
     public boolean unifiedGovernment() { return w.congress != null && congress().unified(player().party()); }
     @Override public int playerDiscipline() { return player().candidate().discipline(); }
