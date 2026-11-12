@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Runs the text front end. Builds first if the classes are missing.
+# Runs the game (or a designer tool: ./mandate batch 1000, ./mandate weeks, ...). Builds the single jar if it is missing.
 set -euo pipefail
 cd "$(dirname "$0")"
-if [ ! -d mandate-cli/target/classes ] || [ ! -d mandate-core/target/classes ]; then
-  mvn -q -B -DskipTests package
+if [ ! -f mandate-cli/target/mandate.jar ]; then
+  mvn -q -B -DskipTests install
 fi
-exec java -cp mandate-core/target/classes:mandate-cli/target/classes game.mandate.cli.Main "$@"
+exec java -jar mandate-cli/target/mandate.jar "$@"

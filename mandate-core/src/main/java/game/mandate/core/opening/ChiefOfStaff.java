@@ -80,7 +80,7 @@ public final class ChiefOfStaff {
     }
 
     /** The bloc where a concession buys the most votes: many members, persuadable, not hopeless. */
-    static WhipRead bestTarget(HundredDays t, boolean house) {
+    public static WhipRead bestTarget(HundredDays t, boolean house) {
         WhipRead best = null;
         double bestGain = 0;
         for (WhipRead w : t.whip(house)) {

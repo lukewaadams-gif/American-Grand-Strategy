@@ -37,13 +37,36 @@ public final class SaveManager {
 
     private SaveManager() {}
 
-    public static String save(GameEngine g) {
+    public static String save(GameEngine g) { return save(g, null); }
+
+    /**
+     * A save carrying the front end's own section (tutorial progress, preferences), so everything lives in one file.
+     * The simulation never reads it.
+     */
+    public static String save(GameEngine g, Map<String, Object> ui) {
         Map<String, Object> m = header(g, VERSION);
         m.put("world", g.state().toJson());
         Map<String, Object> rng = new LinkedHashMap<>();
         new TreeMap<>(g.random().snapshot()).forEach((k, v) -> rng.put(k, Long.toString(v)));
         m.put("random", rng);
+        if (ui != null) m.put("ui", ui);
         return Json.write(m);
+    }
+
+    /** The front end's section of a save; empty if it has none. */
+    public static Map<String, Object> ui(String text) {
+        Object ui = Json.object(Json.parse(text)).get("ui");
+        return ui == null ? Map.of() : Json.object(ui);
+    }
+
+    /** Writes a save without ever leaving a half-written file: a temporary file next to it, then an atomic move. */
+    public static void writeAtomically(Path file, String text) {
+        try {
+            if (file.getParent() != null) Files.createDirectories(file.getParent());
+            Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
+            Files.writeString(tmp, text, StandardCharsets.UTF_8);
+            Files.move(tmp, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) { throw new UncheckedIOException(e); }
     }
 
     /** The version-1 format: setup and commands only. */

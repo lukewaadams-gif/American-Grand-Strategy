@@ -66,6 +66,11 @@ public final class Coach {
                 out.add(new Lesson("campaign.behind", String.format("You trail by %.1f. The tipping point is %s: money concentrated in the closest states, or a faster spending rate, are the usual answers. Banking money only helps if you spend it later.",
                         -last.national(), last.tippingPoint()), "Try a battleground blitz, or spend all in for the final weeks."));
         }
+        java.time.LocalDate day = g.phase() == Phase.GENERAL_CAMPAIGN_2028 ? g.calendar().election2028() : g.calendar().election2032();
+        long weeksLeft = java.time.temporal.ChronoUnit.WEEKS.between(g.date(), day);
+        if (weeksLeft <= 5 && g.player().cash() > 60 && g.election().playerOrders().rate() != game.mandate.core.campaign.CampaignStrategy.SpendRate.ALL_IN)
+            out.add(new Lesson("campaign.closing", String.format("You have $%.0fM in the bank and %d weeks left. Money left on Election Day buys nothing.", g.player().cash(), weeksLeft),
+                    "Change your standing orders to spend all in."));
         if (g.player().cash() < 30)
             out.add(new Lesson("campaign.cash", String.format("You are down to $%.0fM. Spending you cannot cover is scaled down; 'Bank it' adds fundraisers for a later push.", g.player().cash()),
                     "Bank it for two or three weeks."));
