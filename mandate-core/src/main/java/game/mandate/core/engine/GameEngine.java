@@ -114,6 +114,8 @@ public final class GameEngine implements WorldView {
 
     private WorldState w;
     private final List<Command> history = new ArrayList<>();
+    /** This week's state polls, computed once between changes to the world (cleared by every command and transition). */
+    private Map<String, Double> pollMemo;
 
     public GameEngine(GameSetup setup) { this(setup, Tuning.defaults()); }
 
@@ -121,7 +123,7 @@ public final class GameEngine implements WorldView {
         this.setup = setup;
         this.tuning = tuning;
         this.states = StateCatalog.load();
-        this.candidates = CandidateCatalog.load();
+        this.candidates = CandidateCatalog.load(setup.realRoster()).with(setup.customCandidate());
         this.bills = BillCatalog.load();
         this.calendar = CampaignCalendar.load();
         this.eventDefinitions = EventCatalog.standard();
@@ -168,6 +170,9 @@ public final class GameEngine implements WorldView {
         w.military = militaryEngine.newMilitary();
         w.scheduler = new EventScheduler();
         w.ledger = new ConsequenceLedger();
+        electionEngine.setOpponentPledges(w.election, CampaignAi.pledges(this, w.election.opponent()));
+        electionEngine.markBaseline(w.election, environment());
+        electionEngine.recordPoll(w.election, environment(), date(), calendar.election2028().getYear(), pollSeed());
         log("The general election begins: " + mine.name() + " (" + mine.party().code() + ") vs " + theirs.name() + " (" + theirs.party().code() + ").");
     }
 
@@ -190,6 +195,7 @@ public final class GameEngine implements WorldView {
         g.w = WorldState.fromJson(world, g.candidates);
         g.rng.restore(random);
         g.history.addAll(commands);
+        g.pollMemo = null;
         return g;
     }
 
@@ -200,8 +206,11 @@ public final class GameEngine implements WorldView {
     // =========================================================================================
 
     public void apply(Command command) {
+        pollMemo = null;
         switch (command) {
             case Command.PlanCampaign c -> { requireCampaign(); electionEngine.setPendingPlan(w.election, c.plan()); }
+            case Command.SetCampaignOrders c -> { requireCampaign(); electionEngine.setOrders(w.election, true, c.orders(), ""); }
+            case Command.Pledge c -> pledge(c.billId());
             case Command.ChooseDebatePosture c -> {
                 requireCampaign();
                 if (debateThisWeek().isEmpty()) throw new IllegalCommandException("No debate this week");
@@ -226,6 +235,7 @@ public final class GameEngine implements WorldView {
 
     /** Routes one transition to the engine(s) owning the state it changes and records it in the ledger. */
     void dispatch(int decisionId, String cause, Effect e) {
+        pollMemo = null;
         boolean governing = w.politics.governing();
         String owner;
         switch (e) {
@@ -282,10 +292,17 @@ public final class GameEngine implements WorldView {
     private void campaignWeek() {
         if (debateThisWeek().isPresent() && w.election.pendingPosture() == null)
             throw new IllegalCommandException("Choose a debate approach first");
-        CampaignWeekPlan mine = w.election.pendingPlan() != null ? w.election.pendingPlan() : CampaignAi.plan(this, w.election.player(), 1.0);
-        CampaignWeekPlan theirs = CampaignAi.plan(this, w.election.opponent(), setup.difficulty().opponentResources());
+        // The opponent reads the same polls the player sees and adapts its standing orders; its reasoning is shown.
+        CampaignAi.Adaptation a = CampaignAi.adapt(this, w.election.opponent());
+        if (!a.orders().equals(w.election.opponentOrders()) || w.election.opponentReasoning().isEmpty())
+            log("Your opponent's campaign: " + a.orders().describe() + ". " + a.reasoning());
+        electionEngine.setOrders(w.election, false, a.orders(), a.reasoning());
+        CampaignWeekPlan mine = w.election.pendingPlan() != null ? w.election.pendingPlan()
+                : CampaignAi.plan(this, w.election.player(), 1.0, w.election.playerOrders());
+        CampaignWeekPlan theirs = CampaignAi.plan(this, w.election.opponent(), setup.difficulty().opponentResources(), w.election.opponentOrders());
         DebatePosture myPosture = w.election.pendingPosture();
         Optional<DebatePosture> theirPosture = debateThisWeek().map(d -> CampaignAi.debatePosture(w.election.opponent().candidate(), w.election.player().candidate(), rng));
+        pollMemo = null; // the plans are about to change the race
         electionEngine.campaignWeek(w.election, mine, theirs, w.politics.salience(), theirPosture, rng).ifPresent(forPlayer ->
                 log("Debate: you chose \"" + myPosture.label() + "\", your opponent \"" + theirPosture.get().label() + "\". "
                         + (forPlayer > 0.3 ? "You won the night" : forPlayer < -0.3 ? "Your opponent won the night" : "A draw")
@@ -293,6 +310,7 @@ public final class GameEngine implements WorldView {
         rollEvents();
         w.clock.advance();
         LocalDate electionDay = w.phase == Phase.GENERAL_CAMPAIGN_2028 ? calendar.election2028() : calendar.election2032();
+        electionEngine.recordPoll(w.election, environment(), date().isAfter(electionDay) ? electionDay : date(), electionDay.getYear(), pollSeed());
         if (!date().isBefore(electionDay)) {
             w.clock.set(electionDay);
             holdPresidentialElection();
@@ -333,16 +351,36 @@ public final class GameEngine implements WorldView {
         w.phase = Phase.EPILOGUE;
     }
 
+    private void pledge(String id) {
+        requireCampaign();
+        if (w.phase != Phase.GENERAL_CAMPAIGN_2028) throw new IllegalCommandException("Promises are made in the 2028 campaign");
+        Bill b = bill(id);
+        String refusal = electionEngine.pledgeRefusal(w.election, b);
+        if (refusal != null) throw new IllegalCommandException(refusal);
+        int decision = w.ledger.decide(date(), "Promise: " + b.name());
+        dispatchAll(decision, "Promise " + id, electionEngine.pledge(w.election, b));
+        log("You promise to pass the " + b.name() + ".");
+    }
+
+    /** The transition: the agenda. The first priority is the flagship of the first hundred days; each dropped promise costs the base. */
     private void setAgenda(List<String> ids) {
         if (w.phase != Phase.TRANSITION) throw new IllegalCommandException("The agenda is set during the transition");
         if (ids.isEmpty() || ids.size() > 3) throw new IllegalCommandException("Choose one to three priorities");
+        if (ids.stream().distinct().count() != ids.size()) throw new IllegalCommandException("Each priority once");
         for (String id : ids) {
             Bill b = bill(id);
             if (!b.availableTo(player().party())) throw new IllegalCommandException(b.name() + " belongs to the other party");
         }
-        executiveEngine.setAgenda(w.government, ids);
         w.ledger.decide(date(), "Agenda: " + String.join(", ", ids));
+        executiveEngine.setAgenda(w.government, ids);
+        for (String promised : brokenPromises()) log("Your agenda leaves out your promise to pass the " + bill(promised).name() + ". Your base will notice.");
     }
+
+    /** Campaign promises the agenda leaves out. */
+    public List<String> brokenPromises() { return w.election.pledges().stream().filter(id -> !w.government.agenda().contains(id)).toList(); }
+
+    /** Campaign promises kept so far: promised, on the agenda and law. */
+    public long promisesKept() { return w.election.pledges().stream().filter(w.policy::inForce).count(); }
 
     /**
      * Inauguration: the election's result becomes the next administration. The mandate (electoral votes) sets the
@@ -357,6 +395,9 @@ public final class GameEngine implements WorldView {
         int decision = w.ledger.decide(date(), "Inauguration");
         dispatch(decision, "Inauguration", new Effect.PresidentInaugurated(player().candidate().id(), player().party(), myEv));
         politicsEngine.setInitialTerms(w.politics, unifiedGovernment());
+        // Each campaign promise left off the agenda costs the president's base wing (the wings exist once there is a president).
+        for (String promised : brokenPromises())
+            dispatch(decision, "Broken promise " + promised, new Effect.WingMood(0, electionEngine.brokenPledgeMood()));
         log("Inauguration Day. " + player().candidate().name() + " takes the oath with " + myEv + " electoral votes and " + congress()
                 + ". Approval " + Math.round(approval()) + "%, political capital " + Math.round(capital()) + ".");
         w.clock.set(hundredDaysStart());
@@ -500,6 +541,8 @@ public final class GameEngine implements WorldView {
         Candidate challenger = electionEngine.pickChallenger(w.election, rng);
         electionEngine.beginReelection(w.election, challenger, capital(), setup.difficulty().opponentResources(), rng);
         politicsEngine.setLeader(w.politics, challenger.party(), challenger.id());
+        electionEngine.markBaseline(w.election, environment());
+        electionEngine.recordPoll(w.election, environment(), date(), calendar.election2032().getYear(), pollSeed());
         log("The re-election campaign begins against " + challenger.name() + ".");
     }
 
@@ -648,7 +691,20 @@ public final class GameEngine implements WorldView {
     public double nationalSwing() { return electionEngine.nationalSwing(w.election, environment()); }
     public double localShift(String state) { return electionEngine.localShift(w.election, state); }
     public Map<String, Double> expectedMargins() { return electionEngine.expectedMargins(w.election, environment()); }
-    public Map<String, Double> statePolls() { return electionEngine.statePolls(w.election, environment(), setup.seed() * 31 + history.size()); }
+    /** The state polls the player sees this week (stable within a week: looking never changes them). */
+    public Map<String, Double> statePolls() {
+        if (pollMemo == null) pollMemo = electionEngine.statePolls(w.election, environment(), pollSeed());
+        return pollMemo;
+    }
+    /** National poll margin, D minus R, implied by this week's state polls. */
+    public double nationalPoll() { return electionEngine.calculator().tally(date().getYear(), statePolls()).popularMargin(); }
+    public Optional<game.mandate.core.electorate.CellElectorateModel.GroupResults> crosstabs() {
+        return electionEngine.crosstabs(w.election, environment(), pollSeed());
+    }
+    public List<game.mandate.core.campaign.PollPoint> polls() { return w.election.polls(); }
+    public game.mandate.core.campaign.ElectionState election() { return w.election; }
+    public CandidateCatalog candidates() { return candidates; }
+    private long pollSeed() { return setup.seed() * 31 + w.clock.turns(); }
     public CampaignSide side(Party p) { return w.election.side(p); }
     public CampaignSide player() { return w.election.player(); }
     public CampaignSide opponent() { return w.election.opponent(); }
@@ -693,6 +749,7 @@ public final class GameEngine implements WorldView {
 
     public boolean unifiedGovernment() { return w.congress != null && congress().unified(player().party()); }
     @Override public int playerDiscipline() { return player().candidate().discipline(); }
+    @Override public boolean playerIsRealPerson() { return player().candidate().isReal(); }
     @Override public double tension(HotSpot h) { return w.diplomacy.tension(h); }
 
     /** A stable fingerprint of the whole world, for regression tests. */

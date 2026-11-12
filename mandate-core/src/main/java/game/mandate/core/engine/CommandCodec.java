@@ -1,5 +1,6 @@
 package game.mandate.core.engine;
 
+import game.mandate.core.campaign.CampaignStrategy;
 import game.mandate.core.campaign.DebatePosture;
 import game.mandate.core.campaign.ElectionState;
 import game.mandate.core.campaign.Issue;
@@ -28,6 +29,8 @@ public final class CommandCodec {
         switch (c) {
             case Command.PlanCampaign x -> m.put("plan", ElectionState.planJson(x.plan()));
             case Command.ChooseDebatePosture x -> m.put("posture", x.posture().name());
+            case Command.SetCampaignOrders x -> m.put("orders", x.orders().toJson());
+            case Command.Pledge x -> m.put("bill", x.billId());
             case Command.SetAgenda x -> m.put("bills", x.billIds());
             case Command.PushBill x -> { m.put("bill", x.billId()); m.put("strategy", x.strategy().name()); m.put("capital", x.capital()); }
             case Command.PublicAddress x -> m.put("issue", x.issue().name());
@@ -86,6 +89,8 @@ public final class CommandCodec {
         return switch (type) {
             case "PlanCampaign" -> new Command.PlanCampaign(ElectionState.planFromJson(Json.object(m.get("plan"))));
             case "ChooseDebatePosture" -> new Command.ChooseDebatePosture(DebatePosture.valueOf((String) m.get("posture")));
+            case "SetCampaignOrders" -> new Command.SetCampaignOrders(CampaignStrategy.Orders.fromJson(Json.object(m.get("orders"))));
+            case "Pledge" -> new Command.Pledge((String) m.get("bill"));
             case "SetAgenda" -> new Command.SetAgenda(Json.array(m.get("bills")).stream().map(o -> (String) o).toList());
             case "PushBill" -> new Command.PushBill((String) m.get("bill"), LegislativeStrategy.valueOf((String) m.get("strategy")), Json.num(m.get("capital")));
             case "PublicAddress" -> new Command.PublicAddress(Issue.valueOf((String) m.get("issue")));

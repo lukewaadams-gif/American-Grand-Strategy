@@ -35,7 +35,7 @@ public final class ElectionCalculator {
         return m;
     }
 
-    /** Draws a realised result. The {@code systematicError} is the hidden polling miss fixed at game start. */
+    /** Draws a realised result. {@code systematicError} is an extra national error every state shares (the game passes 0: its polling miss lives in the polls). */
     public ElectionResult resolve(int year, double nationalSwing, ToDoubleFunction<String> localShift,
                                   double systematicError, DeterministicRandomManager rng, String stream) {
         double nationalNoise = rng.gaussian(stream) * nationalErrorSd + systematicError;

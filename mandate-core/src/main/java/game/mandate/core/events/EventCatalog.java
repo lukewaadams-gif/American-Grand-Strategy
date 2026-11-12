@@ -24,7 +24,7 @@ public final class EventCatalog {
         return List.of(
                 new EventDefinition("gaffe", "A hot-mic moment",
                         "A private remark about voters in a swing state leaks.",
-                        CAMPAIGNS, true, g -> 0.06 * (11 - g.playerDiscipline()) / 5.0,
+                        CAMPAIGNS, true, g -> g.playerIsRealPerson() ? 0 : 0.06 * (11 - g.playerDiscipline()) / 5.0,
                         List.of(
                                 EventOption.of("Apologise at once", new Effect.CampaignSwing(-0.3)),
                                 EventOption.gamble("Double down: it's true", 0.4,
@@ -33,10 +33,30 @@ public final class EventCatalog {
 
                 new EventDefinition("october_surprise", "October surprise",
                         "Opposition researchers drop documents about your business dealings.",
-                        CAMPAIGNS, false, g -> g.date().getMonthValue() == 10 ? 0.12 : 0,
+                        CAMPAIGNS, false, g -> !g.playerIsRealPerson() && g.date().getMonthValue() == 10 ? 0.12 : 0,
                         List.of(
                                 EventOption.gamble("Release everything", 0.7,
                                         List.of(new Effect.CampaignSwing(-0.3)), List.of(new Effect.CampaignSwing(-1.5))),
+                                EventOption.of("Attack the source", new Effect.CampaignSwing(-0.6), new Effect.Cash(8)),
+                                EventOption.of("Spend to change the story", new Effect.CampaignSwing(-0.2), new Effect.Cash(-25)))),
+
+                // RISK_REGISTER R-02: a real person never gets an invented personal scandal. These campaign-level events
+                // stand in for the two above when the player plays someone from the opt-in real roster.
+                new EventDefinition("leaked_memo", "A leaked strategy memo",
+                        "An internal memo from your campaign, dismissive of voters in a swing state, reaches reporters.",
+                        CAMPAIGNS, true, g -> g.playerIsRealPerson() ? 0.06 * (11 - g.playerDiscipline()) / 5.0 : 0,
+                        List.of(
+                                EventOption.of("Disown the memo and fire its author", new Effect.CampaignSwing(-0.3)),
+                                EventOption.gamble("Defend the strategy", 0.4,
+                                        List.of(new Effect.CampaignSwing(0.3)), List.of(new Effect.CampaignSwing(-1.2))),
+                                EventOption.of("Say nothing and change the subject", new Effect.CampaignSwing(-0.6)))),
+
+                new EventDefinition("vendor_dossier", "October surprise",
+                        "Opposition researchers circulate documents about your campaign's consultants and their fees.",
+                        CAMPAIGNS, false, g -> g.playerIsRealPerson() && g.date().getMonthValue() == 10 ? 0.12 : 0,
+                        List.of(
+                                EventOption.gamble("Publish the contracts", 0.7,
+                                        List.of(new Effect.CampaignSwing(-0.3)), List.of(new Effect.CampaignSwing(-1.4))),
                                 EventOption.of("Attack the source", new Effect.CampaignSwing(-0.6), new Effect.Cash(8)),
                                 EventOption.of("Spend to change the story", new Effect.CampaignSwing(-0.2), new Effect.Cash(-25)))),
 

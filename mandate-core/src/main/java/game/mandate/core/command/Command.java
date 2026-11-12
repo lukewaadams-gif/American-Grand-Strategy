@@ -1,5 +1,6 @@
 package game.mandate.core.command;
 
+import game.mandate.core.campaign.CampaignStrategy;
 import game.mandate.core.campaign.CampaignWeekPlan;
 import game.mandate.core.campaign.DebatePosture;
 import game.mandate.core.campaign.Issue;
@@ -18,6 +19,12 @@ public sealed interface Command {
 
     /** Campaign: this week's schedule, spending and message. */
     record PlanCampaign(CampaignWeekPlan plan) implements Command {}
+
+    /** Campaign: standing orders (strategy, spending rate, message) the staff turns into each week's plan. */
+    record SetCampaignOrders(CampaignStrategy.Orders orders) implements Command {}
+
+    /** Campaign: promise to pass a bill. Promises become the agenda's first priorities; breaking one costs the base. */
+    record Pledge(String billId) implements Command {}
 
     /** Campaign: approach for this week's debate. */
     record ChooseDebatePosture(DebatePosture posture) implements Command {}

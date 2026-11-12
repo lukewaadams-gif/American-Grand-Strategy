@@ -3,6 +3,7 @@ package game.mandate.core.campaign;
 import game.mandate.core.data.Json;
 import game.mandate.core.electorate.ElectionResult;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,16 @@ public final class ElectionState {
     double systematicMiss;
     ElectionResult result2028, result2032;
     Midterm midterm;
+    /** Standing orders: the streamlined campaign. A hand-built weekly plan overrides them for one week. */
+    CampaignStrategy.Orders playerOrders = CampaignStrategy.Orders.DEFAULT, opponentOrders = CampaignStrategy.Orders.DEFAULT;
+    /** Why the opponent runs the campaign it runs (the AI's reasoning, shown to the player as intelligence). */
+    String opponentReasoning = "";
+    /** Campaign promises (bill ids). The player's become the agenda's first priorities. */
+    final List<String> pledges = new ArrayList<>(), opponentPledges = new ArrayList<>();
+    /** The polling the player saw, week by week. */
+    final List<PollPoint> polls = new ArrayList<>();
+    /** The race as it stood at the last poll, so the next poll can say what moved. */
+    ElectionEngine.Snapshot lastSnapshot;
 
     ElectionState() {}
 
@@ -32,6 +43,12 @@ public final class ElectionState {
     public ElectionResult result2028() { return result2028; }
     public ElectionResult result2032() { return result2032; }
     public Midterm midterm() { return midterm; }
+    public CampaignStrategy.Orders playerOrders() { return playerOrders; }
+    public CampaignStrategy.Orders opponentOrders() { return opponentOrders; }
+    public String opponentReasoning() { return opponentReasoning; }
+    public List<String> pledges() { return List.copyOf(pledges); }
+    public List<String> opponentPledges() { return List.copyOf(opponentPledges); }
+    public List<PollPoint> polls() { return List.copyOf(polls); }
 
     public Map<String, Object> toJson() {
         Map<String, Object> m = new LinkedHashMap<>();
@@ -46,6 +63,12 @@ public final class ElectionState {
             x.put("year", midterm.year()); x.put("margin", midterm.marginForPresident()); x.put("house", midterm.houseChange()); x.put("senate", midterm.senateChange());
             m.put("midterm", x);
         } else m.put("midterm", null);
+        m.put("playerOrders", playerOrders.toJson()); m.put("opponentOrders", opponentOrders.toJson()); m.put("opponentReasoning", opponentReasoning);
+        m.put("pledges", new ArrayList<>(pledges)); m.put("opponentPledges", new ArrayList<>(opponentPledges));
+        List<Object> ps = new ArrayList<>();
+        for (PollPoint x : polls) ps.add(x.toJson());
+        m.put("polls", ps);
+        m.put("lastSnapshot", lastSnapshot == null ? null : lastSnapshot.toJson());
         return m;
     }
 
@@ -62,6 +85,14 @@ public final class ElectionState {
             Map<String, Object> x = Json.object(m.get("midterm"));
             e.midterm = new Midterm(Json.integer(x.get("year")), Json.num(x.get("margin")), Json.integer(x.get("house")), Json.integer(x.get("senate")));
         }
+        // Saves from before the campaign layer have none of these; they load with the defaults.
+        e.playerOrders = CampaignStrategy.Orders.fromJsonOrDefault(m.get("playerOrders"));
+        e.opponentOrders = CampaignStrategy.Orders.fromJsonOrDefault(m.get("opponentOrders"));
+        e.opponentReasoning = m.get("opponentReasoning") == null ? "" : (String) m.get("opponentReasoning");
+        if (m.get("pledges") != null) for (Object o : Json.array(m.get("pledges"))) e.pledges.add((String) o);
+        if (m.get("opponentPledges") != null) for (Object o : Json.array(m.get("opponentPledges"))) e.opponentPledges.add((String) o);
+        if (m.get("polls") != null) for (Object o : Json.array(m.get("polls"))) e.polls.add(PollPoint.fromJson(Json.object(o)));
+        e.lastSnapshot = m.get("lastSnapshot") == null ? null : ElectionEngine.Snapshot.fromJson(Json.object(m.get("lastSnapshot")));
         return e;
     }
 

@@ -33,6 +33,8 @@ public final class AutoPilot {
         }
         switch (g.phase()) {
             case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> {
+                if (g.phase() == game.mandate.core.time.Phase.GENERAL_CAMPAIGN_2028 && g.election().pledges().isEmpty())
+                    for (String id : chooseAgenda(g).subList(0, 2)) g.apply(new Command.Pledge(id));
                 if (g.debateThisWeek().isPresent())
                     g.apply(new Command.ChooseDebatePosture(DebatePosture.tendencyOf(g.player().candidate())));
             }
@@ -84,10 +86,13 @@ public final class AutoPilot {
         return v;
     }
 
+    /** Promises first (keeping them is cheaper than breaking them), then the best-odds bills. */
     static List<String> chooseAgenda(GameEngine g) {
         List<Bill> mine = new ArrayList<>(g.bills().availableTo(g.player().party()));
         mine.sort(Comparator.comparingDouble((Bill b) -> g.whip(b.id(), LegislativeStrategy.PARTY_LINE, 0).passChance() * (2 + b.publicAppeal())).reversed());
-        return mine.subList(0, 3).stream().map(Bill::id).toList();
+        List<String> agenda = new ArrayList<>(g.election().pledges());
+        for (Bill b : mine) if (agenda.size() < 3 && !agenda.contains(b.id())) agenda.add(b.id());
+        return agenda;
     }
 
     static void governMonth(GameEngine g) {

@@ -8,6 +8,8 @@ import java.time.LocalDate;
 public interface WorldView {
     LocalDate date();
     int playerDiscipline();
+    /** A real person (opt-in roster): personal-scandal events are replaced by campaign-level ones. */
+    boolean playerIsRealPerson();
     boolean unifiedGovernment();
     double tension(HotSpot h);
 }

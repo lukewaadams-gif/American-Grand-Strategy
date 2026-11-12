@@ -2,6 +2,7 @@ package game.mandate.core.engine;
 
 import game.mandate.core.command.Command;
 import game.mandate.core.data.Json;
+import game.mandate.core.campaign.Candidate;
 import game.mandate.core.game.GameSetup;
 import game.mandate.core.game.Scenario;
 import game.mandate.core.state.Party;
@@ -106,12 +107,30 @@ public final class SaveManager {
         m.put("seed", Long.toString(s.seed())); m.put("party", s.playerParty().name()); m.put("player", s.playerCandidateId());
         m.put("opponent", s.opponentCandidateId()); m.put("scenario", s.scenario().name()); m.put("difficulty", s.difficulty().name());
         m.put("length", s.length().name());
+        m.put("realRoster", s.realRoster());
+        Candidate c = s.customCandidate();
+        if (c != null) {
+            Map<String, Object> x = new LinkedHashMap<>();
+            x.put("party", c.party().name()); x.put("name", c.name()); x.put("home", c.homeState()); x.put("charisma", c.charisma());
+            x.put("debate", c.debate()); x.put("fundraising", c.fundraising()); x.put("policy", c.policy()); x.put("discipline", c.discipline());
+            x.put("ideology", c.ideology());
+            m.put("custom", x);
+        } else m.put("custom", null);
         return m;
     }
 
     static GameSetup setupFromJson(Map<String, Object> m) {
         return new GameSetup(Long.parseLong((String) m.get("seed")), Party.valueOf((String) m.get("party")), (String) m.get("player"),
                 (String) m.get("opponent"), Scenario.valueOf((String) m.get("scenario")), GameSetup.Difficulty.valueOf((String) m.get("difficulty")),
-                m.get("length") == null ? GameSetup.Length.FULL_TERM : GameSetup.Length.valueOf((String) m.get("length"))); // saves before the slice are full-term
+                m.get("length") == null ? GameSetup.Length.FULL_TERM : GameSetup.Length.valueOf((String) m.get("length")), // saves before the slice are full-term
+                Boolean.TRUE.equals(m.get("realRoster")), customFromJson(m.get("custom")));
+    }
+
+    private static Candidate customFromJson(Object o) {
+        if (o == null) return null;
+        Map<String, Object> x = Json.object(o);
+        return Candidate.custom(Party.valueOf((String) x.get("party")), (String) x.get("name"), (String) x.get("home"), Json.integer(x.get("charisma")),
+                Json.integer(x.get("debate")), Json.integer(x.get("fundraising")), Json.integer(x.get("policy")), Json.integer(x.get("discipline")),
+                Json.num(x.get("ideology")));
     }
 }

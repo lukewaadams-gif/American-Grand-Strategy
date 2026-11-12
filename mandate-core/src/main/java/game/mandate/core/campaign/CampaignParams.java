@@ -18,7 +18,9 @@ public record CampaignParams(
         double senateIncumbency, double senateNoise,
         double midApproval, double midApprovalPivot, double midGrowth, double midGrowthPivot, double midPenalty, double midNoise,
         double midHouseMin, double midHouseMax,
-        double startCash, double reelectionBase, double reelectionPerCapital, double challengerCash) {
+        double startCash, double reelectionBase, double reelectionPerCapital, double challengerCash,
+        boolean cellElectorate, double pledgeSwingPerAppeal, double pledgeSalience, double pledgeBrokenMood, int pledgeMax,
+        int forecastGrid) {
 
     public static CampaignParams from(Tuning t) {
         return new CampaignParams(
@@ -38,6 +40,8 @@ public record CampaignParams(
                 t.d("election.senate.incumbency"), t.d("election.senate.noise"),
                 t.d("election.midterm.approval"), t.d("election.midterm.approvalPivot"), t.d("election.midterm.growth"), t.d("election.midterm.growthPivot"),
                 t.d("election.midterm.penalty"), t.d("election.midterm.noise"), t.d("election.midterm.houseMin"), t.d("election.midterm.houseMax"),
-                t.d("campaign.startCash"), t.d("campaign.reelection.base"), t.d("campaign.reelection.perCapital"), t.d("campaign.reelection.challengerCash"));
+                t.d("campaign.startCash"), t.d("campaign.reelection.base"), t.d("campaign.reelection.perCapital"), t.d("campaign.reelection.challengerCash"),
+                t.d("election.cellElectorate") >= 0.5, t.d("campaign.pledge.swingPerAppeal"), t.d("campaign.pledge.salience"),
+                t.d("campaign.pledge.brokenMood"), t.i("campaign.pledge.max"), t.i("election.forecastGrid"));
     }
 }
