@@ -31,7 +31,9 @@ mandate/                      Maven multi-module, Java 21
 │   ├── opening/              the first hundred days: HundredDays (over a Host), HundredDaysState, DayHundredReport;
 │   │                         OpeningTerm + StandaloneHost = the 12-week prototype on the same code
 │   └── tutorial/             Coach: one situational lesson at a time; reads the game, never changes it
-└── mandate-cli/              GameShell (the game), Console; designer tools; builds the single mandate.jar
+├── mandate-ui/               the desktop interface (Swing): kit/ (design tokens and components), screens/, App, Session,
+│                             automated UI checks and the screenshot tool; reads the core, changes it only by commands
+└── mandate-cli/              Main (desktop by default), GameShell (the terminal game), designer tools; builds mandate.jar
 ```
 
 ## 3. One authoritative world, with owners
@@ -203,13 +205,13 @@ We **port models, not code**. The source files are monoliths with static state, 
 | RD party factions, opposition strategy | Port | 1.0 | |
 | IC engine | **Wrap, don't merge** | M5 (calibration), EXP-1 (play) | Forces and munitions baselines are already taken from IC's tables. M5: a headless `IslandChainOracle` produces outcome tables over a grid of `TheaterScenario` inputs, and the `MilitaryEngine` operational coefficients are fitted to them. EXP-1: an adapter module implements `TheaterResolver` and launches the IC UI. Prerequisites: seed scrambling, moving `chipLag`/`lastKilled` into `Game`, AI-vs-AI ceasefire, host-controlled termination. |
 | BG `Portrait` | Port for fictional characters | 1.0 | |
-| BG/RD UI toolkit (immediate-mode Java2D) | **Do not port** | | See ADR-2. |
+| BG/RD UI toolkit (immediate-mode Java2D) | **Do not port** | | See ADR-2 and ADR-7. The visual ideas were kept; see UI_DESIGN.md §1. |
 
 ## 8. Architecture decision records
 
 **ADR-1: Java 21, Maven, multi-module.** The team's code and knowledge are Java. We keep it, but drop the single-file and Java 8/BlueJ constraint (records, sealed types and pattern switches cut core code by about 30%). Maven is used because it is installed everywhere and needs no wrapper download. Gradle is acceptable later if build logic grows.
 
-**ADR-2: Desktop UI is JavaFX (decision gate at M4).** It is a UI-dense strategy game: tables, charts, a map, modals, text-heavy events, scalable fonts and accessibility.
+**ADR-2: Desktop UI is JavaFX (decision gate at M4).** *Superseded for the vertical slice by ADR-7; the M4 gate still stands.* It is a UI-dense strategy game: tables, charts, a map, modals, text-heavy events, scalable fonts and accessibility.
 - **For JavaFX:** layout, CSS theming, charts, HiDPI and accessibility APIs, and `jpackage` installers; Steam integration via steamworks4j.
 - **libGDX** is better for animation-heavy games but makes complex forms costly.
 - **The current Java2D immediate-mode toolkit** is proven but hand-rolled: no layout, no accessibility, no text input or IME, and it is tied to a fixed design resolution.
@@ -223,9 +225,16 @@ We **port models, not code**. The source files are monoliths with static state, 
 
 **ADR-6: Content as CSV and properties now, JSON + schema in M2.** Balancing constants are in `tuning.properties` (done). The CSV loader is intentionally minimal. M2 introduces JSON content with a validator CLI (`mandate lint`): unknown ids, unreachable events, dominated options and missing localisation keys.
 
+**ADR-7: The slice's desktop interface is Swing with its own component kit.** Recorded with the slice's interface; see UI_DESIGN.md.
+- **Why not JavaFX now.** JavaFX is not part of JDK 21 and is not in the offline build's Maven repository, so it would add a download and a native dependency per platform to a build that has neither. Headless rendering, which the automated UI checks depend on, needs the Monocle add-on.
+- **Why not the source games' toolkit.** ADR-2's objections stand: no layout, no accessibility, no text input, and a fixed design resolution.
+- **What was built instead.** A small kit on Swing (`mandate-ui/…/kit`), with design tokens in one place and height-for-width layouts that re-flow at any window size. Real components carry accessible names, keyboard focus and Swing's text input. The kit renders headless, so every screen is checked in `mvn install` (51 screens, nine interaction flows) with no display.
+- **What it costs.** Swing's accessibility reaches screen readers on Windows and macOS only. There are no CSS-like stylesheets (tokens are Java). Charts and the map are our own code.
+- **The boundary is unchanged.** `mandate-ui` only reads the core and sends `Command`s, so a JavaFX front end could replace it without touching the simulation. The M4 gate decides whether the shipped game moves.
+
 ## 9. Testing strategy
 
-There are 63 tests, all run on every build (`mvn verify`).
+There are 113 tests, all run on every build (`mvn verify`): 92 in the core, 17 in the interface and 4 in the shell. The table lists the main suites.
 
 | Layer | Tests | What they protect |
 |---|---|---|
@@ -235,6 +244,8 @@ There are 63 tests, all run on every build (`mvn verify`).
 | Regression | `GoldenRegressionTest` (2) | Fixed seeds reproduce recorded fingerprints (6 full games, 7 prototype strategies); no leaks between games in one JVM. Regenerate with `-Dmandate.updateGolden=true` after an intended change. |
 | Models and rules | `ElectorateTest`, `RulesTest`, `SystemsTest`, `DeterminismTest`, `BalanceTest` (18) | 2024 reproduction, Senate classes, legislative thresholds, recession bite, war monotonic in deterrence, determinism and replay, party balance |
 | Prototype | `OpeningTermTest`, `OpeningStrategyTest` (24) | The 12-week loop's interconnections, information value, failure follow-ups, delegation and strategy non-dominance, now over the authoritative engines |
+| Advisor | `AdvisorTest` (3) | The advisor reads only what the player can see: a source scan for hidden state, invariance to the hidden resolve, a brief in every phase |
+| Interface | `ThemeTest` (5), `ScreensTest` (3), `FlowTest` (9) | AA contrast in every palette; 51 rendered screens pass the automated checks; nine flows played through the buttons (new game to election night, transition to day 100, undo, rewind, shortcuts, complexity, tips). See UI_DESIGN.md §13. `RealWindowCheck` runs the real window under Xvfb on demand. |
 | Batch report | `mandate batch`, `mandate compare` | Balance tracking. Today: Toss-up D 51%, re-election 55% / 65%, 8.7 laws per term |
 
 ## 10. Performance budget

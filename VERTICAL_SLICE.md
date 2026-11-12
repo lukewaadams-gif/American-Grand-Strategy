@@ -102,19 +102,20 @@ The weekly loop is the prototype's core loop: Decision → Consequences → New 
 
 | Requirement | How it is met |
 |---|---|
-| One executable application | `mandate-cli/target/mandate.jar` (maven-shade). `java -jar` starts the game; designer tools are subcommands. |
+| One executable application | `mandate-cli/target/mandate.jar` (maven-shade). `java -jar` opens the desktop game (the terminal game where there is no display); designer tools are subcommands. |
 | One unified save file | `SaveManager` version 2: setup, world snapshot (including the hundred days and the report), random state and command log. The front end's tutorial progress goes in a `ui` section of the same file. Saves are written atomically after every turn. |
 | No manual state transfer | One `WorldState` from the first campaign week to day 100. The hundred days own only their process state (`HundredDaysState`). |
 | No external program launches | None; the source games are not invoked. Their data is exported once, at build time, by `tools/BgExport.java`. |
 | Working AI opposition | The adaptive campaign opponent (§2); the opposition party in Congress (strategy, committee chairs, votes); the crisis adversary |
 | Deterministic regression tests | `GoldenRegressionTest` fingerprints 6 full games, 11 slice games (each ending: loss, partial success, victory; custom and real-roster candidates) and 7 prototype probes, and checks no state leaks between games. Save and replay consistency is tested mid-campaign and mid-hundred-days. |
 
-**Tests (93):**
+**Tests (113):**
 - `HundredDaysInGameTest` (5): the slice end to end, refused actions leave no trace, the view routes through the command log, a mid-hundred-days save reproduces the future, full-term continuation.
 - `CampaignLayerTest` (8): custom candidate and save, the real roster and its events, promises, broken promises, standing orders, the opponent adapts, a credible opponent and campaign choices matter, the polls explain and the forecast discriminates.
 - `OutcomesTest` (5): the report follows its rule and strategies reach all three outcomes, the report is fixed in full-term games, post-mortems, replays, and the coach.
 - `GameShellTest` (4, in `mandate-cli`): scripted keyboard input through the real shell from the campaign to the day-100 report, Continue, the custom candidate with orders, a promise and a hand-built week, and governing again.
 - The 63 earlier tests, plus `CellElectorateTest` (8) from the electorate port. The earlier tests were adjusted only where the slice changed behaviour (§8).
+- The desktop interface: `AdvisorTest` (3, core), `ThemeTest` (5), `ScreensTest` (3, covering 51 rendered screens) and `FlowTest` (9 flows played through the buttons). See UI_DESIGN.md §13.
 
 ## 7. Evidence from probes (not from players)
 
@@ -166,7 +167,7 @@ All figures come from autopilot or scripted probes on the toss-up scenario at St
 - **Full-term balance drifted.** Re-election is about 71% for each party, above the 50-70% gate; the EV standard deviation is 33, below the gate of 45 or more.
 - **The hundred days pause the event catalogue.** Random events do not fire in that phase; its own crisis, shock and deadline are the events.
 - **The hundred days' constants** (the shocks, response sizes and goal thresholds) are still in code, as in the prototype, rather than in `tuning.properties`. They should move there before more balancing.
-- **The interface is text only.** The desktop UI (M4) will drive the same core.
+- **The desktop interface is new and unreviewed by players.** It passes the automated checks and was inspected screen by screen, but has not had a usability test, a screen-reader test or a visual design review. UI_DESIGN.md §15 lists what needs a person.
 - **Military integration was not extended**, as asked. A clash in the hundred days is resolved at the presidential level. The operational war is reachable only in full-term games, through the foundation's Taiwan ladder.
 - **The real roster is opt-in and for private use.** It is not part of a commercial build (R-02). Its ratings are BG's and run higher than the fictional cast's.
 - **ResoluteDesk moved upstream after the audit**, to `2ce2b37` ("Version 2", seven commits, 216 Java files, about 27,900 lines). The ports here reference the audited `3fdbc7a`. The new version has not been audited.
@@ -181,5 +182,6 @@ All figures come from autopilot or scripted probes on the toss-up scenario at St
 | Campaign | `campaign/CampaignStrategy.java`, `PollPoint.java`, `ElectionEngine.java` (polls, forecast, movers, promises, post-mortem), `Candidate.java`, `CandidateCatalog.java`; `ai/CampaignAi.java` (planner and adaptive opponent) |
 | Electorate | `electorate/CellElectorateModel.java`, `data/electorate_cells.csv`, `tools/BgExport.java` |
 | Tutorial | `tutorial/Coach.java` |
-| Front end | `mandate-cli/.../GameShell.java`, `Console.java`, `Main.java` |
+| Front end | `mandate-ui/` (the desktop game: `App`, `Session`, `kit/`, `screens/`; see UI_DESIGN.md), `mandate-cli/.../Main.java`, `GameShell.java` and `Console.java` (the terminal game) |
+| Advisor | `advisor/Advisor.java` (core; reads only what the player can see) |
 | Saves | `engine/SaveManager.java` (version 2 with a `ui` section), `CommandCodec.java` (`Act`, `Pledge`, `SetCampaignOrders`) |

@@ -658,7 +658,7 @@ public class HundredDays {
         if (st.crisis != CrisisOutcome.ACTIVE) return;
         st.crisisWeeks++;
         if (st.crisisWeeks > 5) { endCrisis(CrisisOutcome.STALEMATE, "The " + st.crisisKind.label + " crisis settles into a tense stalemate."); return; }
-        double noise = 0.05 + 0.25 * (1 - competence(Post.STATE) / 100.0);
+        double noise = intelNoise();
         st.intelEstimate = clamp01(st.resolve + noise * h.rng().gaussian("crisis.intel"));
         List<Option> options = new ArrayList<>();
         for (CrisisMove m : CrisisMove.values()) {
@@ -972,6 +972,8 @@ public class HundredDays {
     public int escalation() { return st.escalation; }
     public double deterrence() { return h.diplomacy().deterrence(); }
     public double intelEstimate() { return st.intelEstimate; }
+    /** The intelligence estimate's typical error (one standard deviation), narrower with an able Secretary of State. */
+    public double intelNoise() { return 0.05 + 0.25 * (1 - competence(Post.STATE) / 100.0); }
     public double lastEscalationRisk() { return st.lastEscalationRisk; }
     double hiddenResolve() { return st.resolve; }
     public double oil() { return h.economy().oil(); }
@@ -998,17 +1000,22 @@ public class HundredDays {
     public String billName() { return h.flagship().name(); }
 
     /** The flagship's position: the catalog bill's, scaled by size and shifted by the pay-for. */
-    public double billIdeology() { return h.flagship().ideology() * st.size.ideologyFactor + st.payFor.ideologyShift; }
+    public double billIdeology() { return designIdeology(h.flagship(), st.size, st.payFor); }
+
+    /** A design's position, -1 (left) to +1 (right): the catalog bill's, scaled by size and shifted by the pay-for. */
+    public static double designIdeology(Bill b, BillSize size, PayFor payFor) { return b.ideology() * size.ideologyFactor + payFor.ideologyShift; }
+
+    /** A design's deficit if enacted, % of GDP: a cost is scaled by the pay-for; a bill that already cuts the deficit is not. */
+    public static double designDeficit(Bill b, BillSize size, PayFor payFor) {
+        double base = b.deficitPctGdp() * size.deficitFactor;
+        return base > 0 ? base * payFor.deficitShare : base;
+    }
 
     /**
      * Deficit if enacted, % of GDP: the catalog bill's (a medium, borrowed bill), scaled by size and pay-for. A bill
      * that already cuts the deficit needs no paying for, so the pay-for scales only a cost.
      */
-    public double billDeficit() {
-        if (st.size == null) return 0;
-        double base = h.flagship().deficitPctGdp() * st.size.deficitFactor;
-        return base > 0 ? base * st.payFor.deficitShare : base;
-    }
+    public double billDeficit() { return st.size == null ? 0 : designDeficit(h.flagship(), st.size, st.payFor); }
 
     private double billGrowth() { return h.flagship().growthImpulse() * st.size.growthFactor * st.payFor.growthFactor; }
 

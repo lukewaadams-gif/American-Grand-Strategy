@@ -64,7 +64,7 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 | B-16 | P1 | S | Interest cost = debt × average rate (rolling toward market rates) | The deficit rises with rates |
 | B-17 | P1 | M | Filibuster nuclear option with a moderates' backlash risk | Available only when the party controls the Senate; irreversible |
 | B-18 | P1 | L | JavaFX spike: whip screen + map (ADR-2 gate) | Decision recorded in ADR-2 |
-| B-19 | P1 | L | Desktop vertical slice screens (M4 list) | Unaided playtest success |
+| B-19 | P1 | L | Desktop vertical slice screens (M4 list). **Built** for the slice in `mandate-ui` (UI_DESIGN.md); the exit criterion is still open | Unaided playtest success |
 | B-20 | P1 | M | IslandChain fixes in an isolated fork module: seed scrambling, statics into `Game`, AI ceasefire, host termination, region balance | IC batch shows variance across plans and regions |
 | B-21 | P1 | M | `IslandChainOracle` + coefficient fit for the `MilitaryEngine` operational model | Within ±10 points of oracle frequencies |
 | B-22 | P1 | S | ME/NE district electors | 2024 tally is D 226 with splits (ME-2 R, NE-2 D) |
@@ -96,7 +96,9 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 | B-52 | P1 | M | Events in the first hundred days: a small catalogue of early-term events (a court ruling, a disaster, a leak) | The event roll covers the phase without crowding out its own crisis |
 | B-53 | P1 | S | Re-election rate back inside the 1.0 gate (50-70%) now that the hundred days strengthen incumbents | Batch gate |
 | B-54 | P1 | M | Audit Resolute Desk's upstream Version 2 (`2ce2b37`: transition, approval and relationships, policies, wars of choice, storylines) against `FEATURE_PRIORITY.md` | Addendum to `docs/SOURCE_AUDIT.md`; ports re-checked |
-| B-55 | P0 | S | Playtest the slice: 5 first-time players, unaided, to day 100 (`GAMEPLAY_DESIGN.md` §7 questions) | Completion rate, time to day 100, and which decisions players could explain |
+| B-56 | P1 | M | Accessibility pass with real assistive technology: NVDA and JAWS on Windows, VoiceOver on macOS. Announce toasts; add a table view of the map | Every screen operable and announced; the issues are fixed or logged |
+| B-57 | P2 | S | HiDPI and window-manager matrix: macOS Retina, Windows 150%/200%, multi-monitor moves | No clipping or blur at any tested scale |
+| B-55 | P0 | S | Playtest the slice on the desktop interface: 5 first-time players, unaided, to day 100 (`GAMEPLAY_DESIGN.md` §7 questions, plus UI_DESIGN.md §15). Then a visual design review of every screen in `mandate.jar screens` | Completion rate, time to day 100, which decisions players could explain, where they got lost |
 | B-48 | P3 | M | Optional one-off importer for Battleground 2028 saves (only if a migration path is wanted; the raw Java-serialization format makes it fragile) | Decision recorded |
 | B-35 | P3 | L | Command Mode (E1) | |
 | B-36 | P3 | L | Primaries (E1b) | |
@@ -108,7 +110,7 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 2. B-49 and B-50: the campaign economy and difficulty. These are the slice's weakest systems by the probe numbers.
 3. B-51: move the hundred days' constants into tuning before more balancing.
 4. B-54: audit Resolute Desk Version 2 before porting anything else from it.
-4. Owner decisions needed:
+5. Owner decisions needed:
    - confirm the code rights and choose the new repository's licence (R-18);
    - approve the fictional-cast policy (R-02);
    - confirm the working title, or commission a name search.

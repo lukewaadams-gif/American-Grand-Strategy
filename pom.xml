@@ -13,6 +13,7 @@
 
     <modules>
         <module>mandate-core</module>
+        <module>mandate-ui</module>
         <module>mandate-cli</module>
     </modules>
 

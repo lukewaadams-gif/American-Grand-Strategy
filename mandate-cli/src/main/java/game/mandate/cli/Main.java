@@ -31,9 +31,11 @@ import java.util.Map;
 import java.nio.file.Path;
 
 /**
- * The executable: {@code java -jar mandate.jar} starts the game. Other modes are designer tools:
+ * The executable: {@code java -jar mandate.jar} opens the desktop game (or the terminal game where there is no display).
+ * Other modes:
  * <pre>
- *   play  [--seed N] [--save FILE]   the game (the default): the 2028 election and the first hundred days, or a full term
+ *   play                             the desktop game (the default)
+ *   text  [--seed N] [--save FILE]   the same game in the terminal
  *   auto  [seed] [D|R]               the autopilot plays one full game and prints the log
  *   batch [runs] [scenario]          balance report over many autopilot games
  *   weeks [seed] [D|R] [unified|divided]   the 12-week governing prototype on its own
@@ -47,7 +49,8 @@ public final class Main {
 
     public static void main(String[] args) throws IOException {
         String mode = args.length > 0 ? args[0] : "play";
-        if (mode.startsWith("--")) { String[] a = new String[args.length + 1]; a[0] = "play"; System.arraycopy(args, 0, a, 1, args.length); args = a; mode = "play"; }
+        if (mode.startsWith("--")) { String[] a = new String[args.length + 1]; a[0] = "text"; System.arraycopy(args, 0, a, 1, args.length); args = a; mode = "text"; }
+        if (mode.equals("play") && !game.mandate.ui.MandateApp.canShowWindow()) mode = "text";
         switch (mode) {
             case "auto" -> auto(longArg(args, 1, 2028), args.length > 2 ? Party.valueOf(args[2].equals("R") ? "REPUBLICAN" : "DEMOCRAT") : Party.DEMOCRAT);
             case "compare" -> {
@@ -60,8 +63,10 @@ public final class Main {
                     !(args.length > 3 && args[3].equals("divided"))).run();
             case "war" -> WarProbe.run((int) longArg(args, 1, 300));
             case "batch" -> Batch.run((int) longArg(args, 1, 200), args.length > 2 ? Scenario.valueOf(args[2]) : Scenario.TOSS_UP);
-            case "play" -> play(args);
-            default -> System.out.println("usage: mandate [play [--seed N] [--save FILE] | auto [seed] [D|R] | batch [runs] [SCENARIO] | weeks [seed] [D|R] [unified|divided] | compare [seeds] | war [runs]]");
+            case "play" -> game.mandate.ui.MandateApp.launch(defaultSave().getParent());
+            case "text" -> play(args);
+            case "screens" -> game.mandate.ui.Screenshots.main(java.util.Arrays.copyOfRange(args, 1, args.length));
+            default -> System.out.println("usage: mandate [play | text [--seed N] [--save FILE] | auto [seed] [D|R] | batch [runs] [SCENARIO] | weeks [seed] [D|R] [unified|divided] | compare [seeds] | war [runs]]");
         }
     }
 

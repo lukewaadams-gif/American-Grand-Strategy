@@ -14,13 +14,17 @@ Requires Java 21 and Maven 3.9.
 mvn -B install
 ```
 
-This builds the code, runs the 93 tests, and writes the single executable `mandate-cli/target/mandate.jar`.
+This builds the code, runs the 113 tests (including the interface's automated checks), and writes the single executable `mandate-cli/target/mandate.jar`.
 
 ```bash
 java -jar mandate-cli/target/mandate.jar
 ```
 
-`./mandate` does the same and builds first if needed. The game autosaves to `~/.mandate/save.json`, or to `$MANDATE_HOME/save.json` if that is set, after every turn. **Continue** on the title screen resumes it. Options: `--seed N` fixes the world; `--save FILE` uses another save file. Every prompt has a default: press Enter to take it.
+This opens the desktop game: a 1280×720 or larger window with a main menu, a four-step new-game setup and the game's screens. These are Overview, Campaign HQ, Oval Office, Congress, Economy, Security, Timeline, Results, Save and load, and Settings. Ctrl+1 to Ctrl+8 switch screens, Ctrl+Enter ends the turn, Ctrl+Z undoes and F1 lists every shortcut and mechanic. Settings has text size (100–150%), high-contrast and colour-blind palettes, reduced motion, and three complexity levels. A chief adviser summarises what your screens show, and tips explain each decision the first time you meet it. See [UI_DESIGN.md](UI_DESIGN.md).
+
+`./mandate` does the same and builds first if needed. The game autosaves to `~/.mandate/save.json`, or to `$MANDATE_HOME/save.json` if that is set, after every turn; **Continue** on the main menu resumes it.
+
+The same game also runs in a terminal: `java -jar mandate-cli/target/mandate.jar text`, which is also what runs where there is no display. Options: `--seed N` fixes the world; `--save FILE` uses another save file. Every prompt has a default: press Enter to take it.
 
 ## What a game plays
 
@@ -56,6 +60,7 @@ java -jar mandate-cli/target/mandate.jar
 ./mandate weeks 5 D unified      # the 12-week governing prototype on its own
 ./mandate compare 300            # the prototype's strategy probes side by side
 ./mandate war 300                # the operational war model's calibration
+./mandate screens target/screens  # render every screen to PNG and run the interface checks
 ```
 
 ## Documents
@@ -65,6 +70,7 @@ java -jar mandate-cli/target/mandate.jar
 | [VERTICAL_SLICE.md](VERTICAL_SLICE.md) | The playable slice: the arc, how each requirement is met, evidence, known problems |
 | [PRODUCT_VISION.md](PRODUCT_VISION.md) | What the game is and is not, the pillars, the audience |
 | [FEATURE_PRIORITY.md](FEATURE_PRIORITY.md) | Every source mechanic classified A-F, feature cards, and MVP / 1.0 / expansion scope |
+| [UI_DESIGN.md](UI_DESIGN.md) | The desktop interface: the source UIs reviewed, the design system, every screen, accessibility, the advisor and tutorials, automated checks, and what needs human review |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Modules, command model, determinism, formulas, porting plan, ADRs |
 | [GAMEPLAY_DESIGN.md](GAMEPLAY_DESIGN.md) | Loop audits, the core loop, the governing prototype, mechanic change log, probe evidence, playtest plan |
 | [RISK_REGISTER.md](RISK_REGISTER.md) | Risks, scores, mitigations |
@@ -85,7 +91,8 @@ See [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ```
 mandate-core/   simulation (no UI imports, enforced by a test)
-mandate-cli/    the game shell and designer tools; builds mandate.jar
+mandate-ui/     the desktop interface: design system, screens, automated UI checks, screenshot tool
+mandate-cli/    the executable (desktop by default), the terminal game and designer tools; builds mandate.jar
 tools/          BgExport: one-off export of Battleground 2028's electorate and roster
 docs/           audit and supporting notes
 ```

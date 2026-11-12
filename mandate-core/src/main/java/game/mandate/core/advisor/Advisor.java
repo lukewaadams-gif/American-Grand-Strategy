@@ -77,7 +77,7 @@ public final class Advisor {
             out.add(new Advice(Topic.CAMPAIGN, last.winChance() < 0.35 ? Tone.WARNING : Tone.INFO,
                     String.format("You are %s by %.1f", last.national() >= 0 ? "ahead" : "behind", Math.abs(last.national())),
                     String.format("%d electoral votes if every state poll is right; the race turns on %s.", last.electoralVotes(), last.tippingPoint()),
-                    String.format("This week's polls (a polls-only forecast gives you %.0f%%)", 100 * last.winChance())));
+                    "This week's polls (a polls-only forecast gives you " + pct(last.winChance()) + ")"));
             if (polls.size() >= 4) {
                 double change = last.national() - polls.get(polls.size() - 4).national();
                 if (Math.abs(change) >= 1.0)
@@ -140,12 +140,12 @@ public final class Advisor {
             boolean house = h.stage() == BillStage.HOUSE_FLOOR;
             double chance = h.passChance(h.stage());
             if (chance >= 0.6 && !h.billActedThisWeek())
-                out.add(new Advice(Topic.CONGRESS, Tone.OPPORTUNITY, String.format("The votes look there: %.0f%% in the %s", 100 * chance, house ? "House" : "Senate"),
+                out.add(new Advice(Topic.CONGRESS, Tone.OPPORTUNITY, "The votes look there: " + pct(chance) + " in the " + (house ? "House" : "Senate"),
                         "Whip counts drift with your approval and the opposition's mood. Calling the vote now locks this in.",
                         String.format("%s whip count", house ? "House" : "Senate")));
             else if (chance < 0.6) {
                 WhipRead target = ChiefOfStaff.bestTarget(h, house);
-                out.add(new Advice(Topic.CONGRESS, chance < 0.35 ? Tone.WARNING : Tone.INFO, String.format("Short of votes: %.0f%% in the %s", 100 * chance, house ? "House" : "Senate"),
+                out.add(new Advice(Topic.CONGRESS, chance < 0.35 ? Tone.WARNING : Tone.INFO, "Short of votes: " + pct(chance) + " in the " + (house ? "House" : "Senate"),
                         target == null ? "No bloc is persuadable at the margin; the bill itself may need to change." : "The " + target.bloc() + " ("
                                 + Math.round(target.expectedYes()) + " of " + target.members() + " yes) want " + target.wants() + ".",
                         String.format("%s whip count", house ? "House" : "Senate")));
@@ -219,5 +219,12 @@ public final class Advisor {
             out.add(new Advice(Topic.CONGRESS, Tone.OPPORTUNITY, "Unfinished: " + g.bill(id).name(), "Agenda items still undone weigh on the 2032 campaign.", "Your agenda"));
             break;
         }
+    }
+
+    /** A probability as the player reads it; never "0%" or "100%", since a whip count or a poll is never certain. */
+    public static String pct(double p) {
+        if (p < 0.005) return "under 1%";
+        if (p > 0.995) return "over 99%";
+        return String.format("%.0f%%", 100 * p);
     }
 }

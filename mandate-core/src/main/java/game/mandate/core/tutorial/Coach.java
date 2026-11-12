@@ -32,6 +32,11 @@ public final class Coach {
         return Optional.empty();
     }
 
+    /** Every lesson that applies now and has not been seen, most pressing first (so an interface can show each where it belongs). */
+    public static List<Lesson> available(GameEngine g, Set<String> seen) {
+        return candidates(g).stream().filter(l -> !seen.contains(l.id())).toList();
+    }
+
     private static List<Lesson> candidates(GameEngine g) {
         java.util.ArrayList<Lesson> out = new java.util.ArrayList<>();
         switch (g.phase()) {
@@ -92,8 +97,8 @@ public final class Coach {
             out.add(new Lesson("days.week1", String.format("You have %d attention points a week. A nominee needs hearings and a Senate vote (two weeks), and the flagship needs drafting: its size and pay-for set its odds.",
                     hd.attention()), "Nominate a Treasury secretary and draft the " + hd.billName() + "."));
         if (hd.stage() == BillStage.HOUSE_FLOOR || hd.stage() == BillStage.SENATE_FLOOR)
-            out.add(new Lesson("days.whip", String.format("The whip count says %.0f%% to pass. Blocs near the middle are where a concession buys votes; the leader will not call a vote below 35%% unless you insist.",
-                    100 * hd.passChance(hd.stage())), "Negotiate with the largest persuadable bloc, then call the vote."));
+            out.add(new Lesson("days.whip", "The whip count says " + game.mandate.core.advisor.Advisor.pct(hd.passChance(hd.stage()))
+                    + " to pass. Blocs near the middle are where a concession buys votes; the leader will not call a vote below 35% unless you insist.", "Negotiate with the largest persuadable bloc, then call the vote."));
         if (hd.week() >= 3 && hd.delegated().isEmpty())
             out.add(new Lesson("days.delegate", "You can hand a domain to the chief of staff: no attention spent, but the staff is cautious and works at half strength.",
                     "Delegate the budget if the bill needs all your attention."));

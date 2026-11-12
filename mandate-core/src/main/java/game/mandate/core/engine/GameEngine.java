@@ -610,6 +610,9 @@ public final class GameEngine implements WorldView {
         if (w.military.operationActive()) throw new IllegalCommandException("The war has the president's full attention");
     }
 
+    /** The chance an executive order survives the courts. An order needs no vote. */
+    public double executiveOrderSurvival() { return 1 - congressEngine.courtBlockChance(); }
+
     public WhipCount whip(String billId, LegislativeStrategy strategy, double capitalCommitted) {
         return congressEngine.whip(w.congress, bill(billId), strategy, legislativeContext(billId), capitalCommitted);
     }

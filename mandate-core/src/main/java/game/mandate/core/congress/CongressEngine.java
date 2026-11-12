@@ -113,6 +113,9 @@ public final class CongressEngine {
 
     public record Passage(boolean enacted, String explanation, List<Effect> consequences) {}
 
+    /** The chance a court blocks an executive order (a published rule, shown to the player before choosing). */
+    public double courtBlockChance() { return courtBlockChance; }
+
     /**
      * Runs the legislative process for one bill and records it. Returns what happened and the transitions the
      * rest of the world must apply (approval, economy, deficit, salience, capital, goodwill, wing moods).
