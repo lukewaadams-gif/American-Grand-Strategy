@@ -62,6 +62,12 @@ public final class CongressEngine {
         return false;
     }
 
+    /** The president's relationship with a bloc, -1..1, moved by concessions and threats. */
+    public void adjustRelationship(CongressState s, String bloc, double delta) {
+        s.relationship.merge(bloc, delta, Double::sum);
+        s.relationship.computeIfPresent(bloc, (k, v) -> Math.max(-1, Math.min(1, v)));
+    }
+
     // ---- the whip and the vote ----------------------------------------------------------------
 
     public int senateNeeded(CongressState s, LegislativeStrategy strategy) {
@@ -150,6 +156,16 @@ public final class CongressEngine {
         out.add(new Effect.Capital(-failCapital));
         out.add(new Effect.Approval(-failApproval));
         return new Passage(false, why, out);
+    }
+
+    /**
+     * Records a law enacted outside {@link #push} (the first hundred days negotiate their flagship stage by stage).
+     * @return the salience transition every new law carries
+     */
+    public Effect recordLaw(CongressState s, PolicyState policy, Bill b, LocalDate date, LegislativeStrategy route, double payoff) {
+        if (route == LegislativeStrategy.RECONCILIATION) s.reconciliationYears.add(date.getYear()); // once a year, whichever path used it
+        policy.enacted.add(new PolicyState.Enacted(b.id(), date, route, payoff));
+        return new Effect.Salience(b.issue(), lawSalience);
     }
 
     private List<Effect> enact(PolicyState policy, Bill b, LegislativeStrategy s, LegislativeContext ctx, LocalDate date) {

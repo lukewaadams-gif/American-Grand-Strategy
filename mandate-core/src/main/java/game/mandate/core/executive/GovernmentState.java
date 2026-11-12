@@ -12,10 +12,15 @@ import java.util.Map;
 
 /** The president, the cabinet, the agenda and the president's attention. Owned by {@link ExecutiveEngine}. */
 public final class GovernmentState {
-    public enum SeatStatus { VACANT, CONFIRMED, ACTING }
+    public enum SeatStatus { VACANT, NOMINATED, HEARINGS_DONE, CONFIRMED, ACTING }
 
-    /** One cabinet seat. */
-    public record Seat(String name, NomineeType type, SeatStatus status) {}
+    /**
+     * One cabinet seat. While a nomination is pending, {@code nominated} is the date it was sent to the Senate and
+     * {@code controversyBump} is any extra controversy picked up at the hearings.
+     */
+    public record Seat(String name, NomineeType type, SeatStatus status, LocalDate nominated, double controversyBump) {
+        public Seat(String name, NomineeType type, SeatStatus status) { this(name, type, status, null, 0); }
+    }
 
     String presidentId;
     Party presidentParty;
@@ -46,6 +51,7 @@ public final class GovernmentState {
         cabinet.forEach((post, s) -> {
             Map<String, Object> x = new LinkedHashMap<>();
             x.put("name", s.name()); x.put("type", s.type() == null ? null : s.type().name()); x.put("status", s.status().name());
+            x.put("nominated", s.nominated() == null ? null : s.nominated().toString()); x.put("bump", s.controversyBump());
             c.put(post.name(), x);
         });
         m.put("cabinet", c);
@@ -62,7 +68,8 @@ public final class GovernmentState {
         Json.object(m.get("cabinet")).forEach((k, v) -> {
             Map<String, Object> x = Json.object(v);
             g.cabinet.put(Post.valueOf(k), new Seat((String) x.get("name"), x.get("type") == null ? null : NomineeType.valueOf((String) x.get("type")),
-                    SeatStatus.valueOf((String) x.get("status"))));
+                    SeatStatus.valueOf((String) x.get("status")), x.get("nominated") == null ? null : LocalDate.parse((String) x.get("nominated")),
+                    Json.num(x.get("bump"))));
         });
         return g;
     }

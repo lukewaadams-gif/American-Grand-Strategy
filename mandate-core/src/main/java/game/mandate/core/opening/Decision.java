@@ -8,7 +8,7 @@ import java.util.List;
  */
 public record Decision(int id, Kind kind, String title, String situation, List<Option> options) {
 
-    public enum Kind { CRISIS, FUNDING, SHUTDOWN, BILL_FAILED, BOTTLED_IN_COMMITTEE, NOMINEE_REJECTED, FACTION_REVOLT, AFTERMATH, LEAK }
+    public enum Kind { CRISIS, FUNDING, SHUTDOWN, BILL_FAILED, BOTTLED_IN_COMMITTEE, NOMINEE_REJECTED, FACTION_REVOLT, AFTERMATH, ECONOMY, LEAK }
 
     public record Option(String label, String preview) {}
 

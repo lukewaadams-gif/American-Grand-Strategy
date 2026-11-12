@@ -9,18 +9,23 @@ import game.mandate.core.executive.Post;
 public final class Types {
     private Types() {}
 
-    /** Size of the flagship bill. Bigger delivers more and is harder to pass. (RD: bill "size and scope".) */
+    /**
+     * Size of the flagship bill, as factors on the catalog bill it is built from (RD: bill "size and scope").
+     * Bigger delivers more and is harder to pass: it moves the bill away from the centre and grows its deficit.
+     */
     public enum BillSize {
-        SMALL(1, 0.15, 0.10), MEDIUM(2, 0.30, 0.20), LARGE(3, 0.50, 0.35);
+        SMALL(1, 2.0 / 3, 0.5, 0.5), MEDIUM(2, 1.0, 1.0, 1.0), LARGE(3, 4.0 / 3, 5.0 / 3, 1.75);
 
         public final int value;
-        public final double deficit;     // % of GDP if fully borrowed
-        public final double growth;      // demand impulse, points
+        public final double ideologyFactor;
+        public final double deficitFactor;   // on the catalog bill's deficit (a medium, borrowed bill)
+        public final double growthFactor;    // on the catalog bill's demand impulse
 
-        BillSize(int value, double deficit, double growth) {
+        BillSize(int value, double ideologyFactor, double deficitFactor, double growthFactor) {
             this.value = value;
-            this.deficit = deficit;
-            this.growth = growth;
+            this.ideologyFactor = ideologyFactor;
+            this.deficitFactor = deficitFactor;
+            this.growthFactor = growthFactor;
         }
 
         public BillSize smaller() { return this == LARGE ? MEDIUM : SMALL; }
@@ -48,7 +53,6 @@ public final class Types {
     /** RD's path of a bill, minus the auto-passing conference stage (see GAMEPLAY_DESIGN.md, change C-07). */
     public enum BillStage { NOT_DRAFTED, COMMITTEE, HOUSE_FLOOR, SENATE_FLOOR, LAW, DEAD }
 
-    public enum SeatStatus { VACANT, NOMINATED, HEARINGS_DONE, CONFIRMED, ACTING }
 
     /** Concessions offered to a bloc. (RD: "calls, projects back home, appointments, endorsements or threats".) */
     public enum Concession { PROJECT, APPOINTMENT, THREAT }
@@ -94,6 +98,20 @@ public final class Types {
         public final String label;
 
         FundingOffer(String label) { this.label = label; }
+    }
+
+    /** The economic challenge of the first 100 days: which shock arrives (seeded). */
+    public enum EconomicChallenge {
+        INFLATION_SURGE("An inflation surge", "Shipping disruptions and a cold snap push prices up: the next inflation report will run hot."),
+        JOBS_SLUMP("A hiring slump", "Layoffs spread from tech and manufacturing: weekly jobless claims are climbing.");
+
+        public final String title;
+        public final String situation;
+
+        EconomicChallenge(String title, String situation) {
+            this.title = title;
+            this.situation = situation;
+        }
     }
 
     /** Domains the chief of staff can run for a casual player. */

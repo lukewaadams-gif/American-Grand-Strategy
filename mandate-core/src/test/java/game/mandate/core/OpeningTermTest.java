@@ -14,7 +14,7 @@ import game.mandate.core.opening.Types.FundingOffer;
 import game.mandate.core.executive.NomineeType;
 import game.mandate.core.opening.Types.PayFor;
 import game.mandate.core.executive.Post;
-import game.mandate.core.opening.Types.SeatStatus;
+import game.mandate.core.executive.GovernmentState.SeatStatus;
 import game.mandate.core.opening.TestAccess;
 import game.mandate.core.opening.WhipRead;
 import game.mandate.core.state.Party;

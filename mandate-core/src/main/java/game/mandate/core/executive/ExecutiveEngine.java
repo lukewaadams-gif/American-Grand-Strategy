@@ -50,7 +50,8 @@ public final class ExecutiveEngine {
                                     double moderateWingMood, DeterministicRandomManager rng) {
         List<String> lines = new ArrayList<>();
         for (Post p : Post.values()) {
-            if (g.cabinet.get(p).status() != GovernmentState.SeatStatus.VACANT) continue;
+            GovernmentState.SeatStatus st = g.cabinet.get(p).status();
+            if (st != GovernmentState.SeatStatus.VACANT && st != GovernmentState.SeatStatus.ACTING) continue;
             CabinetPool.Candidate c = pool.pick(g.presidentParty, p, NomineeType.EXPERT);
             double expected = votes.confirmationExpected(g.presidentParty, congress, c.type().controversy(), c.type() == NomineeType.CROSSOVER,
                     opposition, moderateWingMood);
@@ -60,6 +61,37 @@ public final class ExecutiveEngine {
             lines.add((ok ? "Confirmed " : "Rejected ") + c.name() + " for " + p.name().toLowerCase() + ", " + yes + "-" + (100 - yes) + ".");
         }
         return lines;
+    }
+
+    // ---- the nomination pipeline (first 100 days): nominate -> hearings -> Senate vote ----------
+
+    /** Sends a nominee of the given archetype; returns the nominee's name. */
+    public String nominate(GovernmentState g, Post p, NomineeType type, LocalDate date) {
+        GovernmentState.SeatStatus st = g.cabinet.get(p).status();
+        if (st != GovernmentState.SeatStatus.VACANT && st != GovernmentState.SeatStatus.ACTING)
+            throw new IllegalStateException(p + " already has a nominee");
+        CabinetPool.Candidate c = pool.pick(g.presidentParty, p, type);
+        g.cabinet.put(p, new GovernmentState.Seat(c.name(), type, GovernmentState.SeatStatus.NOMINATED, date, 0));
+        return c.name();
+    }
+
+    /** Records the hearings; a stumble adds controversy before the vote. */
+    public void hearingsHeld(GovernmentState g, Post p, double controversyBump) {
+        GovernmentState.Seat s = g.cabinet.get(p);
+        g.cabinet.put(p, new GovernmentState.Seat(s.name(), s.type(), GovernmentState.SeatStatus.HEARINGS_DONE, s.nominated(), controversyBump));
+    }
+
+    /** The Senate's verdict: confirmed, or rejected and an acting official takes over. */
+    public void senateVerdict(GovernmentState g, Post p, boolean confirmed) {
+        GovernmentState.Seat s = g.cabinet.get(p);
+        g.cabinet.put(p, new GovernmentState.Seat(s.name(), s.type(), confirmed ? GovernmentState.SeatStatus.CONFIRMED : GovernmentState.SeatStatus.ACTING,
+                null, 0));
+    }
+
+    /** The controversy a pending nominee carries into the vote. */
+    public double controversy(GovernmentState g, Post p) {
+        GovernmentState.Seat s = g.cabinet.get(p);
+        return s.type() == null ? 0 : s.type().controversy() + s.controversyBump();
     }
 
     public double competence(GovernmentState g, Post p) {

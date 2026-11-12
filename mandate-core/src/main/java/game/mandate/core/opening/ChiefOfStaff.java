@@ -9,7 +9,7 @@ import game.mandate.core.executive.NomineeType;
 import game.mandate.core.politics.OppositionStrategy;
 import game.mandate.core.opening.Types.PayFor;
 import game.mandate.core.executive.Post;
-import game.mandate.core.opening.Types.SeatStatus;
+import game.mandate.core.executive.GovernmentState.SeatStatus;
 import game.mandate.core.state.Party;
 
 import java.util.Set;
@@ -28,14 +28,14 @@ public final class ChiefOfStaff {
     public static boolean handles(Kind kind, Set<Domain> delegated) {
         return switch (kind) {
             case CRISIS, AFTERMATH -> delegated.contains(Domain.CRISIS);
-            case FUNDING, SHUTDOWN -> delegated.contains(Domain.BUDGET);
+            case FUNDING, SHUTDOWN, ECONOMY -> delegated.contains(Domain.BUDGET);
             case BILL_FAILED, BOTTLED_IN_COMMITTEE, FACTION_REVOLT -> delegated.contains(Domain.LEGISLATION);
             case NOMINEE_REJECTED -> delegated.contains(Domain.CABINET);
             case LEAK -> true;
         };
     }
 
-    static void act(OpeningTerm t, Set<Domain> delegated) {
+    static void act(HundredDays t, Set<Domain> delegated) {
         settle(t, delegated);
         if (delegated.contains(Domain.CABINET)) {
             for (Post p : Post.values()) {
@@ -46,13 +46,14 @@ public final class ChiefOfStaff {
         settle(t, delegated); // a failed vote raises a follow-up the staff must also answer
     }
 
-    private static void settle(OpeningTerm t, Set<Domain> delegated) {
+    private static void settle(HundredDays t, Set<Domain> delegated) {
         for (Decision d : t.pending()) {
             if (!handles(d.kind(), delegated)) continue;
             int option = switch (d.kind()) {
                 case CRISIS -> t.escalation() >= 3 ? 0 : 1;
                 case FUNDING -> t.opposition() == OppositionStrategy.OBSTRUCT ? 3 : 0;
                 case SHUTDOWN -> 1;
+                case ECONOMY -> t.challenge() == Types.EconomicChallenge.INFLATION_SURGE ? 0 : 1; // the cautious course: back the Fed, or targeted aid
                 case BILL_FAILED -> 0;
                 case BOTTLED_IN_COMMITTEE -> 1;
                 case FACTION_REVOLT -> t.capital() >= 5 ? 0 : 1;
@@ -64,7 +65,7 @@ public final class ChiefOfStaff {
         }
     }
 
-    private static void legislate(OpeningTerm t) {
+    private static void legislate(HundredDays t) {
         if (t.stage() == BillStage.NOT_DRAFTED) t.draft(BillSize.MEDIUM, t.party() == Party.DEMOCRAT ? PayFor.REVENUE : PayFor.CUTS);
         if (t.billActedThisWeek() || !t.pending().isEmpty()) return;
         BillStage s = t.stage();
@@ -79,7 +80,7 @@ public final class ChiefOfStaff {
     }
 
     /** The bloc where a concession buys the most votes: many members, persuadable, not hopeless. */
-    static WhipRead bestTarget(OpeningTerm t, boolean house) {
+    static WhipRead bestTarget(HundredDays t, boolean house) {
         WhipRead best = null;
         double bestGain = 0;
         for (WhipRead w : t.whip(house)) {

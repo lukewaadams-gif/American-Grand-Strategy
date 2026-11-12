@@ -8,7 +8,7 @@ import game.mandate.core.executive.NomineeType;
 import game.mandate.core.politics.OppositionStrategy;
 import game.mandate.core.opening.Types.PayFor;
 import game.mandate.core.executive.Post;
-import game.mandate.core.opening.Types.SeatStatus;
+import game.mandate.core.executive.GovernmentState.SeatStatus;
 import game.mandate.core.state.Party;
 
 import java.util.List;
@@ -44,8 +44,8 @@ public enum Strategy {
         return t;
     }
 
-    public void playWeek(OpeningTerm t) {
-        if (this == DELEGATOR && t.week() == 1) for (Domain d : Domain.values()) t.apply(new OpeningAction.Delegate(d, true));
+    public void playWeek(HundredDays t) {
+        if (this == DELEGATOR && t.week() == 1) for (Domain d : Domain.values()) t.act(new OpeningAction.Delegate(d, true));
         answerDecisions(t);
         switch (this) {
             case PARTISAN -> partisan(t);
@@ -57,19 +57,19 @@ public enum Strategy {
             case STRATEGIST -> strategist(t);
         }
         answerDecisions(t); // actions this week can raise follow-ups (a failed vote)
-        t.apply(new OpeningAction.EndWeek());
+        t.act(new OpeningAction.EndWeek());
     }
 
     // ---- decisions ---------------------------------------------------------------------------------
 
-    private void answerDecisions(OpeningTerm t) {
+    private void answerDecisions(HundredDays t) {
         for (Decision d : t.pending()) {
             if (ChiefOfStaff.handles(d.kind(), t.delegated())) continue;
-            t.apply(new OpeningAction.Decide(d.id(), choose(t, d)));
+            t.act(new OpeningAction.Decide(d.id(), choose(t, d)));
         }
     }
 
-    private int choose(OpeningTerm t, Decision d) {
+    private int choose(HundredDays t, Decision d) {
         return switch (d.kind()) {
             case CRISIS -> switch (this) {
                 case PARTISAN -> 2;                                      // show of force
@@ -95,18 +95,32 @@ public enum Strategy {
             case NOMINEE_REJECTED -> this == DEALMAKER ? 1 : 0;
             case FACTION_REVOLT -> (this == HAWK || this == TECHNOCRAT) ? 1 : (t.capital() >= 5 ? 0 : 1);
             case AFTERMATH -> switch (this) { case PARTISAN, HAWK -> 0; case STRATEGIST, DEALMAKER, TECHNOCRAT -> 1; default -> t.capital() >= 6 ? 2 : 1; };
+            case ECONOMY -> economicResponse(t);
             case LEAK -> 0;
+        };
+    }
+
+    /** Each archetype's answer to the economic challenge (options are listed in {@link HundredDays}). */
+    private int economicResponse(HundredDays t) {
+        boolean inflation = t.challenge() == Types.EconomicChallenge.INFLATION_SURGE;
+        return switch (this) {
+            case PARTISAN -> inflation ? 3 : 0;                                 // lean on the Fed / stimulus
+            case DEALMAKER -> inflation ? 2 : 1;                                // tariff and gas-tax relief / targeted aid
+            case HAWK -> inflation ? 0 : 2;                                     // fiscal discipline
+            case TECHNOCRAT -> inflation ? 0 : 1;                               // back the Fed / targeted aid
+            case STRATEGIST -> inflation ? (t.inflation() > 4.0 ? 0 : 2) : (t.unemployment() > 5.0 ? 0 : 1);
+            default -> inflation ? 0 : 2;
         };
     }
 
     // ---- archetypes --------------------------------------------------------------------------------
 
-    private static PayFor basePayFor(OpeningTerm t) { return t.party() == Party.DEMOCRAT ? PayFor.REVENUE : PayFor.CUTS; }
+    private static PayFor basePayFor(HundredDays t) { return t.party() == Party.DEMOCRAT ? PayFor.REVENUE : PayFor.CUTS; }
 
     /** The pay-for that moves the bill toward the centre. */
-    private static PayFor centristPayFor(OpeningTerm t) { return t.party() == Party.DEMOCRAT ? PayFor.CUTS : PayFor.REVENUE; }
+    private static PayFor centristPayFor(HundredDays t) { return t.party() == Party.DEMOCRAT ? PayFor.CUTS : PayFor.REVENUE; }
 
-    private static void partisan(OpeningTerm t) {
+    private static void partisan(HundredDays t) {
         if (t.week() == 1) {
             act(t, new OpeningAction.DraftBill(BillSize.LARGE, basePayFor(t)));
             act(t, new OpeningAction.Nominate(Post.TREASURY, NomineeType.LOYALIST));
@@ -123,7 +137,7 @@ public enum Strategy {
         }
     }
 
-    private static void dealmaker(OpeningTerm t) {
+    private static void dealmaker(HundredDays t) {
         if (t.week() == 1) {
             act(t, new OpeningAction.DraftBill(BillSize.MEDIUM, centristPayFor(t)));
             act(t, new OpeningAction.Nominate(Post.TREASURY, NomineeType.EXPERT));
@@ -139,7 +153,7 @@ public enum Strategy {
         if (t.attention() > 0 && t.goodwill() < 15) act(t, new OpeningAction.MeetOpposition());
     }
 
-    private static void hawk(OpeningTerm t) {
+    private static void hawk(HundredDays t) {
         if (t.week() == 1) {
             act(t, new OpeningAction.Nominate(Post.DEFENSE, NomineeType.EXPERT));
             act(t, new OpeningAction.Nominate(Post.STATE, NomineeType.EXPERT));
@@ -151,7 +165,7 @@ public enum Strategy {
         pushBill(t, false);
     }
 
-    private static void technocrat(OpeningTerm t) {
+    private static void technocrat(HundredDays t) {
         if (t.week() == 1) {
             act(t, new OpeningAction.Nominate(Post.TREASURY, NomineeType.EXPERT));
             act(t, new OpeningAction.DraftBill(BillSize.MEDIUM, basePayFor(t)));
@@ -166,9 +180,9 @@ public enum Strategy {
     }
 
     /** A casual player: everything delegated, no personal actions at all. */
-    private static void delegator(OpeningTerm t) { }
+    private static void delegator(HundredDays t) { }
 
-    private static void strategist(OpeningTerm t) {
+    private static void strategist(HundredDays t) {
         boolean unified = t.congress().unified(t.party());
         if (t.week() == 1) {
             act(t, new OpeningAction.DraftBill(BillSize.MEDIUM, unified ? basePayFor(t) : centristPayFor(t)));
@@ -187,17 +201,17 @@ public enum Strategy {
 
     // ---- shared tactics ----------------------------------------------------------------------------
 
-    private static boolean live(OpeningTerm t) {
+    private static boolean live(HundredDays t) {
         BillStage s = t.stage();
         return s == BillStage.COMMITTEE || s == BillStage.HOUSE_FLOOR || s == BillStage.SENATE_FLOOR;
     }
 
-    private static void nominateVacant(OpeningTerm t, NomineeType type) {
+    private static void nominateVacant(HundredDays t, NomineeType type) {
         for (Post p : Post.values()) if (t.attention() > 0 && t.seat(p) == SeatStatus.VACANT) act(t, new OpeningAction.Nominate(p, type));
     }
 
     /** Work the votes, then call the vote when the odds are good enough. Partisans threaten; others pay. */
-    private static void pushBill(OpeningTerm t, boolean partisan) {
+    private static void pushBill(HundredDays t, boolean partisan) {
         if (!live(t) || t.billActedThisWeek()) return;
         if (t.stage() == BillStage.COMMITTEE) { act(t, new OpeningAction.CallVote(false)); return; }
         boolean house = t.stage() == BillStage.HOUSE_FLOOR;
@@ -213,9 +227,9 @@ public enum Strategy {
     }
 
     /** Apply if legal; strategies probe the rules exactly as a player clicking buttons would. */
-    private static boolean act(OpeningTerm t, OpeningAction a) {
+    private static boolean act(HundredDays t, OpeningAction a) {
         try {
-            t.apply(a);
+            t.act(a);
             answerFollowUps(t);
             return true;
         } catch (IllegalStateException refused) {
@@ -223,7 +237,7 @@ public enum Strategy {
         }
     }
 
-    private static void answerFollowUps(OpeningTerm t) { /* follow-ups are answered at the end of playWeek */ }
+    private static void answerFollowUps(HundredDays t) { /* follow-ups are answered at the end of playWeek */ }
 
     public static List<Strategy> active() { return List.of(PARTISAN, DEALMAKER, HAWK, TECHNOCRAT, DELEGATOR); }
 }
