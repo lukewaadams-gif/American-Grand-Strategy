@@ -1,5 +1,7 @@
 package game.mandate.core.engine;
 
+import game.mandate.core.campaign.Candidate;
+import game.mandate.core.game.GameSetup;
 import game.mandate.core.opening.OpeningSetup;
 import game.mandate.core.opening.Strategy;
 import game.mandate.core.state.Party;
@@ -31,9 +33,25 @@ class GoldenRegressionTest {
     static Map<String, String> current() {
         Map<String, String> m = new TreeMap<>();
         for (long seed = 1; seed <= 6; seed++) m.put("game." + seed, playUntil(new GameEngine(setup(seed)), GameEngine::over).fingerprint());
+        // The vertical slice: the election, the transition and the first hundred days, ending with the report. The seeds
+        // cover each ending as of this commit: lost (1, 2), partial success (6, 8, 21) and victory (12, 24).
+        for (long seed : new long[]{1, 2, 6, 8, 12, 21, 24}) m.put("slice." + seed, slice(setup(seed).withLength(GameSetup.Length.HUNDRED_DAYS)));
+        for (long seed : new long[]{11, 21})
+            m.put("slice.custom." + seed, slice(setup(seed).withLength(GameSetup.Length.HUNDRED_DAYS)
+                    .withCustomCandidate(Candidate.custom(Party.REPUBLICAN, "Dana Whitcomb", "OH", 8, 7, 6, 6, 6, 0.25))));
+        for (long seed : new long[]{3, 9})
+            m.put("slice.realRoster." + seed, slice(new GameSetup(seed, Party.DEMOCRAT, "bg_buttigieg", "bg_vance", game.mandate.core.game.Scenario.TOSS_UP,
+                    GameSetup.Difficulty.STANDARD, GameSetup.Length.HUNDRED_DAYS, true, null)));
         for (Strategy s : Strategy.values())
             m.put("prototype." + s, Integer.toHexString(Strategy.play(new OpeningSetup(77, Party.REPUBLICAN, false), s).report().toString().hashCode()));
         return m;
+    }
+
+    /** A slice game's world fingerprint and its ending: the 100-day outcome, or the lost election. */
+    static String slice(GameSetup s) {
+        GameEngine g = playUntil(new GameEngine(s), GameEngine::over);
+        String ending = g.dayHundredReport().map(r -> r.outcome() + ":" + r.score()).orElse("LOST:" + g.result2028().orElseThrow().electoralVotes(g.player().party()));
+        return g.fingerprint() + "|" + ending;
     }
 
     @Test

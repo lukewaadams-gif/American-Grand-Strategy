@@ -301,6 +301,12 @@ Source mechanics are **not** deleted from the source repositories. These records
 | C-14 | RD press conferences, social posts | "Go public" with diminishing returns | RD and BG measured: the best answer is obvious from ratings (a quiz); posting 5 times a week is busywork | — |
 | C-15 | F `PublicAddress` (monthly) | Same diminishing-returns rule, now tied to a live bill | The F batch showed address-spam as part of the dominant autopilot pattern | — |
 | C-16 | RD stamina, health, sleep | Not modelled | No decision value (FEATURE_PRIORITY §1.5) | — |
+| C-17 | Prototype: twelve weeks in its own world | Fourteen weeks (to day 100) inside the game's world; the prototype keeps twelve | The vertical slice: one world and one save from the campaign to day 100 | — |
+| C-18 | Prototype: a synthetic flagship | The flagship is the first agenda priority, a catalog bill; size and pay-for are factors on it | The campaign's promises and the transition's agenda decide the bill the player fights for | Players ignore the agenda because the flagship always looks the same |
+| C-19 | — (new) | An economic challenge in week 5 (an inflation surge or a hiring slump, seeded), with four responses and front-loaded shocks | The requirement "respond to an economic challenge"; the shocks are front-loaded because the damped economy otherwise barely moved before day 100 | The challenge dominates the hundred days in playtests |
+| C-20 | Prototype crisis, separate from the world | The outcome shifts the hotspot's standing tension; full-term games catch up the flashpoints' monthly drift after day 100 | Continuity between the hundred days and the term | — |
+| C-21 | BG campaign: one weekly plan | Standing orders (preset, spending rate, message) turned into each week's plan; a hand-built week overrides them | "Prevent repetitive scheduling": the campaign can be run in a handful of decisions, with depth one menu away | Players never change their orders (the presets are not distinct enough) |
+| C-22 | BG and RD real politicians | Fictional by default; the real roster is opt-in; no invented personal scandals for real people | R-02 | — |
 
 ---
 
@@ -320,21 +326,26 @@ Source mechanics are **not** deleted from the source repositories. These records
 
 ### 6.2 Results
 
-These are means over 300 seeds per strategy, with the party alternating. Reproduce with `./mandate compare 300`.
+These are means over 300 seeds per strategy, with the party alternating. Reproduce with `./mandate compare 300`. They were re-measured for the vertical slice, which added the economic challenge (week 5) to the twelve weeks. The previous version of this table predated the foundation's last rebalance and no longer matched the code. For example, it reported 92% for the hawk; the code at that commit already gave 50%.
 
 **Unified government**
 
 | Strategy | Approval | Base | Swing | Law % | Policy | Economy | Security | Clash % | Unity | Goodwill | Shutdown weeks |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| PARTISAN | 48.8 | **89.6** | 48.0 | 82 | **2.14** | −0.17 | 1.95 | 22 | **65.7** | −26.3 | 2.47 |
-| DEALMAKER | **51.2** | 83.7 | **55.0** | 100 | 1.75 | 0.58 | 0.26 | 7 | 55.6 | **18.8** | 0.11 |
-| HAWK | 50.5 | 85.1 | 53.2 | 92 | 0.94 | 0.49 | **3.08** | 11 | 61.0 | 4.5 | 0.71 |
-| TECHNOCRAT | 51.1 | 87.2 | 53.6 | 100 | 1.68 | **0.62** | 0.92 | 7 | 61.9 | −0.1 | 0.40 |
-| DELEGATOR | 50.8 | 87.1 | 53.1 | 100 | 1.69 | 0.54 | 1.21 | 16 | 62.0 | −0.3 | 0.50 |
-| IDLE | 48.7 | 82.5 | 51.5 | 0 | 0.00 | 0.39 | 1.02 | 16 | 60.6 | −0.9 | 1.14 |
-| STRATEGIST | 51.5 | 87.5 | 54.1 | 100 | 1.68 | 0.55 | 1.20 | 8 | 62.8 | 4.7 | 0.90 |
+| PARTISAN | 48.0 | **88.9** | 46.5 | 77 | **2.04** | −0.73 | 1.94 | 22 | **64.9** | −24.1 | 2.52 |
+| DEALMAKER | **50.5** | 83.8 | **53.4** | 100 | 1.95 | −0.03 | 0.26 | 7 | 56.0 | **18.8** | 0.11 |
+| HAWK | 48.7 | 83.5 | 50.2 | 50 | 0.63 | −0.05 | **3.06** | 10 | 60.9 | 6.5 | 0.72 |
+| TECHNOCRAT | 49.9 | 86.6 | 51.3 | 100 | 1.65 | **0.05** | 0.90 | 7 | 62.0 | 0.5 | 0.40 |
+| DELEGATOR | 49.6 | 86.5 | 50.8 | 100 | 1.64 | −0.02 | 1.18 | 16 | 62.1 | 0.4 | 0.50 |
+| IDLE | 47.2 | 81.7 | 48.3 | 0 | 0.00 | −0.15 | 1.02 | 16 | 60.5 | 1.0 | 1.22 |
+| STRATEGIST | **50.5** | 86.9 | 52.3 | 100 | 1.65 | −0.01 | 1.16 | 8 | 62.7 | 5.1 | 0.87 |
 
-**Divided government:** partisan law rate 0%, approval 45.8. Dealmaker 100% (policy 1.38). Hawk 73%, technocrat 44%, delegator 13%. Strategist 100%, with the lowest clash rate (7%).
+**Divided government.**
+- Partisan: 0% law rate, approval 45.2.
+- Dealmaker: 100% (policy 1.34).
+- Hawk: 50%.
+- Technocrat and delegator: 0%.
+- Strategist: 100%, with a clash rate of 8%.
 
 **Reading the tables:**
 - Each hands-on philosophy leads on a different measure:
@@ -344,7 +355,9 @@ These are means over 300 seeds per strategy, with the party alternating. Reprodu
   - technocrat: the economy.
 - No philosophy Pareto-dominates another, in either condition (tested).
 - The partisan path is strong in unified government and dead in divided government. The dealmaker path works in both, at the cost of its base and its deterrence.
-- Casual delegation matches hands-on play in unified government. In divided government it falls to a 13% law rate against 100% for the attentive probes.
+- Casual delegation matches hands-on play in unified government. In divided government it passes nothing; the attentive probes pass the bill every time.
+- **The hawk's 50% is one party's 100% and the other's 0%.** A small bill paid for by cuts sits near the centre for a Democrat (ideology −0.10) but far to the right for a Republican (+0.50). The pay-for shift is not mirrored by party. Decide whether that asymmetry is intended (open issue O-6).
+- **The economic challenge lowered every probe's economy index by about 0.3.** The probes answer it with fixed scripts; in the slice, the economy goal separates the responses (§8 of `VERTICAL_SLICE.md`).
 
 ### 6.3 How much strategy explains (η², 5 philosophies × 150 seeds)
 
@@ -430,5 +443,8 @@ The test requires η² ≥ 0.2 on every measure and ≥ 0.5 on at least three. B
   - group approval, which feeds the M1 cell model.
 - **O-4 More bills at once,** so legislation competes for attention (C-03).
 - **O-5 Data-driven content.** Crisis kinds, nominee archetypes and stopgap offers move to the M2 content files.
+- **O-6 Mirrored pay-fors.** Whether a pay-for's ideological shift should mirror by party. Today "cuts" moves any bill right and "revenue" moves it left, so the same design means different things for each party (§6.2, the hawk).
+
+O-3 is done for the first hundred days: they run inside the game through a `Host` (`VERTICAL_SLICE.md`). Monthly governing still uses the foundation's systems.
 
 New backlog items B-39 to B-44 are added in `DEVELOPMENT_ROADMAP.md`.

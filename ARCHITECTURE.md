@@ -19,16 +19,19 @@ mandate/                      Maven multi-module, Java 21
 │   ├── rng/                  DeterministicRandomManager: named SplitMix64 streams with saveable state
 │   ├── data/                 Tuning (all balancing constants), Json, Csv
 │   ├── effects/              Effect: the sealed transition vocabulary
-│   ├── campaign/ electorate/ ELECTION engine: ElectionEngine, ElectionState, CampaignEngine, ElectionCalculator, ElectorateModel
+│   ├── campaign/ electorate/ ELECTION engine: ElectionEngine, ElectionState, CampaignEngine, CampaignStrategy, PollPoint,
+│   │                         ElectionCalculator, ElectorateModel (CellElectorateModel: BG's 96 cells; UniformSwingModel)
 │   ├── economy/              ECONOMY engine: EconomyEngine, EconomyState, BudgetState, MarketContext
 │   ├── congress/             CONGRESS engine: CongressEngine, VoteModel, CongressState, PolicyState, bills and blocs
 │   ├── politics/             SHARED POLITICAL SYSTEM: PoliticsEngine, PoliticsState, PartyState, coalitions, opposition
 │   ├── executive/            the presidency: ExecutiveEngine, GovernmentState, cabinet posts and archetypes
 │   ├── diplomacy/            DIPLOMACY engine: DiplomacyEngine, DiplomacyState, countries, the Taiwan ladder
 │   ├── military/             MILITARY engine: MilitaryEngine, MilitaryState, OperationState, theater seam
-│   ├── ai/                   CampaignAi (opponent), AutoPilot (delegation, batch probes): players, not engines
-│   └── opening/              the 12-week governing prototype, re-hosted on the engines above
-└── mandate-cli/              text play, autoplay, balance batch, 12-week prototype, strategy comparison
+│   ├── ai/                   CampaignAi (staff planner and adaptive opponent), AutoPilot (batch probes): players, not engines
+│   ├── opening/              the first hundred days: HundredDays (over a Host), HundredDaysState, DayHundredReport;
+│   │                         OpeningTerm + StandaloneHost = the 12-week prototype on the same code
+│   └── tutorial/             Coach: one situational lesson at a time; reads the game, never changes it
+└── mandate-cli/              GameShell (the game), Console; designer tools; builds the single mandate.jar
 ```
 
 ## 3. One authoritative world, with owners
@@ -84,13 +87,17 @@ An engine never reaches into another engine's state.
 
 `SimulationClock` has four granularities:
 - `MONTHLY` while governing;
-- `WEEKLY` in campaigns;
+- `WEEKLY` in campaigns and in the first hundred days;
 - `DAILY` (available; used by operational turns after the first week of a war);
 - `OPERATIONAL`, a turn length in hours.
 
 When a war starts, the clock switches to operational turns: 6 hours each in the first week, then 24 hours. Each `EndTurn` fights one turn. When the war ends, monthly governing resumes. Engine rates are expressed per week or per month and compounded for the actual step (for example `1-(1-a)^dt`). One set of equations therefore serves the monthly main game and the weekly prototype.
 
 **Dated milestones** come from `data/calendar.properties`: elections, inauguration, midterms, debates, and 32 FOMC meetings for 2029-2032. Jobs and CPI reports fall on the first Friday and the second Wednesday of each month. The `EventScheduler` holds pending decisions and rolls the event catalogue each turn. Event conditions read a `WorldView`, never the world itself. The `DecisionResolver` validates an answer, rolls the odds the player was shown, and returns effects (plus an engine hook such as starting a war) for the engine to dispatch.
+
+**Phases, in order:** `GENERAL_CAMPAIGN_2028` (weekly) → `TRANSITION` (once) → `FIRST_100_DAYS` (14 weekly turns from the Monday after the inauguration) → `GOVERNING` (monthly, full-term games only) → `REELECTION_CAMPAIGN_2032` (weekly) → `EPILOGUE`. A vertical-slice game (`GameSetup.Length.HUNDRED_DAYS`) ends at day 100. A lost election ends either length at election night.
+
+**A hundred-days week, in order** (inside `HundredDays.endWeek`): the chief of staff's delegated work; cabinet hearings and Senate votes; the economy stepped one week with the crisis and the live bill as market context; FOMC meetings and data releases in the week; the public-opinion step, wing revolts and the opposition's strategy; the briefing; then the next week's crisis, funding and economic-challenge triggers. Random events do not roll in this phase.
 
 **Governing month, in order:**
 1. Economy step, with the market context.
@@ -127,6 +134,8 @@ When a war starts, the clock switches to operational turns: 6 hours each in the 
   - a rules fingerprint (a hash of the tuning file).
 
   Loading restores the snapshot without replaying, and the same future commands then give an identical world. `SaveManager.consistent` checks that a snapshot equals a replay of its own log.
+  - The setup includes the game's length, the real-roster opt-in and any custom candidate, so a replay needs nothing else.
+  - An optional `ui` section carries the front end's own state (tutorial progress, preferences). The simulation never reads it, so there is still one save file. The shell writes it atomically, through a temporary file and a move, after every turn.
 - **Version 1** (the foundation's ADR-3 format: setup plus commands) still loads, by replay. That reproduces the game only under the same rules; the fingerprint is stored so a loader can warn. **Compatibility with the source games' saves is not feasible:** they are Java-serialized object graphs of different classes. The Battleground 2028 → Resolute Desk import parsed raw serialization streams and had a field-name bug. A one-off import tool is possible if needed; it is not built.
 
 ### Current formulas
@@ -185,7 +194,7 @@ We **port models, not code**. The source files are monoliths with static state, 
 
 | Source asset | Action | Milestone | Notes |
 |---|---|---|---|
-| BG `Elect`/`Vote` 96-cell electorate + `STATES` demographics + 2016-2024 returns | **Port** to `CellElectorateModel implements ElectorateModel` | M1 | Golden test: reproduce BG's `test calib` output (2024 D 49.0, state margins within 0.5). Replace ACS 2012-16 inputs with ACS 2019-23. |
+| BG `Elect`/`Vote` 96-cell electorate + `STATES` demographics + 2016-2024 returns | **Ported** (`CellElectorateModel`, exported by `tools/BgExport.java`); the game's default since the vertical slice | M1 | Reproduces BG's calibration (2024 composition: D 0.4895 and the actual 312-226 map). Senate races use it too. Still to do: ACS 2019-23 inputs, approval by group feeding midterms. |
 | BG campaign effect saturations (`imgSat`, `fieldSat` …) | Reference | M1 | Calibrate `CampaignEngine` curves to BG's response curves. |
 | BG `Debates` tactic weights | Reference | 1.0 | For the 1.0 question beats. |
 | RD `blocLogit`, `chairOk`, `hold`, filibuster/era rules | **Port** into `CongressEngine`/`VoteModel` (bloc model done) | M3 | Keep 3 blocs per party; add chairs and leaders as gatekeepers. |
@@ -234,3 +243,15 @@ There are 63 tests, all run on every build (`mvn verify`).
 - **Cell model:** 51 × 96 cells × 11 issues = about 54k cell evaluations per projection. That is fine weekly. Monthly approval-by-state is also fine.
 - **Forecast:** 1,000 draws × 51 states, re-using the projection, under 50 ms.
 - **Command Mode (IC engine):** about 3 s per war headless; acceptable as an opt-in.
+
+## 11. The first hundred days inside the engine
+
+The vertical slice put the governing prototype inside the game without a second world:
+
+- **`Host`** is everything the hundred days need: the domain states, their engines, the calendar, the random streams, and a `dispatch(cause, effect)` router. `GameEngine.EngineHost` implements it over the `WorldState`, so transitions go through the engine's router into the ledger. `StandaloneHost` implements it over fresh states for the 12-week prototype, which keeps the design probes on the same code.
+- **`HundredDaysState`** holds only process state: the bill's stage, the crisis's hidden resolve, pending decisions, briefings and the final report. Cabinet seats live in `GovernmentState`, with the nomination pipeline in `ExecutiveEngine`. Bloc relationships live in `CongressState`, and laws in `PolicyState` (`CongressEngine.recordLaw`). Opinion, wings, goodwill and capital live in `PoliticsState`; the economy in `EconomyState` and `BudgetState`; deterrence and tension in `DiplomacyState`.
+- **`Command.Act(OpeningAction)`** is the only way in. `GameEngine.hundredDays()` returns a view whose `act` and `apply` become commands, so the UI, the autopilot and the probes are all logged and replayable.
+- **A refused action leaves no trace.** Handlers validate before they change anything; a decision's log line is written only after its handler succeeds; and a ledger decision opens on the first transition. `HundredDaysInGameTest` checks this by fingerprint.
+- **Day 100.** `HundredDays.finish` fixes a `DayHundredReport` into the state. A slice game then ends. A full-term game fills or votes on any open cabinet posts (`formCabinet`), resumes monthly turns on the first of the next month, and lets the flashpoints drift for the months the hundred days covered.
+- **Replays.** `restart()` re-creates the game from its setup. `replayFromInauguration()` replays the command log up to the inauguration (`WorldState.inaugurationCommand`).
+

@@ -147,3 +147,14 @@ Campaign effects reach the cell model only through `localShift`. BG calibrates e
 - Without recentring, BG's own generic 2028 baseline is D+1.0.
 - The logit per point is k = 0.0262, against BG's own `env / 50` = 0.020.
 - Default crosstabs: Black D+71; white evangelicals R+72 (no degree) and R+53 (degree); women D+9; men R+12; 18-29 D+9.
+
+## 7. Upstream changes after the audit (checked 2026-11-12)
+
+| Repository | Audited | Upstream HEAD | Change |
+|---|---|---|---|
+| Battleground2028 | `b678c752` | `b678c752` | none |
+| IslandChain | `5e0eeb73` | `5e0eeb73` | none |
+| ResoluteDesk | `3fdbc7af` | `2ce2b372` | Seven "Version 2" commits: the code is reorganised into a multi-file project (216 Java files, about 27,900 lines, up from one file of 16,000). Stages cover the transition, approval and relationships; policies and their real-world effects; foreign policy and wars of choice; news and runaway storylines; watch-mode priorities and the 2029 setup; and new art. |
+
+Everything ported so far, including the vertical slice's Resolute Desk mechanics, references the audited `3fdbc7a`. Version 2 has **not** been audited; that is backlog item B-54. The audited clones are unchanged.
+

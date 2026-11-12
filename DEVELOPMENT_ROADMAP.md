@@ -8,7 +8,8 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 |---|---|---|---|---|
 | **M0** | **Foundation** ✅ *(this commit)* | Multi-module Java 21 project; deterministic core with command model and named RNG streams; full 2028→2032 loop (campaign, debates, transition, governing, midterms, re-election, legacy); text CLI; autopilot; balance batch; 18 tests | `mvn verify` green; `mandate batch 1000` runs in about 2 s; Toss-up Democrat win rate about 51% | done |
 | **M0.5** | **Modular engine** ✅ | `WorldState` with owned domain states; `GameEngine`, `SimulationClock`, `EventScheduler`, `DecisionResolver`, `ConsequenceLedger`, `SaveManager` (v2 snapshots, v1 replay), `DeterministicRandomManager`; all constants in `tuning.properties`; operational war turns; prototype re-hosted on the engines | 63 tests green; required-behaviour, architecture and golden regression tests | done |
-| M1 | **One electorate** | Port BG's 96-cell model behind `ElectorateModel`; refreshed demographics (ACS 2019-23); approval by group and state feeds midterms and 2032; ME/NE districts; 2030 apportionment for 2032 | Golden test matches BG calibration (2024 within 0.5 points per state); balance gates still pass | 5 pw |
+| **M0.7** | **First playable vertical slice** ✅ | The 2028 election, transition, inauguration and first hundred days as one game (`VERTICAL_SLICE.md`): BG's cell electorate; custom and opt-in real candidates; promises; standing orders; an adaptive opponent; explained polls; the hundred days in the engine; the day-100 report; replays; a coach; one jar; one save; a text game shell | 93 tests green, including scripted end-to-end play through the shell; toss-up 51% | done |
+| M1 | **One electorate** (partly done in M0.7: the cell model is ported and live) | Port BG's 96-cell model behind `ElectorateModel`; refreshed demographics (ACS 2019-23); approval by group and state feeds midterms and 2032; ME/NE districts; 2030 apportionment for 2032 | Golden test matches BG calibration (2024 within 0.5 points per state); balance gates still pass | 5 pw |
 | M2 | **Content pipeline** | JSON content + schema + `mandate lint` (ids, dominated options, real-name check); move tunables to `tuning.json`; 40 events, 30 bills; save/load of the command log; soak test of 10,000 games | Lint clean; designers add an event without engine code; save and restore round-trips | 4 pw |
 | M3 | **Governing depth** | Promises → agenda; party factions + opposition strategy; committee chairs and leaders; veto/override; Congress's own bills; filibuster nuclear option; annual budget fight; debt limit; Fed chair; tariffs; a played midterm | Act II playtest: 70%+ of testers rate months 8-20 "engaging" (R-05 gate) | 7 pw |
 | M4 | **Desktop vertical slice** | ADR-2 UI spike (JavaFX vs. libGDX), then: home dashboard, US map with polls, campaign-week planner, whip-count screen, event card, election night, legacy screen; settings; tutorial for week 1 and month 1 | A non-developer completes a 2028 campaign unaided | 8 pw |
@@ -29,11 +30,12 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 | Metric (Toss-up, Standard, 1,000 games) | MVP | 1.0 | Today |
 |---|---|---|---|
 | Democrat 2028 win rate | 40-60% | 45-55% | 51% ✅ |
-| Re-election rate, each party | 45-75% | 50-70% | 55% D / 65% R ✅ |
-| EV standard deviation | ≥ 45 | ≥ 50 | 34 ❌ (B-04) |
+| Re-election rate, each party | 45-75% | 50-70% | 71% D / 71% R: ✅ MVP, ❌ 1.0 (B-53) |
+| EV standard deviation | ≥ 45 | ≥ 50 | 33 ❌ (B-04) |
 | Taiwan war reached by a *neglectful* president (no deterrence actions, accommodating crisis answers) | 10-25% | 10-20% | 15% ✅ (deterring autopilot: 0%, as intended) |
-| Any Taiwan rung reached | 30-60% | 30-50% | 78% ❌ (B-38) |
-| Average laws per term | 4-9 | 5-9 | 8.7 ✅ |
+| Any Taiwan rung reached | 30-60% | 30-50% | 44% ✅ (171 of 389 terms; was 78% before the hundred days raised deterrence) |
+| Average laws per term | 4-9 | 5-9 | 9.3 ❌ 1.0 (just over) |
+| 100-day outcomes, attentive probe (STRATEGIST, 150 won elections) | not all one outcome | victory 30-60% | 43% victory, 57% partial, 0% failure ✅ |
 | Exceptions in 10,000-game soak | 0 | 0 | not yet run |
 
 ## Prioritised backlog
@@ -44,15 +46,15 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 
 | ID | Pri | Size | Item | Acceptance |
 |---|---|---|---|---|
-| B-01 | P0 | L | Port the BG 96-cell electorate as `CellElectorateModel` (M1) | Golden calibration test; the swap needs one line in `Game` |
+| B-01 | ✅ | L | **Done (M0.7).** Port the BG 96-cell electorate as `CellElectorateModel` (M1) | Golden calibration test; the swap needs one line in `Game` |
 | B-02 | P0 | M | Approval by state from the cell model, and use it for midterm Senate races and 2032 | The midterm results correlate with approval in each state |
 | B-03 | P0 | S | Poll **averages**: rolling average of 3-4 weekly draws instead of one fresh draw (state polls currently jump ±3 a week) | Week-to-week poll change SD under 1.2 points |
 | B-04 | P0 | M | Increase outcome spread: candidate-specific variance, late-breaking events, turnout shocks | EV SD ≥ 45 without breaking party balance |
 | B-05 | P0 | M | JSON content + schema + loader; migrate the CSVs and `EventCatalog` | Old content loads unchanged; `EventCatalog.java` deleted |
 | B-06 | P0 | M | `mandate lint`: dominated options, unknown ids, real-person name list | CI fails on a seeded bad file |
 | B-07 | P0 | S | AutoPilot strategy variants (no-deterrence, max-legislation, bully-pulpit) for batch probes | The batch prints a per-variant table |
-| B-08 | P0 | S | Save/load: write setup + commands to `~/.mandate/saves/*.json`; CLI `load` | Round-trip test |
-| B-09 | P1 | M | Campaign promises (from the BG promise list, re-authored) that pre-fill the agenda and move groups | Breaking a promise shows in the 2032 environment and is logged |
+| B-08 | ✅ | S | **Done (M0.7):** one autosave at `~/.mandate/save.json`, Continue on the title screen. Save/load: write setup + commands to `~/.mandate/saves/*.json`; CLI `load` | Round-trip test |
+| B-09 | ✅ | M | **Done in part (M0.7):** promises pre-fill the agenda, and broken ones cost the base; promises do not yet move specific voter groups. Campaign promises (from the BG promise list, re-authored) that pre-fill the agenda and move groups | Breaking a promise shows in the 2032 environment and is logged |
 | B-10 | P1 | L | Party factions and opposition strategy (port from RD) | A bipartisan deal lowers faction mood; low mood lowers base turnout |
 | B-11 | P1 | M | Committee chairs and leaders as gatekeepers in divided government | The whip screen shows "the Chair won't schedule it" with a lever to overcome it |
 | B-12 | P1 | M | Veto/override and Congress's own bills under divided government | Opposition bills arrive at least twice a year |
@@ -67,8 +69,8 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 | B-21 | P1 | M | `IslandChainOracle` + coefficient fit for the `MilitaryEngine` operational model | Within ±10 points of oracle frequencies |
 | B-22 | P1 | S | ME/NE district electors | 2024 tally is D 226 with splits (ME-2 R, NE-2 D) |
 | B-23 | P1 | S | 2030-apportionment electoral votes for the 2032 election | EV table switches at 2032 |
-| B-24 | P1 | M | Tutorial for campaign week 1 and governing month 1 | First-time tester completes both without help |
-| B-25 | P2 | M | Forecast screen (Monte Carlo from the same error model) + path to 270 | The forecast is calibrated: 70% calls win about 70% of the time in batch |
+| B-24 | ✅ | M | **Done (M0.7):** `tutorial.Coach`, situational lessons through the campaign and the hundred days. Tutorial for campaign week 1 and governing month 1 | First-time tester completes both without help |
+| B-25 | P2 | M | **Partly done (M0.7):** a weekly polls-only forecast (analytic), and the path to 270 in the post-mortem. Forecast screen (Monte Carlo from the same error model) + path to 270 | The forecast is calibrated: 70% calls win about 70% of the time in batch |
 | B-26 | P2 | M | Fed chair appointment and credibility as a lever | A dovish chair raises 2032 growth and inflation |
 | B-27 | P2 | M | 5 hot spots, regional posture (Pacific, Europe, Middle East) | Posture feeds deterrence in each region |
 | B-28 | P2 | L | Fictional cast of 12+ with procedural portraits (port BG `Portrait`) and a candidate creator | |
@@ -81,13 +83,20 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 | B-38 | P1 | S | Retune Taiwan drills frequency (78% of terms reach a rung; target 30-50%) without losing the war-frequency gate | Batch gates |
 | B-39 | P0 | S | Run the 12-week prototype playtest (GAMEPLAY_DESIGN.md §8, H1-H7) with 8-12 players | Each hypothesis reported pass or fail with evidence |
 | B-40 | P1 | M | Decide governing cadence (monthly with weekly zoom for set pieces) from H7 results (O-1) | ADR recorded |
-| B-41 | P1 | L | Fold prototype systems into `Game`: bloc whip with "wants", cabinet posts, stopgap, multi-week crises, group approval (O-3) | Foundation batch gates still pass |
+| B-41 | ✅ | L | **Done for the first hundred days (M0.7):** they run in the game through a `Host`; monthly governing still uses the foundation's systems. Fold prototype systems into `Game`: bloc whip with "wants", cabinet posts, stopgap, multi-week crises, group approval (O-3) | Foundation batch gates still pass |
 | B-42 | P1 | S | Bipartisan bills can die: opposition primary season and outside events (O-2) | Dealmaker law rate below 95% in divided government |
 | B-43 | P1 | M | Several bills in flight, competing for attention (O-4) | The strategy-probe tests still pass |
 | B-44 | P2 | S | Move crisis kinds, nominee archetypes and stopgap offers to content files (O-5) | No engine change to add a crisis kind |
 | B-45 | P1 | M | Keep the economy and opinion stepping during a war (weekly steps every 7 operational days) instead of pausing | Approval and markets move during the war |
 | B-46 | P2 | S | Warn on loading a v1 save whose rules fingerprint differs; offer the v2 snapshot instead | Load dialog test |
 | B-47 | P2 | M | Move the prototype's bill-design and crisis constants into content and tuning (with B-44) | No numeric literals in `opening/` beyond indices |
+| B-49 | P0 | M | Campaign-economy pass: hoarding money is not punished (a careful bank-it campaign wins as often as the default), and an air war trails a ground game by 56 wins in 300, because field lasts about 16 times longer than ads | Spending more, sensibly, beats hoarding by at least 5 points of win rate; the best and worst presets are within 25 points |
+| B-50 | P1 | S | Make difficulty matter more (Story 115, Standard 101, Hard 95 wins of 300 today) | At least 30 points of win rate between Story and Hard |
+| B-51 | P1 | S | Move the hundred days' shocks, response sizes and report thresholds into `tuning.properties` (with B-47) | No numeric literals in `opening/` beyond indices |
+| B-52 | P1 | M | Events in the first hundred days: a small catalogue of early-term events (a court ruling, a disaster, a leak) | The event roll covers the phase without crowding out its own crisis |
+| B-53 | P1 | S | Re-election rate back inside the 1.0 gate (50-70%) now that the hundred days strengthen incumbents | Batch gate |
+| B-54 | P1 | M | Audit Resolute Desk's upstream Version 2 (`2ce2b37`: transition, approval and relationships, policies, wars of choice, storylines) against `FEATURE_PRIORITY.md` | Addendum to `docs/SOURCE_AUDIT.md`; ports re-checked |
+| B-55 | P0 | S | Playtest the slice: 5 first-time players, unaided, to day 100 (`GAMEPLAY_DESIGN.md` §7 questions) | Completion rate, time to day 100, and which decisions players could explain |
 | B-48 | P3 | M | Optional one-off importer for Battleground 2028 saves (only if a migration path is wanted; the raw Java-serialization format makes it fragile) | Decision recorded |
 | B-35 | P3 | L | Command Mode (E1) | |
 | B-36 | P3 | L | Primaries (E1b) | |
@@ -95,9 +104,10 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 
 ## Immediate next steps (the next two weeks)
 
-1. B-03, B-07, B-08: small items that make the foundation useful for designers right away.
-2. Paper/CLI playtest of Act II with 5 people (the R-05 gate), using `mandate play`.
-3. Start B-01 (the cell-model port). It is the long pole of M1.
+1. B-55: playtest the vertical slice (`java -jar mandate.jar`) with 5 first-time players. It is the first evidence from people rather than probes.
+2. B-49 and B-50: the campaign economy and difficulty. These are the slice's weakest systems by the probe numbers.
+3. B-51: move the hundred days' constants into tuning before more balancing.
+4. B-54: audit Resolute Desk Version 2 before porting anything else from it.
 4. Owner decisions needed:
    - confirm the code rights and choose the new repository's licence (R-18);
    - approve the fictional-cast policy (R-02);

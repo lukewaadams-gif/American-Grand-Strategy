@@ -293,7 +293,8 @@ public final class GameEngine implements WorldView {
         if (debateThisWeek().isPresent() && w.election.pendingPosture() == null)
             throw new IllegalCommandException("Choose a debate approach first");
         // The opponent reads the same polls the player sees and adapts its standing orders; its reasoning is shown.
-        CampaignAi.Adaptation a = CampaignAi.adapt(this, w.election.opponent());
+        CampaignAi.Adaptation a = setup.difficulty().adaptive() ? CampaignAi.adapt(this, w.election.opponent())
+                : new CampaignAi.Adaptation(game.mandate.core.campaign.CampaignStrategy.Orders.DEFAULT, "It runs the same campaign every week: rallies and money in the closest states.");
         if (!a.orders().equals(w.election.opponentOrders()) || w.election.opponentReasoning().isEmpty())
             log("Your opponent's campaign: " + a.orders().describe() + ". " + a.reasoning());
         electionEngine.setOrders(w.election, false, a.orders(), a.reasoning());

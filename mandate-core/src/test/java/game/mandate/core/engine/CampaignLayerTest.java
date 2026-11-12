@@ -164,6 +164,32 @@ class CampaignLayerTest {
         assertTrue(used.contains(CampaignStrategy.GROUND_GAME), "early field building");
     }
 
+    /** Working opposition: a stronger opponent wins more often, and how the player runs the campaign changes the odds. */
+    @Test
+    void theOpponentIsCredibleAndTheCampaignChoiceMatters() {
+        int storyWins = 0, hardWins = 0, groundWins = 0, airWins = 0, n = 150;
+        for (long seed = 1; seed <= n; seed++) {
+            GameSetup base = slice(seed);
+            storyWins += wins(withDifficulty(base, GameSetup.Difficulty.STORY), null) ? 1 : 0;
+            hardWins += wins(withDifficulty(base, GameSetup.Difficulty.HARD), null) ? 1 : 0;
+            groundWins += wins(base, new Orders(CampaignStrategy.GROUND_GAME, SpendRate.ALL_IN, null)) ? 1 : 0;
+            airWins += wins(base, new Orders(CampaignStrategy.AIR_WAR, SpendRate.ALL_IN, null)) ? 1 : 0;
+        }
+        assertTrue(hardWins + 5 < storyWins, "a harder opponent wins more: story " + storyWins + ", hard " + hardWins);
+        assertTrue(airWins + 15 < groundWins, "the campaign you run matters: ground game " + groundWins + ", air war " + airWins);
+    }
+
+    private static GameSetup withDifficulty(GameSetup s, GameSetup.Difficulty d) {
+        return new GameSetup(s.seed(), s.playerParty(), s.playerCandidateId(), s.opponentCandidateId(), s.scenario(), d, s.length(), s.realRoster(), s.customCandidate());
+    }
+
+    private static boolean wins(GameSetup s, Orders orders) {
+        GameEngine g = new GameEngine(s);
+        if (orders != null) g.apply(new Command.SetCampaignOrders(orders));
+        playUntil(g, x -> x.phase() != Phase.GENERAL_CAMPAIGN_2028);
+        return g.result2028().orElseThrow().winner() == g.player().party();
+    }
+
     // ---- the polls -------------------------------------------------------------------------------
 
     @Test

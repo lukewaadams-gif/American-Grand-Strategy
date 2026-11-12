@@ -47,13 +47,19 @@ public record GameSetup(long seed, Party playerParty, String playerCandidateId, 
         FULL_TERM
     }
 
+    /**
+     * How strong the opponent's campaign is: its money, and whether it reads the race and adapts (Story: a fixed,
+     * predictable campaign; Standard and Hard: it changes strategy with the polls, its cash and the calendar).
+     */
     public enum Difficulty {
-        STORY(0.8), STANDARD(1.0), HARD(1.2);
+        STORY(0.8, false), STANDARD(1.0, true), HARD(1.2, true);
 
         private final double opponentResources;
+        private final boolean adaptive;
 
-        Difficulty(double r) { opponentResources = r; }
+        Difficulty(double r, boolean adaptive) { opponentResources = r; this.adaptive = adaptive; }
 
         public double opponentResources() { return opponentResources; }
+        public boolean adaptive() { return adaptive; }
     }
 }
