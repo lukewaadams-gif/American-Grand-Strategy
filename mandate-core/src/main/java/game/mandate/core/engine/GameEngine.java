@@ -56,7 +56,7 @@ import game.mandate.core.military.TheaterScenario;
 import game.mandate.core.opening.Host;
 import game.mandate.core.opening.HundredDays;
 import game.mandate.core.opening.OpeningAction;
-import game.mandate.core.opening.Report;
+import game.mandate.core.opening.DayHundredReport;
 import game.mandate.core.politics.Coalition;
 import game.mandate.core.politics.OpinionInputs;
 import game.mandate.core.politics.PoliticsEngine;
@@ -400,6 +400,7 @@ public final class GameEngine implements WorldView {
             dispatch(decision, "Broken promise " + promised, new Effect.WingMood(0, electionEngine.brokenPledgeMood()));
         log("Inauguration Day. " + player().candidate().name() + " takes the oath with " + myEv + " electoral votes and " + congress()
                 + ". Approval " + Math.round(approval()) + "%, political capital " + Math.round(capital()) + ".");
+        w.inaugurationCommand = history.size();      // this EndTurn is appended after it completes
         w.clock.set(hundredDaysStart());
         w.hundredDays = HundredDays.begin(host);
         log("The first hundred days begin. Your flagship: the " + host.flagship().name() + ".");
@@ -427,9 +428,8 @@ public final class GameEngine implements WorldView {
 
     /** Day 100: the report; then the slice ends, or the term goes on in monthly turns with the cabinet filled. */
     private void endHundredDays() {
-        Report r = new HundredDays(host, w.hundredDays).report();
-        log(String.format("Day 100. Approval %.0f%%; flagship %s; %d of 3 cabinet posts confirmed; opposition %s.", r.approval(),
-                r.billStage().name().toLowerCase().replace('_', ' '), r.confirmed(), r.opposition().name().toLowerCase()));
+        DayHundredReport report = new HundredDays(host, w.hundredDays).finish(w.election.pledges(), w.policy.laws());
+        log("Day 100: " + report.outcome().label + " (" + report.score() + " of 10). " + report.headline());
         if (setup.length() == GameSetup.Length.HUNDRED_DAYS) {
             w.phase = Phase.EPILOGUE;
             log("The first hundred days are over.");
@@ -447,6 +447,27 @@ public final class GameEngine implements WorldView {
             for (Escalation e : diplomacyEngine.stepMonth(w.diplomacy, rng)) queueEvent(EventCatalog.escalation(e));
             militaryEngine.stepMonth(w.military);
         }
+    }
+
+    /** The day-100 report, once the hundred days are over. */
+    public Optional<DayHundredReport> dayHundredReport() {
+        return w.hundredDays == null ? Optional.empty() : Optional.ofNullable(w.hundredDays.finalReport());
+    }
+
+    /** What went wrong, after a lost presidential election. */
+    public List<String> postMortem() {
+        ElectionResult r = w.election.result2032() != null ? w.election.result2032() : w.election.result2028();
+        if (r == null || r.winner() == player().party()) return List.of();
+        return electionEngine.postMortem(w.election, r);
+    }
+
+    /** A new game from the same start: the same seed, so the same opponent, polling miss and world, for a different strategy. */
+    public GameEngine restart() { return new GameEngine(setup); }
+
+    /** The same game rewound to the inauguration: the same election, Congress and mandate, to govern differently. */
+    public Optional<GameEngine> replayFromInauguration() {
+        if (w.inaugurationCommand < 0) return Optional.empty();
+        return Optional.of(replay(setup, history.subList(0, w.inaugurationCommand + 1)));
     }
 
     /**

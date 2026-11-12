@@ -64,10 +64,14 @@ public final class HundredDaysState {
     EconomicChallenge challenge;
     int challengeWeek;
     int challengeResponse = -1;
+    /** Inflation and unemployment when the challenge struck, to judge the response at day 100. */
+    double challengeStartInflation = Double.NaN, challengeStartUnemployment = Double.NaN;
 
     // for the report
     double startApproval, startMisery, startDeficit;
     final List<Double> approvalByWeek = new ArrayList<>();
+    /** The day-100 report, fixed when the hundred days end (the world goes on changing in a full-term game). */
+    DayHundredReport finalReport;
 
     HundredDaysState() {}
 
@@ -79,6 +83,7 @@ public final class HundredDaysState {
     public List<Double> approvalByWeek() { return List.copyOf(approvalByWeek); }
     public List<String> log() { return java.util.Collections.unmodifiableList(log); }
     public double startApproval() { return startApproval; }
+    public DayHundredReport finalReport() { return finalReport; }
 
     public Map<String, Object> toJson() {
         Map<String, Object> m = new LinkedHashMap<>();
@@ -107,8 +112,11 @@ public final class HundredDaysState {
         m.put("fundingOffer", fundingOffer == null ? null : fundingOffer.name()); m.put("shutdown", shutdown); m.put("fundingResolved", fundingResolved);
         m.put("shutdownWeeks", shutdownWeeks); m.put("challenge", challenge == null ? null : challenge.name()); m.put("challengeWeek", challengeWeek);
         m.put("challengeResponse", challengeResponse);
+        m.put("challengeStartInflation", Double.isNaN(challengeStartInflation) ? null : challengeStartInflation);
+        m.put("challengeStartUnemployment", Double.isNaN(challengeStartUnemployment) ? null : challengeStartUnemployment);
         m.put("startApproval", startApproval); m.put("startMisery", startMisery); m.put("startDeficit", startDeficit);
         m.put("approvalByWeek", new ArrayList<>(approvalByWeek));
+        m.put("finalReport", finalReport == null ? null : finalReport.toJson());
         return m;
     }
 
@@ -146,8 +154,11 @@ public final class HundredDaysState {
         s.shutdown = (Boolean) m.get("shutdown"); s.fundingResolved = (Boolean) m.get("fundingResolved"); s.shutdownWeeks = Json.integer(m.get("shutdownWeeks"));
         s.challenge = m.get("challenge") == null ? null : EconomicChallenge.valueOf((String) m.get("challenge"));
         s.challengeWeek = Json.integer(m.get("challengeWeek")); s.challengeResponse = Json.integer(m.get("challengeResponse"));
+        s.challengeStartInflation = m.get("challengeStartInflation") == null ? Double.NaN : Json.num(m.get("challengeStartInflation"));
+        s.challengeStartUnemployment = m.get("challengeStartUnemployment") == null ? Double.NaN : Json.num(m.get("challengeStartUnemployment"));
         s.startApproval = Json.num(m.get("startApproval")); s.startMisery = Json.num(m.get("startMisery")); s.startDeficit = Json.num(m.get("startDeficit"));
         for (Object o : Json.array(m.get("approvalByWeek"))) s.approvalByWeek.add(Json.num(o));
+        s.finalReport = m.get("finalReport") == null ? null : DayHundredReport.fromJson(Json.object(m.get("finalReport")));
         return s;
     }
 

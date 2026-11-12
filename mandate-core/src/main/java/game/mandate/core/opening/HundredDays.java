@@ -99,6 +99,12 @@ public class HundredDays {
 
     public HundredDaysState state() { return st; }
 
+    /** Grades the hundred days and keeps the report in the state (called once, on day 100). */
+    public DayHundredReport finish(List<String> promises, List<String> laws) {
+        st.finalReport = DayHundredReport.of(this, promises, laws);
+        return st.finalReport;
+    }
+
     // =============================================================================================
     //  Commands
     // =============================================================================================
@@ -482,20 +488,24 @@ public class HundredDays {
         if (st.week != st.challengeWeek || st.challenge == null || st.challengeResponse >= 0) return;
         if (st.pending.stream().anyMatch(d -> d.kind() == Decision.Kind.ECONOMY)) return;
         cause = "100 days, week " + st.week + ": " + st.challenge.title;
+        st.challengeStartInflation = h.economy().inflation();
+        st.challengeStartUnemployment = h.economy().unemployment();
         List<Option> options;
         if (st.challenge == EconomicChallenge.INFLATION_SURGE) {
-            dispatch(new Effect.EconomyShock(0, 1.2, 4));
-            st.oilShock += 6;
+            // Front-loaded, so it is felt before day 100: about +1 point of inflation within two months if nothing is done.
+            dispatch(new Effect.EconomyShock(0, 1.6, 2));
+            st.oilShock += 8;
             options = List.of(
-                    new Option("Back the Fed and hold the line on spending", "Inflation cools fastest; swing voters feel the squeeze now (-1); deficit -0.05; opposition goodwill +2."),
-                    new Option("Send targeted relief checks", "Voters feel helped (+1.5 swing, +2 your base); deficit +0.15; adds demand, so inflation lingers."),
-                    new Option("Suspend tariffs and the gas tax", "Prices ease (inflation -0.5 over months); deficit +0.05; moderates approve; your base wing grumbles."),
+                    new Option("Back the Fed and hold the line on spending", "Cools prices fastest (inflation -0.7 over three months) at a cost in growth; swing voters feel the squeeze now (-1); deficit -0.05; opposition goodwill +2."),
+                    new Option("Send targeted relief checks", "Voters feel helped (+1.5 swing, +2 your base); deficit +0.15; the extra demand keeps inflation up (+0.4)."),
+                    new Option("Suspend tariffs and the gas tax", "Prices ease (inflation -0.6 over three months); deficit +0.05; moderates approve; your base wing grumbles."),
                     new Option("Lean on the Fed to keep rates low", "Your base cheers; Fed credibility falls and long rates rise; inflation stays sticky."));
         } else {
-            dispatch(new Effect.EconomyShock(-2.5, -0.2, 4));
+            // About half a point of unemployment within three months if nothing is done.
+            dispatch(new Effect.EconomyShock(-4.5, -0.3, 3));
             options = List.of(
-                    new Option("Emergency stimulus", "Growth +2.0 over six months; deficit +0.4; your base wing rallies, deficit hawks revolt (moderate wing -4)."),
-                    new Option("Targeted aid and tax rebates", "Growth +1.0; deficit +0.2; moderates approve."),
+                    new Option("Emergency stimulus", "Growth +3.0 over three months, the strongest answer to job losses; deficit +0.4; your base wing rallies, deficit hawks revolt (moderate wing -4)."),
+                    new Option("Targeted aid and tax rebates", "Growth +1.5 over three months; deficit +0.2; moderates approve."),
                     new Option("Hold the line on spending", "No new deficit; opposition goodwill +3; swing voters feel abandoned (-1.5 now, -0.5 lasting)."),
                     new Option("Pressure the Fed for cuts", "Your base cheers; Fed credibility falls; any cut comes at the next meeting, if at all."));
         }
@@ -507,21 +517,22 @@ public class HundredDays {
         require(option >= 0 && option < 4, "No such option");
         if (st.challenge == EconomicChallenge.INFLATION_SURGE) {
             switch (option) {
-                case 0 -> { deficit(-0.05); opinion(Coalition.SWING, -1.0); goodwill(2); consequence("You back the Fed. Markets approve; families grumble about prices."); }
-                case 1 -> { deficit(0.15); dispatch(new Effect.EconomyShock(0.4, 0.3, 6)); opinion(Coalition.SWING, 1.5); opinion(Coalition.BASE, 2);
-                            consequence("Relief checks go out. Voters feel it; economists warn about inflation."); }
-                case 2 -> { deficit(0.05); dispatch(new Effect.EconomyShock(0, -0.5, 6)); mood(1, 2); mood(0, -2);
-                            consequence("You suspend tariffs and the gas tax. Prices at the pump ease."); }
+                case 0 -> { deficit(-0.05); dispatch(new Effect.EconomyShock(-0.6, -0.7, 3)); opinion(Coalition.SWING, -1.0); goodwill(2);
+                            consequence("You back the Fed and hold the line on spending. Prices should cool; families feel the squeeze first."); }
+                case 1 -> { deficit(0.15); dispatch(new Effect.EconomyShock(0.6, 0.4, 3)); opinion(Coalition.SWING, 1.5); opinion(Coalition.BASE, 2);
+                            consequence("Relief checks go out. Voters feel helped; economists warn the extra demand will keep prices up."); }
+                case 2 -> { deficit(0.05); dispatch(new Effect.EconomyShock(0.1, -0.6, 3)); mood(1, 2); mood(0, -2);
+                            consequence("You suspend tariffs and the gas tax. Prices at the pump and in the shops ease."); }
                 case 3 -> { if (!h.economy().fedPressured()) dispatch(new Effect.FedPressure()); mood(0, 3); mood(1, -2);
-                            consequence("You tell the Fed to keep rates low. Bond markets flinch."); }
+                            consequence("You tell the Fed to keep rates low. Bond markets flinch; inflation expectations drift up."); }
                 default -> throw new IllegalStateException();
             }
         } else {
             switch (option) {
-                case 0 -> { deficit(0.4); dispatch(new Effect.EconomyShock(2.0, 0.3, 6)); mood(0, 3); mood(1, -4);
-                            consequence("You sign an emergency stimulus. Hiring should pick up within months."); }
-                case 1 -> { deficit(0.2); dispatch(new Effect.EconomyShock(1.0, 0.1, 6)); mood(1, 1);
-                            consequence("Targeted aid and rebates go out."); }
+                case 0 -> { deficit(0.4); dispatch(new Effect.EconomyShock(3.0, 0.4, 3)); mood(0, 3); mood(1, -4);
+                            consequence("You sign an emergency stimulus. Hiring should pick up within weeks; deficit hawks are furious."); }
+                case 1 -> { deficit(0.2); dispatch(new Effect.EconomyShock(1.5, 0.15, 3)); mood(1, 1);
+                            consequence("Targeted aid and tax rebates go out to the hardest-hit states."); }
                 case 2 -> { goodwill(3); opinion(Coalition.SWING, -1.5); lasting(Coalition.SWING, -0.5);
                             consequence("You hold the line on spending. Deficit hawks applaud; laid-off workers do not."); }
                 case 3 -> { if (!h.economy().fedPressured()) dispatch(new Effect.FedPressure()); mood(0, 3); mood(1, -2);

@@ -46,6 +46,8 @@ public final class WorldState {
     ConsequenceLedger ledger;
     final List<String> log = new ArrayList<>();
     boolean midtermsHeld;
+    /** Index in the command history of the command that inaugurated the president; -1 before. */
+    int inaugurationCommand = -1;
     Legacy legacy;
     int commandsApplied;
 
@@ -67,6 +69,7 @@ public final class WorldState {
     public ConsequenceLedger ledger() { return ledger; }
     public List<String> log() { return Collections.unmodifiableList(log); }
     public boolean midtermsHeld() { return midtermsHeld; }
+    public int inaugurationCommand() { return inaugurationCommand; }
     public Legacy legacy() { return legacy; }
     public int commandsApplied() { return commandsApplied; }
 
@@ -78,7 +81,7 @@ public final class WorldState {
         m.put("diplomacy", diplomacy.toJson()); m.put("military", military.toJson()); m.put("election", election.toJson());
         m.put("hundredDays", hundredDays == null ? null : hundredDays.toJson());
         m.put("scheduler", scheduler.toJson()); m.put("ledger", ledger.toJson()); m.put("log", new ArrayList<>(log));
-        m.put("midtermsHeld", midtermsHeld); m.put("legacy", legacy == null ? null : legacy.toJson()); m.put("commandsApplied", commandsApplied);
+        m.put("midtermsHeld", midtermsHeld); m.put("inaugurationCommand", inaugurationCommand); m.put("legacy", legacy == null ? null : legacy.toJson()); m.put("commandsApplied", commandsApplied);
         return m;
     }
 
@@ -100,6 +103,7 @@ public final class WorldState {
         w.ledger = ConsequenceLedger.fromJson(Json.object(m.get("ledger")));
         for (Object o : Json.array(m.get("log"))) w.log.add((String) o);
         w.midtermsHeld = (Boolean) m.get("midtermsHeld");
+        w.inaugurationCommand = m.get("inaugurationCommand") == null ? -1 : Json.integer(m.get("inaugurationCommand"));
         w.legacy = m.get("legacy") == null ? null : Legacy.fromJson(Json.object(m.get("legacy")));
         w.commandsApplied = Json.integer(m.get("commandsApplied"));
         return w;

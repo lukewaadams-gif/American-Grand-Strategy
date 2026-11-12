@@ -339,6 +339,52 @@ public final class ElectionEngine {
         return Optional.of(cells.groupResults(nationalSwing(e, env) - e.systematicMiss + noise, s -> localShift(e, s)));
     }
 
+    /**
+     * Why the player lost, in facts the game holds: the result, the closest path to 270, how far the polls were off
+     * (the hidden miss, revealed), money left unspent, the ground war in the decisive states, and the opponent's plan.
+     */
+    public List<String> postMortem(ElectionState e, ElectionResult r) {
+        List<String> out = new ArrayList<>();
+        Party me = e.player.party();
+        int sign = me.sign(), mine = r.electoralVotes(me);
+        out.add(String.format("You lost %d: %d electoral votes to %d; the popular vote %s by %.1f.", r.year(), mine, 538 - mine,
+                r.popularMargin() * sign >= 0 ? "went your way" : "went against you", Math.abs(r.popularMargin())));
+        List<UsState> lost = new ArrayList<>(states.all());
+        lost.removeIf(s -> r.stateMargins().get(s.code()) * sign >= 0);
+        lost.sort(java.util.Comparator.comparingDouble((UsState s) -> -r.stateMargins().get(s.code()) * sign));
+        int need = 270 - mine, gained = 0;
+        List<String> path = new ArrayList<>();
+        double swingNeeded = 0;
+        for (UsState s : lost) {
+            if (gained >= need) break;
+            gained += s.electoralVotes();
+            double m = -r.stateMargins().get(s.code()) * sign;
+            swingNeeded = Math.max(swingNeeded, m);
+            path.add(String.format("%s by %.1f", s.code(), m));
+        }
+        out.add(String.format("You were %d electoral votes short. The closest path ran through %s: about %.1f points of swing in those states.",
+                need, String.join(", ", path), swingNeeded));
+        if (!e.polls.isEmpty()) {
+            PollPoint last = e.polls.get(e.polls.size() - 1);
+            double result = r.popularMargin() * sign, miss = result - last.national();
+            out.add(String.format("The final polls had you at %+.1f nationally (a %.0f%% chance); the result was %+.1f. %s", last.national(),
+                    100 * last.winChance(), result, Math.abs(miss) < 1 ? "The polls were about right." : miss < 0
+                            ? String.format("The polls flattered you by %.1f points.", -miss) : String.format("The polls underrated you by %.1f points.", miss)));
+        }
+        if (e.player.cash() > 20) out.add(String.format("You finished with $%.0fM unspent.", e.player.cash()));
+        List<UsState> decisive = lost.subList(0, Math.min(3, lost.size()));
+        double myField = 0, theirField = 0, myAds = 0, theirAds = 0;
+        for (UsState s : decisive) {
+            myField += e.player.field(s.code()); theirField += e.opponent.field(s.code());
+            myAds += e.player.ads(s.code()); theirAds += e.opponent.ads(s.code());
+        }
+        if (!decisive.isEmpty())
+            out.add(String.format("In %s, your field organisation stood at %.0f against their %.0f, and your ad weight at %.0f against %.0f.",
+                    String.join(", ", decisive.stream().map(UsState::code).toList()), myField, theirField, myAds, theirAds));
+        if (!e.opponentReasoning.isEmpty()) out.add("Your opponent's closing campaign: " + e.opponentOrders.describe() + ". " + e.opponentReasoning);
+        return out;
+    }
+
     /** The re-election campaign: a fresh challenger, the incumbent's war chest, a new hidden polling miss. */
     public void beginReelection(ElectionState e, Candidate challenger, double capital, double opponentResources, DeterministicRandomManager rng) {
         e.player = new CampaignSide(e.player.party(), e.player.candidate(), p.reelectionBase() + capital * p.reelectionPerCapital());
