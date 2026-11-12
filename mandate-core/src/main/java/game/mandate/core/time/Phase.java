@@ -7,6 +7,8 @@ package game.mandate.core.time;
 public enum Phase {
     GENERAL_CAMPAIGN_2028(TurnLength.WEEK),
     TRANSITION(TurnLength.ONCE),
+    /** Weekly from the Monday after the inauguration; see {@code opening.HundredDays}. */
+    FIRST_100_DAYS(TurnLength.WEEK),
     GOVERNING(TurnLength.MONTH),
     REELECTION_CAMPAIGN_2032(TurnLength.WEEK),
     EPILOGUE(TurnLength.ONCE),

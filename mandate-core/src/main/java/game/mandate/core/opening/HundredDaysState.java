@@ -72,10 +72,12 @@ public final class HundredDaysState {
     HundredDaysState() {}
 
     public int week() { return week; }
+    public String flagshipId() { return flagshipId; }
     public int weeks() { return weeks; }
     public BillStage stage() { return stage; }
     public CrisisOutcome crisis() { return crisis; }
     public List<Double> approvalByWeek() { return List.copyOf(approvalByWeek); }
+    public List<String> log() { return java.util.Collections.unmodifiableList(log); }
     public double startApproval() { return startApproval; }
 
     public Map<String, Object> toJson() {

@@ -43,22 +43,36 @@ public final class ExecutiveEngine {
     }
 
     /**
-     * Fills empty posts with the transition team's experts and puts each to a Senate vote.
-     * @return one line per post for the record
+     * Fills the cabinet: a nominee still pending gets the Senate vote; an empty post (or one run by an acting
+     * official) gets the transition team's expert, put to a vote.
+     * @return one line per post voted on, for the record
      */
     public List<String> formCabinet(GovernmentState g, Congress congress, VoteModel votes, OppositionStrategy opposition,
                                     double moderateWingMood, DeterministicRandomManager rng) {
         List<String> lines = new ArrayList<>();
         for (Post p : Post.values()) {
-            GovernmentState.SeatStatus st = g.cabinet.get(p).status();
-            if (st != GovernmentState.SeatStatus.VACANT && st != GovernmentState.SeatStatus.ACTING) continue;
-            CabinetPool.Candidate c = pool.pick(g.presidentParty, p, NomineeType.EXPERT);
-            double expected = votes.confirmationExpected(g.presidentParty, congress, c.type().controversy(), c.type() == NomineeType.CROSSOVER,
-                    opposition, moderateWingMood);
+            GovernmentState.Seat seat = g.cabinet.get(p);
+            GovernmentState.SeatStatus st = seat.status();
+            if (st == GovernmentState.SeatStatus.CONFIRMED) continue;
+            boolean pending = st == GovernmentState.SeatStatus.NOMINATED || st == GovernmentState.SeatStatus.HEARINGS_DONE;
+            String name;
+            NomineeType type;
+            double controversy;
+            if (pending) {
+                name = seat.name();
+                type = seat.type();
+                controversy = controversy(g, p);
+            } else {
+                CabinetPool.Candidate c = pool.pick(g.presidentParty, p, NomineeType.EXPERT);
+                name = c.name();
+                type = c.type();
+                controversy = type.controversy();
+            }
+            double expected = votes.confirmationExpected(g.presidentParty, congress, controversy, type == NomineeType.CROSSOVER, opposition, moderateWingMood);
             int yes = (int) Math.round(expected + votes.confirmationNoise() * rng.gaussian("cabinet.vote"));
             boolean ok = yes >= 50;
-            g.cabinet.put(p, new GovernmentState.Seat(c.name(), c.type(), ok ? GovernmentState.SeatStatus.CONFIRMED : GovernmentState.SeatStatus.ACTING));
-            lines.add((ok ? "Confirmed " : "Rejected ") + c.name() + " for " + p.name().toLowerCase() + ", " + yes + "-" + (100 - yes) + ".");
+            g.cabinet.put(p, new GovernmentState.Seat(name, type, ok ? GovernmentState.SeatStatus.CONFIRMED : GovernmentState.SeatStatus.ACTING));
+            lines.add((ok ? "Confirmed " : "Rejected ") + name + " for " + p.name().toLowerCase() + ", " + yes + "-" + (100 - yes) + ".");
         }
         return lines;
     }

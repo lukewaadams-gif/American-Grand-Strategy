@@ -12,6 +12,7 @@ import game.mandate.core.events.EventScheduler;
 import game.mandate.core.executive.GovernmentState;
 import game.mandate.core.game.Legacy;
 import game.mandate.core.military.MilitaryState;
+import game.mandate.core.opening.HundredDaysState;
 import game.mandate.core.politics.PoliticsState;
 import game.mandate.core.time.Phase;
 import game.mandate.core.time.SimulationClock;
@@ -39,6 +40,8 @@ public final class WorldState {
     DiplomacyState diplomacy;
     MilitaryState military;
     ElectionState election;
+    /** The first hundred days' process state; null before the inauguration. */
+    HundredDaysState hundredDays;
     EventScheduler scheduler;
     ConsequenceLedger ledger;
     final List<String> log = new ArrayList<>();
@@ -59,6 +62,7 @@ public final class WorldState {
     public DiplomacyState diplomacy() { return diplomacy; }
     public MilitaryState military() { return military; }
     public ElectionState election() { return election; }
+    public HundredDaysState hundredDays() { return hundredDays; }
     public EventScheduler scheduler() { return scheduler; }
     public ConsequenceLedger ledger() { return ledger; }
     public List<String> log() { return Collections.unmodifiableList(log); }
@@ -72,6 +76,7 @@ public final class WorldState {
         m.put("economy", economy.toJson()); m.put("budget", budget.toJson()); m.put("politics", politics.toJson());
         m.put("congress", congress.toJson()); m.put("policy", policy.toJson()); m.put("government", government.toJson());
         m.put("diplomacy", diplomacy.toJson()); m.put("military", military.toJson()); m.put("election", election.toJson());
+        m.put("hundredDays", hundredDays == null ? null : hundredDays.toJson());
         m.put("scheduler", scheduler.toJson()); m.put("ledger", ledger.toJson()); m.put("log", new ArrayList<>(log));
         m.put("midtermsHeld", midtermsHeld); m.put("legacy", legacy == null ? null : legacy.toJson()); m.put("commandsApplied", commandsApplied);
         return m;
@@ -90,6 +95,7 @@ public final class WorldState {
         w.diplomacy = DiplomacyState.fromJson(Json.object(m.get("diplomacy")));
         w.military = MilitaryState.fromJson(Json.object(m.get("military")));
         w.election = ElectionState.fromJson(Json.object(m.get("election")), candidates);
+        w.hundredDays = m.get("hundredDays") == null ? null : HundredDaysState.fromJson(Json.object(m.get("hundredDays")));
         w.scheduler = EventScheduler.fromJson(Json.object(m.get("scheduler")));
         w.ledger = ConsequenceLedger.fromJson(Json.object(m.get("ledger")));
         for (Object o : Json.array(m.get("log"))) w.log.add((String) o);

@@ -8,6 +8,7 @@ import game.mandate.core.congress.VoteModel;
 import game.mandate.core.economy.EconomyEngine;
 import game.mandate.core.economy.EconomyParams;
 import game.mandate.core.economy.MarketContext;
+import game.mandate.core.diplomacy.HotSpot;
 import game.mandate.core.effects.Effect;
 import game.mandate.core.executive.GovernmentState;
 import game.mandate.core.executive.GovernmentState.SeatStatus;
@@ -394,7 +395,7 @@ public class HundredDays {
         require(option >= 0 && option < d.options().size(), "No such option");
         String was = cause;
         cause = "100 days, week " + st.week + ": " + d.title() + " -> " + d.options().get(option).label();
-        log("Decision: " + d.title() + " -> " + d.options().get(option).label());
+        int logAt = st.log.size();
         switch (d.kind()) {
             case CRISIS -> crisisMove(CrisisMove.values()[option]);
             case FUNDING -> fundingOffer(FundingOffer.values()[option]);
@@ -407,7 +408,9 @@ public class HundredDays {
             case ECONOMY -> economicResponse(option);
             case LEAK -> { }
         }
-        st.pending.remove(d); // only after the handler succeeded, so a refused choice leaves the decision open
+        // Only after the handler succeeded, so a refused choice leaves no trace (handlers validate before they change anything).
+        st.pending.remove(d);
+        st.log.add(logAt, "Decision: " + d.title() + " -> " + d.options().get(option).label());
         cause = was;
     }
 
@@ -627,6 +630,9 @@ public class HundredDays {
         if (o == CrisisOutcome.DEAL) { opinion(Coalition.SWING, 1); lasting(Coalition.SWING, 1.0); }
         if (o == CrisisOutcome.STALEMATE) { deterrence(-5); opinion(Coalition.SWING, -1); lasting(Coalition.SWING, -0.5); }
         if (o == CrisisOutcome.CLASH) { lasting(Coalition.SWING, -2.5); lasting(Coalition.BASE, -1.0); }
+        // The region remembers: the outcome carries into the world's standing tensions after the hundred days.
+        double tension = switch (o) { case CLASH -> 12; case STALEMATE -> 4; case BACKED_DOWN -> -6; case DEAL -> -10; default -> 0; };
+        dispatch(new Effect.Tension(st.crisisKind == CrisisKind.TAIWAN ? HotSpot.TAIWAN_STRAIT : HotSpot.MIDDLE_EAST, tension));
         consequence(text);
     }
 
@@ -983,8 +989,15 @@ public class HundredDays {
     /** The flagship's position: the catalog bill's, scaled by size and shifted by the pay-for. */
     public double billIdeology() { return h.flagship().ideology() * st.size.ideologyFactor + st.payFor.ideologyShift; }
 
-    /** Deficit if enacted, % of GDP: the catalog bill's (a medium, borrowed bill), scaled by size and pay-for. */
-    public double billDeficit() { return st.size == null ? 0 : h.flagship().deficitPctGdp() * st.size.deficitFactor * st.payFor.deficitShare; }
+    /**
+     * Deficit if enacted, % of GDP: the catalog bill's (a medium, borrowed bill), scaled by size and pay-for. A bill
+     * that already cuts the deficit needs no paying for, so the pay-for scales only a cost.
+     */
+    public double billDeficit() {
+        if (st.size == null) return 0;
+        double base = h.flagship().deficitPctGdp() * st.size.deficitFactor;
+        return base > 0 ? base * st.payFor.deficitShare : base;
+    }
 
     private double billGrowth() { return h.flagship().growthImpulse() * st.size.growthFactor * st.payFor.growthFactor; }
 

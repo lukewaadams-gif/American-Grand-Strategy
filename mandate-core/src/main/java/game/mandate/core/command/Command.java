@@ -5,6 +5,7 @@ import game.mandate.core.campaign.DebatePosture;
 import game.mandate.core.campaign.Issue;
 import game.mandate.core.congress.LegislativeStrategy;
 import game.mandate.core.diplomacy.HotSpot;
+import game.mandate.core.opening.OpeningAction;
 
 import java.util.List;
 
@@ -37,6 +38,9 @@ public sealed interface Command {
 
     /** Governing: personal diplomacy to cool a flashpoint. */
     record Diplomacy(HotSpot hotSpot) implements Command {}
+
+    /** First hundred days: one presidential action (draft, negotiate, nominate, decide, end the week...). */
+    record Act(OpeningAction action) implements Command {}
 
     /** Answer a pending event. */
     record ResolveEvent(int instanceId, int optionIndex) implements Command {}

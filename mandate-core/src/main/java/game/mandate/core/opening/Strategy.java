@@ -232,7 +232,7 @@ public enum Strategy {
             t.act(a);
             answerFollowUps(t);
             return true;
-        } catch (IllegalStateException refused) {
+        } catch (IllegalStateException | game.mandate.core.command.IllegalCommandException refused) {
             return false;
         }
     }

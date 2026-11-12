@@ -10,6 +10,7 @@ import game.mandate.core.events.EventOption;
 import game.mandate.core.events.PendingEvent;
 import game.mandate.core.engine.GameEngine;
 import game.mandate.core.diplomacy.HotSpot;
+import game.mandate.core.opening.Strategy;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -36,6 +37,11 @@ public final class AutoPilot {
                     g.apply(new Command.ChooseDebatePosture(DebatePosture.tendencyOf(g.player().candidate())));
             }
             case TRANSITION -> g.apply(new Command.SetAgenda(chooseAgenda(g)));
+            case FIRST_100_DAYS -> {
+                // The hundred days are played by the attentive-expert probe; its EndWeek ends the turn.
+                Strategy.STRATEGIST.playWeek(g.hundredDays().orElseThrow());
+                return;
+            }
             case GOVERNING -> governMonth(g);
             default -> { }
         }

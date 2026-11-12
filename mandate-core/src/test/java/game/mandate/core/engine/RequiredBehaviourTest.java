@@ -34,10 +34,12 @@ class RequiredBehaviourTest {
     void electionsAffectTheNextAdministration() {
         List<double[]> evAndStart = new ArrayList<>();
         for (long seed = 1; evAndStart.size() < 30 && seed < 600; seed++) {
-            GameEngine g = playUntil(new GameEngine(setup(seed)), x -> x.phase() == Phase.GOVERNING || x.over());
-            if (g.phase() != Phase.GOVERNING) continue;
+            // Measured at the inauguration, where the mandate is set (before the first hundred days are played).
+            GameEngine g = playUntil(new GameEngine(setup(seed)), x -> x.phase() == Phase.FIRST_100_DAYS || x.over());
+            if (g.phase() != Phase.FIRST_100_DAYS) continue;
             ElectionResult r = g.result2028().orElseThrow();
             WorldState w = g.state();
+            double startSwing = w.politics().approval(Coalition.SWING), startCapital = w.politics().capital();
             // The winner, and nobody else, is now president, with the winner's party.
             assertEquals(g.player().candidate().id(), w.government().presidentId());
             assertEquals(r.winner(), w.government().presidentParty());
@@ -47,9 +49,12 @@ class RequiredBehaviourTest {
             var elected = w.ledger().byCause("Election 2028").stream().filter(c -> c.owner().equals("congress")).toList();
             assertEquals(1, elected.size());
             assertTrue(elected.get(0).effect().contains("House D " + g.congress().house(Party.DEMOCRAT)));
-            // The cabinet was formed by the new administration's party.
-            assertTrue(w.government().seat(game.mandate.core.executive.Post.TREASURY).name() != null);
-            evAndStart.add(new double[]{r.electoralVotes(g.player().party()), w.politics().approval(Coalition.SWING), w.politics().capital()});
+            // The flagship of the first hundred days is the new president's first priority.
+            assertEquals(g.agenda().get(0), w.hundredDays().flagshipId());
+            // By the end of the hundred days, every cabinet post has been filled or put to the Senate.
+            playUntil(g, x -> x.phase() == Phase.GOVERNING || x.over());
+            for (var post : game.mandate.core.executive.Post.values()) assertTrue(w.government().seat(post).name() != null);
+            evAndStart.add(new double[]{r.electoralVotes(g.player().party()), startSwing, startCapital});
         }
         assertTrue(evAndStart.size() >= 20, "enough won elections: " + evAndStart.size());
         // A bigger mandate starts the term with more swing-voter approval and more political capital.

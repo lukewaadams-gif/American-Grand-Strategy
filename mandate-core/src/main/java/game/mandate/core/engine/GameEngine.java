@@ -16,6 +16,8 @@ import game.mandate.core.congress.Bill;
 import game.mandate.core.congress.BillCatalog;
 import game.mandate.core.congress.Congress;
 import game.mandate.core.congress.CongressEngine;
+import game.mandate.core.congress.CongressState;
+import game.mandate.core.congress.PolicyState;
 import game.mandate.core.congress.LegislativeContext;
 import game.mandate.core.congress.LegislativeStrategy;
 import game.mandate.core.congress.WhipCount;
@@ -26,6 +28,7 @@ import game.mandate.core.diplomacy.DiplomacyEngine;
 import game.mandate.core.diplomacy.DiplomacyState;
 import game.mandate.core.diplomacy.Escalation;
 import game.mandate.core.diplomacy.HotSpot;
+import game.mandate.core.economy.BudgetState;
 import game.mandate.core.economy.EconomyEngine;
 import game.mandate.core.economy.EconomyParams;
 import game.mandate.core.economy.EconomyState;
@@ -41,6 +44,7 @@ import game.mandate.core.events.PendingEvent;
 import game.mandate.core.events.WorldView;
 import game.mandate.core.executive.CabinetPool;
 import game.mandate.core.executive.ExecutiveEngine;
+import game.mandate.core.executive.GovernmentState;
 import game.mandate.core.executive.Post;
 import game.mandate.core.game.GameSetup;
 import game.mandate.core.game.Legacy;
@@ -49,10 +53,15 @@ import game.mandate.core.military.MilitaryEngine;
 import game.mandate.core.military.MilitaryParams;
 import game.mandate.core.military.TheaterOutcome;
 import game.mandate.core.military.TheaterScenario;
+import game.mandate.core.opening.Host;
+import game.mandate.core.opening.HundredDays;
+import game.mandate.core.opening.OpeningAction;
+import game.mandate.core.opening.Report;
 import game.mandate.core.politics.Coalition;
 import game.mandate.core.politics.OpinionInputs;
 import game.mandate.core.politics.PoliticsEngine;
 import game.mandate.core.politics.PoliticsParams;
+import game.mandate.core.politics.PoliticsState;
 import game.mandate.core.politics.Role;
 import game.mandate.core.rng.DeterministicRandomManager;
 import game.mandate.core.state.Party;
@@ -61,7 +70,9 @@ import game.mandate.core.time.Phase;
 import game.mandate.core.time.SimulationClock;
 import game.mandate.core.time.SimulationClock.Granularity;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,6 +109,8 @@ public final class GameEngine implements WorldView {
 
     private final double premiumPerMiddleEast, middleEastPivot, premiumPerRung, stressPerRung, stressWar;
     private final double deterrenceOrder, munitionsOrder, tensionOrder, deficitOrder;
+    private final int hundredDaysWeeks;
+    private final EngineHost host = new EngineHost();
 
     private WorldState w;
     private final List<Command> history = new ArrayList<>();
@@ -129,6 +142,7 @@ public final class GameEngine implements WorldView {
         munitionsOrder = tuning.d("orders.deterrence.munitionsSurge");
         tensionOrder = tuning.d("orders.deterrence.tension");
         deficitOrder = tuning.d("orders.deterrence.deficit");
+        hundredDaysWeeks = tuning.i("hundredDays.weeks");
 
         validateConfiguration(tuning);
 
@@ -199,6 +213,7 @@ public final class GameEngine implements WorldView {
             case Command.BolsterDeterrence c -> bolsterDeterrence();
             case Command.Diplomacy c -> diplomacy(c.hotSpot());
             case Command.ResolveEvent c -> resolveEvent(c.instanceId(), c.optionIndex());
+            case Command.Act c -> act(c.action());
             case Command.EndTurn c -> endTurn();
         }
         history.add(command);
@@ -257,6 +272,7 @@ public final class GameEngine implements WorldView {
         switch (w.phase) {
             case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> campaignWeek();
             case TRANSITION -> beginTerm();
+            case FIRST_100_DAYS -> act(new OpeningAction.EndWeek());
             case GOVERNING -> governingMonth();
             case EPILOGUE -> w.phase = Phase.GAME_OVER;
             case GAME_OVER -> throw new IllegalCommandException("The game is over");
@@ -328,19 +344,114 @@ public final class GameEngine implements WorldView {
         w.ledger.decide(date(), "Agenda: " + String.join(", ", ids));
     }
 
-    /** Inauguration: the election's result becomes the next administration. */
+    /**
+     * Inauguration: the election's result becomes the next administration. The mandate (electoral votes) sets the
+     * opening capital and swing-voter goodwill, Congress comes from the same election, and the first agenda priority
+     * becomes the flagship bill of the first hundred days. The cabinet starts empty: appointing it is the player's job.
+     */
     private void beginTerm() {
         if (w.government.agenda().isEmpty()) throw new IllegalCommandException("Set your agenda first");
-        w.phase = Phase.GOVERNING;
+        w.phase = Phase.FIRST_100_DAYS;
         w.clock.set(calendar.inauguration());
-        w.clock.setMode(Granularity.MONTHLY);
         int myEv = w.election.result2028().electoralVotes(player().party());
         int decision = w.ledger.decide(date(), "Inauguration");
         dispatch(decision, "Inauguration", new Effect.PresidentInaugurated(player().candidate().id(), player().party(), myEv));
         politicsEngine.setInitialTerms(w.politics, unifiedGovernment());
+        log("Inauguration Day. " + player().candidate().name() + " takes the oath with " + myEv + " electoral votes and " + congress()
+                + ". Approval " + Math.round(approval()) + "%, political capital " + Math.round(capital()) + ".");
+        w.clock.set(hundredDaysStart());
+        w.hundredDays = HundredDays.begin(host);
+        log("The first hundred days begin. Your flagship: the " + host.flagship().name() + ".");
+    }
+
+    /** The Monday the first week of the hundred days starts. */
+    public LocalDate hundredDaysStart() { return calendar.inauguration().with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)); }
+
+    /** One action of the first hundred days. A refused action changes nothing (the hundred days validate first). */
+    private void act(OpeningAction a) {
+        if (w.phase != Phase.FIRST_100_DAYS) throw new IllegalCommandException("Only during the first hundred days");
+        int logged = w.hundredDays.log().size();
+        host.decision = -1;
+        try {
+            new HundredDays(host, w.hundredDays).apply(a);
+        } catch (IllegalStateException | IllegalArgumentException refused) {
+            throw new IllegalCommandException(refused.getMessage());
+        }
+        for (int i = logged; i < w.hundredDays.log().size(); i++) log(w.hundredDays.log().get(i));
+        if (a instanceof OpeningAction.EndWeek) {
+            w.clock.advance();
+            if (w.hundredDays.week() > w.hundredDays.weeks()) endHundredDays();
+        }
+    }
+
+    /** Day 100: the report; then the slice ends, or the term goes on in monthly turns with the cabinet filled. */
+    private void endHundredDays() {
+        Report r = new HundredDays(host, w.hundredDays).report();
+        log(String.format("Day 100. Approval %.0f%%; flagship %s; %d of 3 cabinet posts confirmed; opposition %s.", r.approval(),
+                r.billStage().name().toLowerCase().replace('_', ' '), r.confirmed(), r.opposition().name().toLowerCase()));
+        if (setup.length() == GameSetup.Length.HUNDRED_DAYS) {
+            w.phase = Phase.EPILOGUE;
+            log("The first hundred days are over.");
+            return;
+        }
         for (String line : executiveEngine.formCabinet(w.government, w.congress.congress(), congressEngine.votes(), w.politics.opposition(),
                 w.politics.party(player().party()).wingMood(1), rng)) log(line);
-        log("Inauguration Day. Approval " + Math.round(approval()) + "%, political capital " + Math.round(capital()) + ".");
+        w.phase = Phase.GOVERNING;
+        w.clock.set(date().withDayOfMonth(1).plusMonths(1));
+        w.clock.setMode(Granularity.MONTHLY);
+        executiveEngine.newTurn(w.government);
+        // The world did not stand still: the flashpoints drift for the months the hundred days covered. (During the
+        // hundred days their own crisis is the foreign-policy story, so standing escalations wait until now.)
+        for (long m = ChronoUnit.MONTHS.between(calendar.inauguration(), date()); m > 0; m--) {
+            for (Escalation e : diplomacyEngine.stepMonth(w.diplomacy, rng)) queueEvent(EventCatalog.escalation(e));
+            militaryEngine.stepMonth(w.military);
+        }
+    }
+
+    /**
+     * The first hundred days, for the UI and the AI. Every action taken through this view is applied as a
+     * {@link Command.Act}, so it is validated, logged in the history and saved like any other command.
+     */
+    public Optional<HundredDays> hundredDays() {
+        if (w.hundredDays == null) return Optional.empty();
+        return Optional.of(new HundredDays(host, w.hundredDays) {
+            @Override public void apply(OpeningAction a) { GameEngine.this.apply(new Command.Act(a)); }
+        });
+    }
+
+    /** The world as the hundred days see it: the authoritative states and engines, and the engine's router. */
+    private final class EngineHost implements Host {
+        int decision = -1;
+
+        @Override public Party party() { return player().party(); }
+        @Override public String presidentName() { return player().candidate().name(); }
+        @Override public double presidentCharisma() { return player().candidate().charisma(); }
+        @Override public Bill flagship() { return bill(w.government.agenda().get(0)); }
+        @Override public LocalDate start() { return hundredDaysStart(); }
+        @Override public int weeks() { return hundredDaysWeeks; }
+        @Override public PoliticsState politics() { return w.politics; }
+        @Override public PoliticsEngine politicsEngine() { return politicsEngine; }
+        @Override public EconomyState economy() { return w.economy; }
+        @Override public BudgetState budget() { return w.budget; }
+        @Override public EconomyEngine economyEngine() { return economyEngine; }
+        @Override public DiplomacyState diplomacy() { return w.diplomacy; }
+        @Override public DiplomacyEngine diplomacyEngine() { return diplomacyEngine; }
+        @Override public CongressState congress() { return w.congress; }
+        @Override public PolicyState policy() { return w.policy; }
+        @Override public CongressEngine congressEngine() { return congressEngine; }
+        @Override public GovernmentState government() { return w.government; }
+        @Override public ExecutiveEngine executiveEngine() { return executiveEngine; }
+        @Override public ElectionEngine elections() { return electionEngine; }
+        @Override public CampaignCalendar calendar() { return calendar; }
+        @Override public DeterministicRandomManager rng() { return rng; }
+        @Override public Tuning tuning() { return tuning; }
+
+        /** One ledger decision per command, opened by its first transition (so a refused command records nothing). */
+        @Override
+        public void dispatch(String cause, Effect effect) {
+            if (decision < 0) decision = w.ledger.decide(date(), cause);
+            GameEngine.this.dispatch(decision, cause, effect);
+        }
     }
 
     private void governingMonth() {
