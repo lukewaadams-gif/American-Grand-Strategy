@@ -9,5 +9,5 @@ package game.mandate.core.campaign;
  * @param approval            national approval of the incumbent
  * @param unfinishedAgenda    agenda priorities not enacted
  */
-public record ElectoralEnvironment(double scenarioEnvironment, boolean incumbent, double approval, double growth, double inflation,
+public record ElectoralEnvironment(double scenarioEnvironment, boolean incumbent, double approval, double growth, double inflation, double unemployment,
                                    boolean taiwanFell, int unfinishedAgenda) {}

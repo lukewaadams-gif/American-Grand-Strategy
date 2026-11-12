@@ -54,9 +54,10 @@ public final class Main {
             case "weeks" -> new WeeksCli(longArg(args, 1, System.nanoTime() % 100000),
                     args.length > 2 && args[2].equals("R") ? Party.REPUBLICAN : Party.DEMOCRAT,
                     !(args.length > 3 && args[3].equals("divided"))).run();
+            case "war" -> WarProbe.run((int) longArg(args, 1, 300));
             case "batch" -> Batch.run((int) longArg(args, 1, 200), args.length > 2 ? Scenario.valueOf(args[2]) : Scenario.TOSS_UP);
             case "play" -> new Main.Interactive(longArg(args, 1, System.nanoTime() % 100000)).run();
-            default -> System.out.println("usage: mandate [play [seed] | auto [seed] [D|R] | batch [runs] [SCENARIO] | weeks [seed] [D|R] [unified|divided] | compare [seeds]]");
+            default -> System.out.println("usage: mandate [play [seed] | auto [seed] [D|R] | batch [runs] [SCENARIO] | weeks [seed] [D|R] [unified|divided] | compare [seeds] | war [runs]]");
         }
     }
 

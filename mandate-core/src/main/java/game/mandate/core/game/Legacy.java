@@ -65,6 +65,13 @@ public record Legacy(int score, String grade, List<String> lines) {
         return new Legacy(score, grade(g, score), lines);
     }
 
+    /** Reads every legacy constant so a missing one fails at start-up, not at the end of a four-year game. */
+    public static void validate(game.mandate.core.data.Tuning t) {
+        for (String k : java.util.List.of("lossFloorEv", "win", "perLaw", "perAgenda", "perMiseryPoint", "approvalPivot", "perApprovalPoint",
+                "war.defended", "war.stalemate", "war.fallen", "peaceThroughCrisis", "reelected", "grade.historic", "grade.consequential",
+                "grade.solid", "grade.troubled", "grade.failed")) t.d("legacy." + k);
+    }
+
     private static String grade(GameEngine g, int s) {
         var t = g.tuning();
         if (s >= t.i("legacy.grade.historic")) return "Historic presidency";

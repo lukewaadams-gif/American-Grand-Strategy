@@ -130,6 +130,8 @@ public final class GameEngine implements WorldView {
         tensionOrder = tuning.d("orders.deterrence.tension");
         deficitOrder = tuning.d("orders.deterrence.deficit");
 
+        validateConfiguration(tuning);
+
         Candidate mine = candidates.get(setup.playerCandidateId());
         Candidate theirs = candidates.get(setup.opponentCandidateId());
         if (mine.party() != setup.playerParty() || theirs.party() != setup.playerParty().opponent())
@@ -153,6 +155,13 @@ public final class GameEngine implements WorldView {
         w.scheduler = new EventScheduler();
         w.ledger = new ConsequenceLedger();
         log("The general election begins: " + mine.name() + " (" + mine.party().code() + ") vs " + theirs.name() + " (" + theirs.party().code() + ").");
+    }
+
+    /** Fails fast on a broken tuning file: every scenario and every legacy rule must be readable at start-up. */
+    static void validateConfiguration(Tuning t) {
+        for (game.mandate.core.game.Scenario sc : game.mandate.core.game.Scenario.values())
+            for (String k : List.of("environment", "houseDem", "senateDem")) t.d("scenario." + sc.name() + "." + k);
+        Legacy.validate(t);
     }
 
     public static GameEngine replay(GameSetup setup, List<Command> commands) {
@@ -478,7 +487,7 @@ public final class GameEngine implements WorldView {
         for (PendingEvent p : w.scheduler.roll(eventDefinitions, w.phase, this, rng)) log("EVENT: " + p.definition().title());
     }
 
-    private void queueEvent(EventDefinition d) {
+    void queueEvent(EventDefinition d) {
         w.scheduler.queue(d);
         log("EVENT: " + d.title());
     }
@@ -517,7 +526,7 @@ public final class GameEngine implements WorldView {
         int unfinished = (int) w.government.agenda().stream().filter(a -> !w.policy.inForce(a)).count();
         boolean fell = war().map(o -> o.status() == TheaterOutcome.TaiwanStatus.FALLEN).orElse(false);
         return new ElectoralEnvironment(tuning.d("scenario." + setup.scenario().name() + ".environment"), incumbent,
-                w.politics.governing() ? approval() : 50, w.economy.growth(), w.economy.inflation(), fell, unfinished);
+                w.politics.governing() ? approval() : 50, w.economy.growth(), w.economy.inflation(), w.economy.unemployment(), fell, unfinished);
     }
 
     // =========================================================================================

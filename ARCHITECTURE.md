@@ -8,88 +8,176 @@
 4. **One model per concept.** One electorate, one economy, one event system. The source games had duplicates of each.
 5. **Replaceable engines behind narrow contracts.** The electorate model and the war model can each be upgraded independently.
 
-## 2. Modules
+## 2. Modules and packages
 
 ```
 mandate/                      Maven multi-module, Java 21
-├── mandate-core/             pure simulation; no AWT/Swing/JavaFX imports (enforced by a test)
-│   ├── game/                 Game (turn order, command dispatch), GameSetup, Scenario, Legacy
-│   ├── command/              sealed Command hierarchy, IllegalCommandException
-│   ├── time/                 Phase, Calendar2028
-│   ├── rng/                  RngStreams: named, independent deterministic streams
-│   ├── electorate/           UsState, StateCatalog, ElectorateModel (seam), UniformSwingModel, ElectionCalculator
-│   ├── campaign/             Candidate, Issue, CampaignSide, CampaignWeekPlan, CampaignEngine, DebatePosture, Polling
-│   ├── congress/             Bill, Bloc, Congress, LegislativeEngine, WhipCount, LegislativeStrategy
-│   ├── economy/              Economy (monthly macro), ApprovalModel
-│   ├── world/                World (tensions, Taiwan ladder), TheaterScenario/Outcome/Resolver (seam)
-│   ├── events/               EventDefinition, EventOption, PendingEvent, EventCatalog
-│   ├── effects/              sealed Effect: the only way content changes the simulation
-│   ├── ai/                   CampaignAi (opponent), AutoPilot (delegation, batches)
-│   └── data/                 resource loaders (CSV today, JSON with a schema in M2)
-├── mandate-cli/              text play, autoplay, balance batch (designer tool)
-└── (M4) mandate-desktop/     JavaFX client: depends on core, never the reverse
-    (EXP-1) mandate-theater-islandchain/   adapter: the IslandChain engine behind TheaterResolver
+├── mandate-core/             the simulation; no AWT/Swing/JavaFX imports (enforced by a test)
+│   ├── engine/               GameEngine, WorldState, ConsequenceLedger, SaveManager, CommandCodec
+│   ├── time/                 SimulationClock (monthly / weekly / daily / operational), CampaignCalendar, Phase
+│   ├── events/               EventScheduler, DecisionResolver, EventCatalog, WorldView (read-only view for conditions)
+│   ├── rng/                  DeterministicRandomManager: named SplitMix64 streams with saveable state
+│   ├── data/                 Tuning (all balancing constants), Json, Csv
+│   ├── effects/              Effect: the sealed transition vocabulary
+│   ├── campaign/ electorate/ ELECTION engine: ElectionEngine, ElectionState, CampaignEngine, ElectionCalculator, ElectorateModel
+│   ├── economy/              ECONOMY engine: EconomyEngine, EconomyState, BudgetState, MarketContext
+│   ├── congress/             CONGRESS engine: CongressEngine, VoteModel, CongressState, PolicyState, bills and blocs
+│   ├── politics/             SHARED POLITICAL SYSTEM: PoliticsEngine, PoliticsState, PartyState, coalitions, opposition
+│   ├── executive/            the presidency: ExecutiveEngine, GovernmentState, cabinet posts and archetypes
+│   ├── diplomacy/            DIPLOMACY engine: DiplomacyEngine, DiplomacyState, countries, the Taiwan ladder
+│   ├── military/             MILITARY engine: MilitaryEngine, MilitaryState, OperationState, theater seam
+│   ├── ai/                   CampaignAi (opponent), AutoPilot (delegation, batch probes): players, not engines
+│   └── opening/              the 12-week governing prototype, re-hosted on the engines above
+└── mandate-cli/              text play, autoplay, balance batch, 12-week prototype, strategy comparison
 ```
 
-**Dependency rule:** `desktop → core`, `cli → core`, `theater-islandchain → core`. Nothing depends on a front end.
+## 3. One authoritative world, with owners
 
-## 3. The turn loop and the command model
+`WorldState` is the single persistent state of a game. It holds one domain state per system, and the save file is that state.
 
-```
-            ┌──────── UI / CLI / AutoPilot / Tutorial ────────┐
-            │  read: game.phase(), polls, whip(), pendingEvents │
-            │  write: game.apply(Command)                       │
-            └───────────────────────┬──────────────────────────┘
-                                    ▼
-                      Game.apply(command)   ── validate (throws IllegalCommandException; state untouched)
-                                    │          then mutate, append to history
-                     EndTurn ───────┤
-                                    ▼
-   campaign week:  AI plans → CampaignEngine.execute ×2 → debate → events → date+1w → election?
-   governing month: Economy.step → Approval.step → World.step (ladder events) → events → capital → date+1m
-                     → midterms? → re-election?
-```
-
-- **Commands** (`command/Command.java`): `PlanCampaign`, `ChooseDebatePosture`, `SetAgenda`, `PushBill`, `PublicAddress`, `BolsterDeterrence`, `Diplomacy`, `ResolveEvent`, `EndTurn`. This is a sealed interface, so every consumer is checked by the compiler when a command is added.
-- **Saves** are `GameSetup` plus `List<Command>`. `Game.replay` re-runs them; `DeterminismTest` proves it. For fast loading of long games, 1.0 adds versioned JSON snapshots every N turns, validated against the replay in debug builds. We do not use Java serialization (see the audit: it broke saves and coupled the two source games).
-- **Pending decisions:** events queue as `PendingEvent`s, and `EndTurn` is refused until they are answered. A debate week requires a posture. The UI therefore always knows what the player owes.
-
-## 4. Determinism
-
-- `RngStreams` derives one `SplittableRandom` per named stream ("economy", "congress", "events.<id>" …) from the master seed with a mixing hash. Adding a draw to one system never shifts another (`SystemsTest.rngStreamsAreIndependent`). This removes the IslandChain seed-correlation bug by construction.
-- **No mutable statics** anywhere in core. Content catalogs are immutable after load.
-- **Read-only views draw from throwaway streams.** Example: `Game.statePolls()` seeds a fresh stream from the seed and history length, so opening the polls screen never changes the outcome.
-- **Rules for contributors:**
-  - Never call `Math.random()`, `new Random()` or `System.nanoTime()` in core.
-  - Never iterate a `HashMap` where the order affects RNG draws. Use `LinkedHashMap`/`EnumMap`; state iteration follows `StateCatalog` order.
-
-## 5. Effects: the content contract
-
-`Effect` is a sealed interface: `Approval`, `Capital`, `EconomyShock`, `CampaignSwing`, `Salience`, `Tension`, `Deterrence`, `Cash`, `Deficit`. Events, bills (soon) and crisis options produce effects only, and `Game.applyEffect` is the single interpreter. This gives three properties:
-
-- **Previewable.** Every option can render "Approval +2; Deficit +0.05" before the player chooses (the CLI does).
-- **Analysable.** Balance tools can sum the expected value of every option offline. `AutoPilot.value` is a first version. In M2, a content linter flags options that are strictly dominated, which is how the "obvious answer" problem found in the source games' press conferences gets caught.
-- **Extensible.** A new effect type is a compile error everywhere it must be handled.
-
-Engine **hooks** (`EventOption.hook`, e.g. `theater:INTERVENE`) exist for the rare consequence that is a process rather than a number (starting a war).
-
-## 6. The simulation models (current formulas)
-
-| Model | File | Core equations (monthly unless noted) |
+| WorldState part | Contents | Owner (the only code that writes it) |
 |---|---|---|
-| Electorate | `UniformSwingModel` | margin_s = baseline2024_s + swing × elasticity_s + local_s. Elasticity is a placeholder heuristic; M1 replaces it with the 96-cell port. |
-| Election | `ElectionCalculator` | realised_s = expected_s + (N(0, 2.6) + hidden miss) × elasticity_s + N(0, 2.5). Correlated national error is what makes election night meaningful. |
-| National swing | `Game.nationalSwing` | environment (scenario, or the incumbent's record in 2032) + 2.5 × Δquality − 4 × Δextremity + Δmomentum + debates and events − margin2024 |
-| Campaign effect | `CampaignEngine` | local = Σ_side ±(1.3·ln(1+ads/ref) + 1.0·ln(1+field/ref) + 0.45·ln(1+visits)·charisma factor), with ref = 0.6 × the state's House seats. Ads decay 0.55 weekly, field 0.97, visits 0.6. |
-| Message | `CampaignEngine` | Δmomentum = 0.35 × salience share × issue ownership × consistency (up to 1.5×); momentum decays 0.8 weekly |
-| Economy | `Economy` | gap' = 0.95·gap + 0.75·shock − 0.025·(r − r*) + ε · u → u* − 0.5·gap (adjusts 30% a month) · π → anchored expectations + 0.25·gap + supply shocks · Fed = Taylor rule (0.5/0.5), at most ±25 bp a month · debt += deficit/12 − debt·nominal growth/12 |
-| Approval | `ApprovalModel` | target = 46 + honeymoon (decays 0.85) + economy (−1.4Δu, −1.6Δπ, +0.8Δg) + modifiers (decay 0.88); compressed outside 40-56; approval adjusts 35% toward target |
-| Votes | `LegislativeEngine` | bloc support = 1 − 1.15·\|bill − bloc ideology\| + party pull (loyalty, approval) − deficit-hawk penalty + capital bought at the margin; floor votes add N(0,4) in the House and N(0,1.6) in the Senate |
-| Midterms | `Game.holdMidterms` | president's margin = 0.6(approval − 48) + 0.5(growth − 2) − 2.5 + N(0,2); House = 218 + 5.5 × margin; Class I Senate seats through the electorate model with a 3-point incumbency bonus |
-| Taiwan | `World` | drift = 0.8 − 0.05(deterrence − 50) − 0.012(tension − 30) + 0.7 × rungs crossed + N(0,3); rungs at 50/65/80/92; war blocked with p = deterrence/100 each month at the brink |
-| Theater | `AbstractTheaterResolver` | z = 0.035(deterrence − 50) + 0.02(munitions − 50) ± 0.6 basing + 0.15·warning + commitment + N(0, 0.9) → defended / stalemate / fallen. **Placeholder until M5 calibration.** |
+| `economy` | output gap, growth, unemployment, inflation, Fed rate and credibility, oil, 10-year yield, confidence, reported data, shocks | `EconomyEngine` |
+| `budget` | baseline and policy deficit, debt | `EconomyEngine` |
+| `politics` | approval by coalition (your voters, swing, opposition voters), fading and lasting modifiers, honeymoon, issue salience, political capital, opposition goodwill and strategy, parties (wing moods, leaders), politicians' roles | `PoliticsEngine` (the shared political system) |
+| `congress` | seats, filibuster, reconciliation years, relationship with each bloc | `CongressEngine` |
+| `policy` | laws and executive orders in force, blocked orders, failed bills | `CongressEngine` |
+| `government` | president, party, inauguration, term, cabinet seats, agenda, attention | `ExecutiveEngine` |
+| `diplomacy` | flashpoint tensions, country relations, deterrence, Japanese basing, Taiwan rung, warning time | `DiplomacyEngine` |
+| `military` | forces by type, munitions by type, permanent losses, killed, production rate, wars fought, the war in progress | `MilitaryEngine` |
+| `election` | both campaigns, pending plan/posture, hidden polling miss, results 2028 and 2032, midterm | `ElectionEngine` |
+| `clock`, `phase`, `scheduler`, `ledger`, `log` | time, turn mode, pending events, the record of decisions and consequences | `GameEngine` |
 
-Every constant is a named value or sits in one documented formula. M2 moves the tunables into `data/tuning.json` so balance passes need no code change.
+**Enforced by the compiler.** Each domain state lives in its engine's package and has package-private setters. Code in another package cannot write it, and the `GameEngine` cannot either. `ArchitectureTest` additionally checks two rules:
+- no domain state exposes a public mutator;
+- no domain package imports another domain's `*State` or `*Engine`.
+
+## 4. State transitions
+
+Systems never modify each other's variables. A consequence that crosses a boundary is an `Effect`: a sealed record type, the same one content (events, bills) uses. `GameEngine.dispatch` routes each effect to the engine that owns the state it changes, and records it in the `ConsequenceLedger` with its cause and its owner.
+
+| Effect | Routed to |
+|---|---|
+| `Approval`, `CoalitionApproval`, `Capital`, `Salience`, `Goodwill`, `WingMood` | politics (before inauguration, `Approval` becomes campaign swing in the election engine) |
+| `EconomyShock`, `Deficit`, `FedPressure`, `OilRelease` | economy (ignored before inauguration, and recorded as such) |
+| `CampaignSwing`, `Cash` | election |
+| `Tension`, `Deterrence`, `WarEnded` | diplomacy |
+| `Munitions` | military |
+| `CongressElected` | congress |
+| `PresidentInaugurated` | executive and politics |
+
+Reads go the other way, through explicit **contexts** assembled in one place in `GameEngine`. Examples:
+- `MarketContext`: oil risk from diplomacy and Treasury competence from the executive, fed to the economy.
+- `OpinionInputs`: the economy as voters feel it, fed to politics.
+- `LegislativeContext`: approval, opposition strategy and wing moods, fed to Congress.
+- `ElectoralEnvironment`: the incumbent's record, fed to the election engine.
+
+An engine never reaches into another engine's state.
+
+**Examples of cross-system chains that now run end to end:**
+- **The election shapes the next administration.** The election engine produces `CongressElected`, and later `PresidentInaugurated`. The executive forms a cabinet, with confirmations voted by the vote model. Politics sets the mandate: swing approval and capital scale with the electoral-vote margin.
+- **A law changes conditions.** `CongressEngine.push` returns `Approval`, a lasting `CoalitionApproval`, `EconomyShock`, `Deficit`, `Salience`, `Capital`, `Goodwill` and `WingMood`. Each goes to its owner.
+- **The economy shapes the next election.** Growth, inflation and unemployment feed approval through `OpinionInputs`, and feed the 2032 environment through `ElectoralEnvironment`.
+- **A war leaves permanent losses.** The military engine spends munitions and loses platforms each operational turn. The losses stay in `MilitaryState`; only munitions regenerate, through monthly production. The war's outcome sends `Approval`, `EconomyShock` and `WarEnded`.
+
+## 5. Time: the master clock and the turn
+
+`SimulationClock` has four granularities:
+- `MONTHLY` while governing;
+- `WEEKLY` in campaigns;
+- `DAILY` (available; used by operational turns after the first week of a war);
+- `OPERATIONAL`, a turn length in hours.
+
+When a war starts, the clock switches to operational turns: 6 hours each in the first week, then 24 hours. Each `EndTurn` fights one turn. When the war ends, monthly governing resumes. Engine rates are expressed per week or per month and compounded for the actual step (for example `1-(1-a)^dt`). One set of equations therefore serves the monthly main game and the weekly prototype.
+
+**Dated milestones** come from `data/calendar.properties`: elections, inauguration, midterms, debates, and 32 FOMC meetings for 2029-2032. Jobs and CPI reports fall on the first Friday and the second Wednesday of each month. The `EventScheduler` holds pending decisions and rolls the event catalogue each turn. Event conditions read a `WorldView`, never the world itself. The `DecisionResolver` validates an answer, rolls the odds the player was shown, and returns effects (plus an engine hook such as starting a war) for the engine to dispatch.
+
+**Governing month, in order:**
+1. Economy step, with the market context.
+2. FOMC meetings in the month.
+3. Jobs and CPI releases; public reaction to each.
+4. Public-opinion step.
+5. Diplomacy step. Ladder rungs become decisions.
+6. Munitions production.
+7. Event roll.
+8. Clock advance and an attention reset.
+9. Midterm or re-election milestones, if one has been reached.
+
+## 6. Configuration, data and determinism
+
+- **Balancing constants.** About 300 keys live in `data/tuning.properties`, the single source of every tunable number.
+  - Code has no defaults of its own. A missing key is an error, and `GameEngine` validates every scenario and legacy key at start-up.
+  - `EngineUnitTest.everyTuningKeyIsUsed` fails on dead keys.
+  - Mods and scenarios override keys with `Tuning.withOverrides`, which rejects unknown keys.
+  - Each key is tagged with its provenance: [F] foundation, [P] prototype, [RD] Resolute Desk, [BG] Battleground 2028, [IC] First Island Chain.
+- **Historical and content data** live in `data/*.csv`: states and Senate classes, candidates, bills, blocs, cabinet archetypes and fictional nominees, countries, forces and munitions. Forces and munitions are taken from IslandChain's 2027 order of battle and its CSIS-cited stockpile and production tables.
+- **Randomness.**
+  - `DeterministicRandomManager` gives each system its own SplitMix64 stream. A stream's state is one `long`, so the full random state is a small map, and it is saved.
+  - Read-only views (the polls a player sees) draw from throwaway generators.
+  - Iteration order is deterministic: sorted or insertion-ordered maps only. A per-JVM randomized `Map.copyOf` was removed from campaign plans because it could change floating-point sums between runs.
+- **No mutable statics** except immutable content caches. `ArchitectureTest` enforces this, and `GoldenRegressionTest.noStateLeaksBetweenGamesInOneJvm` checks it.
+
+### Saves (`SaveManager`)
+
+- **Version 2** (the default) holds:
+  - setup;
+  - a full `WorldState` snapshot;
+  - every random stream's state, as strings so the longs survive exactly;
+  - the command log;
+  - a rules fingerprint (a hash of the tuning file).
+
+  Loading restores the snapshot without replaying, and the same future commands then give an identical world. `SaveManager.consistent` checks that a snapshot equals a replay of its own log.
+- **Version 1** (the foundation's ADR-3 format: setup plus commands) still loads, by replay. That reproduces the game only under the same rules; the fingerprint is stored so a loader can warn. **Compatibility with the source games' saves is not feasible:** they are Java-serialized object graphs of different classes. The Battleground 2028 → Resolute Desk import parsed raw serialization streams and had a field-name bug. A one-off import tool is possible if needed; it is not built.
+
+### Current formulas
+
+These are compact. Every constant is in `tuning.properties`.
+
+| Model | Owner | Core equations |
+|---|---|---|
+| Electorate | election | margin_s = baseline2024_s + swing × elasticity_s + local_s (the 96-cell port is M1, behind `ElectorateModel`) |
+| Incumbent record | election | 0.55(approval − 50) + 0.4(growth − 2) − 0.5(π − 2.5) − 1.2(u − 4.4) − war loss − 0.4 × unfinished agenda |
+| Economy | economy | gap' = 0.95^dt·gap + 0.75·shocks − 0.025·dt·(r − r*) · u → 4.3 − 0.5·gap · π → anchored expectations + 0.25·gap + supply + gas pass-through · Fed moves ±25 bp at FOMC meetings when the Taylor target differs by more than 0.3 |
+| Markets | economy | oil → 75 + crisis premium − SPR release; gas = 1.30 + 0.0255·oil; 10-year → Fed, expectations, term premium, deficit, pending bills, Treasury competence, credibility |
+| Opinion | politics | three coalitions toward targets set by economic sentiment (gas, π, u, mortgages, confidence, growth), wing moods, goodwill, a honeymoon, and fading plus lasting modifiers; national = weighted sum |
+| Votes | congress (`VoteModel`) | fit + party pull (loyalty × wing mood; opposition by its strategy; resisting the other party's agenda) + relationship + deficit hawks + public pressure + capital at the margin |
+| Confirmations | congress (`VoteModel`) | own party defects only above a controversy threshold; the other party follows its strategy; crossover picks confirm easily |
+| Ladder | diplomacy | Taiwan drift = 0.8 − 0.05(deterrence − 50) − 0.012(tension − 30) + 0.7 × rungs crossed; war blocked with p = deterrence/100 at the brink |
+| War | military | per operational turn: US fires anti-ship and land-attack munitions in priority order (scaled by surviving aircraft); the PLA salvoes in proportion to its strength; interceptors are spent (scaled by surviving ships); leakers sink ships, carriers and aircraft; the invasion advances against Taiwan's defence; ends defended (PLA strength ≤ 35), fallen (progress 100) or stalemate (60 days) |
+
+**Calibration check of the war model** (300 runs each, Japanese basing, one month's warning; reproduce with `./mandate war 300`):
+
+| Commitment | Deterrence 50 | Deterrence 25 / 80 |
+|---|---|---|
+| Intervene | defended 89%; about 4,700 US killed, 12 ships, 1.9 carriers and 224 aircraft lost over about 2 weeks (CSIS base case: about 3,200 killed in 3 weeks, 2 carriers, 7-20 major ships, 90-270 aircraft) | 72% / 96% |
+| Arm and sanction | defended 31%; no US combat losses | 16% / 52% |
+| Stand aside | Taiwan falls | Taiwan falls |
+
+### Mechanic change log (this refactor)
+
+| Replaced or changed | Now | Why |
+|---|---|---|
+| `Game` monolith holding every variable | `GameEngine` (orchestration) + `WorldState` (domain states with owners) | Ownership boundaries; a snapshot save becomes possible |
+| `RngStreams` (SplittableRandom) | `DeterministicRandomManager` (SplitMix64, saveable) | Random state must be saved and restored exactly |
+| National `ApprovalModel` | Coalition model from the prototype, as `PoliticsEngine` | The prototype's model is richer (base, swing and opposition voters), and two approval formulas would duplicate an authority. National approval is the weighted sum. |
+| `Economy` (monthly only, Taylor rule every month) | `EconomyEngine` with a dt step, markets, FOMC meetings on calendar dates, dated data releases | One economy for monthly and weekly play; the prototype's weekly market model becomes authoritative |
+| `LegislativeEngine` + the prototype's support formula | `CongressEngine` + `VoteModel` (one formula, merged terms) | They were duplicates |
+| `WhipCount.passChance` (its own noise formula) | Carried from `VoteModel` | Duplicate |
+| `World` | `DiplomacyEngine` + `DiplomacyState` (+ country relations); munitions moved to the military | Ownership |
+| `AbstractTheaterResolver` (one roll) | `MilitaryEngine` operational turns over real inventories; `OperationalTheaterResolver` keeps the `TheaterResolver` seam | Losses must persist and depend on what is left |
+| `Polling` helper (a second poll formula) | Removed; polls come from `ElectionEngine.statePolls` | Duplicate |
+| `Calendar2028` constants | `data/calendar.properties` | Configurable dates |
+| Prototype: its own opinion, economy, Fed, releases, votes, confirmations, midterm outlook | Calls the authoritative engines | No duplicated formulas. The prototype keeps only its orchestration and its multi-week crisis mechanic, which exists nowhere else. |
+| Incumbency: growth only | Adds unemployment; growth weight 0.7 → 0.4 | `RequiredBehaviourTest` showed a recession *helped* the incumbent (its rebound read as growth) |
+| Pivot of approval in incumbency and midterms: 48 | 50 | The coalition model centres approval near 51; the old pivot over-rewarded incumbents (re-election 71-80%) |
+| Opposition pull and bipartisan relief | Retuned (−0.18 / −0.42 / −0.62; 0.14); own members resist the other party's agenda (×0.3 pull, base wing −6) | After merging the vote models, the autopilot passed 14-16 laws a term, including the other party's agenda. It now passes about 9 of its own. |
+| Fed threshold 0.2 | 0.3 (0.2 under pressure) | Release noise made the Fed flip between cuts and hikes |
+
+**Known limitations:**
+- Monthly governing steps pause during a war, which lasts 2-8 weeks.
+- The prototype's crisis model and its bill-design and crisis constants are still inline. They are prototype-only and move to content in B-44.
+- `DAILY` is used only inside operations.
+- `Map.copyOf` in content records whose order matters must be avoided. This is a convention, checked by review and golden tests.
 
 ## 7. Porting plan: what comes from where
 
@@ -100,11 +188,11 @@ We **port models, not code**. The source files are monoliths with static state, 
 | BG `Elect`/`Vote` 96-cell electorate + `STATES` demographics + 2016-2024 returns | **Port** to `CellElectorateModel implements ElectorateModel` | M1 | Golden test: reproduce BG's `test calib` output (2024 D 49.0, state margins within 0.5). Replace ACS 2012-16 inputs with ACS 2019-23. |
 | BG campaign effect saturations (`imgSat`, `fieldSat` …) | Reference | M1 | Calibrate `CampaignEngine` curves to BG's response curves. |
 | BG `Debates` tactic weights | Reference | 1.0 | For the 1.0 question beats. |
-| RD `blocLogit`, `chairOk`, `hold`, filibuster/era rules | **Port** into `LegislativeEngine` | M3 | Keep 3 blocs per party; add chairs and leaders as gatekeepers. |
+| RD `blocLogit`, `chairOk`, `hold`, filibuster/era rules | **Port** into `CongressEngine`/`VoteModel` (bloc model done) | M3 | Keep 3 blocs per party; add chairs and leaders as gatekeepers. |
 | RD `Economy` structure | Already re-derived; fix the damping, decay and interest bugs | done / M3 | Interest cost = debt × average rate, with the average rate rolling toward market rates. |
 | RD crises, domestic events and modern bills (text + effect tables) | **Re-author** into JSON events and bills | M2 | Convert each fx string to `Effect`s; drop options that are dominated. |
 | RD party factions, opposition strategy | Port | 1.0 | |
-| IC engine | **Wrap, don't merge** | M5 (calibration), EXP-1 (play) | M5: headless runner `IslandChainOracle` produces outcome tables over a grid of `TheaterScenario` inputs, and `AbstractTheaterResolver` coefficients are fitted to them. EXP-1: an adapter module implements `TheaterResolver` and launches the IC UI. Prerequisites: seed scrambling, moving `chipLag`/`lastKilled` into `Game`, AI-vs-AI ceasefire, host-controlled termination. |
+| IC engine | **Wrap, don't merge** | M5 (calibration), EXP-1 (play) | Forces and munitions baselines are already taken from IC's tables. M5: a headless `IslandChainOracle` produces outcome tables over a grid of `TheaterScenario` inputs, and the `MilitaryEngine` operational coefficients are fitted to them. EXP-1: an adapter module implements `TheaterResolver` and launches the IC UI. Prerequisites: seed scrambling, moving `chipLag`/`lastKilled` into `Game`, AI-vs-AI ceasefire, host-controlled termination. |
 | BG `Portrait` | Port for fictional characters | 1.0 | |
 | BG/RD UI toolkit (immediate-mode Java2D) | **Do not port** | | See ADR-2. |
 
@@ -118,29 +206,31 @@ We **port models, not code**. The source files are monoliths with static state, 
 - **The current Java2D immediate-mode toolkit** is proven but hand-rolled: no layout, no accessibility, no text input or IME, and it is tied to a fixed design resolution.
 - **Gate:** a 2-week spike builds the whip-count screen and the US map in JavaFX, with libGDX as the fallback.
 
-**ADR-3: Saves = setup + command log (+ JSON snapshots in 1.0).** This rules out Java serialization (brittle) and cross-game raw-stream parsing.
+**ADR-3: Saves.** Version 2 is a JSON snapshot of the world and the random state plus the command log. Version 1 (setup plus command log, by replay) is still readable. This rules out Java serialization (brittle) and cross-game raw-stream parsing.
 
 **ADR-4: The theater seam.** The presidential game talks to war only through `TheaterScenario` and `TheaterOutcome`. This keeps the base game shippable and reviewable without the operational wargame, and lets EXP-1 plug in without core changes.
 
 **ADR-5: No browser build before 1.0.** The source games' Java-to-JS translator is not in any repository. If a web demo is needed for marketing, evaluate TeaVM against `mandate-core` (pure Java, no reflection, no threads) in a post-1.0 spike.
 
-**ADR-6: Content as CSV now, JSON + schema in M2.** The CSV loader is intentionally minimal. M2 introduces JSON content with a validator CLI (`mandate lint`): unknown ids, unreachable events, dominated options and missing localisation keys.
+**ADR-6: Content as CSV and properties now, JSON + schema in M2.** Balancing constants are in `tuning.properties` (done). The CSV loader is intentionally minimal. M2 introduces JSON content with a validator CLI (`mandate lint`): unknown ids, unreachable events, dominated options and missing localisation keys.
 
 ## 9. Testing strategy
 
-| Layer | Today | Gate |
+There are 63 tests, all run on every build (`mvn verify`).
+
+| Layer | Tests | What they protect |
 |---|---|---|
-| Unit (models, rules) | 42 tests: electorate, rules, economy response, theater monotonicity, RNG independence, the no-UI-import rule, and the 12-week prototype's interconnections, failure follow-ups, delegation and strategy-probe guard rails | every commit |
-| Determinism | same seed → same log; replay(history) → same game and legacy | every commit |
-| Balance | `BalanceTest`: Toss-up Democratic win rate within 35-65% over 240 games | every commit; tighten to 45-55% at 1.0 |
-| Batch report | `mandate batch N SCENARIO`: win rates per party, re-election rate, EV spread, laws, war frequency, tipping points | nightly in CI; results tracked over time |
-| Soak | 10,000 autopilot games with no exceptions | nightly (M2) |
-| Golden models | M1: the cell model reproduces BG calibration output | M1 onward |
-| UI | screenshot tests of key screens (JavaFX headless with Monocle) | M4 onward |
+| Required behaviours | `RequiredBehaviourTest` (6) | Elections shape the next administration (president, Congress, cabinet; mandate correlates with starting approval and capital, r > 0.5). Laws move the deficit, output and lasting opinion, routed to their owners. A recession before 2032 costs the incumbent votes and re-elections. Military losses persist through time and saves, in operational turns. Saves reproduce identical futures (mid-campaign, early and late term, mid-war), v1 still loads, and snapshot = replay. |
+| Architecture | `ArchitectureTest` (3) | No public mutators on domain state; no cross-domain state or engine imports; no mutable statics |
+| Engine units | `EngineUnitTest` (10) | Random snapshot and restore; exact JSON doubles; clock granularities; calendar rules; no dead tuning keys; overrides work and reject typos; the ledger records owners and links decisions; refused commands change nothing; saves reject bad input |
+| Regression | `GoldenRegressionTest` (2) | Fixed seeds reproduce recorded fingerprints (6 full games, 7 prototype strategies); no leaks between games in one JVM. Regenerate with `-Dmandate.updateGolden=true` after an intended change. |
+| Models and rules | `ElectorateTest`, `RulesTest`, `SystemsTest`, `DeterminismTest`, `BalanceTest` (18) | 2024 reproduction, Senate classes, legislative thresholds, recession bite, war monotonic in deterrence, determinism and replay, party balance |
+| Prototype | `OpeningTermTest`, `OpeningStrategyTest` (24) | The 12-week loop's interconnections, information value, failure follow-ups, delegation and strategy non-dominance, now over the authoritative engines |
+| Batch report | `mandate batch`, `mandate compare` | Balance tracking. Today: Toss-up D 51%, re-election 55% / 65%, 8.7 laws per term |
 
 ## 10. Performance budget
 
-- **Uniform-swing model:** a full game takes about 2 ms; 1,000 games take about 2 s, measured.
+- **Uniform-swing model:** a full game takes about 3 ms; 1,000 games take about 3.4 s, measured. A war runs about 20-60 operational turns.
 - **Cell model:** 51 × 96 cells × 11 issues = about 54k cell evaluations per projection. That is fine weekly. Monthly approval-by-state is also fine.
 - **Forecast:** 1,000 draws × 51 states, re-using the projection, under 50 ms.
 - **Command Mode (IC engine):** about 3 s per war headless; acceptable as an opt-in.

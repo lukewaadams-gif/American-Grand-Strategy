@@ -92,7 +92,8 @@ public final class ElectionEngine {
         double environment;
         if (env.incumbent()) {
             double forIncumbent = p.incApproval() * (env.approval() - p.incApprovalPivot()) + p.incGrowth() * (env.growth() - p.incGrowthPivot())
-                    - p.incInflation() * (env.inflation() - p.incInflationPivot()) - (env.taiwanFell() ? p.incFallen() : 0)
+                    - p.incInflation() * (env.inflation() - p.incInflationPivot())
+                    - p.incUnemployment() * (env.unemployment() - p.incUnemploymentPivot()) - (env.taiwanFell() ? p.incFallen() : 0)
                     - p.incUnfinished() * env.unfinishedAgenda();
             environment = forIncumbent * e.player.party().sign();
         } else {

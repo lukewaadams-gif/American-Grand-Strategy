@@ -7,11 +7,12 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 | # | Milestone | Content | Exit criteria | Est. |
 |---|---|---|---|---|
 | **M0** | **Foundation** ✅ *(this commit)* | Multi-module Java 21 project; deterministic core with command model and named RNG streams; full 2028→2032 loop (campaign, debates, transition, governing, midterms, re-election, legacy); text CLI; autopilot; balance batch; 18 tests | `mvn verify` green; `mandate batch 1000` runs in about 2 s; Toss-up Democrat win rate about 51% | done |
+| **M0.5** | **Modular engine** ✅ | `WorldState` with owned domain states; `GameEngine`, `SimulationClock`, `EventScheduler`, `DecisionResolver`, `ConsequenceLedger`, `SaveManager` (v2 snapshots, v1 replay), `DeterministicRandomManager`; all constants in `tuning.properties`; operational war turns; prototype re-hosted on the engines | 63 tests green; required-behaviour, architecture and golden regression tests | done |
 | M1 | **One electorate** | Port BG's 96-cell model behind `ElectorateModel`; refreshed demographics (ACS 2019-23); approval by group and state feeds midterms and 2032; ME/NE districts; 2030 apportionment for 2032 | Golden test matches BG calibration (2024 within 0.5 points per state); balance gates still pass | 5 pw |
 | M2 | **Content pipeline** | JSON content + schema + `mandate lint` (ids, dominated options, real-name check); move tunables to `tuning.json`; 40 events, 30 bills; save/load of the command log; soak test of 10,000 games | Lint clean; designers add an event without engine code; save and restore round-trips | 4 pw |
 | M3 | **Governing depth** | Promises → agenda; party factions + opposition strategy; committee chairs and leaders; veto/override; Congress's own bills; filibuster nuclear option; annual budget fight; debt limit; Fed chair; tariffs; a played midterm | Act II playtest: 70%+ of testers rate months 8-20 "engaging" (R-05 gate) | 7 pw |
 | M4 | **Desktop vertical slice** | ADR-2 UI spike (JavaFX vs. libGDX), then: home dashboard, US map with polls, campaign-week planner, whip-count screen, event card, election night, legacy screen; settings; tutorial for week 1 and month 1 | A non-developer completes a 2028 campaign unaided | 8 pw |
-| M5 | **Crisis calibration** | Fix the IslandChain prerequisites (seed scrambling, statics into `Game`, AI ceasefire, host termination, the landing-region imbalance) in a fork module; `IslandChainOracle` grid runs; fit `AbstractTheaterResolver`; 5 hot spots; regional posture | Theater outcomes within ±10 points of oracle frequencies across the grid | 4 pw |
+| M5 | **Crisis calibration** | Fix the IslandChain prerequisites (seed scrambling, statics into `Game`, AI ceasefire, host termination, the landing-region imbalance) in a fork module; `IslandChainOracle` grid runs; fit the `MilitaryEngine` operational coefficients; 5 hot spots; regional posture | Theater outcomes within ±10 points of oracle frequencies across the grid | 4 pw |
 | **MVP** | **Playable alpha** | M0-M5 integrated; placeholder art | All MVP boxes in `FEATURE_PRIORITY.md` §4 checked; balance gates green; 20 external playtesters | — |
 | M6 | Early Access content | 80 events, 40 bills, 12-candidate fictional cast + creator, portraits, forecast, VP pick, coattails, acceptance speech, Steam achievements and cloud saves | Feature freeze; Steam page live with 20k+ wishlists | 8 pw |
 | M7 | **Early Access launch** | Packaging (jpackage, all three operating systems), crash reporting, telemetry (opt-in), legal review, content review | Store approval; crash-free rate of 99%+ sessions | 3 pw |
@@ -28,11 +29,11 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 | Metric (Toss-up, Standard, 1,000 games) | MVP | 1.0 | Today |
 |---|---|---|---|
 | Democrat 2028 win rate | 40-60% | 45-55% | 51% ✅ |
-| Re-election rate, each party | 45-75% | 50-70% | 58% D / 68% R ✅ |
+| Re-election rate, each party | 45-75% | 50-70% | 55% D / 65% R ✅ |
 | EV standard deviation | ≥ 45 | ≥ 50 | 34 ❌ (B-04) |
 | Taiwan war reached by a *neglectful* president (no deterrence actions, accommodating crisis answers) | 10-25% | 10-20% | 15% ✅ (deterring autopilot: 0%, as intended) |
 | Any Taiwan rung reached | 30-60% | 30-50% | 78% ❌ (B-38) |
-| Average laws per term | 4-9 | 5-9 | 5.0 ✅ |
+| Average laws per term | 4-9 | 5-9 | 8.7 ✅ |
 | Exceptions in 10,000-game soak | 0 | 0 | not yet run |
 
 ## Prioritised backlog
@@ -63,7 +64,7 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 | B-18 | P1 | L | JavaFX spike: whip screen + map (ADR-2 gate) | Decision recorded in ADR-2 |
 | B-19 | P1 | L | Desktop vertical slice screens (M4 list) | Unaided playtest success |
 | B-20 | P1 | M | IslandChain fixes in an isolated fork module: seed scrambling, statics into `Game`, AI ceasefire, host termination, region balance | IC batch shows variance across plans and regions |
-| B-21 | P1 | M | `IslandChainOracle` + coefficient fit for `AbstractTheaterResolver` | Within ±10 points of oracle frequencies |
+| B-21 | P1 | M | `IslandChainOracle` + coefficient fit for the `MilitaryEngine` operational model | Within ±10 points of oracle frequencies |
 | B-22 | P1 | S | ME/NE district electors | 2024 tally is D 226 with splits (ME-2 R, NE-2 D) |
 | B-23 | P1 | S | 2030-apportionment electoral votes for the 2032 election | EV table switches at 2032 |
 | B-24 | P1 | M | Tutorial for campaign week 1 and governing month 1 | First-time tester completes both without help |
@@ -84,6 +85,10 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 | B-42 | P1 | S | Bipartisan bills can die: opposition primary season and outside events (O-2) | Dealmaker law rate below 95% in divided government |
 | B-43 | P1 | M | Several bills in flight, competing for attention (O-4) | The strategy-probe tests still pass |
 | B-44 | P2 | S | Move crisis kinds, nominee archetypes and stopgap offers to content files (O-5) | No engine change to add a crisis kind |
+| B-45 | P1 | M | Keep the economy and opinion stepping during a war (weekly steps every 7 operational days) instead of pausing | Approval and markets move during the war |
+| B-46 | P2 | S | Warn on loading a v1 save whose rules fingerprint differs; offer the v2 snapshot instead | Load dialog test |
+| B-47 | P2 | M | Move the prototype's bill-design and crisis constants into content and tuning (with B-44) | No numeric literals in `opening/` beyond indices |
+| B-48 | P3 | M | Optional one-off importer for Battleground 2028 saves (only if a migration path is wanted; the raw Java-serialization format makes it fragile) | Decision recorded |
 | B-35 | P3 | L | Command Mode (E1) | |
 | B-36 | P3 | L | Primaries (E1b) | |
 | B-37 | P3 | M | Web demo via TeaVM (ADR-5) | |

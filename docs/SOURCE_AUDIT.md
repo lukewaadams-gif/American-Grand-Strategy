@@ -94,7 +94,7 @@ Short form below. The full classification is in `FEATURE_PRIORITY.md`.
 
 1. **Monoliths with global state.** All three games keep mutable `static` state: calendars, caches, overwritten "final" arrays and UI labels. Two games cannot coexist in one JVM, and saves miss state. **Decision:** the new core has no mutable statics, and every value lives in `Game`.
 2. **Java serialization saves.** These break on any field change. Resolute Desk imports Battleground 2028 by parsing its raw serialization stream by field name. **Decision:** saves are setup plus command log, with versioned JSON snapshots for fast loading.
-3. **A single shared RNG.** It couples every system, and the IslandChain seed correlation shows the hazard. **Decision:** named, independent RNG streams in `RngStreams`.
+3. **A single shared RNG.** It couples every system, and the IslandChain seed correlation shows the hazard. **Decision:** named, independent RNG streams (now `DeterministicRandomManager`).
 4. **Duplicated models.** There are two copies of the electorate and three separate election formulas (BG general, BG re-election, RD re-election). **Decision:** one `ElectorateModel` serves president, Senate, House and approval-by-state.
 5. **No automated tests.** **Decision:** determinism, rules and balance gates run in CI from day one. The foundation ships 18 tests.
 6. **Simulation and UI are interleaved, with audio called from the simulation.** **Decision:** the `mandate-core` module may not import AWT, Swing or JavaFX, and a test enforces it.
