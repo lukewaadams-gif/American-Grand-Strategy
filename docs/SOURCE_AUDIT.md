@@ -98,3 +98,52 @@ Short form below. The full classification is in `FEATURE_PRIORITY.md`.
 4. **Duplicated models.** There are two copies of the electorate and three separate election formulas (BG general, BG re-election, RD re-election). **Decision:** one `ElectorateModel` serves president, Senate, House and approval-by-state.
 5. **No automated tests.** **Decision:** determinism, rules and balance gates run in CI from day one. The foundation ships 18 tests.
 6. **Simulation and UI are interleaved, with audio called from the simulation.** **Decision:** the `mandate-core` module may not import AWT, Swing or JavaFX, and a test enforces it.
+
+## 6. Ported: Battleground 2028 cell electorate
+
+**Export** (from the repository root, OpenJDK 21; BG at commit `b678c752db24a711b78b821af603302b26beeeba`, read-only):
+
+```bash
+javac -encoding UTF-8 -nowarn -d /tmp/bg-classes /path/to/Battleground2028/Battleground2028.java
+java -Djava.awt.headless=true tools/BgExport.java /tmp/bg-classes mandate-core/src/main/resources/data b678c752db24a711b78b821af603302b26beeeba
+```
+
+`tools/BgExport.java` loads the compiled classes, calls `Elect.init()` and reads the static arrays by reflection. It writes two files:
+
+- `data/electorate_cells.csv`: 4,896 rows (51 states × 16 blocs × 3 ages × 2 sexes). Each row has the eligible voters under the 2028 and 2024 composition (`cvap`, `cvap24`), base turnout (`turnB`), the calibrated 2024 Democratic logit (`baseL`), elasticity (`elast`) and `swing2026(c)`, with BG's own bloc and age names.
+- `data/candidates_bg.csv`: BG's 39 real Democrats (25) and Republicans (14), in the `candidates.csv` format with `bg_` ids.
+  - Ratings are mapped by `round(1 + 9 × v / 100)`: charisma from Charisma, debate from Debating, fundraising from max(small-dollar, big-donor), policy from Intellect & policy depth, and discipline from Message discipline.
+  - Ideology is the mean of BG's econ and cult positions.
+  - The file is opt-in and nothing loads it. It is not for commercial release (R-02).
+
+**What is ported.** Only the calibrated electorate, as `CellElectorateModel` behind `ElectorateModel`.
+
+- A cell's logit is `baseLogit + (swing2026 − its national turnout-weighted mean) + elasticity × (nationalSwing + localShift) × k`.
+- A state's margin is its cells' result, weighted by cvap × turnout.
+- `k` is derived from the data so that +1 point of national swing gives +1 point of national margin.
+- The model also gives per-state margins and national crosstabs by bloc, age and sex.
+- Nothing in the game uses it yet: `UniformSwingModel` is still the default.
+
+**What is not ported.** BG's campaign coupling stays behind:
+
+- the per-cell issue ideals and salience, and the issue-distance vote term;
+- group images, candidate group appeals and attack lines;
+- the overlay fractions (rural, union, gun owner and so on). Their partisan lean is baked into `baseLogit`, but they are not exported as traits;
+- ad markets and DMAs (dropped under R-07), and the TV, digital, visit and field terms;
+- third-party shares, the primary electorate and BG's polling model.
+
+Campaign effects reach the cell model only through `localShift`. BG calibrates each state to its own blend of the 2024, 2020, 2022 and 2026 results, not to 2024 alone. The 2024 configuration reproduces the 2024 map, but not every 2024 state margin exactly.
+
+**Measured calibration** (`CellElectorateTest`):
+
+| Configuration | National two-party D | National margin | Electoral College |
+|---|---|---|---|
+| BG `test calib` (2024 composition, no 2026 swing) | 49.0 (actual 49.2) | | |
+| Cell model, 2024 composition, no 2026 swing | 0.4895 | R+2.10 | R 312, D 226 (the 2024 map) |
+| Cell model, 2028 composition, recentred 2026 swing (game default) | 0.4953 | R+0.93 | R 293, D 245; tipping point WI |
+
+- Moving to the 2028 electorate shifts the national margin by +1.16 points, which is the composition change. Recentring the 2026 swing subtracts 0.048 logit and moves the nation by only 0.10 points.
+- Pennsylvania sits on a knife-edge at zero swing (D+0.04). It is the state that moves the map from 2024's 312 to 293.
+- Without recentring, BG's own generic 2028 baseline is D+1.0.
+- The logit per point is k = 0.0262, against BG's own `env / 50` = 0.020.
+- Default crosstabs: Black D+71; white evangelicals R+72 (no degree) and R+53 (degree); women D+9; men R+12; 18-29 D+9.

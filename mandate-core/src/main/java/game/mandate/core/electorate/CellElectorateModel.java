@@ -1,0 +1,281 @@
+package game.mandate.core.electorate;
+
+import game.mandate.core.data.Csv;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.ToDoubleFunction;
+
+/**
+ * The Battleground 2028 96-cell electorate behind {@link ElectorateModel}: every state is 16 voter blocs x 3 age
+ * groups x 2 sexes, each cell with its eligible voters, base turnout, calibrated 2024 Democratic logit and
+ * persuadability, as exported by {@code tools/BgExport.java} into {@value #RESOURCE}.
+ *
+ * <p>A cell's Democratic two-party logit is
+ * <pre>
+ *   baseLogit + (swing2026 - mean swing2026) + elasticity * (nationalSwing + localShift) * k
+ * </pre>
+ * and a state's margin is the turnout-weighted (eligible voters x base turnout) two-party result of its cells.
+ * <ul>
+ *   <li>The 2026 term is the group swing that outlasts the midterms (Hispanic, young, Black, Asian and college
+ *       white voters back toward the Democrats). It is recentred on its national turnout-weighted mean, so it moves
+ *       groups and states relative to one another without moving the national result: the national environment
+ *       belongs to {@code nationalSwing}.</li>
+ *   <li>{@code k} converts points of margin into logit. It is derived from the data at construction so that a
+ *       +1 point {@code nationalSwing} moves this electorate's national margin by +1 point at the baseline.</li>
+ * </ul>
+ *
+ * <p>Ported from the source game: the calibrated electorate only. Campaign coupling (group images, issue
+ * ideals and salience, overlays, ad markets) is not ported; campaigns reach this model through
+ * {@code localShift}. See {@code docs/SOURCE_AUDIT.md}.
+ *
+ * <p>Instances are immutable. The content file is parsed once and cached.
+ */
+public final class CellElectorateModel implements ElectorateModel {
+    public static final String RESOURCE = "/data/electorate_cells.csv";
+
+    /** Which eligible-voter composition weights the cells. */
+    public enum Composition {
+        /** BG's 2024 composition: with the 2026 swing off, this reproduces BG's own 2024 calibration. */
+        Y2024,
+        /** BG's projected 2028 composition (the game's default). */
+        Y2028
+    }
+
+    /** One group's expected two-party result. {@code share} is the group's fraction of expected votes cast. */
+    public record GroupMargin(String label, double margin, double share) {}
+
+    /** Crosstabs of one expected result: national margin plus margins by bloc, by age and by sex. */
+    public record GroupResults(double nationalMargin, List<GroupMargin> byBloc, List<GroupMargin> byAge, List<GroupMargin> bySex) {
+        public GroupResults {
+            byBloc = List.copyOf(byBloc);
+            byAge = List.copyOf(byAge);
+            bySex = List.copyOf(bySex);
+        }
+    }
+
+    private static final List<String> SEX_LABELS = List.of("Men", "Women");
+
+    private final Cells cells;
+    private final Composition composition;
+    private final boolean with2026Swing;
+    /** [state][cell] expected votes: eligible voters in the chosen composition x base turnout. */
+    private final double[][] weight;
+    /** [state][cell] logit at zero swing: base logit plus the recentred 2026 swing when it is on. */
+    private final double[][] logit0;
+    private final double swing2026Mean;
+    private final double k;
+
+    private CellElectorateModel(Cells cells, Composition composition, boolean with2026Swing) {
+        this.cells = cells;
+        this.composition = composition;
+        this.with2026Swing = with2026Swing;
+        int ns = cells.codes.size(), nc = cells.cellCount();
+        weight = new double[ns][nc];
+        logit0 = new double[ns][nc];
+        double sw = 0, w = 0;
+        for (int s = 0; s < ns; s++)
+            for (int c = 0; c < nc; c++) {
+                double cvap = composition == Composition.Y2024 ? cells.cvap2024[s][c] : cells.cvap2028[s][c];
+                weight[s][c] = cvap * cells.turnout[s][c];
+                sw += weight[s][c] * cells.swing2026[s][c];
+                w += weight[s][c];
+            }
+        swing2026Mean = with2026Swing ? sw / w : 0;
+        double slope = 0;
+        for (int s = 0; s < ns; s++)
+            for (int c = 0; c < nc; c++) {
+                logit0[s][c] = cells.baseLogit[s][c] + (with2026Swing ? cells.swing2026[s][c] - swing2026Mean : 0);
+                double p = logistic(logit0[s][c]);
+                slope += weight[s][c] * p * (1 - p) * cells.elasticity[s][c];
+            }
+        // d(national margin)/d(swing) = 200 * k * sum(w p (1-p) e) / sum(w); set it to 1 at the baseline.
+        k = w / (200 * slope);
+    }
+
+    /** The game's electorate: the 2028 composition with the recentred 2026 group swing. */
+    public static CellElectorateModel load() { return of(Composition.Y2028, true); }
+
+    public static CellElectorateModel of(Composition composition, boolean with2026Swing) {
+        return new CellElectorateModel(Cache.CELLS, composition, with2026Swing);
+    }
+
+    // ------------------------------------------------------------------------------------------------ the seam
+
+    @Override
+    public double expectedMargin(UsState state, double nationalSwing, double localShift) {
+        return stateMargin(state.code(), nationalSwing, localShift);
+    }
+
+    // ------------------------------------------------------------------------------------------------ read-only queries
+
+    /** Expected two-party margin in one state, D minus R, in points. */
+    public double stateMargin(String code, double nationalSwing, double localShift) {
+        int s = cells.indexOf(code);
+        double shift = (nationalSwing + localShift) * k, dv = 0, tv = 0;
+        for (int c = 0; c < weight[s].length; c++) {
+            double w = weight[s][c];
+            dv += w * logistic(logit0[s][c] + cells.elasticity[s][c] * shift);
+            tv += w;
+        }
+        return marginOf(dv, tv);
+    }
+
+    /** Expected margins in all 51 units, in content order. */
+    public Map<String, Double> stateMargins(double nationalSwing, ToDoubleFunction<String> localShift) {
+        Map<String, Double> m = new LinkedHashMap<>();
+        for (String code : cells.codes) m.put(code, stateMargin(code, nationalSwing, localShift.applyAsDouble(code)));
+        return Collections.unmodifiableMap(m);
+    }
+
+    /** Expected national two-party margin, D minus R, in points, from every cell's expected votes. */
+    public double nationalMargin(double nationalSwing, ToDoubleFunction<String> localShift) {
+        return groupResults(nationalSwing, localShift).nationalMargin();
+    }
+
+    /** Expected national two-party Democratic share, 0..1. */
+    public double nationalDemShare(double nationalSwing, ToDoubleFunction<String> localShift) {
+        return (nationalMargin(nationalSwing, localShift) / 100 + 1) / 2;
+    }
+
+    /** National margins by bloc, age and sex, for polling crosstabs. */
+    public GroupResults groupResults(double nationalSwing, ToDoubleFunction<String> localShift) {
+        int nb = cells.blocLabels.size(), na = cells.ageLabels.size(), nx = SEX_LABELS.size();
+        double[] bd = new double[nb], bt = new double[nb], ad = new double[na], at = new double[na], xd = new double[nx], xt = new double[nx];
+        double dv = 0, tv = 0;
+        for (int s = 0; s < cells.codes.size(); s++) {
+            double shift = (nationalSwing + localShift.applyAsDouble(cells.codes.get(s))) * k;
+            for (int c = 0; c < weight[s].length; c++) {
+                double w = weight[s][c], d = w * logistic(logit0[s][c] + cells.elasticity[s][c] * shift);
+                bd[cells.bloc[c]] += d; bt[cells.bloc[c]] += w;
+                ad[cells.age[c]] += d; at[cells.age[c]] += w;
+                xd[cells.sex[c]] += d; xt[cells.sex[c]] += w;
+                dv += d; tv += w;
+            }
+        }
+        return new GroupResults(marginOf(dv, tv), groups(cells.blocLabels, bd, bt, tv), groups(cells.ageLabels, ad, at, tv),
+                groups(SEX_LABELS, xd, xt, tv));
+    }
+
+    public List<String> stateCodes() { return cells.codes; }
+
+    /** BG's bloc names, by bloc index. */
+    public List<String> blocLabels() { return cells.blocLabels; }
+
+    /** BG's age-group names, by age index. */
+    public List<String> ageLabels() { return cells.ageLabels; }
+
+    /** By sex index: 0 men, 1 women. */
+    public List<String> sexLabels() { return SEX_LABELS; }
+
+    /** Logit per point of margin (k). */
+    public double logitPerPoint() { return k; }
+
+    /** The national turnout-weighted mean of the 2026 swing that was subtracted (logit); 0 when the swing is off. */
+    public double swing2026Mean() { return swing2026Mean; }
+
+    public Composition composition() { return composition; }
+
+    public boolean with2026Swing() { return with2026Swing; }
+
+    // ------------------------------------------------------------------------------------------------ helpers
+
+    private static List<GroupMargin> groups(List<String> labels, double[] d, double[] t, double total) {
+        List<GroupMargin> out = new ArrayList<>();
+        for (int i = 0; i < labels.size(); i++) out.add(new GroupMargin(labels.get(i), marginOf(d[i], t[i]), t[i] / total));
+        return out;
+    }
+
+    private static double marginOf(double dem, double total) { return total > 0 ? 100 * (2 * dem / total - 1) : 0; }
+
+    private static double logistic(double x) { return 1 / (1 + Math.exp(-x)); }
+
+    /** The content file, parsed once. Initialised lazily and thread-safely by the class loader. */
+    private static final class Cache {
+        static final Cells CELLS = Cells.parse(Csv.readResource(RESOURCE));
+    }
+
+    /** Immutable parsed content: [state][cell] arrays, never exposed. */
+    private static final class Cells {
+        final List<String> codes, blocLabels, ageLabels;
+        final Map<String, Integer> index;
+        final int[] bloc, age, sex;
+        final double[][] cvap2028, cvap2024, turnout, baseLogit, elasticity, swing2026;
+
+        private Cells(List<String> codes, List<String> blocLabels, List<String> ageLabels, int[] bloc, int[] age, int[] sex,
+                      double[][] cvap2028, double[][] cvap2024, double[][] turnout, double[][] baseLogit, double[][] elasticity,
+                      double[][] swing2026) {
+            this.codes = List.copyOf(codes);
+            this.blocLabels = List.copyOf(blocLabels);
+            this.ageLabels = List.copyOf(ageLabels);
+            Map<String, Integer> ix = new HashMap<>();
+            for (int i = 0; i < codes.size(); i++) ix.put(codes.get(i), i);
+            this.index = Map.copyOf(ix);
+            this.bloc = bloc; this.age = age; this.sex = sex;
+            this.cvap2028 = cvap2028; this.cvap2024 = cvap2024; this.turnout = turnout; this.baseLogit = baseLogit;
+            this.elasticity = elasticity; this.swing2026 = swing2026;
+        }
+
+        int cellCount() { return bloc.length; }
+
+        int indexOf(String code) {
+            Integer s = index.get(code);
+            if (s == null) throw new IllegalArgumentException("No electorate cells for state " + code);
+            return s;
+        }
+
+        /**
+         * Columns: state, bloc, bloc_name, age, age_name, sex, cvap2028, cvap2024, turnout, base_logit, elasticity,
+         * swing2026. Rows are grouped by state, and every state lists the same cells in the same order.
+         */
+        static Cells parse(List<String[]> rows) {
+            int nb = 0, na = 0, nx = 0;
+            for (String[] f : rows) {
+                if (f.length != 12) throw new IllegalStateException(RESOURCE + ": expected 12 columns, got " + f.length);
+                nb = Math.max(nb, Integer.parseInt(f[1]) + 1);
+                na = Math.max(na, Integer.parseInt(f[3]) + 1);
+                nx = Math.max(nx, Integer.parseInt(f[5]) + 1);
+            }
+            int nc = nb * na * nx;
+            if (nx != SEX_LABELS.size() || nc == 0 || rows.size() % nc != 0)
+                throw new IllegalStateException(RESOURCE + ": " + rows.size() + " rows do not form whole states of " + nc + " cells");
+            int ns = rows.size() / nc;
+            List<String> codes = new ArrayList<>();
+            String[] blocLabels = new String[nb], ageLabels = new String[na];
+            int[] bloc = new int[nc], age = new int[nc], sex = new int[nc];
+            double[][] cv28 = new double[ns][nc], cv24 = new double[ns][nc], turn = new double[ns][nc], base = new double[ns][nc];
+            double[][] el = new double[ns][nc], sw = new double[ns][nc];
+            for (int r = 0; r < rows.size(); r++) {
+                String[] f = rows.get(r);
+                int s = r / nc, c = r % nc;
+                if (c == 0) {
+                    if (codes.contains(f[0])) throw new IllegalStateException(RESOURCE + ": state " + f[0] + " is not contiguous");
+                    codes.add(f[0]);
+                } else if (!f[0].equals(codes.get(s))) {
+                    throw new IllegalStateException(RESOURCE + ": row " + (r + 1) + " breaks state " + codes.get(s));
+                }
+                int b = Integer.parseInt(f[1]), a = Integer.parseInt(f[3]), x = Integer.parseInt(f[5]);
+                if (s == 0) {
+                    bloc[c] = b; age[c] = a; sex[c] = x;
+                    blocLabels[b] = f[2];
+                    ageLabels[a] = f[4];
+                } else if (bloc[c] != b || age[c] != a || sex[c] != x || !blocLabels[b].equals(f[2]) || !ageLabels[a].equals(f[4])) {
+                    throw new IllegalStateException(RESOURCE + ": state " + f[0] + " lists its cells in a different order");
+                }
+                cv28[s][c] = Double.parseDouble(f[6]);
+                cv24[s][c] = Double.parseDouble(f[7]);
+                turn[s][c] = Double.parseDouble(f[8]);
+                base[s][c] = Double.parseDouble(f[9]);
+                el[s][c] = Double.parseDouble(f[10]);
+                sw[s][c] = Double.parseDouble(f[11]);
+            }
+            for (int b = 0; b < nb; b++) if (blocLabels[b] == null) throw new IllegalStateException(RESOURCE + ": bloc " + b + " missing");
+            for (int a = 0; a < na; a++) if (ageLabels[a] == null) throw new IllegalStateException(RESOURCE + ": age group " + a + " missing");
+            return new Cells(codes, List.of(blocLabels), List.of(ageLabels), bloc, age, sex, cv28, cv24, turn, base, el, sw);
+        }
+    }
+}

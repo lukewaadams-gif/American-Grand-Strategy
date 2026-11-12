@@ -1,0 +1,48 @@
+# id,party,name,home_state,charisma,debate,fundraising,policy,discipline,ideology
+# OPT-IN REAL-PERSON ROSTER. NOT FOR COMMERCIAL RELEASE (RISK_REGISTER.md R-02). Nothing loads this file by default;
+# shipped builds use the fictional cast in candidates.csv.
+# Provenance: Battleground 2028's candidate roster (commit b678c752db24a711b78b821af603302b26beeeba), exported by tools/BgExport.java.
+# These are the source game's estimates of real people (its own words: 'judgements for play, not facts'),
+# rescaled, not statements about them. Only BG's real Democrats and Republicans are included.
+# Ratings 1-10 = round(1 + 9 x BG rating / 100): charisma <- Charisma, debate <- Debating,
+# fundraising <- max(Small-dollar fundraising, Big-donor network), policy <- Intellect & policy depth,
+# discipline <- Message discipline. Ideology -1 (left) .. +1 (right) = mean of BG's econ and cult positions.
+bg_harris,DEMOCRAT,Kamala Harris,CA,7,8,9,8,7,-0.55
+bg_newsom,DEMOCRAT,Gavin Newsom,CA,8,9,9,8,7,-0.50
+bg_buttigieg,DEMOCRAT,Pete Buttigieg,MI,8,9,8,9,9,-0.43
+bg_aoc,DEMOCRAT,Alexandria Ocasio-Cortez,NY,9,8,10,8,8,-0.87
+bg_shapiro,DEMOCRAT,Josh Shapiro,PA,8,8,9,8,9,-0.30
+bg_pritzker,DEMOCRAT,JB Pritzker,IL,7,7,8,8,7,-0.60
+bg_whitmer,DEMOCRAT,Gretchen Whitmer,MI,7,7,8,7,7,-0.40
+bg_beshear,DEMOCRAT,Andy Beshear,KY,7,7,7,8,9,-0.21
+bg_moore,DEMOCRAT,Wes Moore,MD,9,7,8,8,7,-0.41
+bg_booker,DEMOCRAT,Cory Booker,NJ,8,8,8,8,7,-0.55
+bg_khanna,DEMOCRAT,Ro Khanna,CA,6,7,7,9,7,-0.56
+bg_kelly,DEMOCRAT,Mark Kelly,AZ,7,7,9,8,9,-0.28
+bg_gallego,DEMOCRAT,Ruben Gallego,AZ,7,7,7,7,7,-0.36
+bg_murphy,DEMOCRAT,Chris Murphy,CT,7,8,8,8,8,-0.62
+bg_ossoff,DEMOCRAT,Jon Ossoff,GA,8,8,9,8,8,-0.55
+bg_warnock,DEMOCRAT,Raphael Warnock,GA,8,8,8,8,9,-0.55
+bg_walz,DEMOCRAT,Tim Walz,MN,7,6,7,7,6,-0.62
+bg_emanuel,DEMOCRAT,Rahm Emanuel,IL,6,7,9,9,6,-0.13
+bg_raimondo,DEMOCRAT,Gina Raimondo,RI,6,7,9,9,8,-0.26
+bg_talarico,DEMOCRAT,James Talarico,TX,9,8,8,8,8,-0.62
+bg_cooper,DEMOCRAT,Roy Cooper,NC,7,7,8,8,8,-0.22
+bg_brown,DEMOCRAT,Sherrod Brown,OH,7,7,7,8,8,-0.62
+bg_klobuchar,DEMOCRAT,Amy Klobuchar,MN,7,7,7,8,8,-0.22
+bg_cuban,DEMOCRAT,Mark Cuban,TX,8,7,6,8,5,-0.15
+bg_smith,DEMOCRAT,Stephen A. Smith,NY,9,7,6,6,4,-0.12
+bg_vance,REPUBLICAN,JD Vance,OH,7,9,9,9,7,0.48
+bg_rubio,REPUBLICAN,Marco Rubio,FL,7,8,9,9,8,0.59
+bg_trumpjr,REPUBLICAN,Donald Trump Jr.,FL,7,6,9,6,5,0.60
+bg_desantis,REPUBLICAN,Ron DeSantis,FL,5,7,8,8,8,0.76
+bg_youngkin,REPUBLICAN,Glenn Youngkin,VA,7,7,9,8,8,0.55
+bg_haley,REPUBLICAN,Nikki Haley,SC,7,8,9,8,8,0.53
+bg_cruz,REPUBLICAN,Ted Cruz,TX,6,9,8,9,7,0.78
+bg_hawley,REPUBLICAN,Josh Hawley,MO,6,7,7,9,8,0.45
+bg_kemp,REPUBLICAN,Brian Kemp,GA,6,7,8,7,9,0.55
+bg_sanders,REPUBLICAN,Sarah Huckabee Sanders,AR,7,7,7,7,8,0.73
+bg_ramaswamy,REPUBLICAN,Vivek Ramaswamy,OH,7,8,8,9,6,0.68
+bg_carlson,REPUBLICAN,Tucker Carlson,FL,8,7,8,8,6,0.55
+bg_greene,REPUBLICAN,Marjorie Taylor Greene,GA,6,6,8,6,4,0.50
+bg_rfk,REPUBLICAN,Robert F. Kennedy Jr.,CA,7,6,7,7,5,0.15
