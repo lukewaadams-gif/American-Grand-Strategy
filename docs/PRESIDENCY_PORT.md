@@ -27,6 +27,14 @@ This is the plan for porting Resolute Desk Version 2 (`lukewaadams-gif/resoluted
 | Midterm campaigning | **From the Oval Office calendar:** rallies and fundraisers as road trips, endorsements, and the party's war chest. No separate headquarters. |
 | A new Congress | **Leaders, blocs and members change:** leaders follow control of each chamber, Resolute Desk's blocs grow or shrink, new members bring their own leanings, and retirements and primaries reshape the caucuses. |
 | Divided government | An opposition chamber can **investigate and subpoena, impeach and try, force shutdown and debt-limit fights, and block nominees and judges.** |
+| Working overnight (13 November 2026) | Each milestone is **finished fully** (tests and checks) before the next, then **committed, pushed and published to the preview**; the live site waits for approval. Choices not yet discussed are made in favour of Resolute Desk and realism and **listed in `DECISIONS_TO_REVIEW.md`**. Order: the presidency's milestones 5–10, then Island Chain and Hormuz on milestone 8's Situation Room (`CRISES.md`). |
+| The Roosevelt Room | **Blocs, with their leaders:** Resolute Desk's blocs, each with a leader to meet, call and bargain with, whip counts by bloc, and the swing members named in each. Names are **fictional by default**, the real ones an option. |
+| The West Wing | **Resolute Desk's orders, rules and courts:** orders and rules move the policy table one step with a legal risk; lawsuits, injunctions and Supreme Court rulings can overturn them; judicial nominations fill seats. |
+| The Press Briefing Room | **Resolute Desk's press in full:** press conferences with questions, interviews, addresses and the State of the Union; fictional outlets with their own lean and tone; the party's wings and the opposition's strategy. |
+| The Residence | **Rest, family and health:** evenings and weekends that restore stamina, family events and strains, the president's health and doctor's visits. |
+| Voter groups | **In the country room:** approval by group from the 96-cell electorate beside the coalitions and states, with what moves each group. |
+| The Situation Room | **Resolute Desk's world in full:** forty countries with relations, calls and summits, crises week by week, objectives, operations and covert action, trade and tariffs, standing deployments. |
+| Sound | **Quiet room sound, off by default** (Web Audio), with a toggle in the menu. |
 
 ## How Resolute Desk's systems map onto the engine
 
