@@ -199,6 +199,7 @@ public final class EngineApi {
             x.put("code", s.code()); x.put("name", s.name()); x.put("ev", s.electoralVotes());
             Double margin = r.stateMargins().get(s.code());
             x.put("margin", margin == null ? 0 : r2(margin));
+            x.put("baseline", r2(s.baselineMargin()));       // 2024's margin, for the states that flip
             states.add(x);
         }
         v.put("states", states);
@@ -207,6 +208,8 @@ public final class EngineApi {
         v.put("opponent", Map.of("name", them.candidate().name(), "id", them.candidate().id(), "party", them.party().code()));
         boolean won = r.winner() == me.party();
         v.put("won", won);
+        v.put("postMortem", g.postMortem());
+        v.put("congress", g.congress().toString());
         // what comes after the night, for the button that ends it
         v.put("next", year == 2028 ? (won ? "transition" : "end") : (won ? "second" : "lameduck"));
         return v;

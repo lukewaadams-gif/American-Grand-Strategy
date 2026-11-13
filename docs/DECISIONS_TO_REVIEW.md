@@ -135,3 +135,14 @@ Choices made while building overnight that we had not discussed. Each was made i
    - the source's National Security Council meetings and options papers;
    - Congress's War Powers clock and supplemental (the engine's AUMF rule runs, but only inside the crisis);
    - unit orders on the map (the engine supports them; the room offers the directives).
+
+## Election night (13 November 2026)
+
+1. **The broadcast is a script written from the stored result, never a recomputation.**
+   - It uses each state's final margin, the real 2024 poll-closing times, and how long each state takes to count (slow mail counts in Arizona, Nevada, California and Pennsylvania).
+   - Early returns lean one way and settle on the final margin, so leads can change hands during the night.
+   - A race is called only once its count favours the real winner. Safe states are called at the close.
+   - The same result always plays the same night.
+2. **Its place in the night is kept for the browser session,** so a reload resumes at the same report. A new session starts the night again; it is the same night.
+3. **"Leave the broadcast" is always offered,** so the player is never held. Leaving counts the night as watched.
+4. **The broadcast ends on the analysis:** the tipping-point state, the closest states, the flips since 2024, Congress, and for a loss the campaign's post-mortem. The full campaign assessment for Campaign Only comes with the four game modes.

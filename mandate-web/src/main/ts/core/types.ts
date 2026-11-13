@@ -434,13 +434,14 @@ export interface HormuzView {
 }
 
 // ---- election night: the result fixed on Election Day, revealed by the broadcast ---------------------------------------
-export interface ElectionNightState { code: string; name: string; ev: number; margin: number }
+export interface ElectionNightState { code: string; name: string; ev: number; margin: number; baseline: number }
 export interface ElectionNightView {
   year: number; pending: boolean; electionDay: string;
   result: { dem: number; rep: number; popular: number; winner: 'D' | 'R'; tipping: string };
   states: ElectionNightState[];
   player: { name: string; id: string; party: 'D' | 'R' }; opponent: { name: string; id: string; party: 'D' | 'R' };
   won: boolean; next: 'transition' | 'end' | 'second' | 'lameduck';
+  postMortem: string[]; congress: string;
 }
 
 // ---- the Taiwan crisis (docs/ISLAND_CHAIN.md) ------------------------------------------------------------------------------
