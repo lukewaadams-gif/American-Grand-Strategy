@@ -297,7 +297,7 @@ final class PresidencyViews {
             List<String> ch = new ArrayList<>();
             for (var c : game.mandate.core.economy.Channel.values()) {
                 double v = l.channel(c);
-                if (Math.abs(v) >= 0.005) ch.add(c.label + " " + (v > 0 ? "+" : "\u2212") + Fmt.format(Math.abs(v) >= 1 ? "%.1f" : "%.2f", Math.abs(v)) + " " + c.unit);
+                if (Math.abs(v) >= 0.005) ch.add(c.label + " " + (v > 0 ? "+" : "\u2212") + Fmt.format(Math.abs(v) >= 1 ? "%.1f" : "%.2f", Math.abs(v)) + (c.unit.equals("%") ? "%" : " " + c.unit));
             }
             @SuppressWarnings("unchecked") List<Object> full = (List<Object>) r.get("fullEffect");
             String line = step + (ch.isEmpty() ? "" : ": " + String.join(", ", ch));
