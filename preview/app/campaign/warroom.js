@@ -100,7 +100,7 @@ function placePicked(v, slot, code, act) {
         act.toast(`Moved to ${v.states.find(x => x.code === code)?.name ?? code}.`);
 }
 function national(v, last) {
-    const face = (side, mine) => h('div', { class: 'face ' + side.party.toLowerCase() }, portrait(side.id, side.party, 88), h('div', { class: 'face-text' }, h('span', { class: 'face-role' }, mine ? 'You' : 'Your opponent'), h('span', { class: 'face-name' }, side.name), h('span', { class: 'face-meta' }, `${side.partyName} · ${side.home}`)));
+    const face = (side, mine) => h('div', { class: 'face ' + side.party.toLowerCase() }, portrait(side.id, side.party, 88, true, side.look), h('div', { class: 'face-text' }, h('span', { class: 'face-role' }, mine ? 'You' : 'Your opponent'), h('span', { class: 'face-name' }, side.name), h('span', { class: 'face-meta' }, `${side.partyName} · ${side.home}`)));
     const matchup = h('section', { class: 'card matchup', 'aria-label': 'The matchup' }, h('div', { class: 'faces' }, face(v.player, true), h('span', { class: 'vs', 'aria-hidden': 'true' }, 'vs'), face(v.opponent, false)));
     const trend = h('section', { class: 'card', 'aria-label': 'The national race' }, h('h2', null, 'The national race'), trendChart(v, 190));
     const movers = h('section', { class: 'card', 'aria-label': 'What moved the race' }, h('h2', null, 'What moved the race'), last && last.movers.length ? h('ul', { class: 'movers' }, ...last.movers.slice(0, 4).map(m => h('li', null, m))) : h('p', { class: 'faint' }, 'The first poll arrives after the first week.'), h('h3', null, 'Your opponent'), h('p', null, h('strong', null, v.opponentPlan)), h('p', { class: 'muted' }, v.opponentReasoning));

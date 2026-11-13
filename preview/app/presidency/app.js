@@ -23,6 +23,7 @@ import { hormuzRoom } from './hormuz.js';
 import { taiwanRoom } from './taiwan.js';
 import { residenceRoom } from './residence.js';
 import { chime, soundMenuItem } from '../core/sound.js';
+import { dayHundredReport } from './day-hundred.js';
 const root = document.getElementById('app');
 const params = new URLSearchParams(location.search);
 /** A fixed hour for the light (from ?hour= or the menu); null follows the player's clock. */
@@ -120,12 +121,33 @@ function openDecisions(after = render) {
     else
         after(); });
 }
+/** The decisions the week cannot run without, one after another, then `after`. */
+function openBlocking(after) {
+    const ds = engine.decisions().filter(d => d.blocking !== false);
+    if (!ds.length) {
+        after();
+        return;
+    }
+    decisionCard(ds[0], 1, ds.length, host, c => {
+        try {
+            return engine.command(c);
+        }
+        catch (e) {
+            toast(e instanceof Refused ? e.message : String(e));
+            return null;
+        }
+    }, () => { render(); if (engine.decisions().some(d => d.blocking !== false))
+        openBlocking(after);
+    else
+        after(); });
+}
 function endTurn() {
     const v = engine.presidency();
     if (!v.turnUnit || watching)
         return;
-    if (v.pendingDecisions > 0) {
-        openDecisions(endTurn);
+    // only what the engine will not end the week without stops it (E-04); the rooms' questions wait on the desk to their deadline
+    if ((v.blockingDecisions ?? v.pendingDecisions) > 0) {
+        openBlocking(endTurn);
         return;
     }
     if (!command({ type: 'EndTurn' }))
@@ -143,10 +165,15 @@ function endTurn() {
         const room = after.taiwan ? openTaiwan : openHormuz;
         if (!crisis(v))
             showPaper(() => room());
-        else if (after.pendingDecisions > 0)
-            openDecisions(() => room());
+        else if ((after.blockingDecisions ?? after.pendingDecisions) > 0)
+            openBlocking(() => room()); // the rest wait on the desk
         else
             room();
+        return;
+    }
+    // day 100: the paper, then the report card (the presidency goes on; the report stays in the menu)
+    if (!v.dayHundred && after.dayHundred) {
+        showPaper(() => openDayHundred());
         return;
     }
     // Resolute Desk: the paper first, then what is waiting on the desk (and when a crisis has just ended, its room)
@@ -272,6 +299,12 @@ function watchWeek() {
 // ---- the game around the room --------------------------------------------------------------------------------------------
 /** The preview covers the presidency in office; the day-100 report, the campaign of 2032 and the rest come later. */
 function beyondPreview(v) {
+    // the whole game shows its own ending (the verdict, the campaign's or the crisis's report); the preview, the verdict here
+    if (v.over && hostOpts.onLeave) {
+        host.close();
+        hostOpts.onLeave();
+        return;
+    }
     if (v.over) {
         showVerdict();
         return;
@@ -284,6 +317,14 @@ function beyondPreview(v) {
     host.open(h('div', { class: 'dialog-card' }, h('div', { class: 'eyebrow' }, dateLong(v.date)), h('h2', { class: 'dialog-title' }, 'Beyond this preview'), h('p', null, 'The game has moved past the part of the presidency this preview shows. The day-100 report, the transition office and the rest of the presidency arrive in its later milestones.'), h('div', { class: 'dialog-foot' }, h('button', { class: 'btn primary', type: 'button', onclick: () => { host.close(); restart(); } }, 'Start again from the save'))), 'Beyond this preview');
 }
 /** The end: one verdict on the whole presidency (Resolute Desk's legacy screen). */
+/** The 100-day report, from day 100 on. */
+function openDayHundred() {
+    const r = engine.presidency().dayHundred;
+    if (!r)
+        return;
+    host.open(dayHundredReport(r, () => { host.close(); render(); if (engine.decisions().length)
+        openDecisions(); }), 'The 100-day report', render);
+}
 function showVerdict() {
     const vd = engine.verdict();
     const measures = vd.measures ?? [];
@@ -320,6 +361,7 @@ function menu(anchor) {
         at('Light: dusk', duskHour(month), 'The last of the light'),
         at('Light: night', 22, 'Lamps lit, the monument floodlit'),
         soundMenuItem(),
+        ...(engine.presidency().dayHundred ? [{ label: 'The 100-day report', detail: 'How the first hundred days went, goal by goal', pick: () => openDayHundred() }] : []),
         ...(hostOpts.menuItems ? hostOpts.menuItems() : [
             { label: 'Start again from the save', detail: 'Back to where this preview began', pick: restart },
             { label: 'The whole game', detail: 'From a new campaign to the verdict on your presidency', pick: () => { location.href = 'index.html'; } },

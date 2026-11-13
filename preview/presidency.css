@@ -664,14 +664,27 @@
 .start-field { margin: 12px 0; padding: 0; border: 0; }
 .start-field legend { margin-bottom: 6px; font: 700 calc(var(--s) * 12px)/1.3 Inter, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--wh-label); }
 .start-cands { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--s) * 260px), 1fr)); gap: 8px; }
-.start-cand { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; padding: 8px 10px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; cursor: pointer; }
+.start-cand { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 2px 10px; padding: 8px 10px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; cursor: pointer; }
 .start-cand.on { border-color: var(--wh-gold); background: rgba(217, 180, 90, 0.08); }
 .start-cand input { grid-row: span 2; margin-top: 3px; }
+.start-cand .portrait { grid-row: span 2; border-radius: 3px; }
 .start-cand-name { font-weight: 700; }
 .start-opt { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; cursor: pointer; }
 .start-go { margin-top: 10px; }
 .start-file { position: relative; display: inline-block; cursor: pointer; }
 .start-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.start-modes { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--s) * 300px), 1fr)); gap: 8px; }
+.start-mode { margin: 0; padding: 10px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; }
+.start-mode.on { border-color: var(--wh-gold); background: rgba(217, 180, 90, 0.08); }
+.start-mode strong { display: block; }
+.start-note { margin: 8px 0; max-width: 70ch; }
+.end-states { width: 100%; border-collapse: collapse; font-size: calc(var(--s) * 13px); }
+.end-states th, .end-states td { padding: 3px 8px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.end-states .num { text-align: right; font-variant-numeric: tabular-nums; }
+.end-result { font: 700 calc(var(--s) * 18px)/1.3 Inter, sans-serif; }
+.end-result.won { color: var(--good, #7fc79a); } .end-result.lost { color: var(--bad, #e08a80); } .end-result.part { color: var(--warn, #e0b45a); }
+.dh-goals { margin: 0; padding: 0; list-style: none; }
+.dh-goals li { margin: 6px 0; }
 .start-quick { margin: 0; padding-left: 18px; }
 .start-quick li { margin: 4px 0; }
 .transition { max-width: 1180px; margin: 0 auto; padding: 18px 16px 40px; }

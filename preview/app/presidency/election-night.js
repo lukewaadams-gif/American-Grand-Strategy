@@ -16,6 +16,14 @@ const NEXT = {
     lameduck: 'Back to the Oval Office',
 };
 const SPEEDS = [{ label: '1×', ms: 2400 }, { label: '2×', ms: 1200 }, { label: '4×', ms: 550 }];
+/** The night's last word: the player's own race (2028, or re-election in 2032), or the party's race to succeed them. */
+function headline(v) {
+    if (v.kind === 'succession')
+        return v.won ? 'Your party keeps the White House' : 'The White House changes hands';
+    if (v.kind === 'reelection' || (!v.kind && v.year > 2028))
+        return v.won ? 'Four more years' : 'You lose re-election';
+    return v.won ? 'You win the presidency' : 'You lose';
+}
 export function electionNight(act) {
     const v = act.view(), n = plan(v), last = n.beats.length - 1;
     const key = `ags-night:${v.year}:${v.electionDay}:${v.result.dem}-${v.result.rep}:${v.player.id}`;
@@ -29,6 +37,7 @@ export function electionNight(act) {
     const p = palette();
     const name = (q) => (q === v.player.party ? v.player.name : v.opponent.name);
     const id = (q) => (q === v.player.party ? v.player.id : v.opponent.id);
+    const lookOf = (q) => (q === v.player.party ? v.player.look : v.opponent.look);
     const keep = () => { try {
         sessionStorage.setItem(key, String(at));
     }
@@ -94,7 +103,7 @@ export function electionNight(act) {
     function side(q, votes, share) {
         const proj = n.beats.findIndex(b => b.kind === 'projection');
         const winner = n.winner === q && (proj >= 0 ? at >= proj : at >= last);
-        return h('div', { class: 'en-side ' + q.toLowerCase() + (winner ? ' won' : '') }, portrait(id(q), q, 72), h('div', { class: 'en-ev', 'aria-label': `${name(q)}: ${votes} electoral votes` }, String(votes)), h('div', { class: 'en-who' }, h('span', { class: 'en-name' }, name(q) + (id(q) === v.player.id ? ' (you)' : '')), h('span', { class: 'muted small' }, q === 'D' ? 'Democrat' : 'Republican'), h('span', { class: 'muted small' }, `${share.toFixed(1)}% of the vote`)));
+        return h('div', { class: 'en-side ' + q.toLowerCase() + (winner ? ' won' : '') }, portrait(id(q), q, 72, true, lookOf(q)), h('div', { class: 'en-ev', 'aria-label': `${name(q)}: ${votes} electoral votes` }, String(votes)), h('div', { class: 'en-who' }, h('span', { class: 'en-name' }, name(q) + (id(q) === v.player.id ? ' (you)' : '')), h('span', { class: 'muted small' }, q === 'D' ? 'Democrat' : 'Republican'), h('span', { class: 'muted small' }, `${share.toFixed(1)}% of the vote`)));
     }
     function draw() {
         const beat = n.beats[at], t = beat.t, tl = tally(n, v, t), final = at >= last;
@@ -109,7 +118,7 @@ export function electionNight(act) {
             const sh = shown(l, t), c = counted(l, t);
             return h('tr', { class: isCalled(l, t) ? 'called' : '' }, h('th', { scope: 'row' }, l.name), h('td', null, String(l.ev)), h('td', null, t < l.close ? 'Polls open' : `${Math.round(c * 100)}%`), h('td', { class: sh === null ? '' : sh >= 0 ? 'd' : 'r' }, sh === null ? '—' : `${sh >= 0 ? 'D' : 'R'} +${Math.abs(sh).toFixed(1)}`), h('td', null, isCalled(l, t) ? `Called: ${name(l.margin >= 0 ? 'D' : 'R')}` : sh === null ? '' : Math.abs(sh) < 2 ? 'Too close to call' : `${name(sh >= 0 ? 'D' : 'R')} leads`));
         })));
-        root.replaceChildren(h('header', { class: 'en-head' }, h('div', null, h('div', { class: 'eyebrow' }, `Election night · ${day(v.electionDay, true)}`), h('h1', { class: 'dialog-title' }, final ? (v.won ? (v.year > 2028 ? 'Four more years' : 'You win the presidency') : (v.year > 2028 ? 'You lose re-election' : 'You lose')) : `America decides ${v.year}`)), h('div', { class: 'en-clock', 'aria-live': 'off' }, final ? 'Final' : clock(t), !final ? h('span', { class: 'en-live' }, 'LIVE') : null)), h('section', { class: 'en-score', 'aria-label': 'The electoral count' }, side('D', tl.dem, tl.demShare), h('div', { class: 'en-mid' }, bar, h('p', { class: 'muted small' }, `${Math.round(tl.counted * 100)}% of the expected vote counted · ${tl.votes.toFixed(1)} million votes`)), side('R', tl.rep, tl.repShare)), controls, h('div', { class: 'en-now', role: 'status', 'aria-live': 'polite' }, h('strong', null, beat.title), beat.text ? ' ' + beat.text : ''), h('div', { class: 'en-grid' }, h('div', { class: 'en-mapcard' }, map(t), legend()), feed), final ? analysis() : h('div', { class: 'en-board-wrap', role: 'region', 'aria-label': 'The battlegrounds', tabindex: '0' }, board));
+        root.replaceChildren(h('header', { class: 'en-head' }, h('div', null, h('div', { class: 'eyebrow' }, `Election night · ${day(v.electionDay, true)}`), h('h1', { class: 'dialog-title' }, final ? headline(v) : `America decides ${v.year}`)), h('div', { class: 'en-clock', 'aria-live': 'off' }, final ? 'Final' : clock(t), !final ? h('span', { class: 'en-live' }, 'LIVE') : null)), h('section', { class: 'en-score', 'aria-label': 'The electoral count' }, side('D', tl.dem, tl.demShare), h('div', { class: 'en-mid' }, bar, h('p', { class: 'muted small' }, `${Math.round(tl.counted * 100)}% of the expected vote counted · ${tl.votes.toFixed(1)} million votes`)), side('R', tl.rep, tl.repShare)), controls, h('div', { class: 'en-now', role: 'status', 'aria-live': 'polite' }, h('strong', null, beat.title), beat.text ? ' ' + beat.text : ''), h('div', { class: 'en-grid' }, h('div', { class: 'en-mapcard' }, map(t), legend()), feed), final ? analysis() : h('div', { class: 'en-board-wrap', role: 'region', 'aria-label': 'The battlegrounds', tabindex: '0' }, board));
     }
     function legend() {
         const key = (c, t) => h('li', null, h('span', { class: 'en-key', style: `background:${c}`, 'aria-hidden': 'true' }), t);
@@ -119,7 +128,8 @@ export function electionNight(act) {
         const closest = [...n.lines].sort((a, b) => Math.abs(a.margin) - Math.abs(b.margin)).slice(0, 6);
         const flipsD = n.lines.filter(l => l.margin >= 0 && l.baseline < 0), flipsR = n.lines.filter(l => l.margin < 0 && l.baseline >= 0);
         const tip = n.lines.find(l => l.code === v.result.tipping);
-        return h('section', { class: 'room-card en-analysis', 'aria-labelledby': 'en-an' }, h('h2', { class: 'room-card-title', id: 'en-an' }, 'The analysis'), h('dl', { class: 'ww-stats' }, h('dt', null, 'The electoral vote'), h('dd', null, `${name('D')} ${v.result.dem}, ${name('R')} ${v.result.rep}`), h('dt', null, 'The popular vote'), h('dd', null, `${v.result.popular >= 0 ? name('D') : name('R')} by ${Math.abs(v.result.popular).toFixed(1)} points`), h('dt', null, 'The tipping-point state'), h('dd', null, tip ? `${tip.name}, ${tip.margin >= 0 ? 'D' : 'R'} +${Math.abs(tip.margin).toFixed(1)}` : v.result.tipping), h('dt', null, 'The closest states'), h('dd', null, closest.map(l => `${l.name} ${l.margin >= 0 ? 'D' : 'R'} +${Math.abs(l.margin).toFixed(1)}`).join(' · ')), h('dt', null, 'Flipped since 2024'), h('dd', null, [flipsD.length ? `to the Democrats: ${flipsD.map(l => l.name).join(', ')}` : '', flipsR.length ? `to the Republicans: ${flipsR.map(l => l.name).join(', ')}` : ''].filter(Boolean).join('; ') || 'No state changed hands'), h('dt', null, 'Congress'), h('dd', null, v.congress)), v.postMortem.length ? h('div', null, h('h3', { class: 'tw-sub' }, 'What happened'), h('ul', { class: 'hill-list' }, ...v.postMortem.map(x => h('li', null, x)))) : null);
+        return h('section', { class: 'room-card en-analysis', 'aria-labelledby': 'en-an' }, h('h2', { class: 'room-card-title', id: 'en-an' }, 'The analysis'), h('dl', { class: 'ww-stats' }, h('dt', null, 'The electoral vote'), h('dd', null, `${name('D')} ${v.result.dem}, ${name('R')} ${v.result.rep}`), h('dt', null, 'The popular vote'), h('dd', null, `${v.result.popular >= 0 ? name('D') : name('R')} by ${Math.abs(v.result.popular).toFixed(1)} points`), h('dt', null, 'The tipping-point state'), h('dd', null, tip ? `${tip.name}, ${tip.margin >= 0 ? 'D' : 'R'} +${Math.abs(tip.margin).toFixed(1)}` : v.result.tipping), h('dt', null, 'The closest states'), h('dd', null, closest.map(l => `${l.name} ${l.margin >= 0 ? 'D' : 'R'} +${Math.abs(l.margin).toFixed(1)}`).join(' · ')), h('dt', null, 'Flipped since 2024'), h('dd', null, [flipsD.length ? `to the Democrats: ${flipsD.map(l => l.name).join(', ')}` : '', flipsR.length ? `to the Republicans: ${flipsR.map(l => l.name).join(', ')}` : ''].filter(Boolean).join('; ') || 'No state changed hands'), h('dt', null, 'Congress'), h('dd', null, v.congress)), v.assessment ? h('div', null, h('h3', { class: 'tw-sub' }, 'The campaign: ' + v.assessment.grade), h('ul', { class: 'hill-list' }, ...v.assessment.lines.map(x => h('li', null, x))))
+            : v.postMortem.length ? h('div', null, h('h3', { class: 'tw-sub' }, 'What happened'), h('ul', { class: 'hill-list' }, ...v.postMortem.map(x => h('li', null, x)))) : null);
     }
     root.addEventListener('keydown', e => {
         if (e.target instanceof HTMLButtonElement && (e.key === ' ' || e.key === 'Enter'))

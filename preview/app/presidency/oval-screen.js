@@ -89,9 +89,11 @@ function weekCard(v, hd) {
     const tone = (x) => (x >= 50 ? 'good' : x >= 25 ? 'warn' : 'bad');
     return h('section', { class: 'ov-card ov-week', 'aria-labelledby': 'ov-week-title' }, h('h2', { class: 'ov-card-title', id: 'ov-week-title' }, 'This week'), w ? h('p', { class: 'ov-card-line' }, `${w.counts.policy} policy ${w.counts.policy === 1 ? 'slot' : 'slots'}, ${w.counts.trips} ${w.counts.trips === 1 ? 'trip' : 'trips'}, ${w.counts.recharge} to recharge`
         + (w.delegated ? ' · planned by the chief of staff' : '')) : null, w ? h('div', { class: 'ov-card-meter' }, h('span', { class: 'ov-card-meter-label', id: 'ov-after' }, 'Stamina after the week'), h('span', { class: 'ov-meter-bar wide', role: 'meter', 'aria-labelledby': 'ov-after', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(w.projected) }, h('span', { class: 'ov-meter-fill ' + tone(w.projected), style: `width:${Math.max(2, w.projected)}%` })), h('span', { class: 'ov-card-meter-value' }, String(Math.round(w.projected)))) : null, w ? h('p', { class: 'ov-card-line quiet' }, `Sleep about ${w.sleepAhead.toFixed(1)} hours a night`) : null, h('p', { class: 'ov-card-line ' + (waiting ? 'warn' : 'quiet') }, waiting ? `${waiting} ${waiting === 1 ? 'decision' : 'decisions'} waiting on the desk`
-        : next ? `Next: ${SHORT[next.what] ?? next.what}, ${weeksBetween(v.date, next.date) < 26 ? day(next.date) : day(next.date, next.date.slice(0, 4) !== thisYear)}` : 'Nothing waiting on the desk'), h('button', { class: 'btn small ov-card-btn', type: 'button', onclick: () => hd.spot('desk') }, 'Plan the week'));
+        : next ? `Next: ${short(next.what)}, ${weeksBetween(v.date, next.date) < 26 ? day(next.date) : day(next.date, next.date.slice(0, 4) !== thisYear)}` : 'Nothing waiting on the desk'), h('button', { class: 'btn small ov-card-btn', type: 'button', onclick: () => hd.spot('desk') }, 'Plan the week'));
 }
-const SHORT = { 'The midterm elections': 'Midterms', 'Election Day 2032': 'Election Day' };
+/** Short labels for the card: "Election Day" of any year (2032, or the successor's race in 2036). */
+const SHORT = { 'The midterm elections': 'Midterms' };
+const short = (what) => SHORT[what] ?? (/^Election Day \d{4}$/.test(what) ? 'Election Day' : what);
 const STAGE_TONE = { 'Law': 'good', 'Dead': 'bad', 'Not yet moving': 'quiet' };
 function hillCard(v, hd) {
     const bills = v.bills.slice(0, 3);
@@ -149,7 +151,7 @@ function spots(hd, v) {
 }
 /** The whole screen. The room is returned too, so its flags, globe and dust can be animated. */
 export function ovalScreen(v, light, hd) {
-    const room = paintOval(v.president.party, v.president.id, light);
+    const room = paintOval(v.president.party, v.president.id, light, v.president.look);
     const stage = h('div', { class: 'ov-stage' }, room.svg, spots(hd, v));
     const el = h('div', { class: 'ov' }, topBar(v, hd), h('main', { class: 'ov-main', id: 'main' }, h('h1', { class: 'sr' }, `The Oval Office, ${dateLong(v.date)}. President ${v.president.name}.`), h('div', { class: 'ov-frame', 'data-light': light.label }, stage, h('div', { class: 'ov-cards' }, v.hormuz || v.taiwan ? crisisCard(v, hd) : weekCard(v, hd), hillCard(v, hd)))), ledger(v));
     return { el, room };

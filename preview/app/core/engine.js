@@ -1,6 +1,8 @@
 let mod = null;
 /** The site's build (version.json), so the engine and the saves always come from the same one; empty if there is none. */
 let build = '';
+/** Where this build came from (E-05): its source commit, uncommitted changes, and the day it was built. */
+export let buildInfo = { build: '' };
 /** A URL for this build's copy of a file, so a browser's cached copy from an earlier build is never used with this one. */
 function versioned(url) { return build ? url + (url.includes('?') ? '&' : '?') + 'v=' + build : url; }
 /**
@@ -12,8 +14,10 @@ export async function start(url = new URL('../../engine/engine.js', import.meta.
         return;
     try {
         const r = await fetch(new URL('../../version.json', import.meta.url).href, { cache: 'no-cache' });
-        if (r.ok)
-            build = (await r.json()).build ?? '';
+        if (r.ok) {
+            buildInfo = await r.json();
+            build = buildInfo.build ?? '';
+        }
     }
     catch { /* a build without version.json: load as before */ }
     mod = (await import(versioned(url)));
@@ -67,6 +71,8 @@ export const engine = {
     /** What a new game can be: the candidates, scenarios and difficulties. */
     options(realRoster) { return request({ op: 'options', realRoster }); },
     newGame(g) { request({ op: 'newGame', ...g }); },
+    /** The same start again: the same seed and world. */
+    restart() { request({ op: 'restart' }); },
     residence() { return request({ op: 'view', name: 'residence' }); },
     /** The budget office's score of moving a policy some steps from where it stands. */
     score(policy, steps) { return request({ op: 'view', name: 'score', policy, steps }); },

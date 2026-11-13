@@ -1,6 +1,7 @@
-// The whole game: a new campaign (or a saved game, or one of its moments), the war room to Election Day, election
-// night, the transition office, the Oval Office through the first hundred days and every week after, the 2032
-// campaign, the second term, and the verdict of history. One page, routed by the game's phase.
+// The whole game, in any of its four modes (docs/MODES.md): a new game (or a saved game, or one of its moments), the
+// war room to Election Day, election night, the transition office, the Oval Office through the first hundred days and
+// every week after, the 2032 campaign, the second term, and the end: the verdict of history on a presidency, the
+// campaign's assessment, or a crisis's after-action report. One page, routed by the game's phase.
 import { buildFile, engine, Refused, start } from './core/engine.js';
 import { h } from './core/dom.js';
 import { host, toast } from './core/dialog.js';
@@ -32,11 +33,12 @@ function command(c) {
 /** Shows the screen for where the game stands. */
 function route() {
     leave();
-    let phase, night = 0;
+    let phase, night = 0, crisis = false;
     try {
         const p = engine.presidency();
         phase = p.phase;
         night = p.electionNight;
+        crisis = !!(p.taiwan || p.hormuz) && p.turnUnit !== null && !p.over;
     }
     catch {
         showStart();
@@ -46,6 +48,12 @@ function route() {
     if (night) {
         body('presidency');
         showElectionNight(night);
+        return;
+    }
+    // a crisis that runs on into the 2032 campaign is fought from the Oval Office; the war room waits for it to end
+    if (CAMPAIGN.includes(phase) && crisis) {
+        body('presidency');
+        mountPresidency({ onLeave: route, restart: showStart, restartLabel: 'Back to the start', menuItems: gameMenu });
         return;
     }
     if (CAMPAIGN.includes(phase)) {
@@ -90,13 +98,19 @@ function showStart() {
     body('presidency start-page');
     root.replaceChildren(startScreen({
         options: real => engine.options(real),
-        newGame: g => { try {
-            engine.newGame(g);
-            route();
-        }
-        catch (e) {
-            toast(e instanceof Refused ? e.message : String(e));
-        } },
+        newGame: g => {
+            // Governing Only plays the 2028 campaign for both sides first: a moment's wait, said so
+            if (g.mode === 'GOVERNING_ONLY')
+                root.replaceChildren(h('main', { class: 'start', id: 'main' }, h('p', { class: 'start-wait', role: 'status' }, 'The staff are playing the 2028 campaign for both sides. Election night comes next.')));
+            setTimeout(() => { try {
+                engine.newGame(g);
+                route();
+            }
+            catch (e) {
+                toast(e instanceof Refused ? e.message : String(e));
+                showStart();
+            } }, 30);
+        },
         loadFile: text => { try {
             engine.load(text);
             route();
@@ -175,14 +189,59 @@ function showTransition() {
     root.replaceChildren(office);
     document.title = 'The transition · American Grand Strategy';
 }
-/** The end: the verdict of history on a presidency, or the campaign's result when the White House was not won. */
+/** The end of the game: a crisis's after-action report, the campaign's assessment, or the verdict of history on a presidency. */
 function showEnd() {
     const vd = engine.verdict();
+    const page = vd.crisis ? crisisEnd(vd) : vd.campaign && !vd.served ? campaignEnd(vd) : presidencyEnd(vd);
+    root.replaceChildren(h('main', { class: 'room hill verdict end-page', id: 'main' }, h('div', { class: 'eyebrow' }, dateLong(vd.date)), ...page, h('div', { class: 'cab-buttons' }, h('button', { class: 'btn', type: 'button', onclick: saveGame }, 'Save the game'), h('button', { class: 'btn primary', type: 'button', onclick: showStart }, 'Back to the start'))));
+    document.title = (vd.crisis ? 'After-action report' : vd.campaign && !vd.served ? 'The campaign' : 'The verdict') + ' · American Grand Strategy';
+}
+/** The verdict of history: four years, or eight. */
+function presidencyEnd(vd) {
     const measures = vd.measures ?? [];
-    root.replaceChildren(h('main', { class: 'room hill verdict end-page', id: 'main' }, h('div', { class: 'eyebrow' }, dateLong(vd.date)), h('h1', { class: 'dialog-title' }, measures.length ? 'The verdict of history' : 'The campaign is over'), h('p', { class: 'verdict-grade' }, (vd.grade ?? '') + (vd.score !== undefined && measures.length ? ` · ${vd.score} of 1,000` : '')), vd.rank ? h('p', { class: 'verdict-rank' }, vd.rank) : null, measures.length ? h('dl', { class: 'ww-stats verdict-measures' }, ...measures.flatMap(m => [h('dt', null, m.name),
-        h('dd', null, h('span', { class: 'hill-meter ' + (m.score >= 60 ? 'good' : m.score >= 40 ? 'mid' : 'bad'), role: 'meter', 'aria-valuemin': '0', 'aria-valuemax': '100',
-            'aria-valuenow': String(m.score), 'aria-label': m.name }, h('span', { style: `width:${Math.max(2, m.score)}%` }), h('span', { class: 'hill-meter-value' }, String(m.score))))])) : null, h('ul', { class: 'hill-list' }, ...(vd.lines ?? []).map(l => h('li', null, l))), (vd.record ?? []).length ? h('details', null, h('summary', null, 'Your record'), h('ul', { class: 'hill-list small' }, ...(vd.record ?? []).map(l => h('li', null, l)))) : null, h('div', { class: 'cab-buttons' }, h('button', { class: 'btn', type: 'button', onclick: saveGame }, 'Save the game'), h('button', { class: 'btn primary', type: 'button', onclick: showStart }, 'Back to the start'))));
-    document.title = 'The verdict · American Grand Strategy';
+    return [
+        h('h1', { class: 'dialog-title' }, measures.length ? `The verdict of history: ${vd.terms === 2 ? 'eight years' : 'four years'}` : 'The game is over'),
+        h('p', { class: 'verdict-grade' }, (vd.grade ?? '') + (vd.score !== undefined && measures.length ? ` · ${vd.score} of 1,000` : '')),
+        vd.rank ? h('p', { class: 'verdict-rank' }, vd.rank) : null,
+        measures.length ? h('dl', { class: 'ww-stats verdict-measures' }, ...measures.flatMap(m => [h('dt', null, m.name),
+            h('dd', null, h('span', { class: 'hill-meter ' + (m.score >= 60 ? 'good' : m.score >= 40 ? 'mid' : 'bad'), role: 'meter', 'aria-valuemin': '0', 'aria-valuemax': '100',
+                'aria-valuenow': String(m.score), 'aria-label': m.name }, h('span', { style: `width:${Math.max(2, m.score)}%` }), h('span', { class: 'hill-meter-value' }, String(m.score))))])) : null,
+        h('ul', { class: 'hill-list' }, ...(vd.lines ?? []).map(l => h('li', null, l))),
+        (vd.record ?? []).length ? h('details', null, h('summary', null, 'Your record'), h('ul', { class: 'hill-list small' }, ...(vd.record ?? []).map(l => h('li', null, l)))) : null,
+    ];
+}
+/** The campaign's end (Campaign Only, or a 2028 defeat): the result, the popular vote, every state and the assessment. */
+function campaignEnd(vd) {
+    const c = vd.campaign;
+    const states = [...c.states].sort((a, b) => Math.abs(a.margin) - Math.abs(b.margin));
+    const won = states.filter(x => x.margin > 0).length;
+    return [
+        h('h1', { class: 'dialog-title' }, 'The campaign is over'),
+        h('p', { class: 'end-result ' + (c.won ? 'won' : 'lost') }, `${c.won ? 'You won the White House' : 'You lost'}: ${c.grade.toLowerCase()}.`),
+        h('dl', { class: 'ww-stats' }, h('dt', null, 'The electoral vote'), h('dd', null, `${c.player} ${c.ev}, ${c.opponent} ${c.evOpp}`), h('dt', null, 'The popular vote'), h('dd', null, `${c.popular >= 0 ? c.player : c.opponent} by ${Math.abs(c.popular).toFixed(1)} points`), h('dt', null, 'The states'), h('dd', null, `${won} won, ${states.length - won} lost`)),
+        h('section', { 'aria-labelledby': 'end-as' }, h('h2', { class: 'tw-sub', id: 'end-as' }, 'The assessment'), h('ul', { class: 'hill-list' }, ...c.lines.map(l => h('li', null, l)))),
+        h('details', null, h('summary', null, 'Every state, closest first'), h('div', { class: 'en-board-wrap', tabindex: '0', role: 'region', 'aria-label': 'Every state, closest first' }, h('table', { class: 'end-states' }, h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'State'), h('th', { scope: 'col', class: 'num' }, 'Electoral votes'), h('th', { scope: 'col', class: 'num' }, 'Your margin'))), h('tbody', null, ...states.map(x => h('tr', null, h('td', null, x.name), h('td', { class: 'num' }, String(x.ev)), h('td', { class: 'num' }, (x.margin >= 0 ? '+' : '−') + Math.abs(x.margin).toFixed(1)))))))),
+        h('div', { class: 'cab-buttons' }, h('button', { class: 'btn', type: 'button', onclick: () => showElectionNight(2028) }, 'Watch election night again'), h('button', { class: 'btn', type: 'button', onclick: () => { try {
+                engine.restart();
+                route();
+            }
+            catch (e) {
+                toast(String(e));
+            } } }, 'Replay the campaign in the same world')),
+    ];
+}
+/** Individual Crisis: the after-action report. */
+function crisisEnd(vd) {
+    const c = vd.crisis;
+    const tone = c.result === 'WON' ? 'won' : c.result === 'LOST' ? 'lost' : 'part';
+    return [
+        h('h1', { class: 'dialog-title' }, 'After-action report: ' + c.title),
+        h('p', { class: 'end-result ' + tone }, `${c.resultLabel ?? 'Not over'}: ${(c.outcome ?? '').toLowerCase()}.`),
+        c.verdict ? h('p', { class: 'verdict-rank' }, c.verdict) : null,
+        h('dl', { class: 'ww-stats' }, h('dt', null, 'How it started'), h('dd', null, c.preset), h('dt', null, 'Began'), h('dd', null, dateLong(c.began)), c.ended ? h('dt', null, 'Ended') : null, c.ended ? h('dd', null, `${dateLong(c.ended)}, after ${c.days} days`) : null, c.reason ? h('dt', null, 'Why') : null, c.reason ? h('dd', null, c.reason) : null),
+        h('section', { 'aria-labelledby': 'end-fig' }, h('h2', { class: 'tw-sub', id: 'end-fig' }, 'The figures'), h('ul', { class: 'hill-list' }, ...(c.figures ?? []).map(l => h('li', null, l)))),
+        (c.record ?? []).length ? h('details', null, h('summary', null, 'The crisis, day by day'), h('ul', { class: 'hill-list small' }, ...(c.record ?? []).map(l => h('li', null, l)))) : null,
+    ];
 }
 async function boot() {
     usePalette(params.get('palette') ?? 'standard');

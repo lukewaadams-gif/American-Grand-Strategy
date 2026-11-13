@@ -8,7 +8,8 @@ export function decisionCard(d, n, total, host, choose, after) {
                 return;
             whatHappened(o.label, news, host, after);
         } }, h('span', { class: 'choice-head' }, h('span', { class: 'choice-key', 'aria-hidden': 'true' }, String(i + 1)), h('span', { class: 'choice-title' }, o.label), o.tag ? h('span', { class: 'pill tone-' + (o.tone ?? 'INFO').toLowerCase() }, o.tag) : null), h('span', { class: 'choice-detail' }, o.detail)));
-    const card = h('div', { class: 'dialog-card' }, h('div', { class: 'eyebrow' }, d.eyebrow + (total > 1 ? ` · ${n} of ${total}` : '')), h('h2', { class: 'dialog-title' }, d.title), h('p', null, d.body), h('div', { class: 'choices' }, ...options), h('div', { class: 'dialog-foot' }, h('button', { class: 'btn quiet', type: 'button', onclick: () => host.close(), title: 'Put it aside; the week cannot run until it is answered' }, 'Decide later'), h('span', { class: 'faint' }, `Press 1–${d.options.length} to choose, Esc to decide later.`)));
+    const card = h('div', { class: 'dialog-card' }, h('div', { class: 'eyebrow' }, d.eyebrow + (total > 1 ? ` · ${n} of ${total}` : '')), h('h2', { class: 'dialog-title' }, d.title), h('p', null, d.body), h('div', { class: 'choices' }, ...options), h('div', { class: 'dialog-foot' }, h('button', { class: 'btn quiet', type: 'button', onclick: () => host.close(),
+        title: d.blocking === false ? 'Put it aside: it waits on the desk, and if it is left to its deadline the staff answer it' : 'Put it aside; the week cannot run until it is answered' }, 'Decide later'), h('span', { class: 'faint' }, `Press 1–${d.options.length} to choose, Esc to decide later.`)));
     card.addEventListener('keydown', e => {
         const k = Number(e.key);
         if (k >= 1 && k <= options.length && !e.ctrlKey && !e.metaKey) {

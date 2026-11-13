@@ -14,7 +14,7 @@ const WALL = M('#f1e6cc'), WALL_LO = M('#d6c39b'), TRIM = M('#f7f0dd', 0.1), TRI
 const WOOD = M('#5b3a22', 0.1), WOOD_LO = M('#2f1c10', 0.1), WOOD_HI = M('#8a5a35', 0.12);
 const BRIGHT_GOLD = M('#f1d17a', 0.35), DEEP_GOLD = M('#7a5718', 0.3), FRINGE = M('#f6d77f', 0.35), BORDER_GOLD = M('#f2c14e', 0.35);
 const ROOM_SEAL = { ...SEAL, gold: M('#d4a945', 0.3) };
-export function paintOval(party, presidentId, light) {
+export function paintOval(party, presidentId, light, look) {
     const svg = s('svg', { class: 'oval-art', viewBox: '0 56 1600 800', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': 'true', focusable: 'false' });
     const P = new Painter(svg, 'ov');
     const room = s('g'), live = s('g'), lamps = s('g'), top = s('g');
@@ -35,7 +35,7 @@ export function paintOval(party, presidentId, light) {
     sideTable(P, room, lamps, light);
     deskBody(P, room);
     // the president, seated behind the desk
-    const bust = portrait(presidentId, party, 60, false);
+    const bust = portrait(presidentId, party, 60, false, look);
     bust.setAttribute('x', '770');
     bust.setAttribute('y', '362');
     bust.setAttribute('width', '60');
