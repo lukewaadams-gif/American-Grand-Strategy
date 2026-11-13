@@ -138,21 +138,17 @@ export const WORLD: CountryShape[] = ${JSON.stringify(world)};
 fs.writeFileSync(path.join(out, 'world.ts'), wts);
 console.log(`map data: ${world.length} countries, ${(wts.length / 1024).toFixed(0)} KB -> src/main/ts/generated/world.ts`);
 
-// ---- the Gulf (the Strait of Hormuz crisis, docs/HORMUZ.md) -------------------------------------------------------------
-// world-atlas countries-10m (Natural Earth 1:10m; public domain), so the strait's islands show, clipped to the Gulf from
-// Kuwait to the Gulf of Oman (47-61.5 degrees east, 22.5-30.8 north) in an equirectangular projection true at 26.5 north,
-// 1000 units wide. The crisis places its sites, minefields and ships by longitude and latitude with the same numbers.
-const G = { lon0: 47, lon1: 61.5, lat0: 22.5, lat1: 30.8, cos: Math.cos(26.5 * Math.PI / 180) };
-G.k = 1000 / ((G.lon1 - G.lon0) * G.cos);
-const GULF_H = Math.round((G.lat1 - G.lat0) * G.k);
-const gproj = ([lon, lat]) => [(lon - G.lon0) * G.cos * G.k, (G.lat1 - lat) * G.k];
-const gtopo = JSON.parse(fs.readFileSync(path.join(root, 'node_modules/world-atlas/countries-10m.json'), 'utf8'));
-const gdecode = (() => {
-  const [sx, sy] = gtopo.transform.scale, [tx, ty] = gtopo.transform.translate;
-  const arcs = gtopo.arcs.map(arc => { let x = 0, y = 0; return arc.map(([dx, dy]) => { x += dx; y += dy; return [x * sx + tx, y * sy + ty]; }); });
+// ---- regional maps: the Gulf (the Strait of Hormuz) and the Western Pacific (the Taiwan crisis) ---------------------------
+// world-atlas countries (Natural Earth; public domain) clipped to a box, in an equirectangular projection true at a chosen
+// latitude, 1000 units wide. The crises place their sites, zones and units by longitude and latitude with the same numbers.
+const topoCache = {};
+const topoOf = file => topoCache[file] ??= JSON.parse(fs.readFileSync(path.join(root, 'node_modules/world-atlas/' + file), 'utf8'));
+const decoderOf = topo => {
+  const [sx, sy] = topo.transform.scale, [tx, ty] = topo.transform.translate;
+  const arcs = topo.arcs.map(arc => { let x = 0, y = 0; return arc.map(([dx, dy]) => { x += dx; y += dy; return [x * sx + tx, y * sy + ty]; }); });
   const ring = idx => { const pts = []; for (const i of idx) { const a = i >= 0 ? arcs[i] : arcs[~i].slice().reverse(); a.forEach((p, k) => { if (k > 0 || pts.length === 0) pts.push(p); }); } return pts; };
   return g => g.type === 'Polygon' ? [g.arcs.map(ring)] : g.type === 'MultiPolygon' ? g.arcs.map(p => p.map(ring)) : [];
-})();
+};
 // Sutherland-Hodgman against the frame (a little beyond it, so no seam shows at the edges)
 function clip(ring, x0, y0, x1, y1) {
   const edges = [[p => p[0] >= x0, (a, b) => [x0, a[1] + (b[1] - a[1]) * (x0 - a[0]) / (b[0] - a[0])]],
@@ -170,21 +166,43 @@ function clip(ring, x0, y0, x1, y1) {
   }
   return out;
 }
-const thin = ring => { const o = []; for (const p of ring) { const q = o[o.length - 1]; if (!q || Math.hypot(p[0] - q[0], p[1] - q[1]) >= 1.1) o.push(p); } return o; };
-const GULF_NAMES = { 364: 'Iran', 682: 'Saudi Arabia', 784: 'United Arab Emirates', 512: 'Oman', 634: 'Qatar', 48: 'Bahrain', 414: 'Kuwait', 368: 'Iraq', 586: 'Pakistan' };
-const gulf = [];
-for (const g of gtopo.objects.countries.geometries) {
-  const polys = gdecode(g).map(poly => poly.map(ring => thin(clip(ring.map(gproj), -4, -4, 1004, GULF_H + 4))).filter(r => r.length >= 3)).filter(p => p.length);
-  const d = pathOf(polys);
-  if (!d) continue;
-  gulf.push({ id: ISO[Number(g.id)] ?? String(g.id), name: GULF_NAMES[Number(g.id)] ?? g.properties.name, d });
+const thinBy = d => ring => { const o = []; for (const p of ring) { const q = o[o.length - 1]; if (!q || Math.hypot(p[0] - q[0], p[1] - q[1]) >= d) o.push(p); } return o; };
+const NAMES = { 364: 'Iran', 682: 'Saudi Arabia', 784: 'United Arab Emirates', 512: 'Oman', 634: 'Qatar', 48: 'Bahrain', 414: 'Kuwait', 368: 'Iraq', 586: 'Pakistan',
+  156: 'China', 158: 'Taiwan', 392: 'Japan', 410: 'South Korea', 408: 'North Korea', 608: 'Philippines', 704: 'Vietnam', 418: 'Laos', 764: 'Thailand', 116: 'Cambodia',
+  458: 'Malaysia', 360: 'Indonesia', 96: 'Brunei', 643: 'Russia', 496: 'Mongolia', 104: 'Myanmar', 316: 'Guam', 580: 'Northern Mariana Islands', 585: 'Palau' };
+/** A regional map: its land, and the projection the crisis uses to place things on it. */
+function regional({ name, constName, file, lon0, lon1, lat0, lat1, latTrue, thin, about, extra }) {
+  const P = { lon0, lat1, cos: Math.cos(latTrue * Math.PI / 180) };
+  P.k = 1000 / ((lon1 - lon0) * P.cos);
+  const H = Math.round((lat1 - lat0) * P.k);
+  const proj = ([lon, lat]) => [(lon - P.lon0) * P.cos * P.k, (P.lat1 - lat) * P.k];
+  const topo = topoOf(file), dec = decoderOf(topo), shapes = [];
+  for (const g of topo.objects.countries.geometries) {
+    const polys = dec(g).map(poly => poly.map(ring => thinBy(thin)(clip(ring.map(proj), -4, -4, 1004, H + 4))).filter(r => r.length >= 3)).filter(p => p.length);
+    const d = pathOf(polys);
+    if (!d) continue;
+    shapes.push({ id: ISO[Number(g.id)] ?? String(g.id), name: NAMES[Number(g.id)] ?? g.properties.name, d });
+  }
+  const ts = `// Generated by tools/build-map-data.mjs from world-atlas 2.0.2 (Natural Earth, public domain; ISC licence): ${about},
+// ${lon0}-${lon1} E and ${lat0}-${lat1} N, equirectangular at ${latTrue} N, 1000 x ${H}. Do not edit: rebuild with \`npm run data\`.
+export interface MapShape { id: string; name: string; d: string; }
+export const ${constName}_VIEWBOX = { width: 1000, height: ${H} };
+export const ${constName}_PROJECTION = ${JSON.stringify({ lon0: P.lon0, lat1: P.lat1, cos: Math.round(P.cos * 1e6) / 1e6, k: Math.round(P.k * 1e4) / 1e4 })};
+export const ${constName}: MapShape[] = ${JSON.stringify(shapes)};
+${extra ? extra(proj) : ''}`;
+  fs.writeFileSync(path.join(out, name + '.ts'), ts);
+  console.log(`map data: ${shapes.length} countries on the map of ${about}, ${(ts.length / 1024).toFixed(0)} KB -> src/main/ts/generated/${name}.ts`);
 }
-const gts = `// Generated by tools/build-map-data.mjs from world-atlas 2.0.2 (Natural Earth 1:10m, public domain; ISC licence): the
-// Gulf, ${G.lon0}-${G.lon1} E and ${G.lat0}-${G.lat1} N, equirectangular at 26.5 N, 1000 x ${GULF_H}. Do not edit: rebuild with \`npm run data\`.
-export interface GulfShape { id: string; name: string; d: string; }
-export const GULF_VIEWBOX = { width: 1000, height: ${GULF_H} };
-export const GULF_PROJECTION = ${JSON.stringify({ lon0: G.lon0, lat1: G.lat1, cos: Math.round(G.cos * 1e6) / 1e6, k: Math.round(G.k * 1e4) / 1e4 })};
-export const GULF: GulfShape[] = ${JSON.stringify(gulf)};
-`;
-fs.writeFileSync(path.join(out, 'gulf.ts'), gts);
-console.log(`map data: ${gulf.length} countries on the Gulf map, ${(gts.length / 1024).toFixed(0)} KB -> src/main/ts/generated/gulf.ts`);
+
+// the Gulf, from Kuwait to the Gulf of Oman, at 1:10m so the strait's islands show
+regional({ name: 'gulf', constName: 'GULF', file: 'countries-10m.json', lon0: 47, lon1: 61.5, lat0: 22.5, lat1: 30.8, latTrue: 26.5, thin: 1.1, about: 'the Gulf' });
+
+// the Western Pacific (Island Chain's theatre, cut to the first and second island chains), at 1:50m
+regional({ name: 'pacific', constName: 'PACIFIC', file: 'countries-50m.json', lon0: 105, lon1: 150, lat0: 5, lat1: 42, latTrue: 24, thin: 0.9, about: 'the Western Pacific' });
+
+// the Taiwan Strait, at 1:10m, with Taiwan's 25 sectors from Island Chain (tools/data/taiwan-sectors.json, decoded from its map data)
+const sectors = JSON.parse(fs.readFileSync(path.join(root, 'tools/data/taiwan-sectors.json'), 'utf8')).sectors;
+regional({ name: 'strait', constName: 'STRAIT', file: 'countries-10m.json', lon0: 117, lon1: 123.4, lat0: 21.5, lat1: 26.6, latTrue: 24, thin: 0.9, about: 'the Taiwan Strait',
+  extra: proj => `export interface SectorShape { name: string; d: string; }
+export const TAIWAN_SECTORS: SectorShape[] = ${JSON.stringify(sectors.map(s => ({ name: s.name, d: pathOf([s.rings.map(r => r.map(proj))]) })))};
+` });
