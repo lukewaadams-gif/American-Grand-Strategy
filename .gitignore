@@ -4,3 +4,5 @@ target/
 *.iml
 .vscode/
 .DS_Store
+node_modules/
+mandate-web/src/main/ts/generated/

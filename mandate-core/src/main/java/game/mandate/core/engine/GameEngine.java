@@ -737,6 +737,10 @@ public final class GameEngine implements WorldView {
         return electionEngine.crosstabs(w.election, environment(), pollSeed());
     }
     public List<game.mandate.core.campaign.PollPoint> polls() { return w.election.polls(); }
+    /** Each state's chance of going the player's way, from this week's polls and the published error model. */
+    public Map<String, Double> stateWinChances() { return electionEngine.stateWinChances(statePolls(), player().party().sign()); }
+    /** One standard deviation of the national polling error, for error bands. */
+    public double pollErrorSd() { return electionEngine.nationalPollErrorSd(); }
     public game.mandate.core.campaign.ElectionState election() { return w.election; }
     public CandidateCatalog candidates() { return candidates; }
     private long pollSeed() { return setup.seed() * 31 + w.clock.turns(); }

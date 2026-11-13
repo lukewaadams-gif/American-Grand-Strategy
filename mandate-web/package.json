@@ -1,0 +1,16 @@
+{
+  "name": "american-grand-strategy-web",
+  "private": true,
+  "type": "module",
+  "description": "The browser interface of American Grand Strategy, in TypeScript, over the Java engine compiled to JavaScript (target/preview/engine). No runtime libraries: TypeScript and the public-domain map data are build-time only.",
+  "scripts": {
+    "data": "node tools/build-map-data.mjs",
+    "build": "node tools/build-map-data.mjs && tsc -p tsconfig.json && node tools/assemble.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "us-atlas": "3.0.1",
+    "world-atlas": "2.0.2"
+  }
+}

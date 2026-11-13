@@ -60,6 +60,21 @@
                 <version>${teavm.version}</version>
                 <executions>
                     <execution>
+                        <!-- the engine alone, for the TypeScript interface (src/main/ts): one exported call(request) -->
+                        <id>engine</id>
+                        <phase>process-classes</phase>
+                        <goals><goal>compile</goal></goals>
+                        <configuration>
+                            <mainClass>game.mandate.web.api.EngineApi</mainClass>
+                            <targetDirectory>${project.build.directory}/preview/engine</targetDirectory>
+                            <targetFileName>engine.js</targetFileName>
+                            <jsModuleType>ES2015</jsModuleType>
+                            <minifying>true</minifying>
+                            <optimizationLevel>ADVANCED</optimizationLevel>
+                            <debugInformationGenerated>false</debugInformationGenerated>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>web</id>
                         <phase>process-classes</phase>
                         <goals><goal>compile</goal></goals>

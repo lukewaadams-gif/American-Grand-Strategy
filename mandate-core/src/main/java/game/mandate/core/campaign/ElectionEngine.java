@@ -264,8 +264,10 @@ public final class ElectionEngine {
         Map<String, Double> polls = statePolls(e, env, viewSeed);
         ElectionResult projected = calculator.tally(year, polls);
         Snapshot now = snapshot(e, env);
+        Map<String, Double> seen = new java.util.TreeMap<>();
+        polls.forEach((k, v) -> seen.put(k, Math.round(v * 100) / 100.0));
         PollPoint point = new PollPoint(date, projected.popularMargin() * sign, projected.electoralVotes(e.player.party()),
-                winChance(polls, sign), projected.tippingPoint(), movers(e, before, now, polls));
+                winChance(polls, sign), projected.tippingPoint(), movers(e, before, now, polls), seen);
         e.polls.add(point);
         e.lastSnapshot = now;
         return point;
@@ -295,6 +297,30 @@ public final class ElectionEngine {
         }
         return total / weights;
     }
+
+    /**
+     * Each state's chance of going the player's way, from the polls alone and the same published error model as
+     * {@link #winChance}: the national error (with the polling miss), scaled by the state's elasticity, integrated on
+     * the same grid, plus the state's own error. It reads only the polls the player sees.
+     */
+    public Map<String, Double> stateWinChances(Map<String, Double> polls, int sign) {
+        double nationalSd = Math.hypot(p.nationalErrorSd(), p.pollMissSd()), stateSd = Math.hypot(p.stateErrorSd(), p.statePollNoise());
+        int n = p.forecastGrid();
+        Map<String, Double> out = new java.util.TreeMap<>();
+        for (UsState s : states.all()) {
+            double total = 0, weights = 0;
+            for (int i = 0; i < n; i++) {
+                double z = -4.0 + 8.0 * i / (n - 1), w = Math.exp(-0.5 * z * z);
+                total += w * phi((polls.get(s.code()) + z * nationalSd * s.elasticity()) * sign / stateSd);
+                weights += w;
+            }
+            out.put(s.code(), total / weights);
+        }
+        return out;
+    }
+
+    /** The typical error of a national polling average against the result (one standard deviation, points). */
+    public double nationalPollErrorSd() { return Math.hypot(p.nationalErrorSd(), p.pollMissSd()); }
 
     /** Standard normal CDF (Abramowitz and Stegun 7.1.26; error below 2e-7). */
     static double phi(double x) {
