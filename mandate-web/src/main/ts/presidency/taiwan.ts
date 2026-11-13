@@ -267,7 +267,7 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
         ? h('p', null, h('strong', null, 'China’s plan: '), PLAN_LABEL[v.china.plan] ?? v.china.plan, '.')
         : h('div', null, h('p', { class: 'small' }, 'China’s most likely course, as the analysts weigh it:'),
           h('dl', { class: 'ww-stats' }, ...w.plans.flatMap(p => [h('dt', null, PLAN_LABEL[p.plan] ?? p.plan), h('dd', null, meter(p.share * 100, 100, `${PLAN_LABEL[p.plan] ?? p.plan}: ${pct(p.share)}`, '', pct(p.share)))]))),
-      w.indicators.length ? h('ul', { class: 'hz-log tw-indicators' }, ...w.indicators.map(x => h('li', null, `Day ${x.day}: ${x.text}`, h('span', { class: 'muted small' }, ` (${x.confidence >= 0.7 ? 'high' : x.confidence >= 0.4 ? 'moderate' : 'low'} confidence${x.cover ? '; an exercise may explain it' : ''})`))))
+      w.indicators.length ? h('ul', { class: 'hz-log tw-indicators', tabindex: '0', 'aria-label': 'Indicators of preparations, newest first' }, ...w.indicators.map(x => h('li', null, `Day ${x.day}: ${x.text}`, h('span', { class: 'muted small' }, ` (${x.confidence >= 0.7 ? 'high' : x.confidence >= 0.4 ? 'moderate' : 'low'} confidence${x.cover ? '; an exercise may explain it' : ''})`))))
         : h('p', { class: 'muted small' }, 'No indicators of preparations yet.'),
       h('p', { class: 'muted small' }, 'Indicators come from the preparations China cannot hide: ferries requisitioned, brigades embarking, submarines leaving port. Exercises give cover, and some reports are planted.'));
   }
@@ -418,9 +418,9 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
           h('td', null, num(l.killed)), h('td', null, l.ships + (l.carriers ? ` (${l.carriers} ${l.carriers === 1 ? 'carrier' : 'carriers'})` : '') + (l.amphibious ? ` (${l.amphibious} amphibious)` : '')),
           h('td', null, String(l.aircraft))))))
         : h('p', { class: 'muted small' }, 'No shots fired.'),
-      v.sitrep.length ? h('div', null, h('h4', { class: 'tw-sub' }, 'This turn'), h('ul', { class: 'hz-log' }, ...v.sitrep.slice(0, 10).map(l => h('li', null, l)))) : null,
+      v.sitrep.length ? h('div', null, h('h4', { class: 'tw-sub' }, 'This turn'), h('ul', { class: 'hz-log', tabindex: '0', 'aria-label': 'This turn' }, ...v.sitrep.slice(0, 10).map(l => h('li', null, l)))) : null,
       h('h4', { class: 'tw-sub' }, 'The log'),
-      h('ul', { class: 'hz-log' }, ...v.log.slice(0, 14).map(l => h('li', null, l))));
+      h('ul', { class: 'hz-log', tabindex: '0', 'aria-label': 'The log, newest first' }, ...v.log.slice(0, 14).map(l => h('li', null, l))));
   }
 
   draw();

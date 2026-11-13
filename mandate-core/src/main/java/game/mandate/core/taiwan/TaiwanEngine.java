@@ -1,6 +1,7 @@
 package game.mandate.core.taiwan;
 
 import game.mandate.core.campaign.Issue;
+import game.mandate.core.data.Fmt;
 import game.mandate.core.diplomacy.HotSpot;
 import game.mandate.core.effects.Effect;
 import game.mandate.core.news.News;
@@ -493,9 +494,37 @@ public final class TaiwanEngine {
             int cut = line.indexOf(":00 - ");
             said.add(cut >= 0 ? line.substring(cut + 6) : line);
         }
-        s.message = said.isEmpty() ? "Ordered." : String.join(" ", said);
+        s.message = said.isEmpty() ? describe(o) : String.join(" ", said);
         return out;
     }
+
+    /** What a directive does, in a sentence, for the crisis room when the order itself logs nothing. */
+    String describe(TaiwanOrder o) {
+        return switch (o) {
+            case TaiwanOrder.Rung x -> "The rules of engagement are now: " + TaiwanState.BLUE_RUNG[Math.max(0, Math.min(6, x.rung()))].toLowerCase(java.util.Locale.ROOT) + ".";
+            case TaiwanOrder.Mainland x -> pick(x.level(), "No strikes on the mainland.",
+                    "Limited strikes on the mainland are authorised: ports, embarkation areas, air bases and coastal launchers.",
+                    "Broad strikes on the mainland are authorised: missile forces, radars and command.");
+            case TaiwanOrder.Fleet x -> pick(x.posture(), "The carriers move forward, into the western Philippine Sea.",
+                    "The carriers stand off in the northern and central Philippine Sea.", "The carriers withdraw toward Guam.",
+                    "Where the carriers go is the commander's choice.");
+            case TaiwanOrder.Submarines x -> pick(x.focus(), "The attack submarines go into the Taiwan Strait, after the amphibious fleet.",
+                    "The attack submarines guard the approaches and the chokepoints.", "The attack submarines blockade China's trade from a distance.",
+                    "Where the submarines patrol is the commander's choice.");
+            case TaiwanOrder.MunitionsPolicy x -> pick(x.level(), "Conserve munitions: smaller salvos, and a quarter of the long-range anti-ship missiles and SM-6s kept back.",
+                    "Munitions are fired as the staff plans.", "Surge: whole squadrons fire, and the stocks are spent now.");
+            case TaiwanOrder.AirPriority x -> Fmt.format("The strike fighters are divided: %.0f%% against ships, %.0f%% against the mainland, %.0f%% over Taiwan, %.0f%% guarding the fleet.",
+                    x.antiShip() * 100, x.mainland() * 100, x.taiwanCap() * 100, x.fleetDefence() * 100);
+            case TaiwanOrder.Convoys x -> x.on() ? "Escorts will shepherd the shipping to Taiwan." : "The convoys are stood down.";
+            case TaiwanOrder.AllyRole x -> "The staff will ask " + countryName(x.country()) + " for " + pick(x.role(), "access and overflight", "basing", "the defence of its own territory", "full combat") + ".";
+            case TaiwanOrder.Nuclear x -> "Nuclear posture: " + TaiwanState.ALERT[Math.max(0, Math.min(3, x.alert()))].toLowerCase(java.util.Locale.ROOT) + ".";
+            default -> "Ordered.";
+        };
+    }
+
+    private String countryName(String id) { int i = data.country(id); return i < 0 ? id : data.countries.get(i).name(); }
+
+    private static String pick(int i, String... options) { return options[Math.max(0, Math.min(options.length - 1, i))]; }
 
     /** The key under which a directive is held from the staff, or null for a one-time decision. */
     static String heldKey(TaiwanOrder o) {

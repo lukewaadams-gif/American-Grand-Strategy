@@ -465,7 +465,11 @@ function openSpot(id: SpotId, v: PresidencyView): void {
 
 document.addEventListener('keydown', e => {
   if (!active) return;
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); closeMenu(false); if (!document.querySelector('.scrim')) endTurn(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault(); closeMenu(false);
+    const next = document.querySelector<HTMLButtonElement>('.scrim .hz-next');   // in a crisis room, its own Next
+    if (next) next.click(); else if (!document.querySelector('.scrim')) endTurn();
+  }
   else if (e.key === 'Escape' && !menuOpen()) {
     if (document.querySelector('.cal-map.picking') && cancelCalendarPick()) { openCalendar(); return; }
     if (document.querySelector('.scrim')) host.close();
