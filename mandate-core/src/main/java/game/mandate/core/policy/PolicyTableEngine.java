@@ -53,6 +53,12 @@ public final class PolicyTableEngine {
     public Moved move(PolicyTableState s, String id, int steps, Route route, String law, LocalDate date, DeterministicRandomManager rng) {
         Def d = catalog.get(id);
         if (!d.can(route)) throw new IllegalArgumentException(d.name() + " cannot be changed by " + route.name().toLowerCase());
+        return moveAnyway(s, d, steps, route, law, date, rng);
+    }
+
+    /** A move without the route check: a law Congress passed can change what the president's own channels cannot. */
+    private Moved moveAnyway(PolicyTableState s, Def d, int steps, Route route, String law, LocalDate date, DeterministicRandomManager rng) {
+        String id = d.id();
         int level = s.level(id), reach = reach(route);
         int target = Math.max(0, Math.min(d.top(), level + Math.max(-reach, Math.min(reach, steps))));
         int n = target - level, sign = Integer.signum(n);
@@ -73,6 +79,45 @@ public final class PolicyTableEngine {
             effects.add(new Effect.Approval(reaction(d, n, route)));
         }
         return new Moved(effects, moves);
+    }
+
+    /**
+     * A bill becomes law: each of its policy steps, its money and other channels scaled, a pay-for offsetting part of its
+     * cost, and the public's reaction summed. Returns the effects and the reaction (approval points, before scaling to
+     * a lasting share).
+     */
+    public record Passed(List<Effect> effects, List<Move> moves, double reaction, double cost) {}
+
+    public Passed enactBill(PolicyTableState s, Effect.LawPassed law, LocalDate date, DeterministicRandomManager rng) {
+        List<Effect> effects = new ArrayList<>();
+        List<Move> moves = new ArrayList<>();
+        double reaction = 0, cost = 0;
+        for (Map.Entry<String, Integer> e : catalog.bill(law.billId()).entrySet()) {
+            Moved m = moveAnyway(s, catalog.get(e.getKey()), e.getValue(), Route.BILL, law.law(), date, rng);
+            moves.addAll(m.moves());
+            for (Effect x : m.effects()) {
+                if (x instanceof Effect.Approval a) { reaction += a.points(); continue; }
+                Effect.PolicyStep p = (Effect.PolicyStep) x;
+                double[] ch = p.channels().clone();
+                for (int i = 0; i < ch.length; i++) ch[i] *= law.channelScale();
+                Effect.PolicyStep scaled = new Effect.PolicyStep(p.id(), p.label(), p.fiscalClass(), p.pctGdp() * law.moneyScale(), p.phase(), p.lagWeeks(),
+                        p.draw(), ch);
+                cost += scaled.pctGdp();
+                effects.add(scaled);
+            }
+        }
+        // the pay-for: taxes on the wealthy and corporations, or cuts elsewhere, cover part of what the bill adds
+        double share = switch (law.payFor()) { case "REVENUE" -> 0.8; case "CUTS" -> 0.7; default -> 0; };
+        if (cost > 0 && share > 0) {
+            boolean revenue = law.payFor().equals("REVENUE");
+            double[] ch = new double[Channel.COUNT];
+            if (revenue) ch[Channel.USER_COST.ordinal()] = 1.5 * cost * share / 0.3;   // about 1.5% on the cost of capital per 0.3% of GDP raised
+            effects.add(new Effect.PolicyStep(law.billId() + "@" + date + "-payfor", law.law() + ": " + (revenue ? "taxes on the wealthy and corporations" : "cuts elsewhere"),
+                    revenue ? FiscalClass.TAX_HIGH : FiscalClass.PURCHASES, -cost * share, new double[]{1}, 13, 1, ch));
+            cost -= cost * share;
+        }
+        reaction *= law.moneyScale();
+        return new Passed(effects, moves, Math.max(-5, Math.min(5, reaction)), cost);
     }
 
     /** Resolute Desk's public reaction to a move: support against an even split, more for a signature policy, capped at 5 points. */

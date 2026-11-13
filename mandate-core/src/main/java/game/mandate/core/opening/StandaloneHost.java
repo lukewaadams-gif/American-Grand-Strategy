@@ -60,6 +60,9 @@ final class StandaloneHost implements Host {
     private final DiplomacyState diplomacy;
     private final CongressState congress;
     private final PolicyState policy;
+    private final game.mandate.core.policy.PolicyTableEngine policyTableEngine = new game.mandate.core.policy.PolicyTableEngine(
+            game.mandate.core.policy.PolicyCatalog.shared(), EconomyParams.from(tuning).nominalGdp());
+    private final game.mandate.core.policy.PolicyTableState policyTable = policyTableEngine.newTable();
     private final GovernmentState government;
 
     StandaloneHost(OpeningSetup setup, int weeks, LocalDate start) {
@@ -134,6 +137,11 @@ final class StandaloneHost implements Host {
             case Effect.FedPressure x -> economyEngine.apply(economy, budget, x);
             case Effect.OilRelease x -> economyEngine.apply(economy, budget, x);
             case Effect.PolicyStep x -> economyEngine.apply(economy, budget, x);
+            case Effect.LawPassed x -> {
+                var passed = policyTableEngine.enactBill(policyTable, x, start, rng());
+                for (Effect y : passed.effects()) dispatch(cause, y);
+                if (x.react() && passed.reaction() != 0) dispatch(cause, new Effect.Approval(passed.reaction()));
+            }
             case Effect.Tension x -> diplomacyEngine.apply(diplomacy, x);
             case Effect.Deterrence x -> diplomacyEngine.apply(diplomacy, x);
             case Effect.WarEnded x -> diplomacyEngine.apply(diplomacy, x);

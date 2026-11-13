@@ -307,6 +307,19 @@ public final class GameEngine implements WorldView {
             case Effect.FedPressure x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
             case Effect.OilRelease x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
             case Effect.PolicyStep x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
+            case Effect.LawPassed x -> {
+                if (governing) {
+                    PolicyTableEngine.Passed passed = policyTableEngine.enactBill(w.policyTable, x, date(), rng);
+                    w.ledger.record(decisionId, date(), cause, "policy", x.describe());
+                    dispatchAll(decisionId, cause, passed.effects());
+                    if (x.react() && passed.reaction() != 0) {
+                        dispatch(decisionId, cause, new Effect.Approval(passed.reaction()));
+                        if (x.lastingShare() != 0) dispatch(decisionId, cause, new Effect.CoalitionApproval(Coalition.SWING, x.lastingShare() * passed.reaction(), true));
+                    }
+                    return;
+                }
+                owner = "none";
+            }
             case Effect.CampaignSwing x -> owner = electionEngine.apply(w.election, x) ? "election" : "none";
             case Effect.Cash x -> owner = electionEngine.apply(w.election, x) ? "election" : "none";
             case Effect.Tension x -> owner = diplomacyEngine.apply(w.diplomacy, x) ? "diplomacy" : "none";

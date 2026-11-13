@@ -46,6 +46,17 @@ public sealed interface Effect {
         public String describe() { return "Policy: " + label; }
     }
 
+    /**
+     * A bill became law: the policy table makes its steps (data/bill_policies.tsv). Its money is scaled by
+     * {@code moneyScale} and its other channels by {@code channelScale} (a smaller or watered-down bill does less). A
+     * pay-for offsets part of its cost (BORROW, REVENUE or CUTS). With {@code react}, the public reacts as Resolute Desk's
+     * rule says, and {@code lastingShare} of that reaction stays with the swing voters.
+     */
+    record LawPassed(String billId, String law, double moneyScale, double channelScale, String payFor, boolean react, double lastingShare)
+            implements Effect {
+        public String describe() { return "Law: " + law; }
+    }
+
     /** Campaign-season shift of the national margin toward the player's party (negative = away). */
     record CampaignSwing(double points) implements Effect {
         public String describe() { return signed("National polls (you)", points); }

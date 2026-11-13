@@ -82,6 +82,7 @@ public final class AutoPilot {
                 case Effect.EconomyShock s -> s.growthPoints() - s.inflationPoints();
                 case Effect.Deficit d -> -d.pctGdp() * 3;
                 case Effect.PolicyStep p -> -p.pctGdp() * 3;
+                case Effect.LawPassed l -> 1;
                 case Effect.Salience s -> 0;
                 case Effect.CoalitionApproval c -> c.points() * 0.34;
                 case Effect.Goodwill gw -> gw.delta() / 10;

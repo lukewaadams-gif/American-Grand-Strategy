@@ -1,0 +1,20 @@
+# Which policy steps each of this game's bills makes on Resolute Desk's policy table (docs/ECONOMY_MODEL.md, "Laws,
+# orders, rules and budgets"): policy=steps, up if positive. A bill moves a policy at most two steps. What the bill
+# does to the economy, the budget and the other outcomes is then what those steps do (data/policy_scores.tsv).
+bill	policies	note
+lower_costs	child_care=1 drug_prices=1	Child care costs and Medicare's drug negotiation, as the title says
+public_option	public_option=1	A public plan beside private insurance
+billionaire_tax	wealth_tax=1	A minimum tax on the largest fortunes
+clean_energy	grid=1 transit=1 nuclear=1 fast_rail=1	The clean-energy tax credits are already at their largest; the buildout is transmission, transit, rail and nuclear
+voting_rights	voting_access=1	Voting access
+tax_cut	mid_rates=1 tips_tax=1	Lower middle-class rates and no tax on tips and overtime
+border_security	border=1 e_verify=1 imm_courts=1	Agents and barriers, mandatory E-Verify and more immigration judges
+energy_dominance	drilling=1 pipelines=1 lng=1	Wider leasing, faster pipeline permits and more gas exports
+school_choice	school_choice=1	School choice
+spending_cuts	caps=1	Hard caps on discretionary spending
+housing	zoning=2 lihtc=1	Grants for local building reform, strings on highway money, and more of the low-income housing credit
+chips_china	chips=1 export_controls=1	More chip-plant subsidies and stricter export controls
+ai_safety	ai_safety=1	Required safety testing for advanced AI
+infrastructure	highways=1 transit=1 broadband=1 lead_pipes=1	Roads and bridges, transit, rural broadband and lead pipes
+immigration_deal	legalization=1 dreamers=1 border=1 skilled_visas=1 e_verify=1	The 2013 Senate bill's shape: legal status and a path for Dreamers, with border money, skilled visas and E-Verify
+social_security	payroll_cap=1 ret_age=1 ss_benefits=1	Tax earnings above the cap, raise the retirement age, and raise benefits for low earners

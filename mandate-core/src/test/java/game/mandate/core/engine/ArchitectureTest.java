@@ -91,4 +91,21 @@ class ArchitectureTest {
         }
         assertTrue(bad.isEmpty(), "mutable statics: " + bad);
     }
+
+    /** Every data file the core reads is embedded in the browser build (TeaVM's resources), or the browser fails at load. */
+    @Test
+    void everyDataFileIsEmbeddedForTheBrowser() throws IOException {
+        Path resources = Path.of("../mandate-web/src/main/java/game/mandate/web/DataResources.java");
+        if (!Files.exists(resources)) return;
+        String embedded = Files.readString(resources);
+        Pattern data = Pattern.compile("\"/data/([A-Za-z0-9_/.]+)\"");
+        List<String> missing = new ArrayList<>();
+        try (Stream<Path> files = Files.walk(Path.of("src/main/java"))) {
+            for (Path f : files.filter(x -> x.toString().endsWith(".java")).toList()) {
+                Matcher m = data.matcher(Files.readString(f));
+                while (m.find()) if (!embedded.contains("\"" + m.group(1) + "\"")) missing.add(m.group(1) + " (" + f.getFileName() + ")");
+            }
+        }
+        assertTrue(missing.isEmpty(), "not embedded for the browser: " + missing);
+    }
 }

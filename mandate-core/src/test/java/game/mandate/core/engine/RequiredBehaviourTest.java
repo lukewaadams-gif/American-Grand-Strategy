@@ -85,7 +85,9 @@ class RequiredBehaviourTest {
             GameEngine withLaw = SaveManager.load(SaveManager.save(base)), without = SaveManager.load(SaveManager.save(base));
             withLaw.apply(new Command.PushBill(bill, route, 20));
             if (!withLaw.laws().contains(bill)) continue;
-            for (int wk = 0; wk < 26; wk++) {            // six months of weekly turns
+            // two years of weekly turns: a law's money starts after a quarter and phases in by year (infrastructure
+            // spends about a fifth of its money in the first year), and the economy takes months to respond
+            for (int wk = 0; wk < 104; wk++) {
                 answerAll(withLaw, 0); withLaw.apply(new Command.EndTurn());
                 answerAll(without, 0); without.apply(new Command.EndTurn());
             }

@@ -63,6 +63,8 @@ public final class PolicyCatalog {
     private static final PolicyCatalog SHARED = new PolicyCatalog();
 
     private final Map<String, Def> defs = new LinkedHashMap<>();
+    /** This game's bills as policy steps: bill id, then policy id to steps. */
+    private final Map<String, Map<String, Integer>> bills = new LinkedHashMap<>();
 
     /** The table, read once. */
     public static PolicyCatalog shared() { return SHARED; }
@@ -77,7 +79,21 @@ public final class PolicyCatalog {
             defs.put(d.id(), d);
         }
         if (!scores.isEmpty()) throw new IllegalStateException("Scores for policies that do not exist: " + scores.keySet());
+        for (String[] r : Csv.readTsv("/data/bill_policies.tsv")) {
+            Map<String, Integer> steps = new LinkedHashMap<>();
+            for (String kv : r[1].trim().split(" ")) {
+                String id = kv.split("=")[0];
+                if (!defs.containsKey(id)) throw new IllegalStateException(r[0] + ": no policy " + id);
+                steps.put(id, Integer.parseInt(kv.split("=")[1]));
+            }
+            bills.put(r[0], Collections.unmodifiableMap(steps));
+        }
     }
+
+    /** The policy steps a bill makes (policy id to steps), or none if the bill is not on the table. */
+    public Map<String, Integer> bill(String billId) { return bills.getOrDefault(billId, Map.of()); }
+
+    public java.util.Set<String> bills() { return Collections.unmodifiableSet(bills.keySet()); }
 
     private static Def def(String[] t, String[] s) {
         List<String> levels = List.of(t[3].split(";"));

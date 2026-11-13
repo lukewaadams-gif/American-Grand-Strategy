@@ -408,6 +408,27 @@ The minimum wage and zoning targets need the policy table (step 3) and are teste
 | The same law scores higher in a slump | The child credit adds 0.27% to output after a year in a slump, 0.15% at full employment |
 | The public's reaction (Resolute Desk's rule) | Two steps of the minimum wage by law: +4.8 points |
 
+## Step 4 as built: bills onto the table (13 November 2026)
+
+- **Each of this game's 16 bills is the policy steps it makes** (`data/bill_policies.tsv`, with a note on each). For example:
+  - the Build More Homes Act: two steps of building incentives (grants, then strings on highway money) and one of the low-income housing credit;
+  - the Middle-Class Tax Cut Extension: lower middle brackets, and no tax on tips and overtime;
+  - the immigration compromise has the 2013 Senate bill's shape: legal status, a path for Dreamers, border money, skilled visas and E-Verify.
+- **A law** now sends one `LawPassed` effect; the game engine moves the table and routes each step. This replaces the old growth impulse and bare deficit.
+  - **Governing pushes:** the strategy's payoff scales the steps' money and channels, since a bill moved toward the centre does less.
+  - **The hundred days' flagship:** its size and passage scale the money. The Treasury secretary's competence also scales the other channels.
+  - **Pay-fors:** taxes on the wealthy and corporations cover 80% of a bill's added cost, raising the cost of capital a little. Cuts elsewhere cover 70%. These are the hundred days' existing shares.
+  - A law can move a policy that Resolute Desk lists as order-or-rule only (export controls, gas exports), since Congress can legislate either.
+- **The public's reaction** is Resolute Desk's rule, summed over the steps and scaled with the money, with the same lasting share for swing voters as before. It replaces the bills' `public_appeal`, and delivering an agenda item still earns its point. In the hundred days, the flagship's existing coalition reactions remain its politics.
+- **Tests:**
+  - every bill's steps can be made from 2029;
+  - pay-fors cover their shares;
+  - the reaction is Resolute Desk's;
+  - in a real game, the Build More Homes Act raises housing starts two years on;
+  - a test checks that every data file the core reads is embedded for the browser (parity caught one that was not).
+- **Over 14 full autopilot terms:** the president was re-elected in 6 (4 before this step); terms without a recession end with approval at 47–53.
+- **Still on the old columns:** bills.csv's `deficit_pct_gdp` still prices a bill under debate (the markets' "pending deficit") and the hundred days' design screen, and its impulses guide the autopilot's choices. The screens in step 5 show the table's score instead.
+
 ## What changes elsewhere
 
 - **The economy engine is rewritten.** Its interface stays: the weekly step, the Fed's meetings, the jobs and inflation reports, gas and the deficit. So the hundred days, the governing week and the campaign keep working.

@@ -293,9 +293,11 @@ public class HundredDays {
         double payoff = st.reconciliation ? 0.85 : 1.0;
         double impl = 0.6 + 0.4 * competence(Post.TREASURY) / 100.0;
         st.policyDelivered = st.size.value * payoff;
-        double deficit = billDeficit();
-        deficit(deficit);
-        dispatch(new Effect.EconomyShock(billGrowth() * impl, h.flagship().inflationImpulse() * st.size.growthFactor, 12));
+        // the policy table makes the flagship's steps, scaled by its size and how it passed; the hundred days' own
+        // politics (below) are the public's reaction
+        double before = h.budget().policyDeficit();
+        dispatch(new Effect.LawPassed(h.flagship().id(), h.flagship().name(), st.size.deficitFactor * payoff, st.size.growthFactor * payoff * impl,
+                st.payFor.name(), false, 0));
         opinion(Coalition.BASE, 2.0 * st.size.value);
         opinion(Coalition.SWING, 1.2 * st.size.value * impl - (st.payFor == PayFor.CUTS ? 1.5 : 0) + (st.payFor == PayFor.REVENUE ? 0.5 : 0));
         lasting(Coalition.BASE, 1.5 * st.policyDelivered);
@@ -304,7 +306,8 @@ public class HundredDays {
         capital(6);
         dispatch(h.congressEngine().recordLaw(h.congress(), h.policy(), h.flagship(), weekStart(st.week),
                 st.reconciliation ? LegislativeStrategy.RECONCILIATION : LegislativeStrategy.PARTY_LINE, payoff));
-        consequence(Fmt.format("You sign the %s. Deficit %+.2f%% of GDP; implementation quality %.0f%% (Treasury).", billName(), deficit, impl * 100));
+        consequence(Fmt.format("You sign the %s. Deficit %+.2f%% of GDP; implementation quality %.0f%% (Treasury).", billName(),
+                h.budget().policyDeficit() - before, impl * 100));
     }
 
     // ---- cabinet ---------------------------------------------------------------------------------

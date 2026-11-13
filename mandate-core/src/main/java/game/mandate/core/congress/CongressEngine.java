@@ -22,7 +22,6 @@ public final class CongressEngine {
     private final double agendaCapital, courtBlockChance, passCapital, failCapital, failApproval, lastingShare, lawSalience;
     private final double goodwillDeal, goodwillPartyLine, goodwillReconciliation, goodwillOrder;
     private final double moodDealBase, moodDealModerate, moodPartyLineBase, moodOrderBase, moodOtherAgenda;
-    private final int economicMonths;
 
     public CongressEngine(Tuning t) {
         this.votes = new VoteModel(VoteParams.from(t));
@@ -42,7 +41,6 @@ public final class CongressEngine {
         moodPartyLineBase = t.d("congress.mood.partyLineBase");
         moodOrderBase = t.d("congress.mood.orderBase");
         moodOtherAgenda = t.d("congress.mood.otherAgendaBase");
-        economicMonths = t.i("congress.economicMonths");
     }
 
     public VoteModel votes() { return votes; }
@@ -171,15 +169,19 @@ public final class CongressEngine {
         return new Effect.Salience(b.issue(), lawSalience);
     }
 
+    /**
+     * A law: the policy table makes its steps (the economy, the budget and the public's reaction follow from them,
+     * scaled by how much of the bill survived), plus credit for delivering an agenda item.
+     */
     private List<Effect> enact(PolicyState policy, Bill b, LegislativeStrategy s, LegislativeContext ctx, LocalDate date) {
         double k = s.payoff();
         policy.enacted.add(new PolicyState.Enacted(b.id(), date, s, k));
         List<Effect> out = new ArrayList<>();
-        double appeal = b.publicAppeal() * k + (ctx.agendaItem() ? 1.0 : 0);
-        out.add(new Effect.Approval(appeal));
-        out.add(new Effect.CoalitionApproval(Coalition.SWING, lastingShare * appeal, true));
-        out.add(new Effect.EconomyShock(b.growthImpulse() * k, b.inflationImpulse() * k, economicMonths));
-        out.add(new Effect.Deficit(b.deficitPctGdp() * k));
+        out.add(new Effect.LawPassed(b.id(), b.name(), k, k, "BORROW", true, lastingShare));
+        if (ctx.agendaItem()) {
+            out.add(new Effect.Approval(1.0));
+            out.add(new Effect.CoalitionApproval(Coalition.SWING, lastingShare, true));
+        }
         out.add(new Effect.Salience(b.issue(), lawSalience));
         return out;
     }
