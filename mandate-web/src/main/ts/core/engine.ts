@@ -1,6 +1,6 @@
 // The engine: the Java simulation compiled to JavaScript (target/preview/engine/engine.js), behind one call that
 // takes and returns JSON. Everything the interface shows comes from its view models; everything it does is a command.
-import type { CabinetView, HillView, WestWingView, WwPerson, PressView, ResidenceView, TermsView, VerdictView, SitRoomView, ForeignCountryView, HormuzView, TaiwanView, TransitionView, CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView, ScoreView } from './types.js';
+import type { CabinetView, HillView, WestWingView, WwPerson, PressView, ResidenceView, TermsView, VerdictView, SitRoomView, ForeignCountryView, HormuzView, TaiwanView, ElectionNightView, TransitionView, CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView, ScoreView } from './types.js';
 import type { NewGame, StartOptions } from '../start.js';
 
 interface EngineModule { call(request: string): string; }
@@ -57,6 +57,7 @@ export const engine = {
   sitRoom(): SitRoomView { return request<SitRoomView>({ op: 'view', name: 'sitroom' }); },
   hormuz(): HormuzView { return request<HormuzView>({ op: 'view', name: 'hormuz' }); },
   taiwan(): TaiwanView { return request<TaiwanView>({ op: 'view', name: 'taiwan' }); },
+  electionNight(): ElectionNightView { return request<ElectionNightView>({ op: 'view', name: 'electionNight' }); },
   /** Island Chain on its own (docs/ISLAND_CHAIN.md): a crisis without a presidency, as America or as China. */
   islandChain: {
     start(o: { year: number; preset: number; side: 'US' | 'PRC' }): void { request({ op: 'islandChain', action: 'start', seed: Math.floor(Math.random() * 1e9), ...o }); },

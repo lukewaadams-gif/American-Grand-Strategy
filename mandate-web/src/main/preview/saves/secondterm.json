@@ -91,6 +91,9 @@
     }, {
       "type": "EndTurn"
     }, {
+      "type": "ElectionNightSeen",
+      "year": 2028
+    }, {
       "type": "SetAgenda",
       "bills": ["chips_china", "immigration_deal", "social_security"]
     }, {
@@ -1071,6 +1074,9 @@
         "what": "pardons",
         "on": false
       }
+    }, {
+      "type": "ElectionNightSeen",
+      "year": 2032
     }],
   "world": {
     "clock": {
@@ -10119,6 +10125,7 @@
     "hormuz": null,
     "taiwan": null,
     "taiwanEscalated": false,
+    "electionNightSeen": 2032,
     "news": [{
         "date": "2030-01-13",
         "kind": "INFO",
@@ -15130,9 +15137,9 @@
         "detail": [2.48, 3.14, 2.83, -5.1, 3.32, 0.77, 2.74, 1.41, 48.83, 121.98, 102.02, 103.47, 98.2, 97.54, 9763.6, 97.98, 89.26, 5.92, 62.61, -0.23, 2.0, 17.74, 25.98, 4.12, 111.32]
       }],
     "midtermsHeld": true,
-    "inaugurationCommand": 36,
+    "inaugurationCommand": 37,
     "legacy": null,
-    "commandsApplied": 393
+    "commandsApplied": 395
   },
   "random": {
     "ai.debate": "1554653459016625499",

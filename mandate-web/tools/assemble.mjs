@@ -15,7 +15,9 @@ for (const need of ['engine/engine.js', 'app/main.js', 'app/presidency-main.js',
 // The build's identity: the engine and the sample saves must come from the same build (a save from a newer engine can
 // break an older one), so the pages fetch version.json past the cache and ask for both by it.
 const hash = crypto.createHash('sha256');
-for (const f of ['engine/engine.js', ...fs.readdirSync(path.join(out, 'saves')).sort().map(s => 'saves/' + s)])
+// (the sample saves only: files directly in saves/, not the browser checks' test saves under saves/test/)
+const saves = fs.readdirSync(path.join(out, 'saves'), { withFileTypes: true }).filter(e => e.isFile()).map(e => 'saves/' + e.name).sort();
+for (const f of ['engine/engine.js', ...saves])
   if (fs.existsSync(path.join(out, f))) hash.update(fs.readFileSync(path.join(out, f)));
 const build = hash.digest('hex').slice(0, 12);
 fs.writeFileSync(path.join(out, 'version.json'), JSON.stringify({ build }) + '\n');

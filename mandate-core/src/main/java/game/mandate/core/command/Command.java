@@ -74,4 +74,6 @@ public sealed interface Command {
     record Taiwan(game.mandate.core.taiwan.TaiwanOrder order) implements Command {}
     /** Begins a Taiwan crisis at once (a quick start): preset 0 base case, 1 optimistic, 2 pessimistic. */
     record TaiwanBegin(int preset) implements Command {}
+    /** The player has watched a presidential election night to its end (no effect on the world; the result was fixed on Election Day). */
+    record ElectionNightSeen(int year) implements Command {}
 }

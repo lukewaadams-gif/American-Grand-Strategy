@@ -84,6 +84,7 @@ public final class EngineApi {
                 case "hormuz" -> HormuzViews.room(need());
                 case "taiwan" -> TaiwanViews.room(need());
                 case "verdict" -> TermsViews.verdict(need());
+                case "electionNight" -> electionNight(need());
                 case "transition" -> TransitionViews.view(need());
                 case "residence" -> PresidencyViews.residence(need());
                 default -> throw new IllegalArgumentException("No view called " + req.get("name"));
@@ -102,7 +103,8 @@ public final class EngineApi {
     static Map<String, Object> campaign(GameEngine g) {
         Map<String, Object> v = ok();
         int sign = g.player().party().sign();
-        LocalDate day = g.phase() == Phase.REELECTION_CAMPAIGN_2032 ? g.calendar().election2032() : g.calendar().election2028();
+        boolean race2032 = g.phase() == Phase.REELECTION_CAMPAIGN_2032 || g.phase() != Phase.GENERAL_CAMPAIGN_2028 && g.latestPresidentialYear() == 2032;
+        LocalDate day = race2032 ? g.calendar().election2032() : g.calendar().election2028();
         LocalDate start = g.phase() == Phase.REELECTION_CAMPAIGN_2032 ? g.calendar().reelectionStart() : g.calendar().campaignStart();
         v.put("phase", g.phase().name());
         v.put("date", g.date().toString());
@@ -164,7 +166,8 @@ public final class EngineApi {
             v.put("ads", adsView(g));
         }
         v.put("news", news(g, 0));
-        var result = g.phase() == Phase.REELECTION_CAMPAIGN_2032 ? g.result2032() : g.result2028();
+        // the race being run, or after the vote the latest presidential election (2032's once it is held)
+        var result = g.phase() == Phase.REELECTION_CAMPAIGN_2032 ? g.result2032() : g.phase() == Phase.GENERAL_CAMPAIGN_2028 ? g.result2028() : g.latestPresidentialResult();
         result.ifPresent(r -> {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("dem", r.demElectoralVotes()); m.put("rep", r.repElectoralVotes()); m.put("popular", r2(r.popularMargin()));
@@ -177,6 +180,38 @@ public final class EngineApi {
         return v;
     }
 
+    // ---- election night: the result computed on Election Day, for the broadcast to reveal ------------------------------
+
+    static Map<String, Object> electionNight(GameEngine g) {
+        Map<String, Object> v = ok();
+        var r = g.latestPresidentialResult().orElseThrow(() -> new IllegalStateException("No presidential election has been held"));
+        int year = r.year();
+        v.put("year", year);
+        v.put("pending", g.electionNightPending() == year);
+        v.put("electionDay", (year == 2032 ? g.calendar().election2032() : g.calendar().election2028()).toString());
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("dem", r.demElectoralVotes()); m.put("rep", r.repElectoralVotes()); m.put("popular", r2(r.popularMargin()));
+        m.put("winner", r.winner().code()); m.put("tipping", r.tippingPoint());
+        v.put("result", m);
+        List<Object> states = new ArrayList<>();
+        for (UsState s : g.states().all()) {
+            Map<String, Object> x = new LinkedHashMap<>();
+            x.put("code", s.code()); x.put("name", s.name()); x.put("ev", s.electoralVotes());
+            Double margin = r.stateMargins().get(s.code());
+            x.put("margin", margin == null ? 0 : r2(margin));
+            states.add(x);
+        }
+        v.put("states", states);
+        var me = g.player(); var them = g.opponent();
+        v.put("player", Map.of("name", me.candidate().name(), "id", me.candidate().id(), "party", me.party().code()));
+        v.put("opponent", Map.of("name", them.candidate().name(), "id", them.candidate().id(), "party", them.party().code()));
+        boolean won = r.winner() == me.party();
+        v.put("won", won);
+        // what comes after the night, for the button that ends it
+        v.put("next", year == 2028 ? (won ? "transition" : "end") : (won ? "second" : "lameduck"));
+        return v;
+    }
+
     // ---- the presidency (the Oval Office's top bar and cards) --------------------------------------------------------
 
     /**
@@ -186,6 +221,7 @@ public final class EngineApi {
     static Map<String, Object> presidency(GameEngine g) {
         Map<String, Object> v = ok();
         v.put("phase", g.phase().name());
+        v.put("electionNight", g.electionNightPending());
         v.put("date", g.date().toString());
         v.put("dateLabel", Notable.date(g.date()));
         var me = g.player();

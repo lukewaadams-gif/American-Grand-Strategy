@@ -12,6 +12,7 @@ import { transitionOffice } from './presidency/transition.js';
 import { dateLong } from './presidency/oval-screen.js';
 import { startScreen } from './start.js';
 import { taiwanRoom } from './presidency/taiwan.js';
+import { electionNight } from './presidency/election-night.js';
 import { soundMenuItem } from './core/sound.js';
 
 const root = document.getElementById('app')!;
@@ -30,8 +31,10 @@ function command(c: object): boolean {
 /** Shows the screen for where the game stands. */
 function route(): void {
   leave();
-  let phase: string;
-  try { phase = engine.presidency().phase; } catch { showStart(); return; }
+  let phase: string, night = 0;
+  try { const p = engine.presidency(); phase = p.phase; night = p.electionNight; } catch { showStart(); return; }
+  // a presidential election night not yet watched always comes first, whatever the phase has moved on to
+  if (night) { body('presidency'); showElectionNight(night); return; }
   if (CAMPAIGN.includes(phase)) { body(''); mountCampaign({ onElectionOver: route, restart: showStart }); }
   else if (phase === 'TRANSITION') { body('presidency'); showTransition(); }
   else if (OFFICE.includes(phase)) { body('presidency'); mountPresidency({ onLeave: route, restart: showStart, restartLabel: 'Back to the start', menuItems: gameMenu }); }
@@ -66,6 +69,15 @@ function showStart(): void {
     islandChain: o => { try { engine.islandChain.start(o); showIslandChain(); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); } },
   }));
   document.title = 'American Grand Strategy';
+}
+
+/** Election night, then wherever the game goes from it. */
+function showElectionNight(year: number): void {
+  root.replaceChildren(electionNight({
+    view: () => engine.electionNight(),
+    done: () => { if (command({ type: 'ElectionNightSeen', year })) route(); },
+  }));
+  document.title = `Election night ${year} · American Grand Strategy`;
 }
 
 /** Island Chain on its own: the Taiwan crisis room, without a presidency around it. */

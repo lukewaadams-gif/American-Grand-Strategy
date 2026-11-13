@@ -74,6 +74,11 @@ public final class WorldState {
     TaiwanState taiwan;
     /** China escalated around Taiwan this week (a quarantine or a blockade): the week's end may open the crisis. */
     boolean taiwanEscalated;
+    /**
+     * The last presidential election whose night the player has watched (its year; 0 for none). The result is computed
+     * once, on Election Day; this records only that its broadcast has been seen, so a reload never skips or replays it.
+     */
+    int electionNightSeen;
     /** The weighed news The Capital Ledger is made from (the last 400 stories). */
     final List<News> news = new ArrayList<>();
     /** The era's stories that have already run (indexes into the ambient table). */
@@ -140,6 +145,7 @@ public final class WorldState {
         m.put("hormuz", hormuz == null ? null : hormuz.toJson());
         m.put("taiwan", taiwan == null ? null : taiwan.toJson());
         m.put("taiwanEscalated", taiwanEscalated);
+        m.put("electionNightSeen", electionNightSeen);
         List<Object> ns = new ArrayList<>();
         for (News n : news) ns.add(n.toJson());
         m.put("news", ns);
@@ -176,6 +182,7 @@ public final class WorldState {
         w.hormuz = m.get("hormuz") == null ? null : HormuzState.fromJson(Json.object(m.get("hormuz")));
         w.taiwan = m.get("taiwan") == null ? null : TaiwanState.fromJson(Json.object(m.get("taiwan")));
         w.taiwanEscalated = Boolean.TRUE.equals(m.get("taiwanEscalated"));
+        w.electionNightSeen = m.get("electionNightSeen") == null ? -1 : Json.integer(m.get("electionNightSeen"));   // -1: an older save, settled by the engine
         if (m.get("news") != null) for (Object o : Json.array(m.get("news"))) w.news.add(News.fromJson(Json.object(o)));
         if (m.get("ambientUsed") != null) for (Object o : Json.array(m.get("ambientUsed"))) w.ambientUsed.add(Json.integer(o));
         w.scheduler = EventScheduler.fromJson(Json.object(m.get("scheduler")));

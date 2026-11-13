@@ -36,21 +36,28 @@ public final class Results {
     public static void electionNight(App app) {
         GameEngine g = app.session.g();
         Theme t = Theme.get();
-        ElectionResult r = g.result2028().orElseThrow();
+        ElectionResult r = g.latestPresidentialResult().orElseThrow();
+        int year = r.year();
+        boolean second = year > 2028;
         Party me = g.player().party();
         boolean won = r.winner() == me;
+        // the night is over when the player moves on: the engine records it (ElectionNightSeen), so it is not shown again
+        Runnable seen = () -> { if (g.electionNightPending() == year) app.session.apply(new game.mandate.core.command.Command.ElectionNightSeen(year)); };
         Card c = new Card(null).stroke(won ? t.accent : t.borderStrong);
-        c.with(new Text(("Election night  ·  " + game.mandate.web.Notable.date(g.calendar().election2028())).toUpperCase(), t.bold(Theme.Size.CAPTION), t.accent),
-                Text.display(won ? "You win the presidency" : "You lose", Theme.Size.DISPLAY), Text.body(Views.resultLine(r)));
+        c.with(new Text(("Election night  ·  " + game.mandate.web.Notable.date(second ? g.calendar().election2032() : g.calendar().election2028())).toUpperCase(), t.bold(Theme.Size.CAPTION), t.accent),
+                Text.display(won ? (second ? "Four more years" : "You win the presidency") : (second ? "You lose re-election" : "You lose"), Theme.Size.DISPLAY), Text.body(Views.resultLine(r)));
         c.with(new Widgets.RaceBar(r.demElectoralVotes(), 0, r.repElectoralVotes(), g.side(Party.DEMOCRAT).candidate().name() + " (D)",
                 g.side(Party.REPUBLICAN).candidate().name() + " (R)"));
         Map<String, Double> m = r.stateMargins();
         StringBuilder close = new StringBuilder();
         for (String code : Views.closest(g, m, 8)) close.append(code).append(' ').append(Parts.margin(m.get(code))).append("   ");
         c.with(Text.eyebrow("The closest states"), Text.muted(close.toString().trim()));
-        if (won) {
+        if (second) {
+            c.with(Text.body(g.congress() + ". " + (won ? "The second term begins on January 20." : "You are president until the handoff on January 20.")));
+            c.with(Layouts.wrap(t.u(2), t.u(1), Btn.primary("Back to the Oval Office", e -> { seen.run(); app.stage.closeModal(); app.open(App.ScreenId.OVAL); })));
+        } else if (won) {
             c.with(Text.body(g.congress() + ". " + (g.unifiedGovernment() ? "Your party holds both chambers." : "Divided government.")));
-            c.with(Layouts.wrap(t.u(2), t.u(1), Btn.primary("On to the transition", e -> { app.stage.closeModal(); app.open(App.ScreenId.OVAL); })
+            c.with(Layouts.wrap(t.u(2), t.u(1), Btn.primary("On to the transition", e -> { seen.run(); app.stage.closeModal(); app.open(App.ScreenId.OVAL); })
                     .tip("Choose your agenda before Inauguration Day")));
         } else {
             c.with(Text.eyebrow("What happened"));
@@ -58,8 +65,9 @@ public final class Results {
             c.with(Layouts.wrap(t.u(2), t.u(1),
                     Btn.primary("Replay the campaign in the same world", e -> { app.stage.closeModal(); app.session.restartSameSeed(); app.startedGame(); })
                             .tip("The same opponent, polling miss and events: try a different campaign"),
-                    Btn.secondary("New game", e -> { app.stage.closeModal(); app.showNewGame(); }),
-                    Btn.quiet("Main menu", e -> { app.stage.closeModal(); app.showMenu(); })));
+                    Btn.secondary("See the results", e -> { seen.run(); app.stage.closeModal(); app.open(App.ScreenId.RESULTS); }),
+                    Btn.secondary("New game", e -> { seen.run(); app.stage.closeModal(); app.showNewGame(); }),
+                    Btn.quiet("Main menu", e -> { seen.run(); app.stage.closeModal(); app.showMenu(); })));
         }
         app.stage.showModal(c, t.u(190), true, null);
     }

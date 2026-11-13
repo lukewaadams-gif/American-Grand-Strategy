@@ -240,6 +240,8 @@ public final class ElectionEngine {
                                             boolean senateClass2028, DeterministicRandomManager rng) {
         // The hidden miss lives in the polls (they show the truth minus the miss), so the result itself carries no
         // miss term. (Until the vertical slice it was added here as well, so polls were wrong by twice the miss.)
+        // the result is computed exactly once: a second call would draw a different night from the same polls
+        if (year == 2028 ? e.result2028 != null : e.result2032 != null) throw new IllegalStateException("The " + year + " election has already been held");
         ElectionResult r = calculator.resolve(year, nationalSwing(e, env), s -> localShift(e, s), 0, rng, "election");
         if (year == 2028) e.result2028 = r; else e.result2032 = r;
         int houseD = (int) Math.round(p.houseBase() + p.housePerPoint() * r.popularMargin() + p.houseNoise() * rng.gaussian("congress.elections"));

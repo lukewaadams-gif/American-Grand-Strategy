@@ -57,7 +57,7 @@ public final class App {
     private NewGame wizard;
     private boolean advisorOpen = true;
     private final Set<String> decisionsSeen = new HashSet<>();
-    private boolean electionShown, reportShown;
+    private boolean reportShown;
     private final List<Shortcut> shortcuts = new ArrayList<>();
     /** Screen-local state that survives a rebuild (the selected state, a draft plan); cleared with each new game. */
     public final java.util.Map<String, Object> uiState = new java.util.HashMap<>();
@@ -84,7 +84,6 @@ public final class App {
     public void startedGame() {
         decisionsSeen.clear();
         uiState.clear();
-        electionShown = session.g() != null && session.g().result2028().isPresent();
         reportShown = session.g() != null && session.g().dayHundredReport().isPresent();
         view = View.GAME;
         screen = defaultScreen();
@@ -151,8 +150,9 @@ public final class App {
 
     /** Election night, day 100 and new decisions come forward on their own. */
     void announce(GameEngine g) {
-        if (!electionShown && g.result2028().isPresent()) {
-            electionShown = true;
+        // election night comes forward until it has been watched: the engine keeps that record in the save, so a reload
+        // on the night shows it again (it used to be skipped whenever a loaded game already had a result)
+        if (g.electionNightPending() > 0) {
             Results.electionNight(this);
             return;
         }

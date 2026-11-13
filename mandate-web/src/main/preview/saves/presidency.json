@@ -95,6 +95,9 @@
     }, {
       "type": "EndTurn"
     }, {
+      "type": "ElectionNightSeen",
+      "year": 2028
+    }, {
       "type": "SetAgenda",
       "bills": ["housing", "ai_safety", "chips_china"]
     }, {
@@ -4736,6 +4739,7 @@
     "hormuz": null,
     "taiwan": null,
     "taiwanEscalated": false,
+    "electionNightSeen": 2028,
     "news": [],
     "ambientUsed": [],
     "scheduler": {
@@ -4763,9 +4767,9 @@
         "detail": [2.97, 3.6, 2.6, 1.5, 3.3, 1.8, 2.9, 1.4, 50.0, 100.0, 100.0, 100.0, 100.0, 90.27, 6900.0, 100.0, 75.0, 6.0, 53.82, -0.2, 1.8, 17.75, 24.25, 3.33, 101.0]
       }],
     "midtermsHeld": false,
-    "inaugurationCommand": 37,
+    "inaugurationCommand": 38,
     "legacy": null,
-    "commandsApplied": 38
+    "commandsApplied": 39
   },
   "random": {
     "ai.debate": "-4448743184875940781",

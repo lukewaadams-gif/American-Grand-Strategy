@@ -180,7 +180,8 @@ public final class Shell {
 
     static String endTurnLabel(GameEngine g) {
         return switch (g.phase()) {
-            case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> "Run the week";
+            // the final two weeks run a day at a time, and the button says so
+            case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> g.clock().mode() == game.mandate.core.time.SimulationClock.Granularity.DAILY ? "Run the day" : "Run the week";
             case TRANSITION -> "Take the oath";
             case FIRST_100_DAYS -> "End the week";
             case GOVERNING -> "End the month";

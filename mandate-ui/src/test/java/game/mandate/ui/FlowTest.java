@@ -68,7 +68,7 @@ class FlowTest {
         d.press("Begin the campaign");
         for (int guard = 0; guard < 200 && app.session.g().result2028().isEmpty(); guard++) {
             if (d.modalOpen()) d.answerModal();
-            else d.press("Run the week");
+            else d.press(runLabel(app));
         }
         assertTrue(app.session.g().result2028().isPresent(), "the election was held");
         assertTrue(d.modalShows("Election night"), "election night comes forward on its own");
@@ -144,7 +144,7 @@ class FlowTest {
         int before = d.app.session.g().history().size();
         for (int guard = 0; guard < 20 && d.app.session.g().history().size() == before; guard++) {
             if (d.modalOpen()) d.answerModal();
-            else d.press("Run the week");
+            else d.press(runLabel(d.app));
         }
         while (d.modalOpen()) d.answerModal();
         // answering a decision is itself a command; run until a turn has actually ended
@@ -210,5 +210,10 @@ class FlowTest {
         d.press("Got it");
         assertFalse(d.shows("Intelligence estimates the other side's resolve"), "dismissed tips stay dismissed");
         assertTrue(app.session.seenLessons().contains("days.crisis"));
+    }
+
+    /** The campaign's end-turn button: "Run the day" in the final stretch, "Run the week" before it. */
+    static String runLabel(App app) {
+        return app.session.g().clock().mode() == game.mandate.core.time.SimulationClock.Granularity.DAILY ? "Run the day" : "Run the week";
     }
 }

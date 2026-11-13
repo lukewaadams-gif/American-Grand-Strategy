@@ -31,6 +31,8 @@ public final class AutoPilot {
             g.apply(new Command.EndTurn());
             return;
         }
+        int night = g.electionNightPending();
+        if (night > 0) { g.apply(new Command.ElectionNightSeen(night)); return; }   // the night is watched before anything else
         if (g.taiwanActive()) {             // the Taiwan crisis, turn by turn: the staff's playbook
             g.apply(new Command.Taiwan(new game.mandate.core.taiwan.TaiwanOrder.Playbook()));
             g.apply(new Command.EndTurn());

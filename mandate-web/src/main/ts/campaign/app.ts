@@ -42,6 +42,9 @@ const TAB_KEYS: Record<string, WarRoomState['tab']> = { '1': 'schedule', '2': 'm
 function render(): void {
   let v: CampaignView;
   try { v = engine.campaign(); } catch (e) { toast(String(e)); return; }
+  // after the vote the war room has nothing left to run: election night takes over (never a war room drawn from a
+  // view with no campaign in it, which is what froze the last day of the campaign)
+  if (v.phase !== 'GENERAL_CAMPAIGN_2028' && v.phase !== 'REELECTION_CAMPAIGN_2032') { electionOver(v); return; }
   const focusKey = document.activeElement?.getAttribute('aria-label') ?? null;
   const scroll = document.getElementById('main')?.scrollTop ?? 0;
   root.replaceChildren(warRoom(v, state, {
@@ -62,7 +65,6 @@ function render(): void {
   if (main) main.scrollTop = scroll;
   if (focusKey) [...root.querySelectorAll<HTMLElement>('[aria-label]')].find(e => e.getAttribute('aria-label') === focusKey)?.focus({ preventScroll: true });
   document.title = `Campaign ${v.electionDay.slice(0, 4)} · ${day(v.date)} · American Grand Strategy`;
-  if (v.phase !== 'GENERAL_CAMPAIGN_2028' && v.phase !== 'REELECTION_CAMPAIGN_2032') electionOver(v);
 }
 
 /** A campaign order (schedule, ads, field, staff): applied at once and redrawn, or refused with the reason shown. */
@@ -105,7 +107,9 @@ function runWeek(): void {
   let news: NewsItem[];
   try { news = engine.command({ type: 'EndTurn' }); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); return; }
   state.picking = null;
-  state.digest = digestOf(v, engine.campaign(), news);
+  const after = engine.campaign();
+  // Election Day: no digest of a day that ended the campaign; election night comes next
+  state.digest = after.phase === v.phase ? digestOf(v, after, news) : null;
   render();
 }
 
@@ -129,23 +133,20 @@ function digestOf(before: CampaignView, after: CampaignView, news: NewsItem[]): 
   return { title, lines };
 }
 
-/** After Election Day: the night's result; in the whole game, the game goes on from here. */
+/** After Election Day: in the whole game, election night (the game's own screen) and the game goes on from there. */
 function electionOver(v: CampaignView): void {
+  if (hostOpts.onElectionOver) { const go = hostOpts.onElectionOver; go(); return; }
   const r = (v as CampaignView & { result?: { dem: number; rep: number; winner: 'D' | 'R'; popular: number } }).result;
   if (!r) return;
+  // the campaign preview on its own (campaign.html): the night's result, and the campaign again
   const won = r.winner === v.player.party;
-  const second = v.phase === 'GOVERNING' || v.electionDay.startsWith('2032');
-  const go = hostOpts.onElectionOver;
   host.open(h('div', { class: 'dialog-card' },
     h('div', { class: 'eyebrow' }, 'Election night · ' + day(v.electionDay, true)),
-    h('h2', { class: 'dialog-title big' }, won ? (second ? 'Four more years' : 'You win the presidency') : (second ? 'You lose re-election' : 'You lose')),
+    h('h2', { class: 'dialog-title big' }, won ? 'You win the presidency' : 'You lose'),
     h('p', null, `Democrats ${r.dem}, Republicans ${r.rep}. Popular vote: ${r.popular >= 0 ? 'Democrats' : 'Republicans'} by ${Math.abs(r.popular).toFixed(1)}.`),
-    go ? h('p', { class: 'muted' }, won ? (second ? 'Back to the Oval Office: the second term begins in January.' : 'The transition begins tomorrow: your agenda and your White House staff.')
-        : (second ? 'You are president until the handoff in January.' : 'The campaign is over.'))
-      : h('p', { class: 'muted' }, 'This preview covers the campaign war room. The whole game, from the campaign to the verdict, is on the preview’s front page.'),
-    h('div', { class: 'dialog-foot' }, go
-      ? h('button', { class: 'btn primary', type: 'button', onclick: () => { host.close(); go(); } }, 'Continue')
-      : h('button', { class: 'btn primary', type: 'button', onclick: () => { host.close(); hostOpts.restart?.(); } }, 'Play the campaign again'))), 'Election night');
+    h('p', { class: 'muted' }, 'This preview covers the campaign war room. The whole game, from the campaign to the verdict, is on the preview’s front page.'),
+    h('div', { class: 'dialog-foot' },
+      h('button', { class: 'btn primary', type: 'button', onclick: () => { host.close(); hostOpts.restart?.(); } }, 'Play the campaign again'))), 'Election night');
 }
 
 document.addEventListener('keydown', e => {

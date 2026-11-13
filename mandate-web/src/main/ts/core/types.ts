@@ -115,6 +115,8 @@ export interface PresidencyBill { id: string; name: string; stage: string; }
 /** What the Oval Office shows (EngineApi.presidency). Figures that do not exist yet (before the first reading) are null. */
 export interface PresidencyView {
   phase: string; date: string; dateLabel: string;
+  /** A presidential election night the player has not yet watched (its year), or 0: it comes before anything else. */
+  electionNight: number;
   president: { name: string; id: string; party: 'D' | 'R'; partyName: string };
   approval: number | null; approvalChange: number | null;
   unemployment?: number | null; inflation?: number | null; growth?: number | null; gas: number | null;
@@ -429,6 +431,16 @@ export interface HormuzView {
   toll: { killed: number; shipsHit: number; seized: number; tankersHit: number; strikes: number };
   invasion: { stage: number; option: number; days: number; progress: number; plans: { label: string; detail: string }[] };
   log: string[];
+}
+
+// ---- election night: the result fixed on Election Day, revealed by the broadcast ---------------------------------------
+export interface ElectionNightState { code: string; name: string; ev: number; margin: number }
+export interface ElectionNightView {
+  year: number; pending: boolean; electionDay: string;
+  result: { dem: number; rep: number; popular: number; winner: 'D' | 'R'; tipping: string };
+  states: ElectionNightState[];
+  player: { name: string; id: string; party: 'D' | 'R' }; opponent: { name: string; id: string; party: 'D' | 'R' };
+  won: boolean; next: 'transition' | 'end' | 'second' | 'lameduck';
 }
 
 // ---- the Taiwan crisis (docs/ISLAND_CHAIN.md) ------------------------------------------------------------------------------

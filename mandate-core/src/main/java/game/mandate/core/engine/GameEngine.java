@@ -257,6 +257,7 @@ public final class GameEngine implements WorldView {
     static GameEngine restore(GameSetup setup, Map<String, Object> world, Map<String, Long> random, List<Command> commands) {
         GameEngine g = new GameEngine(setup);
         g.w = WorldState.fromJson(world, g.candidates);
+        g.settleElectionNightSeen();
         g.rng.restore(random);
         g.history.addAll(commands);
         g.pollMemo = null;
@@ -324,6 +325,10 @@ public final class GameEngine implements WorldView {
             case Command.Hormuz c -> hormuzOrder(c.order());
             case Command.Taiwan c -> taiwanOrder(c.order());
             case Command.TaiwanBegin c -> beginTaiwan(c.preset());
+            case Command.ElectionNightSeen c -> {
+                if (latestPresidentialYear() < c.year() || c.year() <= 0) throw new IllegalCommandException("There has been no " + c.year() + " election night");
+                w.electionNightSeen = Math.max(w.electionNightSeen, c.year());
+            }
         }
         history.add(command);
         w.commandsApplied++;
@@ -2152,6 +2157,29 @@ public final class GameEngine implements WorldView {
     public boolean operationsActive() { return w.military.operationActive(); }
     public double munitionsIndex() { return militaryEngine.munitionsIndex(w.military); }
     public Optional<ElectionResult> result2028() { return Optional.ofNullable(w.election.result2028()); }
+
+    /** The year of the latest presidential election held in this game (2028 or 2032), or 0. */
+    public int latestPresidentialYear() { return w.election.result2032() != null ? 2032 : w.election.result2028() != null ? 2028 : 0; }
+
+    /** The latest presidential election held, if any: the one election night presents. */
+    public Optional<ElectionResult> latestPresidentialResult() { return Optional.ofNullable(w.election.result2032() != null ? w.election.result2032() : w.election.result2028()); }
+
+    /** The year of a presidential election night the player has not yet watched, or 0. Election night always comes first. */
+    public int electionNightPending() {
+        int y = latestPresidentialYear();
+        return y > w.electionNightSeen ? y : 0;
+    }
+
+    /**
+     * An older save has no record of which election nights were watched: one saved on the night itself (the transition
+     * after 2028, or the end of a lost campaign) shows it again; any later save counts it as seen.
+     */
+    private void settleElectionNightSeen() {
+        if (w.electionNightSeen >= 0) return;
+        int y = latestPresidentialYear();
+        boolean onTheNight = y == 2028 && (w.phase == Phase.TRANSITION || w.president == null && (w.phase == Phase.EPILOGUE || w.phase == Phase.GAME_OVER));
+        w.electionNightSeen = onTheNight ? 0 : y;
+    }
     public Optional<ElectionResult> result2032() { return Optional.ofNullable(w.election.result2032()); }
     public double startMisery() { return w.economy.startMisery(); }
     public Optional<Legacy> legacy() { return Optional.ofNullable(w.legacy); }

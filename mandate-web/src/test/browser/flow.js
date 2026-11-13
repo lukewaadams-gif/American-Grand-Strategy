@@ -50,7 +50,7 @@ const BASE = process.argv[3] || 'http://127.0.0.1:8765/index.html';
         await answerModal(); modals++; continue;
       }
       if (weeks === 3 && attempt === 1) { await page.keyboard.press('1'); await shot('w-campaign-overview'); await page.keyboard.press('2'); }
-      const run = page.locator('button:not([aria-disabled="true"])', { hasText: 'Run the week' }).first();
+      const run = page.locator('button:not([aria-disabled="true"])', { hasText: /Run the (week|day)/ }).first();
       if (!(await run.count())) break;
       await run.click(); weeks++;
       await page.waitForTimeout(40);
