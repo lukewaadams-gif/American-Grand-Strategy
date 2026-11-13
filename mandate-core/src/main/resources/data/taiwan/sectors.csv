@@ -1,0 +1,27 @@
+# Taiwan's 25 sectors (spec A.7): id,name,terrain,population_m,area_km2,lat,lon,x_km,y_km,neighbours
+# lat/lon/x/y: the area-weighted centroid of the source's sector polygons. neighbours: sector ids joined with '+'.
+s_taipei,Taipei,urban,2.5,272,25.083,121.559,56,154,s_new_taipei+s_snow_mountains
+s_new_taipei,New Taipei,urban,4.0,2053,25.070,121.604,61,153,s_keelung+s_snow_mountains+s_taipei+s_taoyuan+s_yilan
+s_keelung,Keelung,urban,0.36,133,25.113,121.708,71,157,s_new_taipei
+s_taoyuan,Taoyuan,urban,2.3,1221,24.976,121.209,21,142,s_hsinchu+s_new_taipei+s_snow_mountains
+s_hsinchu,Hsinchu,plain,1.04,1531,24.783,121.050,5,120,s_miaoli+s_snow_mountains+s_taoyuan
+s_miaoli,Miaoli,plain,0.53,1820,24.512,120.849,-15,90,s_central_range_n+s_hsinchu+s_snow_mountains+s_taichung
+s_taichung,Taichung,urban,2.85,2215,24.214,120.685,-32,57,s_central_range_n+s_changhua+s_miaoli+s_snow_mountains
+s_changhua,Changhua,plain,1.7,1074,23.942,120.541,-47,27,s_central_range_n+s_taichung+s_yunlin+s_yushan_alishan
+s_yunlin,Yunlin,plain,0.66,1291,23.690,120.373,-64,-1,s_changhua+s_chiayi+s_yushan_alishan
+s_chiayi,Chiayi,plain,0.74,1964,23.480,120.356,-66,-24,s_tainan+s_yunlin+s_yushan_alishan
+s_tainan,Tainan,urban,1.85,2192,23.146,120.300,-72,-61,s_chiayi+s_kaohsiung+s_southern_range+s_yushan_alishan
+s_kaohsiung,Kaohsiung,urban,2.73,2952,22.771,120.372,-64,-103,s_pingtung+s_southern_range+s_tainan
+s_pingtung,Pingtung,plain,0.78,2776,22.586,120.543,-47,-124,s_hengchun+s_kaohsiung+s_southern_range
+s_taitung,Taitung,plain,0.21,3515,22.950,121.178,18,-83,s_coastal_range+s_hualien+s_southern_range+s_yushan_alishan+s_hengchun
+s_hualien,Hualien,plain,0.32,4629,23.531,121.414,42,-19,s_central_range_n+s_coastal_range+s_taitung+s_yushan_alishan+s_yilan
+s_yilan,Yilan,plain,0.45,2144,24.749,121.785,79,117,s_new_taipei+s_snow_mountains+s_hualien
+s_hengchun,Hengchun,plain,0.03,300,22.051,120.773,-23,-183,s_pingtung+s_southern_range+s_taitung
+s_snow_mountains,Snow Mountains,mountain,0.05,3200,24.579,121.432,44,98,s_central_range_n+s_hsinchu+s_miaoli+s_new_taipei+s_taichung+s_taipei+s_taoyuan+s_yilan
+s_central_range_n,Central Range N,mountain,0.4,2600,24.032,121.204,21,37,s_changhua+s_hualien+s_miaoli+s_snow_mountains+s_taichung+s_yushan_alishan
+s_yushan_alishan,Yushan-Alishan,mountain,0.1,2500,23.434,120.937,-6,-30,s_central_range_n+s_changhua+s_chiayi+s_hualien+s_southern_range+s_tainan+s_taitung+s_yunlin
+s_southern_range,Southern Range,mountain,0.05,2400,22.727,120.817,-19,-108,s_hengchun+s_kaohsiung+s_pingtung+s_tainan+s_taitung+s_yushan_alishan
+s_coastal_range,Coastal Range,mountain,0.03,900,23.188,121.352,36,-57,s_hualien+s_taitung
+s_penghu,Penghu,island,0.1,127,23.584,119.572,-145,-12,
+s_kinmen,Kinmen,island,0.14,152,24.455,118.363,-267,86,
+s_matsu,Matsu,island,0.014,29,26.176,120.039,-96,276,

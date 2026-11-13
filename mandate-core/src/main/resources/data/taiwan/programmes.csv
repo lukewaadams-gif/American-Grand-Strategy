@@ -1,0 +1,34 @@
+# Preparation programmes (spec 8.6): side,id,name,days,signal,lead_days,focus,needed_by,indicator
+# side: US or PRC. lead_days: how many days before D-day the PRC planner starts it. focus: the collection focus that watches it
+# (0 Fujian coast and ports, 1 Rocket Force, 2 naval bases and submarines, 3 the strait, 4 the Western Pacific, 5 leadership).
+# needed_by (PRC): the plans that need it, I invasion B blockade Q quarantine S islands F firepower strikes.
+# The source's "War stockpiles and blood drives" programme had no effect (spec 13.2) and is dropped.
+PRC,exercise,Exercise cover,2,0.25,4,3,IBQSF,The PLA announces a large joint exercise around Taiwan
+PRC,rocket,Disperse the Rocket Force,5,0.45,6,1,IBSF,Rocket Force launchers leave their garrisons
+PRC,roro,Requisition ro-ro ferries,12,0.85,14,0,I,Civilian ro-ro ferries requisitioned and gathered in Fujian ports
+PRC,amphib,Embark the amphibious brigades,7,0.8,9,0,IS,Amphibious brigades move to embarkation areas
+PRC,militia,Mobilise the coast guard and militia,3,0.5,4,3,IBQSF,Coast guard and militia vessels mass in the strait
+PRC,subs,Surge submarines,6,0.45,7,2,IBQF,Submarines leave port in unusual numbers
+PRC,air,Forward air brigades,5,0.5,6,3,IBSF,Air brigades move forward to Fujian airfields
+PRC,cyber,Cyber pre-positioning,20,0.2,22,5,IBF,Intrusions into Taiwan's grid and telecoms networks
+PRC,economy,Sanctions-proof the economy,25,0.3,28,5,IBQF,Beijing moves reserves and stockpiles commodities
+PRC,influence,Influence operations in Taiwan,30,0.15,32,5,IBQSF,A surge of influence operations in Taiwan
+PRC,mines,Covert mine-laying,10,0.35,12,2,IB,Mine-laying vessels active off Taiwan's ports
+PRC,followon,Mobilise follow-on forces,10,0.7,12,0,I,Combined-arms brigades move toward the coast
+PRC,recall,Recall nationals and assets,7,0.5,9,5,IBQF,Chinese nationals and assets leave the United States and Japan
+PRC,space,Space and ISR surge,10,0.25,12,1,IBF,Satellite launches and surveillance surge
+US,readiness,Raise force readiness,1,0.5,0,0,,
+US,subs,Surge attack submarines,3,0.3,0,3,,
+US,bombers,Deploy bomber task forces,3,0.6,0,1,,
+US,fighters,Flow fighter squadrons,30,0.5,0,0,,
+US,disperse,Disperse aircraft,4,0.35,0,0,,
+US,munitions,Shift munitions to the Pacific,21,0.3,0,1,,
+US,sealift,Activate sealift and charters,10,0.3,0,2,,
+US,arms,Expedite arms to Taiwan,14,0.55,0,4,,
+US,declassify,Declassify intelligence,1,0.9,0,5,,
+US,departure,Order departure from Taiwan,5,0.7,0,5,,
+US,showforce,Show of force,3,0.8,0,2,,
+US,littoral,Deploy a Marine littoral regiment,7,0.6,0,4,,
+US,mobilise,Mobilise reserves,10,0.6,0,5,,
+US,huntforward,Hunt forward (cyber),14,0.2,0,3,,
+US,advisers,Advisers to Taiwan,4,0.75,0,4,,

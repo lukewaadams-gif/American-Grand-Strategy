@@ -1,0 +1,14 @@
+# The crisis's diplomatic actors (spec A.10): id,name,ags_code,china_aligned,stance0,fear,trust,exposure
+# ags_code: the presidency's country whose relations ("rel:CC") the crisis moves. The EU maps to Germany, ASEAN to Indonesia.
+JPN,Japan,JP,false,52,0.55,0.8,0.55
+KOR,South Korea,KR,false,22,0.7,0.6,0.75
+PHL,Philippines,PH,false,34,0.6,0.65,0.4
+AUS,Australia,AU,false,46,0.45,0.75,0.6
+IND,India,IN,false,6,0.35,0.35,0.3
+VNM,Vietnam,VN,false,2,0.6,0.25,0.65
+GBR,United Kingdom,GB,false,30,0.2,0.8,0.3
+FRA,France,FR,false,18,0.2,0.55,0.3
+EU,European Union,DE,false,14,0.15,0.6,0.5
+ASEAN,ASEAN core,ID,false,-4,0.55,0.35,0.7
+RUS,Russia,RU,true,-55,0,0,0.3
+PRK,North Korea,KP,true,-65,0,0,0.1

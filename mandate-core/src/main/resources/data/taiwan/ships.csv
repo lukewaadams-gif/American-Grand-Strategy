@@ -1,0 +1,49 @@
+# Ship classes (spec A.2): id,name,nation,role,hp,knots,fire_channels,sam_long,sam_short,ascm,ascm_type,lacm,lacm_type,special,special_type,asw,lift_bn,crew
+# role: carrier cruiser destroyer frigate corvette amphib lst littoral logistics missileboat roro coastguard militia pier merchant.
+# Names are generic designations; the source's class names (many of them people's names) are not used.
+CVN_US,Nuclear carrier (US),USA,carrier,4.2,30,2,0,16,0,,0,,0,,0.8,0,5000
+CG_US,Guided-missile cruiser (US),USA,cruiser,1.6,30,6,70,16,8,HARPOON,24,TLAM,0,,2,0,330
+DDG_US,Guided-missile destroyer (US),USA,destroyer,1.2,30,5,52,16,8,SM6,16,TLAM,2,MST,2,0,320
+LHA_US,Amphibious assault ship (US),USA,amphib,2,22,2,0,16,0,,0,,0,,1,2,1200
+LPD_US,Amphibious transport dock (US),USA,amphib,1.3,22,1,0,8,0,,0,,0,,0,0.8,380
+LSD_US,Dock landing ship (US),USA,amphib,1,20,1,0,4,0,,0,,0,,0,0.4,330
+LCS_US,Littoral combat ship (US),USA,littoral,0.6,40,1,0,11,8,NSM,0,,0,,1,0,70
+DDH_JP,Helicopter destroyer (Japan),JPN,carrier,1.8,30,2,0,16,0,,0,,0,,4,0,470
+DDG_JP,Guided-missile destroyer (Japan),JPN,destroyer,1.2,30,5,60,0,8,HARPOON,8,TLAM,4,SM6,2,0,300
+DD_JP,General-purpose destroyer (Japan),JPN,destroyer,1,30,3,0,32,8,HARPOON,0,,0,,3,0,200
+FFM_JP,Multi-mission frigate (Japan),JPN,frigate,0.8,30,2,0,16,8,HARPOON,0,,0,,2,0,90
+DDG_TW,Guided-missile destroyer (Taiwan),TWN,destroyer,1.1,30,3,52,0,8,HF3,0,,0,,1,0,360
+FFG_TW,Guided-missile frigate (Taiwan),TWN,frigate,0.8,29,1,36,0,8,HF2,0,,0,,2,0,210
+FFL_TW,Light frigate (Taiwan),TWN,frigate,0.8,25,1,0,8,8,HF2,0,,0,,2,0,140
+COR_TW,Missile corvette (Taiwan),TWN,corvette,0.5,40,1,0,12,16,HF3,0,,0,,0.5,0,41
+FAC_TW,Fast attack craft (Taiwan),TWN,missileboat,0.2,33,0,0,0,4,HF2,0,,0,,0,0,19
+CV_001,Type 001/002 carrier,CHN,carrier,2.6,28,2,0,24,0,,0,,0,,1,0,2000
+CV_003,Type 003 carrier,CHN,carrier,2.9,30,2,0,24,0,,0,,0,,1,0,2600
+CG_055,Type 055 cruiser,CHN,cruiser,1.6,30,6,64,24,24,YJ18,16,CJ10,8,YJ21,2,0,300
+DDG_052D,Type 052D destroyer,CHN,destroyer,1.2,30,4,40,24,16,YJ18,8,CJ10,0,,2,0,280
+DDG_052C,Type 052C destroyer,CHN,destroyer,1.1,29,3,48,0,8,YJ83,0,,0,,1,0,280
+DDG_956,Type 956 destroyer,CHN,destroyer,1.2,32,2,0,32,8,YJ12,0,,0,,1,0,300
+FFG_054,Type 054A/B frigate,CHN,frigate,0.8,27,2,0,32,8,YJ83,0,,0,,2,0,165
+COR_056,Type 056A corvette,CHN,corvette,0.45,25,1,0,8,4,YJ83,0,,0,,2,0,70
+FAC_022,Type 022 missile boat,CHN,missileboat,0.2,36,0,0,0,8,YJ83,0,,0,,0,0,12
+LHD_075,Type 075 amphibious assault ship,CHN,amphib,2,22,2,0,16,0,,0,,0,,0.5,1,1000
+LHA_076,Type 076 amphibious assault ship,CHN,amphib,2.3,22,2,0,16,0,,0,,0,,0.5,1.2,1200
+LPD_071,Type 071 amphibious transport dock,CHN,amphib,1.3,20,1,0,8,0,,0,,0,,0,1,900
+LST_072,Type 072A tank landing ship,CHN,lst,0.6,17,0,0,0,0,,0,,0,,0,0.25,300
+LSM_073,Type 073/074 medium landing ship,CHN,lst,0.4,16,0,0,0,0,,0,,0,,0,0.1,120
+RORO,Ro-ro ferry (requisitioned),CHN,roro,0.7,20,0,0,0,0,,0,,0,,0,0.35,600
+CCG,Coast guard cutter (PRC),CHN,coastguard,0.5,22,0,0,0,0,,0,,0,,0.2,0,90
+MIL,Maritime militia trawler,CHN,militia,0.15,12,0,0,0,0,,0,,0,,0,0,25
+PIER,Barge pier,CHN,pier,0.6,8,0,0,0,0,,0,,0,,0,0,60
+DDG_KR,Guided-missile destroyer (Korea),KOR,destroyer,1.3,30,5,80,0,16,HARPOON,32,TLAM,0,,2,0,300
+DDH_KR,Destroyer (Korea),KOR,destroyer,1,29,2,32,0,8,HARPOON,0,,0,,2,0,200
+FF_PH,Frigate (Philippines),PHL,frigate,0.7,25,1,0,8,8,HARPOON,0,,0,,1,0,100
+DDG_AU,Air-warfare destroyer (Australia),AUS,destroyer,1.1,28,4,40,16,8,NSM,8,TLAM,0,,2,0,200
+FFH_AU,Frigate (Australia),AUS,frigate,0.8,27,1,0,32,8,NSM,0,,0,,2,0,170
+CV_UK,Carrier (UK),GBR,carrier,2.4,25,1,0,0,0,,0,,0,,1,0,1600
+DD_UK,Destroyer and frigate escorts (UK),GBR,destroyer,1,29,3,48,0,8,NSM,0,,0,,2,0,190
+CVN_FR,Nuclear carrier (France),FRA,carrier,2.4,27,1,0,32,0,,0,,0,,1,0,1900
+DD_FR,Frigate escorts (France),FRA,destroyer,1,27,3,32,16,8,HARPOON,16,TLAM,0,,2,0,150
+CGA_TW,Coast guard cutter (Taiwan),TWN,coastguard,0.5,24,0,0,0,0,,0,,0,,0,0,80
+CG_RU,Missile cruiser (Russia),RUS,cruiser,1.5,32,3,64,0,16,YJ12,0,,0,,1,0,480
+DD_RU,Destroyer (Russia),RUS,destroyer,1,29,2,0,32,8,YJ83,0,,0,,2,0,200

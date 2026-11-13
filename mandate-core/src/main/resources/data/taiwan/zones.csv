@@ -1,0 +1,27 @@
+# The sea zones (spec 11.3): the source's operating areas merged to 22, plus the airspace over Taiwan.
+# id,name,lat,lon,radius_km,x_km,y_km,strait,blockade_zone,taiwan_airspace
+# x and y: an azimuthal equidistant projection centred on 23.7N 121.0E (km east, km north), computed once offline,
+# so that distances in the engine are plain arithmetic. Taiwan airspace: centre within 260 km of 23.7N 120.6E.
+TS_N,Taiwan Strait (North),25.25,120.35,85,-65,173,true,true,true
+TS_C,Taiwan Strait (Central),24.3,119.85,85,-117,67,true,true,true
+TS_S,Taiwan Strait (South),23.05,119.3,95,-174,-71,true,true,true
+PENGHU,Penghu Channel,23.35,119.95,45,-107,-39,true,true,true
+BASHI,Bashi Channel,21.55,121,100,0,-239,true,true,true
+LUZON,Luzon Strait,20.15,121.55,110,57,-395,true,false,false
+EAST,East of Taiwan,23.5,122.7,140,173,-21,false,true,true
+NE,Northeast of Taiwan,25.7,122.7,120,170,223,false,true,false
+YONAGUNI,Yonaguni Gap,24.4,123.4,70,243,80,true,true,false
+MIYAKO,Miyako Strait,25.55,126.4,100,542,216,true,false,false
+ECS_S,East China Sea (South),27.3,124.2,200,316,404,false,false,false
+ECS_N,East China Sea (North),30.5,125.6,230,442,764,false,false,false
+YELLOW,Yellow Sea,35.5,123.5,230,228,1314,false,false,false
+OKINAWA,Okinawa Approaches,26.2,129,150,798,301,false,false,false
+PS_W,Philippine Sea (West),21.5,126.5,280,569,-234,false,false,false
+PS_N,Philippine Sea (North),26.5,133,330,1193,364,false,false,false
+PS_C,Philippine Sea (Central),19,132,380,1157,-481,false,false,false
+GUAM,Guam Approaches,14.5,141.5,300,2211,-882,false,false,false
+SCS_N,South China Sea (North),20,116.5,230,-470,-404,false,false,false
+SCS_C,South China Sea (Central),15,114,280,-755,-951,false,false,false
+WLUZON,West of Luzon,17.5,118.7,190,-244,-688,false,false,false
+SOJ,Sea of Japan and Korea Strait,36.5,131.5,300,945,1464,true,false,false
+TAIWAN,Over Taiwan,23.7,121.0,170,0,0,false,false,true

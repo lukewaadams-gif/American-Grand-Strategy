@@ -1,0 +1,46 @@
+# The Taiwan war's munitions (spec A.1): id,name,side,kind,speed,range_km,power,anti_ship,land_attack,cluster,cost_musd
+# side: US (the coalition) or PRC. kind: BM ballistic, HGV glide vehicle, ASCM anti-ship cruise, LACM land-attack cruise, SAM, TORP,
+# ROCKET, MINE. speed: subsonic, stealth, supersonic, ballistic, hypersonic. power multiplies damage per hit. Ids match data/munitions.csv
+# where the presidency already tracks the US stock. Mines are laid, never fired (the source fired them as missiles, spec 13.1).
+LRASM,LRASM,US,ASCM,stealth,560,1.15,true,false,false,3.2
+JASSM_ER,JASSM-ER,US,LACM,stealth,925,1,false,true,false,1.6
+JASSM,JASSM,US,LACM,stealth,370,1,false,true,false,1.1
+TLAM,Tomahawk (land attack),US,LACM,subsonic,1600,1,false,true,false,2
+MST,Maritime Strike Tomahawk,US,ASCM,subsonic,1600,1,true,true,false,2.4
+HARPOON,Harpoon,US,ASCM,subsonic,125,0.75,true,false,false,1.4
+NSM,NSM/JSM,US,ASCM,stealth,200,0.8,true,true,false,2.2
+SM6,SM-6,US,SAM,supersonic,370,0.7,true,false,false,4.3
+SM2,SM-2,US,SAM,supersonic,160,0,false,false,false,2.1
+SM3,SM-3,US,SAM,hypersonic,1000,0,false,false,false,12
+ESSM,ESSM,US,SAM,supersonic,50,0,false,false,false,1.8
+PAC3,PAC-3 MSE,US,SAM,supersonic,60,0,false,false,false,4.1
+THAAD,THAAD,US,SAM,hypersonic,200,0,false,false,false,12.7
+PRSM,PrSM,US,BM,ballistic,500,1,false,true,false,1.6
+MK48,Mk 48 torpedo,US,TORP,subsonic,40,1.4,true,false,false,5
+QUICKSTRIKE,Quickstrike mine,US,MINE,subsonic,0,1,false,false,false,0.3
+TYPE12,Type 12 (improved),US,ASCM,subsonic,900,0.85,true,true,false,2.5
+HF2E,HF-2E,US,LACM,subsonic,600,0.9,false,true,false,1.5
+HF3,HF-3,US,ASCM,supersonic,300,1,true,false,false,1.3
+HF2,HF-2,US,ASCM,subsonic,160,0.8,true,false,false,0.9
+ATACMS,ATACMS,US,BM,ballistic,300,1,false,true,true,1.5
+GMLRS,GMLRS,US,ROCKET,ballistic,70,0.3,false,true,false,0.17
+TK3,TK-III,US,SAM,supersonic,200,0,false,false,false,2
+BRAHMOS,BrahMos,US,ASCM,supersonic,290,1.1,true,false,false,3
+ASM3,ASM-3,US,ASCM,supersonic,400,1,true,false,false,3
+TYPE03,Type 03 SAM,US,SAM,supersonic,60,0,false,false,false,1.2
+DF11,DF-11/15,PRC,BM,ballistic,700,1,false,true,true,0.8
+DF16,DF-16,PRC,BM,ballistic,1000,1.1,false,true,true,1.2
+DF17,DF-17,PRC,HGV,hypersonic,2000,1.1,false,true,false,5
+DF21C,DF-21C,PRC,BM,ballistic,1700,1.2,false,true,true,2
+DF21D,DF-21D,PRC,BM,ballistic,1500,1.4,true,false,false,3
+DF26,DF-26,PRC,BM,ballistic,4000,1.4,true,true,true,4
+CJ10,CJ-10/100,PRC,LACM,subsonic,1800,1,false,true,false,1.5
+PHL16,PHL-16 rocket,PRC,ROCKET,ballistic,400,0.45,false,true,true,0.3
+KD20,KD-20,PRC,LACM,subsonic,2000,1,false,true,false,1.5
+YJ12,YJ-12,PRC,ASCM,supersonic,400,1.15,true,false,false,1.5
+YJ18,YJ-18,PRC,ASCM,supersonic,540,1,true,true,false,1.5
+YJ21,YJ-21,PRC,HGV,hypersonic,1000,1.3,true,false,false,5
+YJ83,YJ-83,PRC,ASCM,subsonic,180,0.7,true,false,false,0.6
+HQ9,HQ-9,PRC,SAM,supersonic,200,0,false,false,false,2
+YU6,Yu-6 torpedo,PRC,TORP,subsonic,45,1.3,true,false,false,3
+MINES,Naval mines,PRC,MINE,subsonic,0,1,false,false,false,0.05

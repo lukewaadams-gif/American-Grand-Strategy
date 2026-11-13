@@ -1,0 +1,32 @@
+# Land systems (spec A.5 and the interception table of 5.5): id,name,nation,sam,munition,rounds_per_launcher,reload_h,channels,
+# intercept_reach_km,pk_ballistic,pk_glide,pk_cruise,air_reach_km
+# A SAM battery intercepts missiles aimed within intercept_reach of it (each engagement fires two rounds), and threatens aircraft
+# within air_reach. Weapon programme names are kept, as data/munitions.csv keeps them.
+TYPHON,Typhon mid-range launcher (Army),USA,false,TLAM,4,8,0,0,0,0,0,0
+NMESIS,NMESIS anti-ship launcher (Marines),USA,false,NSM,2,4,0,0,0,0,0,0
+HIMARS,HIMARS with PrSM (Army),USA,false,PRSM,2,2,0,0,0,0,0,0
+PATRIOT,Patriot battery (US),USA,true,PAC3,48,6,8,45,0.65,0.3,0.8,70
+THAAD,THAAD battery,USA,true,THAAD,48,8,8,200,0.8,0.45,0.8,150
+GDS,Guam Defense System,USA,true,SM6,24,12,10,250,0.7,0.45,0.8,70
+TYPE12,Type 12 anti-ship regiment,JPN,false,TYPE12,6,4,0,0,0,0,0,0
+PATRIOT_JP,PAC-3 battery (Japan),JPN,true,PAC3,32,6,6,45,0.65,0.3,0.8,70
+TYPE03,Type 03 SAM battery,JPN,true,TYPE03,24,4,4,45,0.15,0.3,0.8,70
+HF2E,HF-2E land-attack battalion,TWN,false,HF2E,4,6,0,0,0,0,0,0
+HF3,HF-3 coastal battery,TWN,false,HF3,4,3,0,0,0,0,0,0
+HF2,HF-2 coastal battery,TWN,false,HF2,4,3,0,0,0,0,0,0
+HCDS,Harpoon coastal battalion,TWN,false,HARPOON,4,3,0,0,0,0,0,0
+HIMARS_TW,HIMARS battalion (Taiwan),TWN,false,ATACMS,2,2,0,0,0,0,0,0
+TK3,Tien Kung III battalion,TWN,true,TK3,24,4,6,80,0.65,0.3,0.8,150
+PATRIOT_TW,Patriot battalion (Taiwan),TWN,true,PAC3,32,6,6,45,0.65,0.3,0.8,70
+BRAHMOS,BrahMos battery (Philippines),PHL,false,BRAHMOS,3,4,0,0,0,0,0,0
+SRBM,Short-range ballistic missile brigade,CHN,false,DF11,1,3,0,0,0,0,0,0
+DF16,DF-16 brigade,CHN,false,DF16,1,3,0,0,0,0,0,0
+DF17,DF-17 brigade,CHN,false,DF17,1,4,0,0,0,0,0,0
+DF21C,DF-21C brigade,CHN,false,DF21C,1,4,0,0,0,0,0,0
+DF21D,DF-21D brigade,CHN,false,DF21D,1,4,0,0,0,0,0,0
+DF26,DF-26 brigade,CHN,false,DF26,1,6,0,0,0,0,0,0
+CJ10,CJ-10/100 brigade,CHN,false,CJ10,3,4,0,0,0,0,0,0
+PHL16,PHL-16 long-range rocket brigade,CHN,false,PHL16,8,1,0,0,0,0,0,0
+HQ9,HQ-9 air-defence brigade,CHN,true,HQ9,32,4,6,120,0.55,0.3,0.8,200
+YJ12C,Coastal YJ-12 brigade,CHN,false,YJ12,4,3,0,0,0,0,0,0
+PATRIOT_KR,Patriot battalion (Korea),KOR,true,PAC3,32,6,6,45,0.65,0.3,0.8,70

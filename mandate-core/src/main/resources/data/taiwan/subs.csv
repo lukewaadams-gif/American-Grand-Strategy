@@ -1,0 +1,17 @@
+# Submarine classes (spec A.3): id,name,nation,nuclear,quietness,sprint_kn,patrol_kn,torpedoes,missiles,missile_type,endurance_days,crew
+SSN_US,Attack submarine (US),USA,true,0.92,25,12,25,12,TLAM,70,135
+SSN_US_OLD,Attack submarine (US),USA,true,0.84,25,12,22,12,TLAM,70,130
+SSGN_US,Guided-missile submarine (US),USA,true,0.9,20,10,10,154,TLAM,70,155
+SS_JP,Submarine (Japan),JPN,false,0.9,20,6,20,4,HARPOON,40,70
+SS_TW,Submarine (Taiwan),TWN,false,0.7,20,6,20,4,HARPOON,30,67
+SS_TW_NEW,Submarine (Taiwan),TWN,false,0.84,20,6,18,4,HARPOON,35,55
+SSN_093,Type 093 nuclear submarine,CHN,true,0.62,30,12,24,12,YJ18,70,100
+SSK_039A,Type 039A/B submarine,CHN,false,0.82,20,5,18,6,YJ18,30,58
+SSK_636,Project 636 submarine,CHN,false,0.78,20,5,18,6,YJ83,30,52
+SSK_039,Type 039 submarine,CHN,false,0.6,22,5,18,0,,30,60
+SS_KR,Submarine (Korea),KOR,false,0.88,20,6,20,6,HARPOON,40,50
+SS_AU,Submarine (Australia),AUS,false,0.8,20,6,22,0,,45,58
+SSN_AU,Attack submarine (Australia),AUS,true,0.9,25,12,25,12,TLAM,70,135
+SSN_UK,Attack submarine (UK),GBR,true,0.93,28,12,30,0,,70,98
+SSN_FR,Attack submarine (France),FRA,true,0.9,25,12,20,4,TLAM,70,63
+SS_RU,Submarine (Russia),RUS,false,0.75,20,6,18,4,YJ83,40,52

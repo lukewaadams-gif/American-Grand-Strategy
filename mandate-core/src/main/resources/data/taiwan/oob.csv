@@ -1,0 +1,487 @@
+# The order of battle (spec 3.3), anchored on the source's 1 March 2027 and projected to the crisis year (spec 10.2).
+# Every unit name is generic. A row exists from year 'from' to year 'to'; its count is count + per_year x (year - from), clamped to
+# max (0: no limit) and rounded. cond: * always; p0 p1 p2 the base, optimistic or pessimistic preset (!p2: not pessimistic);
+# withheld / !withheld: the US attack submarines withheld (pessimistic); roro: created when the ro-ro programme completes.
+# 'where': a base (in port or at its airfield), a sea zone (at sea, patrolling), a hub (off map until released), a group (aboard)
+# or a Taiwan sector. Projections after 2027 are estimates from public plans and trends, to review (docs/ISLAND_CHAIN.md).
+#
+# group,side,nation,id,name,where,tag,from,to,cond
+# ship,group,class,count,per_year,max,from,to,cond
+# wing,group,name,kind          (kind US: the standard carrier air wing)
+# air,side,nation,id,name,where,type,aircraft,count,per_year,max,from,to,cond,dest
+# sub,side,nation,id,name,where,class,count,per_year,max,from,to,cond,home
+# land,side,nation,id,name,where,system,launchers,count,per_year,max,asbm,from,to,cond
+# troop,side,nation,id,name,where,type,battalions,quality,state,count,from,to,cond
+# pool,pool,munition,stock,per_year,max,production_per_month,cond
+# trend,key,per_year,max
+#
+# ===== United States =====
+group,US,USA,us_csg1,Carrier Strike Group 1,b_yokosuka_naval_base,csg_fwd,2027,9999,*
+ship,us_csg1,CVN_US,1,0,0,2027,9999,*
+ship,us_csg1,DDG_US,3,0,0,2027,9999,*
+ship,us_csg1,CG_US,1,0,0,2027,9999,*
+wing,us_csg1,Carrier Air Wing 1,US
+group,US,USA,us_csg2,Carrier Strike Group 2,PS_C,csg,2027,9999,*
+ship,us_csg2,CVN_US,1,0,0,2027,9999,*
+ship,us_csg2,DDG_US,3,0,0,2027,9999,*
+wing,us_csg2,Carrier Air Wing 2,US
+group,US,USA,us_csg3,Carrier Strike Group 3,SCS_C,csg_south,2027,9999,*
+ship,us_csg3,CVN_US,1,0,0,2027,9999,*
+ship,us_csg3,DDG_US,3,0,0,2027,9999,*
+wing,us_csg3,Carrier Air Wing 3,US
+group,US,USA,us_desron,Destroyer Squadron (forward),b_yokosuka_naval_base,desron,2027,9999,*
+ship,us_desron,DDG_US,3,0,0,2027,9999,*
+group,US,USA,us_esg1,Expeditionary Strike Group 1,b_sasebo_naval_base,esg,2027,9999,*
+ship,us_esg1,LHA_US,1,0,0,2027,9999,*
+ship,us_esg1,LPD_US,1,0,0,2027,9999,*
+ship,us_esg1,LSD_US,1,0,0,2027,9999,*
+air,US,USA,us_esg1_air,Marine fighter detachment 1 (F-35B),us_esg1,F35B,10,1,0,0,2027,9999,*,
+troop,US,USA,us_meu1,Marine Expeditionary Unit 1,us_esg1,marine,2,1,embarked,1,2027,9999,*
+group,US,USA,us_lcs,Littoral combat ship division,b_naval_base_guam,lcs,2027,9999,*
+ship,us_lcs,LCS_US,2,0,0,2027,9999,*
+group,US,USA,us_csg4,Carrier Strike Group 4,hub_us_west_coast,csg,2027,9999,*
+ship,us_csg4,CVN_US,1,0,0,2027,9999,*
+ship,us_csg4,DDG_US,4,0,0,2027,9999,*
+wing,us_csg4,Carrier Air Wing 4,US
+group,US,USA,us_csg5,Carrier Strike Group 5,hub_us_east_coast_via_suez,csg,2027,9999,*
+ship,us_csg5,CVN_US,1,0,0,2027,9999,*
+ship,us_csg5,DDG_US,3,0,0,2027,9999,*
+wing,us_csg5,Carrier Air Wing 5,US
+group,US,USA,us_sag,Surface Action Group (Third Fleet),hub_hawaii,sag,2027,9999,*
+ship,us_sag,DDG_US,4,0,0,2027,9999,*
+group,US,USA,us_esg2,Expeditionary Strike Group 2,hub_us_west_coast,esg,2027,9999,*
+ship,us_esg2,LHA_US,1,0,0,2027,9999,*
+ship,us_esg2,LPD_US,1,0,0,2027,9999,*
+air,US,USA,us_esg2_air,Marine fighter detachment 2 (F-35B),us_esg2,F35B,10,1,0,0,2027,9999,*,
+troop,US,USA,us_meu2,Marine Expeditionary Unit 2,us_esg2,marine,2,1,embarked,1,2027,9999,*
+sub,US,USA,us_ssn_guam_a,Attack submarine (Guam),b_naval_base_guam,SSN_US,3,0.25,5,2027,9999,*,b_naval_base_guam
+sub,US,USA,us_ssn_guam_b,Attack submarine (Guam),b_naval_base_guam,SSN_US_OLD,2,-0.25,0,2027,9999,*,b_naval_base_guam
+sub,US,USA,us_ssn_fwd1,Attack submarine (forward),ECS_S,SSN_US,1,0,0,2027,9999,*,b_yokosuka_naval_base
+sub,US,USA,us_ssn_fwd2,Attack submarine (forward),SCS_N,SSN_US,1,0,0,2027,9999,*,b_naval_base_guam
+sub,US,USA,us_ssgn,Guided-missile submarine,b_naval_base_guam,SSGN_US,1,0,0,2027,9999,*,b_naval_base_guam
+sub,US,USA,us_ssn_hi_a,Attack submarine (Pearl Harbor),hub_hawaii,SSN_US,3,0.25,5,2027,9999,!withheld,b_naval_base_guam
+sub,US,USA,us_ssn_hi_b,Attack submarine (Pearl Harbor),hub_hawaii,SSN_US_OLD,3,-0.25,0,2027,9999,!withheld,b_naval_base_guam
+sub,US,USA,us_ssn_hi_w,Attack submarine (Pearl Harbor),hub_hawaii,SSN_US,2,0,0,2027,9999,withheld,b_naval_base_guam
+sub,US,USA,us_ssn_hi_wo,Attack submarine (Pearl Harbor),hub_hawaii,SSN_US_OLD,1,0,0,2027,9999,withheld,b_naval_base_guam
+sub,US,USA,us_ssn_wc,Attack submarine (San Diego),hub_us_west_coast,SSN_US,3,0,0,2027,9999,!withheld,b_naval_base_guam
+sub,US,USA,us_ssn_wc_w,Attack submarine (San Diego),hub_us_west_coast,SSN_US,1,0,0,2027,9999,withheld,b_naval_base_guam
+sub,US,USA,us_ssn_ec,Attack submarine (Atlantic),hub_us_east_coast_via_suez,SSN_US,4,0,0,2027,9999,!withheld,b_naval_base_guam
+sub,US,USA,us_ssn_ec_w,Attack submarine (Atlantic),hub_us_east_coast_via_suez,SSN_US,1,0,0,2027,9999,withheld,b_naval_base_guam
+air,US,USA,us_f15ex_kad,F-15EX squadron (Kadena),b_kadena_ab,F15EX,18,2,0,0,2027,9999,*,
+air,US,USA,us_f35a_kad,F-35A detachment (Kadena),b_kadena_ab,F35A,12,1,0,0,2027,9999,*,
+air,US,USA,us_kc_kad,Tanker squadron (Kadena),b_kadena_ab,KC,15,1,0,0,2027,9999,*,
+air,US,USA,us_e3_kad,Airborne warning squadron (Kadena),b_kadena_ab,E3,2,1,0,0,2027,9999,*,
+air,US,USA,us_p8_kad,Maritime patrol detachment (Kadena),b_kadena_ab,P8,6,1,0,0,2027,9999,*,
+air,US,USA,us_f16_mis,F-16 squadron (Misawa),b_misawa_ab,F16,24,1,0,0,2027,9999,*,
+air,US,USA,us_f35a_mis,F-35A squadron (Misawa),b_misawa_ab,F35A,12,1,0,0,2027,9999,*,
+air,US,USA,us_f35b_iwa,Marine F-35B squadron (Iwakuni),b_mcas_iwakuni,F35B,16,2,0,0,2027,9999,*,
+air,US,USA,us_c130_yok,Airlift wing (Yokota),b_yokota_ab,C17,14,1,0,0,2027,9999,*,
+air,US,USA,us_mv22_fut,Marine tiltrotor group (Futenma),b_mcas_futenma,MV22,24,1,0,0,2027,9999,*,
+air,US,USA,us_f16_osan,F-16 squadron (Osan),b_osan_ab,F16,18,2,0,0,2027,9999,*,
+air,US,USA,us_f16_kun,F-16 squadron (Kunsan),b_kunsan_ab,F16,18,2,0,0,2027,9999,*,
+air,US,USA,us_b52_and,Bomber task force (Guam),b_andersen_afb,B52,4,1,0,0,2027,9999,*,
+air,US,USA,us_kc_and,Tanker task force (Guam),b_andersen_afb,KC,12,1,0,0,2027,9999,*,
+air,US,USA,us_mq4_and,Maritime surveillance drones (Guam),b_andersen_afb,MQ9,4,1,0,0,2027,9999,*,
+air,US,USA,us_b1_a,Bomber wing (B-1B) 1,hub_us_west_coast,B1,12,1,0,0,2027,9999,*,b_andersen_afb
+air,US,USA,us_b1_b,Bomber wing (B-1B) 2,hub_us_west_coast,B1,12,1,0,0,2027,9999,*,b_raaf_tindal
+air,US,USA,us_b2,Bomber wing (B-2A),hub_us_west_coast,B2,8,1,0,0,2027,9999,*,b_andersen_afb
+air,US,USA,us_b21,Bomber wing (B-21),hub_us_west_coast,B21,8,1,0.5,4,2029,9999,*,b_andersen_afb
+air,US,USA,us_b52_wc,Bomber wing (B-52H),hub_us_west_coast,B52,12,1,0,0,2027,9999,*,b_andersen_afb
+air,US,USA,us_b52_dg,Bomber task force (Diego Garcia),hub_diego_garcia,B52,8,1,0,0,2027,9999,*,
+air,US,USA,us_f22_ak,F-22 wing (Alaska),hub_alaska,F22,24,1,0,0,2027,9999,*,b_kadena_ab
+air,US,USA,us_f35a_ak1,F-35A wing (Alaska) 1,hub_alaska,F35A,24,1,0,0,2027,9999,*,b_misawa_ab
+air,US,USA,us_f35a_ak2,F-35A wing (Alaska) 2,hub_alaska,F35A,24,1,0,0,2027,9999,*,b_yokota_ab
+air,US,USA,us_f22_hi,F-22 wing (Hawaii),hub_hawaii,F22,18,1,0,0,2027,9999,*,b_andersen_afb
+air,US,USA,us_kc_hi,Tanker wing (Hawaii),hub_hawaii,KC,12,1,0,0,2027,9999,*,b_andersen_afb
+air,US,USA,us_f35a_wc1,F-35A wing (continental US) 1,hub_us_west_coast,F35A,24,1,0,0,2027,9999,*,b_kadena_ab
+air,US,USA,us_f35a_wc2,F-35A wing (continental US) 2,hub_us_west_coast,F35A,24,1,0,0,2027,9999,*,b_misawa_ab
+air,US,USA,us_f35a_new,F-35A wing (new),hub_us_west_coast,F35A,24,0,0.5,3,2028,9999,*,b_kadena_ab
+air,US,USA,us_f15e_wc,F-15E wing (continental US),hub_us_west_coast,F15E,24,1,0,0,2027,9999,*,b_misawa_ab
+air,US,USA,us_f16_wc,F-16 wing (continental US),hub_us_west_coast,F16,24,1,0,0,2027,9999,*,b_yokota_ab
+air,US,USA,us_kc_wc,Tanker surge,hub_us_west_coast,KC,24,1,0,0,2027,9999,*,b_yokota_ab
+air,US,USA,us_e3_wc,Airborne warning wing,hub_us_west_coast,E3,4,1,0,0,2027,9999,*,b_yokota_ab
+air,US,USA,us_p8_wc,Maritime patrol wing,hub_us_west_coast,P8,12,1,0,0,2027,9999,*,b_kadena_ab
+air,US,USA,us_p8_hi,Maritime patrol squadron (Hawaii),hub_hawaii,P8,6,1,0,0,2027,9999,*,b_andersen_afb
+air,US,USA,us_c17_wc,Strategic airlift,hub_us_west_coast,C17,24,1,0,0,2027,9999,*,b_andersen_afb
+air,US,USA,us_mq9_wc,Drone wing,hub_us_west_coast,MQ9,8,1,0,0,2027,9999,*,b_andersen_afb
+air,US,USA,us_f35a_eu,F-35A wing (Europe),hub_europe_middle_east,F35A,24,1,0,0,2027,9999,*,b_kadena_ab
+air,US,USA,us_f15e_eu,F-15E wing (Europe),hub_europe_middle_east,F15E,24,1,0,0,2027,9999,*,b_andersen_afb
+land,US,USA,us_pat_kad,Patriot battalion (Kadena),b_kadena_ab,PATRIOT,2,1,0,0,false,2027,9999,*
+land,US,USA,us_thaad_guam,THAAD battery (Guam),b_andersen_afb,THAAD,1,1,0,0,false,2027,9999,*
+land,US,USA,us_gds,Guam Defense System,b_andersen_afb,GDS,1,1,0,0,false,2027,9999,*
+land,US,USA,us_pat_guam,Patriot battery (Guam),b_naval_base_guam,PATRIOT,1,1,0,0,false,2027,9999,*
+land,US,USA,us_pat_osan,Patriot battalion (Korea),b_osan_ab,PATRIOT,2,1,0,0,false,2027,9999,*
+land,US,USA,us_nmesis_ok,Marine anti-ship battery (Okinawa),b_camp_hansen,NMESIS,1,1,0.25,3,false,2027,9999,*
+land,US,USA,us_typhon_lz,Army mid-range battery (Luzon),b_laoag,TYPHON,1,1,0,0,false,2027,9999,*
+land,US,USA,us_himars_hi,Army long-range fires battalion,hub_hawaii,HIMARS,2,1,0,0,false,2027,9999,*
+land,US,USA,us_nmesis_hi,Marine anti-ship battery (Hawaii),hub_hawaii,NMESIS,1,1,0.25,3,false,2027,9999,*
+land,US,USA,us_pat_wc,Patriot battalion (surge),hub_us_west_coast,PATRIOT,2,1,0,0,false,2027,9999,*
+land,US,USA,us_typhon_wc,Army mid-range battery (surge),hub_us_west_coast,TYPHON,1,1,0.15,2,false,2027,9999,*
+land,US,USA,us_thaad_wc,THAAD battery (surge),hub_us_west_coast,THAAD,1,1,0,0,false,2027,9999,*
+pool,US_TH,LRASM,160,0,0,0,*
+pool,US_GL,LRASM,400,115,0,12,*
+pool,US_TH,JASSM_ER,500,0,0,0,*
+pool,US_GL,JASSM_ER,2100,430,0,45,*
+pool,US_TH,JASSM,300,0,0,0,*
+pool,US_GL,JASSM,700,140,0,15,*
+pool,US_TH,TLAM,120,0,0,0,*
+pool,US_GL,TLAM,1200,150,0,16,*
+pool,US_GL,MST,70,40,0,4,*
+pool,US_TH,HARPOON,300,0,0,0,*
+pool,US_GL,HARPOON,400,40,0,4,*
+pool,US_TH,NSM,80,0,0,0,*
+pool,US_GL,NSM,200,95,0,10,*
+pool,US_TH,SM6,140,0,0,0,*
+pool,US_GL,SM6,500,150,0,16,*
+pool,US_TH,SM2,200,0,0,0,*
+pool,US_GL,SM2,1000,95,0,10,*
+pool,US_TH,SM3,30,0,0,0,*
+pool,US_GL,SM3,110,40,0,4,*
+pool,US_TH,ESSM,200,0,0,0,*
+pool,US_GL,ESSM,800,145,0,15,*
+pool,US_TH,PAC3,240,0,0,0,*
+pool,US_GL,PAC3,620,430,0,45,*
+pool,US_TH,THAAD,48,0,0,0,*
+pool,US_GL,THAAD,210,75,0,8,*
+pool,US_TH,PRSM,40,0,0,0,*
+pool,US_GL,PRSM,260,480,0,50,*
+pool,US_TH,MK48,200,0,0,0,*
+pool,US_GL,MK48,600,75,0,8,*
+pool,US_TH,QUICKSTRIKE,200,0,0,0,*
+pool,US_GL,QUICKSTRIKE,300,0,0,0,*
+#
+# ===== China =====
+group,PRC,CHN,cn_cv1,Carrier group 1 (Type 001),b_qingdao_naval_base,cv_north,2027,9999,*
+ship,cn_cv1,CV_001,1,0,0,2027,9999,*
+ship,cn_cv1,CG_055,1,0,0,2027,9999,*
+ship,cn_cv1,DDG_052D,2,0,0,2027,9999,*
+ship,cn_cv1,FFG_054,1,0,0,2027,9999,*
+air,PRC,CHN,cn_cv1_air,Carrier air wing 1 (J-15),cn_cv1,J15,24,1,0,0,2027,9999,*,
+group,PRC,CHN,cn_cv2,Carrier group 2 (Type 002),b_yulin_naval_base_sanya,cv_bashi,2027,9999,*
+ship,cn_cv2,CV_001,1,0,0,2027,9999,*
+ship,cn_cv2,CG_055,1,0,0,2027,9999,*
+ship,cn_cv2,DDG_052D,2,0,0,2027,9999,*
+ship,cn_cv2,FFG_054,1,0,0,2027,9999,*
+air,PRC,CHN,cn_cv2_air,Carrier air wing 2 (J-15),cn_cv2,J15,24,1,0,0,2027,9999,*,
+group,PRC,CHN,cn_cv3,Carrier group 3 (Type 003),b_yulin_naval_base_sanya,cv_south,2027,9999,*
+ship,cn_cv3,CV_003,1,0,0,2027,9999,*
+ship,cn_cv3,CG_055,1,0,0,2027,9999,*
+ship,cn_cv3,DDG_052D,2,0,0,2027,9999,*
+ship,cn_cv3,FFG_054,1,0,0,2027,9999,*
+air,PRC,CHN,cn_cv3_air1,Carrier air wing 3 (J-15),cn_cv3,J15,24,1,0,0,2027,9999,*,
+air,PRC,CHN,cn_cv3_air2,Carrier air wing 3 (J-35),cn_cv3,J35,12,1,0,0,2027,9999,*,
+group,PRC,CHN,cn_cv4,Carrier group 4 (Type 004),b_qingdao_naval_base,cv_north,2032,9999,*
+ship,cn_cv4,CV_003,1,0,0,2032,9999,*
+ship,cn_cv4,CG_055,1,0,0,2032,9999,*
+ship,cn_cv4,DDG_052D,2,0,0,2032,9999,*
+ship,cn_cv4,FFG_054,1,0,0,2032,9999,*
+air,PRC,CHN,cn_cv4_air1,Carrier air wing 4 (J-35),cn_cv4,J35,24,1,0,0,2032,9999,*,
+air,PRC,CHN,cn_cv4_air2,Carrier air wing 4 (J-15),cn_cv4,J15,12,1,0,0,2032,9999,*,
+group,PRC,CHN,cn_sag_e1,East Sea surface action group 1,b_zhoushan_naval_base,sag_east1,2027,9999,*
+ship,cn_sag_e1,CG_055,2,0,0,2027,9999,*
+ship,cn_sag_e1,DDG_052D,3,0,0,2027,9999,*
+ship,cn_sag_e1,FFG_054,2,0,0,2027,9999,*
+group,PRC,CHN,cn_sag_e2,East Sea surface action group 2,b_zhoushan_naval_base,sag_east2,2027,9999,*
+ship,cn_sag_e2,DDG_052D,3,0.5,7,2027,9999,*
+ship,cn_sag_e2,CG_055,0,0.5,3,2028,9999,*
+ship,cn_sag_e2,DDG_052C,2,0,0,2027,9999,*
+ship,cn_sag_e2,DDG_956,2,0,0,2027,9999,*
+ship,cn_sag_e2,FFG_054,2,0,0,2027,9999,*
+group,PRC,CHN,cn_esc_e,East Sea escort group,b_fuzhou_luoyuan_bay,escort,2027,9999,*
+ship,cn_esc_e,FFG_054,6,0.5,10,2027,9999,*
+ship,cn_esc_e,COR_056,4,0,0,2027,9999,*
+group,PRC,CHN,cn_sag_s,South Sea surface action group,b_zhanjiang_naval_base,sag_south,2027,9999,*
+ship,cn_sag_s,CG_055,2,0.5,5,2027,9999,*
+ship,cn_sag_s,DDG_052D,4,0.5,8,2027,9999,*
+ship,cn_sag_s,FFG_054,3,0,0,2027,9999,*
+group,PRC,CHN,cn_sag_n,North Sea surface action group,b_qingdao_naval_base,sag_north,2027,9999,*
+ship,cn_sag_n,CG_055,1,0,0,2027,9999,*
+ship,cn_sag_n,DDG_052D,3,0.5,6,2027,9999,*
+ship,cn_sag_n,FFG_054,3,0,0,2027,9999,*
+ship,cn_sag_n,DDG_956,2,0,0,2027,9999,*
+group,PRC,CHN,cn_asw_f,Fujian anti-submarine group,b_xiamen_naval_base,asw,2027,9999,*
+ship,cn_asw_f,COR_056,10,0,0,2027,9999,*
+group,PRC,CHN,cn_asw_g,Guangdong anti-submarine group,b_shantou_port,asw_south,2027,9999,*
+ship,cn_asw_g,COR_056,10,0,0,2027,9999,*
+group,PRC,CHN,cn_mb_f,Fujian missile boat flotilla,b_fuzhou_luoyuan_bay,mb,2027,9999,*
+ship,cn_mb_f,FAC_022,16,0,0,2027,9999,*
+group,PRC,CHN,cn_mb_x,Xiamen missile boat flotilla,b_xiamen_naval_base,mb_penghu,2027,9999,*
+ship,cn_mb_x,FAC_022,16,0,0,2027,9999,*
+group,PRC,CHN,cn_amph_e,Amphibious group East,b_zhoushan_naval_base,amph_east,2027,9999,*
+ship,cn_amph_e,LHD_075,1,0,0,2027,9999,*
+ship,cn_amph_e,LPD_071,2,0,0,2027,9999,*
+ship,cn_amph_e,LST_072,10,0,0,2027,9999,*
+ship,cn_amph_e,LSM_073,6,0,0,2027,9999,*
+group,PRC,CHN,cn_amph_s,Amphibious group South,b_zhanjiang_naval_base,amph_south,2027,9999,*
+ship,cn_amph_s,LHD_075,3,0.25,5,2027,9999,*
+ship,cn_amph_s,LPD_071,6,0.25,8,2027,9999,*
+ship,cn_amph_s,LST_072,18,0,0,2027,9999,*
+ship,cn_amph_s,LSM_073,14,0,0,2027,9999,*
+group,PRC,CHN,cn_amph_76,Amphibious group (Type 076),b_zhoushan_naval_base,amph_76,2027,9999,p2
+ship,cn_amph_76,LHA_076,1,0,0,2027,9999,p2
+ship,cn_amph_76,LPD_071,1,0,0,2027,9999,p2
+group,PRC,CHN,cn_amph_76b,Amphibious group (Type 076),b_zhoushan_naval_base,amph_76,2028,9999,!p2
+ship,cn_amph_76b,LHA_076,1,0.34,3,2028,9999,!p2
+ship,cn_amph_76b,LPD_071,1,0,0,2028,9999,!p2
+group,PRC,CHN,cn_ccg_f,Coast guard squadron (Fujian),b_fuzhou_luoyuan_bay,cg,2027,9999,*
+ship,cn_ccg_f,CCG,18,0,0,2027,9999,*
+group,PRC,CHN,cn_ccg_z,Coast guard squadron (Zhejiang),b_zhoushan_naval_base,cg,2027,9999,*
+ship,cn_ccg_z,CCG,14,0,0,2027,9999,*
+group,PRC,CHN,cn_ccg_g,Coast guard squadron (Guangdong),b_shantou_port,cg,2027,9999,*
+ship,cn_ccg_g,CCG,14,0,0,2027,9999,*
+group,PRC,CHN,cn_mil_f,Maritime militia (Fujian),b_pingtan,cg,2027,9999,*
+ship,cn_mil_f,MIL,30,0,0,2027,9999,*
+group,PRC,CHN,cn_mil_g,Maritime militia (Guangdong),b_shantou_port,cg,2027,9999,*
+ship,cn_mil_g,MIL,20,0,0,2027,9999,*
+group,PRC,CHN,cn_roro1,Ro-ro ferry flotilla 1,b_pingtan,roro,2027,9999,roro
+ship,cn_roro1,RORO,10,0,0,2027,9999,roro
+group,PRC,CHN,cn_roro2,Ro-ro ferry flotilla 2,b_xiamen_naval_base,roro,2027,9999,roro
+ship,cn_roro2,RORO,10,0,0,2027,9999,roro
+group,PRC,CHN,cn_roro3,Ro-ro ferry flotilla 3,b_fuzhou_luoyuan_bay,roro,2027,9999,roro
+ship,cn_roro3,RORO,10,0,0,2027,9999,roro
+group,PRC,CHN,cn_pier,Barge pier group,b_pingtan,pier,2027,9999,roro
+ship,cn_pier,PIER,3,0,0,2027,9999,roro
+group,PRC,CHN,cn_lighter,Civilian lighterage group,b_quanzhou_port,lighter,2027,9999,roro
+ship,cn_lighter,LSM_073,12,0,0,2027,9999,roro
+group,PRC,RUS,ru_pacific,Russian Pacific squadron,b_vladivostok,russia,2027,9999,*
+ship,ru_pacific,CG_RU,1,0,0,2027,9999,*
+ship,ru_pacific,DD_RU,3,0,0,2027,9999,*
+sub,PRC,CHN,cn_093n,Type 093 submarine (North),b_qingdao_naval_base,SSN_093,3,0.25,5,2027,9999,*,b_qingdao_naval_base
+sub,PRC,CHN,cn_093s,Type 093 submarine (South),b_yulin_naval_base_sanya,SSN_093,3,0.25,5,2027,9999,*,b_yulin_naval_base_sanya
+sub,PRC,CHN,cn_039e,Type 039A submarine (East),b_zhoushan_naval_base,SSK_039A,6,0.25,8,2027,9999,*,b_zhoushan_naval_base
+sub,PRC,CHN,cn_039n,Type 039A submarine (North),b_qingdao_naval_base,SSK_039A,4,0,0,2027,9999,*,b_qingdao_naval_base
+sub,PRC,CHN,cn_039s,Type 039A submarine (South),b_yulin_naval_base_sanya,SSK_039A,5,0.25,7,2027,9999,*,b_yulin_naval_base_sanya
+sub,PRC,CHN,cn_636,Project 636 submarine,b_zhoushan_naval_base,SSK_636,6,0,0,2027,9999,*,b_zhoushan_naval_base
+sub,PRC,CHN,cn_039old_e,Type 039 submarine,b_zhoushan_naval_base,SSK_039,3,-0.3,0,2027,9999,*,b_zhoushan_naval_base
+sub,PRC,CHN,cn_039old_s,Type 039 submarine,b_zhanjiang_naval_base,SSK_039,3,-0.3,0,2027,9999,*,b_zhanjiang_naval_base
+air,PRC,CHN,cn_j20,J-20 brigade,b_wuhu_ab+b_anqing_ab+b_zhangshu_ab+b_suixi_ab+b_shanghai_dachang+b_leiyang_ab+b_nanchang_ab,J20,24,7,0,0,2027,9999,*,
+air,PRC,CHN,cn_j20_new,J-20 brigade (new),b_longtian_ab+b_luqiao_ab+b_huizhou_ab+b_ningbo_zhuangqiao_ab+b_wuyishan_ab+b_shuimen_ab+b_jieyang_ab+b_zhangzhou_ab+b_jinjiang_ab,J20,24,0,1,9,2027,9999,*,
+air,PRC,CHN,cn_j35,J-35A brigade,b_huian_ab+b_luqiao_ab+b_zhangshu_ab+b_suixi_ab+b_huizhou_ab+b_wuyishan_ab,J35,24,0,1,6,2028,9999,*,
+air,PRC,CHN,cn_j16,J-16 brigade,b_huian_ab+b_jinjiang_ab+b_huizhou_ab+b_luqiao_ab+b_wuyishan_ab+b_ningbo_zhuangqiao_ab,J16,24,6,0,0,2027,9999,*,
+air,PRC,CHN,cn_j10,J-10C brigade,b_longtian_ab+b_zhangzhou_ab+b_jieyang_ab+b_shantou_waisha_ab+b_zhangshu_ab,J10C,24,5,0,0,2027,9999,*,
+air,PRC,CHN,cn_su35,Su-35 brigade,b_suixi_ab+b_zhangzhou_ab,SU35,24,2,0,0,2027,9999,*,
+air,PRC,CHN,cn_j11,J-11B brigade,b_fuzhou_changle+b_luqiao_ab+b_lingshui_ab+b_shanghai_dachang,J11B,24,4,-0.34,0,2027,9999,*,
+air,PRC,CHN,cn_jh7,JH-7A brigade,b_ningbo_zhuangqiao_ab+b_lingshui_ab,JH7,24,2,0,0,2027,9999,*,
+air,PRC,CHN,cn_h6k,H-6K regiment,b_anqing_ab+b_nanchang_ab+b_leiyang_ab+b_leiyang_ab,H6K,12,4,0,0,2027,9999,*,
+air,PRC,CHN,cn_h6j,H-6J regiment,b_daishan_ab+b_ledong_ab+b_wuyishan_ab,H6J,12,3,0,0,2027,9999,*,
+air,PRC,CHN,cn_kj500,Airborne warning regiment,b_ningbo_zhuangqiao_ab+b_wuhu_ab+b_suixi_ab,KJ500,6,3,0,0,2027,9999,*,
+air,PRC,CHN,cn_kq200,Anti-submarine regiment,b_daishan_ab+b_lingshui_ab,KQ200,6,2,0,0,2027,9999,*,
+air,PRC,CHN,cn_yy20,Tanker regiment,b_zhangshu_ab,YY20,8,1,0.5,3,2027,9999,*,
+air,PRC,CHN,cn_y20,Transport regiment,b_wuhu_ab+b_zhangshu_ab,Y20,24,2,0,0,2027,9999,*,
+air,PRC,CHN,cn_wz7,Reconnaissance drone group,b_shuimen_ab+b_lingshui_ab,WZ7,6,2,0,0,2027,9999,*,
+air,PRC,CHN,cn_z20,Army aviation brigade,b_huian_ab+b_xiamen_gaoqi+b_jieyang_ab,Z20,24,3,0,0,2027,9999,*,
+land,PRC,CHN,cn_srbm,Short-range missile brigade,b_yongan_missile_base+b_yongan_missile_base+b_meizhou_missile_base+b_puning_missile_base,SRBM,36,4,0,0,false,2027,9999,*
+land,PRC,CHN,cn_df16,DF-16 brigade,b_ganzhou_missile_base+b_shangrao_missile_base,DF16,24,2,0,0,false,2027,9999,*
+land,PRC,CHN,cn_df17,DF-17 brigade,b_jinhua_missile_base+b_ganzhou_missile_base+b_meizhou_missile_base+b_shangrao_missile_base+b_shaoguan_missile_base,DF17,24,3,0.4,7,false,2027,9999,*
+land,PRC,CHN,cn_df21c,DF-21C brigade,b_shangrao_missile_base+b_shaoguan_missile_base,DF21C,24,2,0,0,false,2027,9999,*
+land,PRC,CHN,cn_df21d,DF-21D brigade,b_shaoguan_missile_base+b_laiwu_missile_base+b_puning_missile_base,DF21D,24,3,0,0,true,2027,9999,*
+land,PRC,CHN,cn_df26a,DF-26 anti-ship brigade,b_xinyang_missile_base+b_xinyang_missile_base+b_huaihua_missile_base,DF26,30,2,0.2,3,true,2027,9999,*
+land,PRC,CHN,cn_df26,DF-26 brigade,b_huaihua_missile_base+b_huaihua_missile_base+b_jinhua_missile_base+b_xinyang_missile_base,DF26,30,3,0.2,4,false,2027,9999,*
+land,PRC,CHN,cn_cj10,Cruise missile brigade,b_puning_missile_base+b_jinhua_missile_base+b_yongan_missile_base,CJ10,24,3,0,0,false,2027,9999,*
+land,PRC,CHN,cn_phl16,Long-range rocket brigade,b_pingtan+b_xiamen_naval_base+b_dongshan_island,PHL16,27,3,0,0,false,2027,9999,*
+land,PRC,CHN,cn_yj12,Coastal defence missile brigade,b_pingtan+b_dongshan_island,YJ12C,12,2,0,0,false,2027,9999,*
+land,PRC,CHN,cn_hq9,Air-defence brigade,b_longtian_ab+b_xiamen_gaoqi+b_fuzhou_changle+b_shantou_waisha_ab+b_ningbo_zhuangqiao_ab+b_shanghai_dachang+b_zhanjiang_naval_base+b_yulin_naval_base_sanya+b_jinjiang_ab+b_huian_ab,HQ9,2,10,0,0,false,2027,9999,*
+troop,PRC,CHN,cn_amphbde,Amphibious combined-arms brigade,b_pingtan+b_pingtan+b_xiamen_naval_base+b_xiamen_naval_base+b_shantou_port+b_shantou_port,amphib,4.5,1,staging,6,2027,9999,*
+troop,PRC,CHN,cn_marines,Marine brigade,b_zhanjiang_naval_base+b_zhanjiang_naval_base+b_shantou_port+b_xiamen_naval_base+b_fuzhou_luoyuan_bay+b_zhoushan_naval_base+b_quanzhou_port,marine,3.5,1,staging,7,2027,9999,*
+troop,PRC,CHN,cn_airborne,Airborne brigade,b_wuhu_ab,airborne,3,1,staging,6,2027,9999,*
+troop,PRC,CHN,cn_airaslt,Air assault brigade,b_huian_ab+b_xiamen_gaoqi+b_jieyang_ab,airassault,2,1,staging,3,2027,9999,*
+troop,PRC,CHN,cn_sof,Special operations brigade,b_pingtan,sof,1,1,staging,3,2027,9999,*
+troop,PRC,CHN,cn_heavy,Combined-arms brigade,b_pingtan+b_xiamen_naval_base+b_quanzhou_port+b_fuzhou_luoyuan_bay+b_shantou_port+b_dongshan_island,heavy,4,1,reserve,24,2027,9999,*
+pool,PRC,DF11,1000,0,0,20,*
+pool,PRC,DF16,220,20,0,4,*
+pool,PRC,DF17,300,60,0,8,*
+pool,PRC,DF21C,520,0,0,6,*
+pool,PRC,DF21D,450,30,0,5,*
+pool,PRC,DF26,560,70,0,8,*
+pool,PRC,CJ10,450,60,0,10,*
+pool,PRC,PHL16,3000,600,0,200,*
+pool,PRC,KD20,700,80,0,15,*
+pool,PRC,YJ12,1500,150,0,30,*
+pool,PRC,YJ18,700,100,0,25,*
+pool,PRC,YJ21,120,40,0,4,*
+pool,PRC,YJ83,2400,100,0,40,*
+pool,PRC,HQ9,5000,300,0,100,*
+pool,PRC,YU6,800,40,0,10,*
+pool,PRC,MINES,20000,0,0,0,*
+#
+# ===== Taiwan =====
+air,US,TWN,tw_m2000,Mirage 2000-5 squadron,b_hsinchu_ab,M2000,26,2,-0.1,0,2027,9999,*,
+air,US,TWN,tw_fck1_c,F-CK-1 squadron (Taichung),b_ching_chuan_kang_ab,FCK1,32,2,0,0,2027,9999,*,
+air,US,TWN,tw_fck1_t,F-CK-1 squadron (Tainan),b_tainan_ab,FCK1,32,2,0,0,2027,9999,*,
+air,US,TWN,tw_f16v_c,F-16V squadron (Chiayi),b_chiayi_ab,F16V,32,2,0,0,2027,9999,*,
+air,US,TWN,tw_f16v_h,F-16V squadron (Hualien),b_hualien_ab_chiashan,F16V,37,2,0,0,2027,9999,*,
+air,US,TWN,tw_f16v_new,F-16V squadron (new deliveries),b_chihhang_ab_taitung,F16V,22,1,0.5,3,2027,9999,*,
+air,US,TWN,tw_e2k,Early warning squadron,b_pingtung_ab,E2K,5,1,0,0,2027,9999,*,
+air,US,TWN,tw_p3,Anti-submarine squadron,b_pingtung_ab,P3TW,12,1,0,0,2027,9999,*,
+air,US,TWN,tw_mq9,Surveillance drone detachment,b_chihhang_ab_taitung,MQ9,4,1,0,0,2027,9999,*,
+air,US,TWN,tw_ah64,Attack helicopter brigade,b_taoyuan_intl_airport,AH64,28,1,0,0,2027,9999,*,
+group,US,TWN,tw_ddg,Destroyer flotilla (Taiwan),b_suao_naval_base,tw_ddg,2027,9999,*
+ship,tw_ddg,DDG_TW,4,0,0,2027,9999,*
+group,US,TWN,tw_ffg,Frigate flotilla (Taiwan),b_zuoying_naval_base,tw_ffg,2027,9999,*
+ship,tw_ffg,FFG_TW,8,-0.25,6,2027,9999,*
+group,US,TWN,tw_ffl,Light frigate flotilla (Taiwan),b_port_of_keelung,tw_ffl,2027,9999,*
+ship,tw_ffl,FFL_TW,6,0,0,2027,9999,*
+group,US,TWN,tw_cor,Corvette squadron (Taiwan),b_port_of_keelung,tw_cor,2027,9999,*
+ship,tw_cor,COR_TW,5,1.5,12,2027,9999,*
+group,US,TWN,tw_fac_n,Fast attack craft group (north),b_port_of_keelung,tw_fac_n,2027,9999,*
+ship,tw_fac_n,FAC_TW,12,0,0,2027,9999,*
+group,US,TWN,tw_fac_s,Fast attack craft group (south),b_zuoying_naval_base,tw_fac_s,2027,9999,*
+ship,tw_fac_s,FAC_TW,12,0,0,2027,9999,*
+group,US,TWN,tw_cga,Coast guard (Taiwan),b_port_of_kaohsiung,cg,2027,9999,*
+ship,tw_cga,CGA_TW,12,0,0,2027,9999,*
+sub,US,TWN,tw_ss,Submarine (Taiwan),b_zuoying_naval_base,SS_TW,2,0,0,2027,9999,*,b_zuoying_naval_base
+sub,US,TWN,tw_ss_new,New submarine (Taiwan),b_zuoying_naval_base,SS_TW_NEW,1,0,0,2027,2028,p1,b_zuoying_naval_base
+sub,US,TWN,tw_ss_new2,New submarine (Taiwan),b_zuoying_naval_base,SS_TW_NEW,1,0.7,8,2029,9999,*,b_zuoying_naval_base
+land,US,TWN,tw_hf3,Coastal missile battalion (HF-3),b_port_of_keelung+b_port_of_taichung+b_zuoying_naval_base,HF3,6,3,0,0,false,2027,9999,*
+land,US,TWN,tw_hf2,Coastal missile battalion (HF-2),b_taipei_port+b_anping_port+b_makung_ab_penghu+b_port_of_hualien,HF2,6,4,0,0,false,2027,9999,*
+land,US,TWN,tw_hcds_b,Harpoon coastal battalion,b_taipei_port+b_port_of_taichung+b_port_of_kaohsiung+b_anping_port+b_port_of_hualien+b_suao_naval_base,HCDS,8,2,2,12,false,2027,9999,p0
+land,US,TWN,tw_hcds_o,Harpoon coastal battalion,b_taipei_port+b_port_of_taichung+b_port_of_kaohsiung+b_anping_port+b_port_of_hualien+b_suao_naval_base,HCDS,8,4,2,12,false,2027,9999,p1
+land,US,TWN,tw_hcds_p,Harpoon coastal battalion,b_taipei_port+b_port_of_taichung+b_port_of_kaohsiung+b_anping_port+b_port_of_hualien+b_suao_naval_base,HCDS,8,1,1.5,8,false,2027,9999,p2
+land,US,TWN,tw_hf2e,Land-attack missile battalion,b_hsinchu_ab+b_chiayi_ab,HF2E,6,2,0,0,false,2027,9999,*
+land,US,TWN,tw_himars_1,HIMARS battalion 1,b_tainan_ab,HIMARS_TW,11,1,0,0,false,2027,9999,*
+land,US,TWN,tw_himars_2,HIMARS battalion 2,b_ching_chuan_kang_ab,HIMARS_TW,18,1,0,0,false,2027,9999,*
+land,US,TWN,tw_pat,Patriot battalion,b_taipei_songshan+b_ching_chuan_kang_ab+b_kaohsiung_intl_airport,PATRIOT_TW,2,3,0,0,false,2027,9999,*
+land,US,TWN,tw_tk3,Air-defence battalion,b_taoyuan_intl_airport+b_hsinchu_ab+b_chiayi_ab+b_tainan_ab+b_hualien_ab_chiashan+b_makung_ab_penghu,TK3,2,6,0,0,false,2027,9999,*
+troop,US,TWN,tw_mech_hc,Mechanised infantry brigade (Hsinchu),s_hsinchu,mech,3.5,1,ready,1,2027,9999,*
+troop,US,TWN,tw_arm_hc,Armoured brigade (Hsinchu),s_hsinchu,armour,3.5,1,ready,1,2027,9999,*
+troop,US,TWN,tw_arm_ty,Armoured brigade (Taoyuan),s_taoyuan,armour,3.5,1,ready,1,2027,9999,*
+troop,US,TWN,tw_capital,Capital defence brigade,s_taipei,infantry,3,1,ready,1,2027,9999,*
+troop,US,TWN,tw_inf_nt,Infantry brigade (New Taipei),s_new_taipei,infantry,3,1,ready,1,2027,9999,*
+troop,US,TWN,tw_mar_nt,Marine brigade (New Taipei),s_new_taipei,marine,3,1,ready,1,2027,9999,*
+troop,US,TWN,tw_sof,Special forces command,s_taoyuan,sof,2,1,ready,1,2027,9999,*
+troop,US,TWN,tw_inf_yl,Infantry brigade (Yilan),s_yilan,infantry,3,1,ready,1,2027,9999,*
+troop,US,TWN,tw_inf_kl,Infantry battalions (Keelung),s_keelung,infantry,2,1,ready,1,2027,9999,*
+troop,US,TWN,tw_mech_tc,Mechanised infantry brigade (Taichung),s_taichung,mech,3.5,1,ready,1,2027,9999,*
+troop,US,TWN,tw_arm_ch,Armoured brigade (Changhua),s_changhua,armour,3.5,1,ready,1,2027,9999,*
+troop,US,TWN,tw_inf_ml,Infantry brigade (Miaoli),s_miaoli,infantry,3,1,ready,1,2027,9999,*
+troop,US,TWN,tw_mech_ks,Mechanised infantry brigade (Kaohsiung),s_kaohsiung,mech,3.5,1,ready,1,2027,9999,*
+troop,US,TWN,tw_arm_tn,Armoured brigade (Tainan),s_tainan,armour,3.5,1,ready,1,2027,9999,*
+troop,US,TWN,tw_mar_ks,Marine brigade (Kaohsiung),s_kaohsiung,marine,3,1,ready,1,2027,9999,*
+troop,US,TWN,tw_mar_pt,Marine brigade (Pingtung),s_pingtung,marine,3,1,ready,1,2027,9999,*
+troop,US,TWN,tw_inf_cy,Infantry brigade (Chiayi),s_chiayi,infantry,3,1,ready,1,2027,9999,*
+troop,US,TWN,tw_inf_hl,Infantry brigade (Hualien),s_hualien,infantry,3,1,ready,1,2027,9999,*
+troop,US,TWN,tw_inf_tt,Infantry brigade (Taitung),s_taitung,infantry,2,1,ready,1,2027,9999,*
+troop,US,TWN,tw_gar_ph,Penghu garrison,s_penghu,garrison,3,1,ready,1,2027,9999,*
+troop,US,TWN,tw_gar_km,Kinmen garrison,s_kinmen,garrison,3,1,ready,1,2027,9999,*
+troop,US,TWN,tw_gar_mz,Matsu garrison,s_matsu,garrison,1.5,1,ready,1,2027,9999,*
+troop,US,TWN,tw_reserve,Reserve brigade,s_taipei+s_new_taipei+s_new_taipei+s_taoyuan+s_taoyuan+s_hsinchu+s_miaoli+s_taichung+s_taichung+s_changhua+s_yunlin+s_chiayi+s_tainan+s_tainan+s_kaohsiung+s_kaohsiung+s_pingtung+s_yilan+s_hualien+s_keelung+s_taitung,reserve,3,0.5,reserve,21,2027,9999,*
+pool,TW,HF2E,150,72,0,6,*
+pool,TW,HF3,250,72,0,6,*
+pool,TW,HF2,400,0,0,0,*
+pool,TW,HARPOON,180,100,580,0,p0
+pool,TW,HARPOON,260,100,580,0,p1
+pool,TW,HARPOON,140,80,400,0,p2
+pool,TW,ATACMS,84,0,0,0,*
+pool,TW,GMLRS,864,0,0,0,*
+pool,TW,TK3,420,96,0,8,*
+pool,TW,PAC3,240,30,0,0,*
+pool,TW,SM2,60,0,0,0,*
+pool,TW,MK48,60,0,0,0,*
+#
+# ===== Japan =====
+air,US,JPN,jp_f15j_naha,F-15J wing (Naha),b_naha_ab,F15J,40,1,0,0,2027,9999,*,
+air,US,JPN,jp_f15j_nyu,F-15J wing (Nyutabaru),b_nyutabaru_ab,F15J,20,1,0,0,2027,9999,*,
+air,US,JPN,jp_f35b,F-35B squadron (Japan),b_nyutabaru_ab,F35B,8,1,0.5,3,2027,9999,*,
+air,US,JPN,jp_f2_tsu,F-2 wing (Tsuiki),b_tsuiki_ab,F2,20,1,0,0,2027,9999,*,
+air,US,JPN,jp_f15j_tsu,F-15J wing (Tsuiki),b_tsuiki_ab,F15J,20,1,0,0,2027,9999,*,
+air,US,JPN,jp_f15j_kom,F-15J wing (Komatsu),b_komatsu_ab,F15J,40,1,0,0,2027,9999,*,
+air,US,JPN,jp_f2_hya,F-2 wing (Hyakuri),b_hyakuri_ab,F2,20,1,0,0,2027,9999,*,
+air,US,JPN,jp_f35a,F-35A wing (Misawa),b_misawa_ab,F35A,40,1,0,0,2027,9999,*,
+air,US,JPN,jp_f35a_new,F-35A squadron (Japan),b_komatsu_ab+b_nyutabaru_ab+b_hyakuri_ab,F35A,20,0,0.5,3,2028,9999,*,
+air,US,JPN,jp_f15j_chi,F-15J wing (Chitose),b_chitose_ab,F15J,40,1,0,0,2027,9999,*,
+air,US,JPN,jp_aew,Airborne warning group (Japan),b_misawa_ab,E767,8,1,0,0,2027,9999,*,
+air,US,JPN,jp_kc,Tanker squadron (Japan),b_komatsu_ab,KC,8,1,0,0,2027,9999,*,
+air,US,JPN,jp_p1,Fleet air wing,b_kanoya_ab+b_naf_atsugi,P1,20,2,0,0,2027,9999,*,
+group,US,JPN,jp_flot1,Escort flotilla 1 (Japan),b_yokosuka_naval_base,jp,2027,9999,*
+ship,jp_flot1,DDH_JP,1,0,0,2027,9999,*
+ship,jp_flot1,DDG_JP,2,0,0,2027,9999,*
+ship,jp_flot1,DD_JP,3,0,0,2027,9999,*
+group,US,JPN,jp_flot2,Escort flotilla 2 (Japan),b_sasebo_naval_base,jp,2027,9999,*
+ship,jp_flot2,DDH_JP,1,0,0,2027,9999,*
+ship,jp_flot2,DDG_JP,2,0,0,2027,9999,*
+ship,jp_flot2,DD_JP,3,0,0,2027,9999,*
+group,US,JPN,jp_flot3,Escort flotilla 3 (Japan),b_kure_naval_base,jp,2027,9999,*
+ship,jp_flot3,DDH_JP,1,0,0,2027,9999,*
+ship,jp_flot3,DDG_JP,1,0,0,2027,9999,*
+ship,jp_flot3,DD_JP,2,0,0,2027,9999,*
+ship,jp_flot3,FFM_JP,2,1,6,2027,9999,*
+group,US,JPN,jp_flot4,Escort flotilla 4 (Japan),b_sasebo_naval_base,jp,2027,9999,*
+ship,jp_flot4,DDH_JP,1,0,0,2027,9999,*
+ship,jp_flot4,DDG_JP,1,0,0,2027,9999,*
+ship,jp_flot4,DD_JP,2,0,0,2027,9999,*
+ship,jp_flot4,FFM_JP,2,1,6,2027,9999,*
+sub,US,JPN,jp_ss_k,Submarine (Japan),b_kure_naval_base,SS_JP,6,0.25,8,2027,9999,*,b_kure_naval_base
+sub,US,JPN,jp_ss_y,Submarine (Japan),b_yokosuka_naval_base,SS_JP,4,0,0,2027,9999,*,b_yokosuka_naval_base
+land,US,JPN,jp_t12,Anti-ship missile regiment (Japan),b_amami_garrison+b_miyako_garrison+b_ishigaki_garrison+b_camp_kengun_kumamoto,TYPE12,8,4,0,0,false,2027,9999,*
+land,US,JPN,jp_t03,Type 03 battery,b_miyako_garrison+b_ishigaki_garrison+b_amami_garrison,TYPE03,2,3,0,0,false,2027,9999,*
+land,US,JPN,jp_pac3,PAC-3 battery (Japan),b_naha_ab+b_tsuiki_ab+b_yokota_ab,PATRIOT_JP,2,3,0,0,false,2027,9999,*
+pool,JP,TLAM,160,120,400,0,*
+pool,JP,TYPE12,96,40,0,8,*
+pool,JP,ASM3,80,10,0,0,*
+pool,JP,HARPOON,150,0,0,0,*
+pool,JP,NSM,60,20,0,0,*
+pool,JP,SM3,48,0,0,0,*
+pool,JP,SM6,32,16,0,0,*
+pool,JP,PAC3,240,72,0,6,*
+pool,JP,TYPE03,300,0,0,0,*
+pool,JP,MK48,300,0,0,0,*
+pool,JP,SM2,200,0,0,0,*
+pool,JP,ESSM,300,0,0,0,*
+#
+# ===== South Korea =====
+air,US,KOR,kr_f35a,F-35A wing (Korea),b_cheongju_ab,F35A,40,1,0.25,2,2027,9999,*,
+air,US,KOR,kr_f15k,F-15K wing,b_cheongju_ab,F15K,40,1,0,0,2027,9999,*,
+air,US,KOR,kr_kf16,KF-16 wing,b_kunsan_ab,KF16,40,1,0,0,2027,9999,*,
+group,US,KOR,kr_flot,Maritime task flotilla (Korea),b_jinhae_naval_base,kr,2027,9999,*
+ship,kr_flot,DDG_KR,3,0,0,2027,9999,*
+ship,kr_flot,DDH_KR,4,0,0,2027,9999,*
+sub,US,KOR,kr_ss,Submarine (Korea),b_jinhae_naval_base,SS_KR,2,0.25,4,2027,9999,*,b_jinhae_naval_base
+land,US,KOR,kr_pat,Patriot battalion (Korea),b_cheongju_ab,PATRIOT_KR,2,1,0,0,false,2027,9999,*
+pool,KR,PAC3,200,0,0,0,*
+pool,KR,HARPOON,150,0,0,0,*
+pool,KR,SM2,200,0,0,0,*
+pool,KR,JASSM,40,0,0,0,*
+pool,KR,MK48,100,0,0,0,*
+#
+# ===== The Philippines =====
+air,US,PHL,ph_fa50,Fighter wing (Philippines),b_basa_ab,FA50,18,1,0,0,2027,9999,*,
+group,US,PHL,ph_navy,Offshore combat force (Philippines),b_subic_bay,ph,2027,9999,*
+ship,ph_navy,FF_PH,2,0.34,4,2027,9999,*
+land,US,PHL,ph_brahmos,Coastal defence regiment (Philippines),b_subic_bay+b_camilo_osias_naval_base+b_basa_ab+b_lal_lo_airport,BRAHMOS,3,1,0.5,4,false,2027,9999,*
+pool,PH,BRAHMOS,18,12,0,0,*
+pool,PH,HARPOON,16,0,0,0,*
+#
+# ===== Australia =====
+air,US,AUS,au_f35a,F-35A squadron (Tindal),b_raaf_tindal,F35A,24,1,0,0,2027,9999,*,
+air,US,AUS,au_f35a_hub,F-35A squadron (south),hub_southern_australia,F35A,24,1,0,0,2027,9999,*,b_raaf_darwin
+air,US,AUS,au_fa18f,F/A-18F squadron,hub_southern_australia,FA18F_AU,24,1,0,0,2027,9999,*,b_raaf_darwin
+air,US,AUS,au_p8,Maritime patrol wing (Australia),hub_southern_australia,P8,12,1,0,0,2027,9999,*,b_raaf_darwin
+air,US,AUS,au_e7,Airborne warning squadron (Australia),hub_southern_australia,E7,4,1,0,0,2027,9999,*,b_raaf_tindal
+group,US,AUS,au_tg,Naval task group (Australia),hub_southern_australia,au,2027,9999,*
+ship,au_tg,DDG_AU,2,0,0,2027,9999,*
+ship,au_tg,FFH_AU,3,0,0,2027,9999,*
+sub,US,AUS,au_ss,Submarine (Australia),hub_southern_australia,SS_AU,2,0,0,2027,9999,*,b_darwin_naval_base
+sub,US,AUS,au_ssn,Attack submarine (Australia),hub_southern_australia,SSN_AU,1,0.5,3,2032,9999,*,b_darwin_naval_base
+pool,AU,NSM,100,0,0,0,*
+pool,AU,LRASM,30,10,0,0,*
+pool,AU,JASSM_ER,80,10,0,0,*
+pool,AU,HARPOON,100,0,0,0,*
+pool,AU,SM2,100,0,0,0,*
+pool,AU,ESSM,150,0,0,0,*
+pool,AU,MK48,100,0,0,0,*
+pool,AU,TLAM,20,10,0,0,*
+#
+# ===== United Kingdom and France =====
+group,US,GBR,uk_csg,Carrier group (UK),hub_europe_middle_east,uk,2027,9999,*
+ship,uk_csg,CV_UK,1,0,0,2027,9999,*
+ship,uk_csg,DD_UK,3,0,0,2027,9999,*
+air,US,GBR,uk_air,Carrier air wing (UK),uk_csg,F35B,24,1,0,0,2027,9999,*,
+sub,US,GBR,uk_ssn,Attack submarine (UK),hub_europe_middle_east,SSN_UK,1,0,0,2027,9999,*,b_naval_base_guam
+group,US,FRA,fr_csg,Carrier group (France),hub_europe_middle_east,fr,2027,9999,*
+ship,fr_csg,CVN_FR,1,0,0,2027,9999,*
+ship,fr_csg,DD_FR,3,0,0,2027,9999,*
+air,US,FRA,fr_air,Carrier air wing (France),fr_csg,RAFALE,24,1,0,0,2027,9999,*,
+sub,US,FRA,fr_ssn,Attack submarine (France),hub_europe_middle_east,SSN_FR,1,0,0,2027,9999,*,b_naval_base_guam
+#
+# ===== Trends =====
+trend,tw_quality,0.02,0.1
