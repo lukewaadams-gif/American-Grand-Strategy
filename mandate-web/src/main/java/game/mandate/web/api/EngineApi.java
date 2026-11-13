@@ -224,6 +224,10 @@ public final class EngineApi {
                 case LAW -> "Law";
                 case DEAD -> "Dead";
             };
+            if (!g.laws().contains(id) && g.hill().isPresent()) {      // after the hundred days, the bill's place on the Hill
+                for (var x : g.hill().get().bills()) if (x.ours() && x.source().equals(id) && (x.stage() == game.mandate.core.hill.HillState.Stage.DRAFT || x.stage().active()))
+                    stage = HillViews.stage(x);
+            }
             b.put("stage", stage);
             bills.add(b);
         }
