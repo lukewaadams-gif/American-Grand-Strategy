@@ -1,0 +1,109 @@
+# Which policy levels each bill sets (kind=bill: bill id, policy=level ...), and the voter-group codes the policy table uses (kind=group: index, code).
+# Exported by tools/RdExport.java from Resolute Desk commit 2ce2b37. Do not edit by hand: re-run the tool.
+# Tab-separated. Only what can happen between 2029 and 2033 is kept.
+kind	key	value
+bill	lower_costs	child_care=2 insulin=2
+bill	public_option	public_option=1
+bill	restore_roe	abortion=3
+bill	imm_reform	dreamers=2 legalization=1 border=2
+bill	billionaire_tax	wealth_tax=1
+bill	housing	zoning=1 lihtc=2
+bill	ai_safety	ai_safety=2
+bill	ss_protect	payroll_cap=1 ss_benefits=3
+bill	gun_safety	bg_checks=2 assault=1 red_flag=2
+bill	clean_energy	grid=1 clean_credits=2
+bill	voting_rights	voting_access=2
+bill	paid_leave	paid_leave=2
+bill	child_credit	child_credit=3
+bill	min_wage	min_wage=4
+bill	tax_cuts	mid_rates=2 corp_rate=0
+bill	border_wall	border=3
+bill	health_freedom	hsa=2 aca_aid=0
+bill	abortion_limit	abortion=1
+bill	energy_dom	drilling=3 pipelines=2
+bill	balance_budget	caps=3
+bill	school_choice	school_choice=2
+bill	police	police_money=2
+bill	save_act	voter_id=2
+bill	no_tax_tips	tips_tax=1
+bill	infrastructure	highways=2 transit=2
+bill	chips2	chips=2 export_controls=2
+bill	permitting	pipelines=2 grid=1
+bill	kids_online	kids_online=1
+bill	crypto	crypto=1
+bill	ss_fix	ret_age=1 payroll_cap=1
+bill	social_security	ss_benefits=1 unemp_ins=1 cash_aid=2
+bill	wagner	unions=1
+bill	flsa	min_wage=1 child_labor=2 overtime=1
+bill	wpa	jobs_program=1
+bill	glass_steagall	bank_rules=2
+bill	draft40	draft=2
+bill	highways	highways=2
+bill	medicare	medicare=1 medicaid=1
+bill	civil_rights64	civil_rights=1
+bill	voting_rights65	voting_access=1
+bill	esea	title_i=1
+bill	poverty	pre_k=1 snap=2
+bill	immigration65	legal_imm=1
+bill	clean_air70	power_plants=1
+bill	clean_water	clean_water=1
+bill	osha	safety=1
+bill	erta	top_rate=2 mid_rates=2
+bill	tax_reform86	top_rate=0
+bill	irca	legalization=1 e_verify=0
+bill	drugs86	sentencing=2
+bill	fmla	paid_leave=1
+bill	crime94	police_money=2 assault=2 bg_checks=1
+bill	welfare96	work_reqs=1 cash_aid=1
+bill	bush_tax	top_rate=1 mid_rates=2
+bill	nclb	testing=2
+bill	patriot	surveillance=2
+bill	aca	medicaid=2 aca_aid=1
+bill	dodd_frank	bank_rules=2 cfpb=1
+bill	cap_trade	carbon_price=1
+bill	dream	dreamers=2
+bill	budget_control	caps=2
+bill	tcja	corp_rate=1 mid_rates=2
+bill	ahca	aca_aid=0 medicaid=1
+bill	wall17	border=3
+bill	first_step	sentencing=0
+bill	ss83	ret_age=1
+bill	fap	basic_income=1
+bill	medicare_d	drug_prices=0
+bill	energy75	fuel_economy=1
+bill	housing37	vouchers=1
+bill	gi_bill	pell=1 veterans=2
+bill	ndea	research_univ=2 space=1
+bill	space	space=2
+bill	kennedy_tax	top_rate=3 mid_rates=2
+bill	recovery_act	jobs_program=1 transit=2 clean_credits=1
+group	0	genz
+group	1	sen
+group	2	ym
+group	3	yw
+group	4	wom
+group	5	men
+group	6	evan
+group	7	cath
+group	8	wnc
+group	9	wcol
+group	10	blk
+group	11	blkm
+group	12	hisp
+group	13	hispm
+group	14	cuban
+group	15	prdom
+group	16	asian
+group	17	jew
+group	18	arab
+group	19	lds
+group	20	native
+group	21	sub
+group	22	rural
+group	23	urban
+group	24	union
+group	25	vet
+group	26	gun
+group	27	lgbt
+group	28	stud
+group	29	par

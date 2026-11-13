@@ -1,0 +1,14 @@
+# Resolute Desk's world.CrisisData (parallel arrays, one row per entry).
+# Exported by tools/RdExport.java from Resolute Desk commit 2ce2b37. Do not edit by hand: re-run the tool.
+# Tab-separated. Only what can happen between 2029 and 2033 is kept.
+OP_NAME	OP_DESC	OP_COND	OP_FX
+Strike Iran's nuclear sites	B-2 bombers with bunker-busters against the enrichment halls.	iran>50	0.75|iran=-55 proxy=20 rel:IR=-25 oil=6 terror=8 sec=0.2 rel:IL=10|iran=-20 kia=5 proxy=25 oil=9 perf=-1
+Strike Houthi missile sites	Air and missile strikes on launchers and radars.	redsea>35	0.7|redsea=-30 oil=-2|redsea=-8 kia=1
+Strike militias in Iraq and Syria	Strikes on militia commanders and weapons depots.	proxy>35	0.75|proxy=-25 rel:IQ=-8 sec=0.15|proxy=-8 kia=2
+Raid a terrorist leader's compound	A special-forces raid on the leader of a group plotting against Americans.	terror>25	0.6|terror=-20 rally=4 sec=0.3|kia=4 perf=-1.5 terror=5
+Send a carrier group to the Taiwan Strait	A visible show of resolve near China.		0.95|deter=8 twt=3 rel:CN=-8 pacific=5|deter=3 twt=8 rel:CN=-12
+Send a carrier group to the Red Sea	Escort shipping and deter attacks.	redsea>25	0.9|redsea=-12 oil=-1|redsea=-4
+Cyber operation against Russian hackers	Take down the servers and wallets of Russian ransomware gangs.	cyber>30	0.65|cyber=-20 rel:RU=-5|cyber=5 rel:RU=-8
+Cyber operation against North Korea's missiles	Sabotage the networks behind North Korea's missile program.	nk>40	0.6|nk=-12 rel:KP=-5|nk=6
+Strike cartel drug labs in Mexico	Drone strikes on fentanyl labs, with or without Mexico's consent.	cartel>55	0.7|cartel=-20 rel:MX=-25 migr=5 crime=0.2|kia=2 rel:MX=-30
+Airlift food into Gaza	Air-drop and ship food to civilians in Gaza.	gaza>45	0.85|gaza=-8 rel:IL=-3 for=0.15|gaza=-2

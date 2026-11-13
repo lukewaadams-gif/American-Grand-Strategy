@@ -1,0 +1,65 @@
+# OPT-IN REAL ROSTER. NOT FOR COMMERCIAL RELEASE (RISK_REGISTER.md R-02). Nothing loads this file by default. The real people and outlets Resolute Desk names in 2029, and the stand-in used for each.
+# Exported by tools/RdExport.java from Resolute Desk commit 2ce2b37. Do not edit by hand: re-run the tool.
+# Tab-separated. Only what can happen between 2029 and 2033 is kept.
+role	stand_in	real
+leader of China	Zhou Wenhai	Xi Jinping
+leader of Russia	Pavel Sokolov	Vladimir Putin
+leader of Ukraine	Andriy Kovalenko	Volodymyr Zelensky
+leader of United Kingdom	Helen Ashworth	Andy Burnham
+leader of Germany	Jonas Ritter	Friedrich Merz
+leader of Italy	Chiara Benedetti	Giorgia Meloni
+leader of Canada	Daniel Fortier	Mark Carney
+leader of Mexico	Lucia Navarro	Claudia Sheinbaum
+leader of Japan	Haruka Mori	Sanae Takaichi
+leader of South Korea	Park Jun-ho	Lee Jae-myung
+leader of North Korea	Kim Ju-hyok	Kim Jong Un
+leader of Taiwan	Chen Wei-lun	Lai Ching-te
+leader of India	Arjun Mehta	Narendra Modi
+leader of Pakistan	Faisal Qureshi	Shehbaz Sharif
+leader of Israel	Avi Rosen	Benjamin Netanyahu
+leader of Iran	Hossein Rahimi	Mojtaba Khamenei
+leader of Saudi Arabia	Tariq bin Nasser	Mohammed bin Salman
+leader of Turkey	Kemal Aydin	Recep Tayyip Erdogan
+leader of Egypt	Hassan Mansour	Abdel Fattah el-Sisi
+leader of Qatar	Hamad bin Khalid	Tamim bin Hamad Al Thani
+leader of United Arab Emirates	Zayed bin Rashid	Mohamed bin Zayed
+leader of Jordan	Hashem I	Abdullah II
+leader of Iraq	Haider Karim	Ali al-Zaidi
+leader of Syria	Omar Haddad	Ahmed al-Sharaa
+leader of Brazil	Rafael Moreira	Luiz Inacio Lula da Silva
+leader of Argentina	Martina Ferraro	Javier Milei
+leader of Venezuela	Carlos Ibarra	Delcy Rodriguez
+leader of Panama	Ricardo Solis	Jose Raul Mulino
+leader of Poland	Marta Wisniewska	Donald Tusk
+leader of Hungary	Gabor Szabo	Peter Magyar
+leader of Denmark	Sofie Lund	Mette Frederiksen
+leader of Finland	Mikko Virtanen	Alexander Stubb
+leader of Australia	Jack Harrington	Anthony Albanese
+leader of Indonesia	Budi Santoso	Prabowo Subianto
+leader of Vietnam	Nguyen Van Hai	To Lam
+leader of Nigeria	Chinedu Okeke	Bola Tinubu
+leader of South Africa	Thabo Nkosi	Cyril Ramaphosa
+news outlet	The Metropolitan Times	The New York Times
+news outlet	The Capitol Post	The Washington Post
+news outlet	The Financial Journal	The Wall Street Journal
+news outlet	The National Wire	The Associated Press
+news outlet	Global Wire	Reuters
+news outlet	Cable News One	CNN
+news outlet	The Progress Network	MSNBC
+news outlet	Liberty News Channel	Fox News
+news outlet	Meridian News	NBC News
+news outlet	Continental News	CBS News
+news outlet	Union Broadcast News	ABC News
+news outlet	The Beltway Insider	Politico
+news outlet	Patriot Media	Newsmax
+news outlet	Public Radio Network	NPR
+news outlet	A top long-form talk show	The Joe Rogan Experience
+news outlet	A progressive politics podcast	Pod Save America
+news outlet	A conservative commentary show	The Ben Shapiro Show
+news outlet	Sunday Hour	60 Minutes
+predecessor	the outgoing president	Donald Trump
+fedChair	Evelyn Hart	Kevin Warsh
+speakerD	Marcus Bell	Hakeem Jeffries
+speakerR	Dale Prescott	Mike Johnson
+leaderD	Ruth Feldman	Chuck Schumer
+leaderR	Wade Calhoun	John Thune

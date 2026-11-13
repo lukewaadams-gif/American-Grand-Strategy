@@ -1,0 +1,37 @@
+# The bills a president can propose in this era (BillData.BILLS_MODERN, one column per BillDef field).
+# Exported by tools/RdExport.java from Resolute Desk commit 2ce2b37. Do not edit by hand: re-run the tool.
+# Tab-separated. Only what can happen between 2029 and 2033 is kept.
+id	name	desc	impact	area	lean	econ	cult	cost	support	gdp	unemp	infl	base	budget	origRevenue	fmt	from	to
+lower_costs	Lower Costs Act	Caps insulin at $35 a month and child care at 7% of income, and bans junk fees.	Families with young children save about $# a year on child care.	1	0	-0.4	-0.1	80	66	0.05	0	-0.15	3100	true	false	0	2021	2100
+public_option	A public option	A government health plan on the ACA marketplaces in every state.	# million more Americans have health insurance.	3	0	-0.6	-0.1	60	58	0	0	-0.05	4.6	true	false	1	2021	2100
+restore_roe	Restore Roe	The Women's Health Protection Act: abortion rights written into federal law.	Abortion is legal through viability in every state; # states had banned it.	10	0	0	-0.8	0	60	0	0	0	13	false	false	2	2021	2100
+imm_reform	Immigration reform	Border security money plus a path to citizenship for Dreamers and long-time workers.	# million Dreamers and long-time residents are on a path to citizenship.	4	0	-0.1	-0.3	10	61	0.1	0	0	2.4	false	false	1	2021	2100
+billionaire_tax	Billionaire minimum tax	A 25% minimum tax on households worth more than $100 million.	The minimum tax raises about $# billion a year.	0	0	-0.7	-0.1	-50	63	-0.03	0	-0.05	50	true	true	0	2021	2100
+housing	Build 3 million homes	Zoning incentives, a builders' tax credit and federal land for housing.	# million new homes are under construction.	1	0	-0.2	0	40	66	0.12	-0.05	-0.08	1.1	true	false	1	2021	2100
+ai_safety	AI safety standards	Safety testing for the most powerful AI models, and data centers pay their own power bills.	# frontier AI labs submit their models for federal safety testing.	11	0	-0.3	-0.1	2	63	-0.02	0	0	9	false	false	0	2021	2100
+ss_protect	Protect Social Security	Lift the payroll-tax cap and raise benefits for the oldest retirees.	Social Security's trust fund is solvent for # more years.	0	0	-0.5	-0.1	-15	68	0	0	0	30	false	true	0	2021	2100
+gun_safety	Gun safety	Universal background checks, red-flag laws and a minimum age of 21 for assault weapons.	Background checks cover # million more gun sales a year.	5	0	-0.1	-0.6	1	58	0	0	0	6	false	false	1	2021	2100
+clean_energy	Clean energy buildout	New transmission lines, permitting reform and clean-power tax credits.	# gigawatts of new clean power are on the grid.	9	0	-0.4	-0.2	50	55	0.15	-0.05	0.02	120	true	false	0	2021	2100
+voting_rights	Voting rights	The Freedom to Vote Act: national standards for early voting and mail ballots.	# states have had to expand early voting.	10	0	0	-0.6	2	60	0	0	0	19	false	false	2	2021	2100
+paid_leave	Paid leave	Twelve weeks of paid family and medical leave for every worker.	# million workers took paid leave in its first year.	2	0	-0.6	-0.1	70	70	0.02	0	0.03	11	true	false	1	2021	2100
+child_credit	Expanded child tax credit	A $3,600 credit per young child, paid monthly.	Child poverty is down # percent.	1	0	-0.5	-0.1	100	62	0.08	0	0.05	40	true	false	0	2021	2100
+min_wage	A $17 minimum wage	Raise the federal minimum wage to $17 over five years.	# million workers got a raise.	2	0	-0.6	0	0	62	-0.02	0.05	0.05	22	false	false	1	2021	2100
+tax_cuts	Make the tax cuts bigger	Extend the 2025 tax cuts and cut the corporate rate to 15%.	The typical family pays about $# less in federal income tax.	0	1	0.7	0.2	150	45	0.18	-0.05	0.12	1500	true	true	0	2021	2100
+border_wall	Finish the wall	Money for the border wall, more ICE agents and faster deportations.	Border crossings are down #% from when you took office.	4	1	0.2	0.7	25	48	-0.05	0	0.05	40	true	false	0	2021	2100
+health_freedom	Health freedom act	Replace ACA subsidies with health savings accounts and state block grants.	# million fewer Americans have health insurance.	3	1	0.7	0.2	-40	39	0.03	0	0	5.2	true	true	1	2021	2100
+abortion_limit	A 15-week abortion limit	A national limit on abortion after 15 weeks, with exceptions.	Abortion is limited after 15 weeks nationwide, including in # states that had allowed it.	10	1	0.1	0.8	0	41	0	0	0	24	false	false	2	2021	2100
+tariffs	Reciprocal tariffs	Match every country's tariffs, with a 60% floor on Chinese goods.	Tariffs bring in about $# billion a year, and prices on imported goods are up.	8	1	0.3	0.3	-150	42	-0.15	0.08	0.35	150	true	true	0	2021	2100
+energy_dom	Energy dominance	Open federal lands and waters to drilling and speed up permits for pipelines.	US oil and gas output is up #%.	9	1	0.6	0.3	-5	53	0.1	-0.03	-0.12	9	true	true	0	2021	2100
+balance_budget	Balance the budget	Cap spending and cut federal agencies by a tenth.	Federal spending is $# billion a year lower than planned.	0	1	0.8	0.2	-250	51	-0.12	0.08	-0.15	250	true	true	0	2021	2100
+school_choice	School choice	A federal tax credit for private-school and home-school scholarships.	# million children use the new scholarships.	12	1	0.5	0.5	10	52	0	0	0	1.8	true	false	1	2021	2100
+police	Back the blue	Money for 100,000 police officers and tougher sentences for fentanyl dealers.	# thousand new police officers are on the street.	5	1	0.3	0.5	8	57	0	0	0	60	false	false	0	2021	2100
+save_act	The SAVE Act	Proof of citizenship to register and photo ID to vote.	Every state now requires photo ID to vote; # did not before.	10	1	0.1	0.7	1	63	0	0	0	15	false	false	2	2021	2100
+no_tax_tips	No tax on tips and overtime	Make the tax break on tips and overtime permanent and wider.	Workers keep about $# billion a year in tips and overtime pay.	2	1	0.3	0.1	40	66	0.05	0	0.05	40	true	true	0	2021	2100
+infrastructure	Infrastructure renewal	Roads, bridges, water pipes, broadband and the power grid.	# thousand bridges and roads are being rebuilt.	2	-1	-0.1	0	60	70	0.15	-0.08	0.04	22	false	false	0	2021	2100
+chips2	Chips and China Act	Chips, shipbuilding and export controls to compete with China.	# new chip and shipbuilding plants are under way.	8	-1	0	0.1	15	64	0.1	-0.03	0.03	14	false	false	0	2021	2100
+permitting	Permitting reform	Faster environmental reviews for power lines, pipelines and mines.	Permits for big projects now take # years less.	9	-1	0.2	0	0	58	0.06	-0.02	-0.02	2	false	false	1	2021	2100
+kids_online	Kids Online Safety Act	Platforms must protect minors from harmful content and addictive design.	# million teenagers are on safer default settings.	11	-1	0	0.1	0	72	0	0	0	18	false	false	0	2021	2100
+farm_bill	The farm bill	Five years of crop insurance, conservation and food assistance.	# million farms are covered by crop insurance.	0	-1	0.1	0.1	5	60	0.02	0	0	1.2	false	false	1	2021	2100
+stock_ban	Ban stock trading by Congress	Members of Congress and their spouses can't trade individual stocks.	# members of Congress have sold their individual stocks.	13	-1	0	0	0	80	0	0	0	535	false	false	0	2021	2100
+crypto	Crypto market rules	Clear rules for stablecoins and digital-asset exchanges.	Americans hold about $# billion in regulated stablecoins.	11	-1	0.3	0	0	50	0.02	0	0	400	false	false	0	2021	2100
+ss_fix	A bipartisan Social Security fix	A commission's mix of a higher payroll-tax cap and a slower rise in benefits for the well-off.	Social Security's trust fund is solvent for # more years.	0	-1	0	0	-20	55	0	0	0	40	false	true	0	2021	2100

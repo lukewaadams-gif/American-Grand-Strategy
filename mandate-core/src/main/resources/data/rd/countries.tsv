@@ -1,0 +1,44 @@
+# The 40 countries (WorldData): relations -100..100, alignment, power 1-10, trade and balance, nuclear, map position, flag in Resolute Desk's flag language, and the head of government in 2029 (a made-up stand-in for each real person; see real_names.tsv).
+# Exported by tools/RdExport.java from Resolute Desk commit 2ce2b37. Do not edit by hand: re-run the tool.
+# Tab-separated. Only what can happen between 2029 and 2033 is kept.
+id	name	region	alignment	relations	power	trade	balance	nuclear	map_x	map_y	flag	leader	title
+CN	China	East Asia and the Pacific	Adversary	-35	10	582	-295	true	772	128	s:de2910,ffde00	Zhou Wenhai	President
+RU	Russia	Europe	Adversary	-60	8	3.5	-2.5	true	668	61	h:ffffff,0039a6,d52b1e	Pavel Sokolov	President
+UA	Ukraine	Europe	Partner	55	4	4	2	false	575	93	h:0057b7,ffd700	Andriy Kovalenko	President
+GB	United Kingdom	Europe	Treaty ally	65	7	148	12	true	492	78	x:012169,c8102e|k:012169	Helen Ashworth	Prime Minister
+FR	France	Europe	Treaty ally	50	7	103	-16	true	508	99	v:0055a4,ffffff,ef4135	Claire Morel	President
+DE	Germany	Europe	Treaty ally	55	7	236	-85	false	525	86	h:000000,dd0000,ffce00	Jonas Ritter	Chancellor
+IT	Italy	Europe	Treaty ally	55	5	102	-44	false	531	110	v:009246,ffffff,ce2b37	Chiara Benedetti	Prime Minister
+CA	Canada	The Americas	Treaty ally	50	6	762	-63	false	298	67	v:d52b1e,ffffff,ffffff,d52b1e|o:d52b1e	Daniel Fortier	Prime Minister
+MX	Mexico	The Americas	Partner	35	5	840	-172	false	220	170	v:006847,ffffff,ce1126	Lucia Navarro	President
+JP	Japan	East Asia and the Pacific	Treaty ally	70	7	228	-69	false	854	134	d:ffffff,bc002d	Haruka Mori	Prime Minister
+KR	South Korea	East Asia and the Pacific	Treaty ally	60	5	197	-66	false	832	131	d:ffffff,c60c30|o:003478	Park Jun-ho	President
+KP	North Korea	East Asia and the Pacific	Adversary	-85	4	0	0	true	826	120	h:024fa2,ed1c27,ed1c27,024fa2|o:ffffff	Kim Ju-hyok	Supreme Leader
+TW	Taiwan	East Asia and the Pacific	Partner	60	4	158	-74	false	828	170	h:fe0000,fe0000|k:000095	Chen Wei-lun	President
+IN	India	South Asia	Partner	40	7	129	-46	true	726	170	h:ff9933,ffffff,138808|o:000080	Arjun Mehta	Prime Minister
+PK	Pakistan	South Asia	Neutral	5	4	7	-3	true	684	150	v:ffffff,01411c,01411c,01411c	Faisal Qureshi	Prime Minister
+IL	Israel	The Middle East	Partner	70	5	37	-7	true	593	146	h:ffffff,0038b8,ffffff,ffffff,0038b8,ffffff	Avi Rosen	Prime Minister
+IR	Iran	The Middle East	Adversary	-75	5	0.1	0	false	640	140	h:239f40,ffffff,da0000	Hossein Rahimi	Supreme Leader
+SA	Saudi Arabia	The Middle East	Partner	40	5	26	0.5	false	620	171	s:006c35,ffffff	Tariq bin Nasser	Crown Prince
+TR	Turkey	Europe	Treaty ally	20	5	33	-0.5	false	594	125	s:e30a17,ffffff	Kemal Aydin	President
+EG	Egypt	The Middle East	Partner	30	4	9	3.5	false	583	155	h:ce1126,ffffff,000000	Hassan Mansour	President
+QA	Qatar	The Middle East	Partner	40	3	6	2.5	false	638	166	v:ffffff,8a1538,8a1538,8a1538	Hamad bin Khalid	Emir
+AE	United Arab Emirates	The Middle East	Partner	45	3	34	19	false	647	170	h:00732f,ffffff,000000|t:ff0000	Zayed bin Rashid	President
+JO	Jordan	The Middle East	Partner	50	2	5	-1	false	598	148	h:000000,ffffff,007a3d|t:ce1126	Hashem I	King
+IQ	Iraq	The Middle East	Partner	15	2	9	-6	false	617	140	h:ce1126,ffffff,000000	Haider Karim	Prime Minister
+SY	Syria	The Middle East	Neutral	-20	2	0.1	0	false	600	134	h:007a3d,ffffff,000000	Omar Haddad	President
+BR	Brazil	The Americas	Neutral	10	5	92	7	false	344	276	d:009c3b,ffdf00|o:002776	Rafael Moreira	President
+AR	Argentina	The Americas	Partner	55	3	16	2	false	332	362	h:74acdf,ffffff,74acdf	Martina Ferraro	President
+VE	Venezuela	The Americas	Adversary	-55	2	6	-1.5	false	315	222	h:ffcc00,00247d,cf142b	Carlos Ibarra	President
+CU	Cuba	The Americas	Adversary	-60	1	0.5	0.4	false	284	178	h:002a8f,ffffff,002a8f,ffffff,002a8f|t:cf142b	Ernesto Valdes	President
+PA	Panama	The Americas	Partner	30	1	9	9	false	278	219	v:ffffff,da121a|k:ffffff	Ricardo Solis	President
+PL	Poland	Europe	Treaty ally	60	4	18	-2	false	545	85	h:ffffff,dc143c	Marta Wisniewska	Prime Minister
+HU	Hungary	Europe	Treaty ally	30	2	9	-6	false	548	97	h:ce2939,ffffff,477050	Gabor Szabo	Prime Minister
+DK	Denmark	Europe	Treaty ally	45	3	14	-10	false	519	80	x:c8102e,ffffff	Sofie Lund	Prime Minister
+FI	Finland	Europe	Treaty ally	60	3	9	-3	false	554	44	x:ffffff,003580	Mikko Virtanen	President
+AU	Australia	East Asia and the Pacific	Treaty ally	65	5	51	18	false	860	319	h:00008b,00008b|k:012169	Jack Harrington	Prime Minister
+PH	Philippines	East Asia and the Pacific	Treaty ally	55	3	23	-5	false	835	198	h:0038a8,ce1126|t:ffffff	Ramon Delgado	President
+ID	Indonesia	East Asia and the Pacific	Neutral	25	4	38	-18	false	816	246	h:ff0000,ffffff	Budi Santoso	President
+VN	Vietnam	East Asia and the Pacific	Neutral	15	3	149	-123	false	791	193	c:da251d,ffff00	Nguyen Van Hai	General Secretary
+NG	Nigeria	Africa	Neutral	15	3	9	-1.5	false	523	215	v:008751,ffffff,008751	Chinedu Okeke	President
+ZA	South Africa	Africa	Neutral	0	3	22	-9	false	566	336	h:e03c31,007749,002395|t:000000	Thabo Nkosi	President

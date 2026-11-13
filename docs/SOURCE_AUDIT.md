@@ -156,5 +156,63 @@ Campaign effects reach the cell model only through `localShift`. BG calibrates e
 | IslandChain | `5e0eeb73` | `5e0eeb73` | none |
 | ResoluteDesk | `3fdbc7af` | `2ce2b372` | Seven "Version 2" commits: the code is reorganised into a multi-file project (216 Java files, about 27,900 lines, up from one file of 16,000). Stages cover the transition, approval and relationships; policies and their real-world effects; foreign policy and wars of choice; news and runaway storylines; watch-mode priorities and the 2029 setup; and new art. |
 
-Everything ported so far, including the vertical slice's Resolute Desk mechanics, references the audited `3fdbc7a`. Version 2 has **not** been audited; that is backlog item B-54. The audited clones are unchanged.
+Everything ported up to November 2026, including the vertical slice's Resolute Desk mechanics, references the audited `3fdbc7a`. Version 2 was audited on 13 November 2026 (section 8). The audited clones are unchanged.
 
+
+## 8. Resolute Desk Version 2 (audited 2026-11-13; backlog B-54)
+
+The presidency is being ported from Version 2 (`docs/PRESIDENCY_PORT.md`). The mechanics, with formulas and line numbers, are in `docs/research/RESOLUTE_DESK.md`.
+
+| | |
+|---|---|
+| Snapshot | `lukewaadams-gif/resolutedesk` at `2ce2b37` ("Version 2, stage 7: new art"). The clone is unchanged; the build ran on a copy, because Resolute Desk's build writes into its working tree. |
+| Size | 220 Java files: 194 in `src/main` (26,169 lines, 20 packages) and 26 test classes (1,747 lines). |
+| Build | `java tools/Build.java test` (JDK only, no outside libraries): **112 tests pass in 1.8 s** on OpenJDK 21. The same tool bundles a one-file BlueJ version and translates it to the browser with its own Java-to-JavaScript translator; `equivalence` compares the two. |
+| Headless runs | `java -Djava.awt.headless=true -cp build/classes:src/main/resources resolutedesk.ResoluteDesk test sim 5 2029` plays five four-year presidencies from 2029 by the hands-off president. |
+
+**Measured behaviour:** five 2029 presidencies (seeds 1000 to 1004, Democratic president, as it was). These are the calibration targets for the port.
+
+| | Range |
+|---|---|
+| Laws signed in a term | 9 to 14; vetoes 0 to 4; overrides 0; one two-week shutdown in five terms; no default |
+| Midterm House vote | D+1.5 to R+4.7: the president's party lost 1 to 32 House seats and −3 to +1 Senate seats |
+| Approval | 41 to 57 at the yearly checkpoints |
+| Economy | Deficit about 7% of GDP; debt from 104% to about 112% of GDP |
+| Re-election | Lost in all five (191 to 260 electoral votes) |
+| Historians' verdict | 532 to 605: 16th to 25th of 45 |
+
+**Architecture:**
+- One plain-data `model.Game` with public fields holds the state. Stateless systems move it a week at a time (`sim.Week.resolve`), and saves are Java serialization.
+- Everything random comes from the game's one `Random` or from locally seeded ones.
+- The port keeps the systems and their order, but puts state behind the owning domain engines, uses named random streams, and saves as setup plus command log.
+
+**Implemented versus advertised:**
+- Everything the README lists for Version 2 exists: the transition, approval and relationships, policies, foreign policy and wars of choice, storylines, watch-mode priorities, the 2029 setup, and the art.
+- "The library" is a tab of the end-of-term legacy screen, not a room.
+- There is no lighting by time of day: the Oval Office is always in daylight.
+
+**Real people:** Resolute Desk's 2029 world names real people and outlets. This game is fictional by default, so `tools/RdExport.java` replaces each with a made-up stand-in in the same role and writes the mapping to the opt-in `data/rd/real_names.tsv`, which nothing loads by default. That covers:
+- 37 heads of government (three of its 2029 leaders are already made up);
+- the Fed chair, four congressional leaders and the predecessor;
+- 18 news outlets, the three shows among them described rather than named.
+
+The storylines' names are all made up already. The policy table's notes on precedent cite real history ("expanded by Reagan and Clinton", "Google lost a monopoly case in 2024"); they are kept as history.
+
+**Exported:** `tools/RdExport.java` reads the compiled tables by reflection and writes `data/rd/*.tsv`. It keeps only what can happen in 2029–2033, and running it twice gives identical files.
+
+| File | Rows | From |
+|---|---|---|
+| policies.tsv | 146 | PolicyTable |
+| policy_links.tsv | 105 | bills to policy levels, voter-group codes |
+| bills.tsv | 33 | BillData.BILLS_MODERN |
+| actions.tsv | 49 | executive orders, regulations, emergencies |
+| crises.tsv, operations.tsv, covert.tsv | 20, 10, 7 | CrisisData |
+| home_events.tsv | 28 | EventData |
+| storylines.tsv | 69 | headers and stages of the storylines alive in 2029–2033 |
+| ambient.tsv | 110 | the era's news |
+| objectives.tsv | 71 | foreign-policy objectives |
+| countries.tsv | 40 | WorldData, with stand-in leaders |
+| outlets.tsv | 18 | Outlets, with stand-in names |
+| names.tsv | 291 | name pools for made-up people |
+| era_2029.tsv | 41 | the January 2029 starting point |
+| real_names.tsv | 61 | the opt-in mapping |

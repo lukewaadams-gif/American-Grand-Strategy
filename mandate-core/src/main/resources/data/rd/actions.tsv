@@ -1,0 +1,53 @@
+# Resolute Desk's executive.ActionData (parallel arrays, one row per entry).
+# Exported by tools/RdExport.java from Resolute Desk commit 2ce2b37. Do not edit by hand: re-run the tool.
+# Tab-separated. Only what can happen between 2029 and 2033 is kept.
+AD_ID	AD_KIND	AD_MIN	AD_NAME	AD_DESC	AD_AREA	AD_LEAN	AD_SUP	AD_LEGAL	AD_NEEDS	AD_FX
+em_border	2	1980	Declare an emergency at the border	Unlocks military construction money and troop deployments at the border.	4	1	50	0.25	-1	
+em_trade	2	1977	Declare an economic emergency over trade	Unlocks tariffs under the International Emergency Economic Powers Act.	8	1	40	0.35	-1	
+em_energy	2	1973	Declare an energy emergency	Unlocks waivers to speed up drilling, refining and power plants.	9	1	50	0.2	-1	oil=-1
+em_climate	2	2009	Declare a climate emergency	Unlocks a pause on fossil-fuel leasing and money for clean power.	9	0	44	0.45	-1	
+em_crime	2	1965	Declare a crime emergency	Unlocks federal deployments to cities.	5	1	48	0.4	-1	
+eo_troops	0	1990	Send troops to the border	National Guard and active-duty troops help patrol the border.	4	1	52	0.25	0	g12=-1.5
+eo_birthright	0	2018	End birthright citizenship	Children born to parents here illegally or temporarily no longer get citizenship.	4	1	35	0.92	-1	g12=-3 g10=-1
+eo_ieepa	0	1977	Emergency tariffs on imports	Tariffs on most imports, set by the White House, using emergency powers.	8	1	38	0.55	1	tariff=12 gdp=-0.12 infl=0.25 def=-0.4
+eo_freeze	0	1933	Freeze federal hiring	No new federal hires except for security and safety.	13	1	55	0.08	-1	wf=-3 ready=-2 def=-0.02
+eo_schedf	0	2020	Schedule F	Reclassify tens of thousands of policy jobs as at-will.	13	1	38	0.45	-1	ready=-4
+eo_rto	0	2020	Federal workers back to the office	All federal employees back at their desks five days a week.	13	1	60	0.05	-1	wf=-4 ready=-2 st:VA=-1 st:MD=-1.5
+eo_drill	0	1953	Open federal waters to drilling	Lease offshore and federal land for oil and gas.	9	1	52	0.3	-1	oil=-2 gdp=0.03
+eo_dei	0	2020	End DEI programs	Shut down diversity, equity and inclusion offices and training.	10	1	46	0.3	-1	g10=-1 g27=-1
+eo_dereg	0	1981	Ten old rules out for every new one	Agencies must repeal ten rules for every new one.	0	1	50	0.2	-1	gdp=0.03
+eo_paris_out	0	2016	Leave the Paris climate agreement	Formally leave the global climate agreement.	9	1	42	0.02	-1	g0=-1
+eo_aea	0	2025	Deport gang members as alien enemies	Use a 1798 wartime law to deport suspected gang members.	4	1	45	0.65	-1	g12=-2
+eo_surge	0	1990	Surge federal agents into high-crime cities	Send FBI, DEA and ATF agents and federal prosecutors to the cities with the most violent crime.	5	1	52	0.3	-1	
+eo_rif	0	1933	Cut the federal workforce by a tenth	Lay off about a tenth of the civilian federal workforce.	13	1	48	0.5	-1	wf=-10 ready=-9 def=-0.05 st:VA=-2 st:MD=-3
+eo_cartels	0	2019	Designate the cartels as terrorist groups	Treat drug cartels as foreign terrorist organizations.	5	1	64	0.1	-1	
+eo_studentdebt	0	2020	Cancel student debt	Cancel up to $20,000 of federal student debt per borrower.	12	0	50	0.8	-1	def=0.15 g0=3 g28=4
+eo_paris_in	0	2016	Rejoin the Paris climate agreement	Rejoin the global climate agreement.	9	0	55	0.02	-1	g0=1
+eo_leases	0	2009	Pause new oil and gas leases	No new oil and gas leases on federal land and water.	9	0	43	0.5	3	oil=2 gdp=-0.02
+eo_dreamers	0	2012	Protect Dreamers from deportation	Deferred action and work permits for undocumented immigrants brought here as children.	4	0	62	0.55	-1	g12=3
+eo_wage20	0	2014	A $20 wage for federal contractors	Federal contractors must pay at least $20 an hour.	2	0	58	0.2	-1	def=0.01 g24=2
+eo_abortion	0	2022	Protect access to abortion medication	Protect access to mifepristone by mail and at pharmacies.	3	0	55	0.5	-1	g4=1 g3=2
+eo_police	0	2020	Accountability rules for federal agents	Body cameras and use-of-force limits for federal law enforcement.	5	0	60	0.1	-1	g10=1.5
+eo_ai_safety	0	2023	Safety reporting for frontier AI	Labs training the most powerful AI models must report safety tests.	11	0	63	0.3	-1	gdp=-0.01
+eo_unions	0	1960	No contracts for union-busting firms	Firms that break labor law lose federal contracts.	2	0	47	0.35	-1	g24=2
+eo_drugprice	0	2003	Most-favored-nation drug prices	Medicare pays no more for drugs than other rich countries do.	3	-1	74	0.55	-1	def=-0.03 g1=2
+eo_stocks	0	2012	Ban stock trading by your appointees	Your political appointees can't trade individual stocks.	13	-1	82	0.02	-1	
+eo_gouging	0	1973	Crack down on price gouging	The FTC and Justice Department go after price gouging in food and housing.	1	-1	70	0.3	-1	infl=-0.03
+eo_spr	0	1977	Release oil from the strategic reserve	Sell oil from the reserve to bring down gas prices.	1	-1	64	0.05	-1	oil=-5
+eo_datacenters	0	2023	Fast-track data centers on federal land	Lease federal land for AI data centers and the power plants to run them.	11	-1	52	0.25	-1	gdp=0.04 infl=0.02
+eo_grocery_tariffs	0	2025	Lift tariffs on groceries	Cut tariffs on imported food.	1	-1	66	0.1	-1	tariff=-3 infl=-0.05
+rule_carbon	1	2009	Carbon limits for power plants	Power plants must capture most of their carbon by 2035.	9	0	54	0.55	-1	gdp=-0.03 infl=0.03
+rule_overtime	1	1938	Overtime pay for four million more workers	Raise the salary threshold for overtime pay.	2	0	60	0.5	-1	g24=1.5
+rule_latefees	1	2010	Cap credit-card late fees at $8	Cap the late fees big card issuers charge.	1	0	72	0.45	-1	g0=1
+rule_noncompete	1	2023	Ban non-compete agreements	Make most non-compete clauses unenforceable.	2	0	63	0.65	-1	gdp=0.01 g24=1
+rule_nursing	1	2023	Minimum staffing in nursing homes	Minimum staffing for nursing homes paid by Medicare and Medicaid.	3	0	66	0.4	-1	g1=1.5 def=0.01
+rule_junkfees	1	2022	All-in pricing: ban junk fees	Prices must include all mandatory fees up front.	1	0	75	0.2	-1	infl=-0.02
+rule_netneutral	1	2010	Restore net neutrality	Treat broadband as a utility: no blocking or throttling.	11	0	58	0.55	-1	g0=1
+rule_cars_repeal	1	2017	Repeal the car emissions rules	Roll back tailpipe rules that push electric cars.	9	1	45	0.3	-1	gdp=0.02 g22=1
+rule_power_repeal	1	2017	Repeal the power-plant rules	Roll back limits on power-plant emissions.	9	1	44	0.3	-1	gdp=0.02
+rule_snapwork	1	1996	Work requirements for food aid	Adults without children must work or train to get food aid.	0	1	60	0.35	-1	def=-0.02
+rule_banks	1	2010	Loosen bank capital rules	Lower capital requirements for big banks.	0	1	38	0.15	-1	gdp=0.04
+rule_asylum	1	2018	Restrict asylum at the border	Bar most asylum claims from people who cross between ports.	4	1	54	0.55	-1	g12=-1.5
+rule_mining	1	1990	Speed up mining permits	Cut the wait for permits to mine critical minerals.	9	1	52	0.25	-1	gdp=0.02
+rule_hospital	1	2019	Hospital price transparency	Hospitals must post their real prices.	3	-1	82	0.2	-1	g1=1
+rule_chips	1	2022	Tighter export controls on AI chips	Stop the most advanced AI chips from reaching China.	11	-1	62	0.1	-1	gdp=-0.01

@@ -1,0 +1,11 @@
+# Resolute Desk's world.CrisisData (parallel arrays, one row per entry).
+# Exported by tools/RdExport.java from Resolute Desk commit 2ce2b37. Do not edit by hand: re-run the tool.
+# Tab-separated. Only what can happen between 2029 and 2033 is kept.
+CV_NAME	CV_DESC	CV_ODDS	CV_EXPOSE	CV_FX	CV_EXPFX
+Sabotage Iran's centrifuges	Malware and supply-chain tampering to wreck enrichment.	0.6	0.2	iran=-22	rel:IR=-15 proxy=12
+Penetrate North Korea's missile program	Bad parts and bad code in the supply chain.	0.55	0.2	nk=-10	rel:KP=-8 nk=6
+Give Ukraine targeting intelligence	Help Kyiv hit Russian logistics and air bases.	0.8	0.25	ukr=8 talks=4	rel:RU=-12 defcon=4
+Hack China's military networks	Map the PLA's command networks before a crisis.	0.7	0.25	deter=6	rel:CN=-15 twt=6
+Disrupt cartel finances	Freeze cartel money in banks and crypto exchanges.	0.7	0.2	cartel=-14	rel:MX=-10
+Back opposition groups in Venezuela	Money and communications gear for Venezuela's opposition.	0.4	0.4	rel:VE=-5 migr=-4	rel:VE=-20 rel:CU=-10 for=-0.2
+Support dissidents inside Iran	Secure communications and money for protest movements.	0.35	0.45	iran=-6	rel:IR=-20 proxy=8 for=-0.2

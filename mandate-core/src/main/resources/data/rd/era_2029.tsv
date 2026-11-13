@@ -1,0 +1,45 @@
+# The starting point of January 2029 (Eras, "After Battleground 2028"): economy, Congress, issue weights, Senate seats up at the midterm, and the people in charge (stand-ins for real people).
+# Exported by tools/RdExport.java from Resolute Desk commit 2ce2b37. Do not edit by hand: re-run the tool.
+# Tab-separated. Only what can happen between 2029 and 2033 is kept.
+field	value
+year	2029
+inM	0
+inD	20
+name	After Battleground 2028
+blurb	January 20, 2029, in the world of Battleground 2028. Democrats won the 2026 midterms in a landslide; now a new president takes office after the 2028 election. A projection, not a forecast.
+predecessor	the outgoing president
+winnerId	
+termOf	1
+fictional	true
+houseD	-1
+senateD	-1
+approvalBase	45
+polarization	0.85
+unemp	4.5
+infl	2.7
+gdp	1.8
+fed	3.4
+tenYr	4.3
+stocks	6900
+oil	72
+gas	3.2
+debt	104
+deficit	6.5
+nominalGdp	34.5
+potential	1.9
+nairu	4.3
+priceLevel	1.1
+tariff	11
+fedCred	0.8
+slump	0
+fedChair	Evelyn Hart
+speakerD	Marcus Bell
+speakerR	Dale Prescott
+leaderD	Ruth Feldman
+leaderR	Wade Calhoun
+houseLeaderD	Marcus Bell
+houseLeaderR	Dale Prescott
+issues	0=1.0 1=1.3 2=0.8 3=0.7 4=0.9 5=0.5 6=0.6 7=0.5 8=0.8 9=0.5 10=0.3 11=0.8 12=0.3 13=0.6
+labels	
+ai	true
+midSeats	AZ:D CA:D CT:D DE:D HI:D ME:D MD:D MA:D MI:D MN:D NV:D NJ:D NM:D NY:D RI:D VT:D VA:D WA:D WI:D FL:R IN:R MS:R MO:R MT:R NE:R ND:R OH:R PA:R TN:R TX:R UT:R WV:R WY:R
