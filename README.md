@@ -18,7 +18,11 @@ In the browser, single keys work the screens, since browsers keep Ctrl+1 to 8 fo
 - **?** lists every shortcut and mechanic, and **A** shows or hides the adviser;
 - **Ctrl+Enter** ends the turn and **Ctrl+Z** undoes, as on the desktop.
 
-The preview (`/preview/` on the same site) plays the whole game: the campaign, the transition, both terms and the verdict, with the Strait of Hormuz crisis in daily turns (`docs/HORMUZ.md`). The start screen can also begin that crisis at once.
+The preview (`/preview/` on the same site) plays the whole game: the campaign, the transition, both terms and the verdict, with two in-depth crises:
+- the Strait of Hormuz, in daily turns (`docs/HORMUZ.md`);
+- the Taiwan Strait, ported from the Island Chain wargame, in crisis days and then war turns of hours (`docs/ISLAND_CHAIN.md`).
+
+The start screen can begin either at once, or play Island Chain on its own, as America or as China.
 
 The browser build is the same simulation compiled to JavaScript (`mandate-web`; see UI_DESIGN.md §17). The same seed plays the same game as on the desktop: 40 of 40 autopilot games matched exactly.
 

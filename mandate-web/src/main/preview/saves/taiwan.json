@@ -8413,6 +8413,7 @@
       "message": null,
       "tick": 0
     },
+    "taiwanEscalated": false,
     "news": [{
         "date": "2029-01-25",
         "kind": "INFO",

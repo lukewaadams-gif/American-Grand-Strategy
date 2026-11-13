@@ -11772,6 +11772,7 @@
       "message": "By the playbook: A deal through Muscat: Iran reopens the strait and hands over its minefield charts, for relief from sanctions."
     },
     "taiwan": null,
+    "taiwanEscalated": false,
     "news": [{
         "date": "2033-01-06",
         "kind": "INFO",

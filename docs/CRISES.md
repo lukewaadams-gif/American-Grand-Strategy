@@ -4,7 +4,7 @@ Two in-depth crises, built on the presidency's Situation Room (milestone 8). Bot
 
 **Status:**
 - **The Strait of Hormuz is built:** its design and numbers are in `HORMUZ.md`; what is not yet built is in `DECISIONS_TO_REVIEW.md`.
-- **Island Chain's engine is built,** without the presidency's integration or the client: its design and numbers are in `ISLAND_CHAIN.md`.
+- **Island Chain is built,** in the presidency and on its own (as America or as China): its design, numbers and wiring are in `ISLAND_CHAIN.md`; what is not yet built is in `DECISIONS_TO_REVIEW.md`.
 
 ## Island Chain in the game
 

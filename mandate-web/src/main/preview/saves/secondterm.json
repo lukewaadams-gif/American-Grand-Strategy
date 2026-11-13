@@ -10118,6 +10118,7 @@
     },
     "hormuz": null,
     "taiwan": null,
+    "taiwanEscalated": false,
     "news": [{
         "date": "2030-01-13",
         "kind": "INFO",

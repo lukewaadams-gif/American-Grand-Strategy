@@ -116,3 +116,22 @@ Choices made while building overnight that we had not discussed. Each was made i
    - the standalone start's year (2029–2036) and custom preset. The start screen offers the three presets in September 2029.
 7. **The watch mode and the autopilot follow a playbook:** escorts, minesweepers, the allies, the reserve, the pipelines and reinsurance, then the envoys. They never strike or invade.
 8. **The map is Natural Earth's 1:10m countries,** so the strait's islands show, in an equirectangular projection true at 26.5° N.
+
+## The Taiwan crisis (Island Chain) in the presidency
+
+1. **China's escalation to a quarantine or a blockade opens the crisis,** with China's planner free to stand down. "Deterrence holds" ends about half the crises, after some 70 days of watching.
+2. **A year must pass between Taiwan crises, and none comes after Taiwan has fallen.** The old monthly ladder's war event now opens the crisis, with its answer as the commitment.
+3. **The president's commitment is the rules of engagement.** The crisis starts at INTERVENE: the rung directive is the president's choice to stay out, to arm, or to fight. There is no separate decision at the start.
+4. **Losses are written back:**
+   - munitions by matching id;
+   - carriers and other ships;
+   - aircraft split between land-based and carrier aircraft.
+
+   A nuclear catastrophe is recorded as Taiwan fallen, with the gravest loss of standing. The presidency goes on; there is no separate epilogue.
+5. **A crisis does not stop the calendar's hand-offs mid-crisis:** if a term ends during a war, the hand-off waits until the crisis ends. This is rare, and to review.
+6. **Island Chain on its own is a separate session in the browser and is not saved yet.** It uses the source's own approval and Congress for both sides.
+7. **The waters around Taiwan show on the island's map,** zone by zone. The Pacific map shows them as one marker so the strait does not crowd.
+8. **Not yet built:**
+   - the source's National Security Council meetings and options papers;
+   - Congress's War Powers clock and supplemental (the engine's AUMF rule runs, but only inside the crisis);
+   - unit orders on the map (the engine supports them; the room offers the directives).

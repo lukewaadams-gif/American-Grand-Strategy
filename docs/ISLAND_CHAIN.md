@@ -327,3 +327,68 @@ Map<String, Object> json = s.toJson();  TaiwanState t = TaiwanState.fromJson(jso
 | Politics | `usSupport()` 5 to 95, `approval()` and `congress()` (standalone), `prcStability()`, offers on the table (`offerFrom()`, `offerTerms()`) |
 | Outcome | `outcomeCode()` 0 to 9 or −1, `outcome()`, `endReason()`, `score(side)` |
 | Record | `log()` (last 300 lines), `sitrep()` (the last turn), `history()` (a row a day) |
+
+## In the presidency, as built (13 November 2026)
+
+`GameEngine` drives the engine. `mandate-web`'s `TaiwanViews` and `presidency/taiwan.ts` draw it. Tests: `TaiwanInGameTest`, and the war cases in `RequiredBehaviourTest`.
+
+**How it starts:**
+- **China escalates to a quarantine or a blockade.** The world's Taiwan stage rises to 3 or 4 (milestone 8's `ForeignEngine.theaters`). The crisis then opens at the end of that week, with China's plan left to its planner, which may stand down.
+- **China attacks without a crisis first.** The stage reaches 5, or the old monthly ladder's war event is answered. The crisis opens with the invasion plan fixed. The old war event's three answers become the commitment.
+- **From the start screen,** under "Or start at a moment", the Taiwan crisis begins in a governing presidency in September 2029. `Command.TaiwanBegin(preset)` does the same.
+- **No new crisis** while another (Hormuz or Taiwan) is under way, within a year of the last Taiwan crisis, or once Taiwan has fallen.
+
+**The scenario comes from the presidency:**
+- the year (clamped to 2029–2036);
+- the world's deterrence (`ForeignState.deter`);
+- the anti-ship munitions index;
+- Japan's basing and the months of warning (the diplomacy state);
+- the Defense secretary's competence;
+- the commitment, INTERVENE unless the old war event set it.
+
+**The clock:**
+- Crisis days run on the DAILY clock. The war runs on the OPERATIONAL clock, in turns of 1, 6 and 12 hours.
+- The presidency's weeks pause. Every seven days of crisis the economy, the Fed and the reports, and opinion take their week, as in the Hormuz crisis.
+- Brent above its pre-crisis $92 goes into the structural economy's oil price. The war adds market stress.
+
+**The effects** are dispatched as they come (`Outcome.effects`), each under the cause "The Taiwan Strait". This covers the deaths (`WorldShift("kia")`), the rally, approval, tension, relations, and at the end the fallout.
+
+**When it ends:**
+- **The record.** A war is recorded as a `TheaterOutcome`:
+  - DEFENDED or DETERRED → DEFENDED;
+  - STALEMATE → STALEMATE;
+  - FALLEN or NUCLEAR → FALLEN.
+
+  Legacy, the verdict and the 2032 environment read it.
+- **The stockpile and the force.** `MilitaryEngine.recordTaiwanWar` subtracts:
+  - the American munitions fired (`usExpended`, by `munitions.csv` ids);
+  - carriers, other ships (as SURFACE) and aircraft (half FIGHTER, then CARRIER_AIR);
+  - the dead (`MilitaryState.killed`).
+- **The world.** `ForeignEngine.taiwanWarOver` sets the Strait's stage and relations:
+  - DETERRED lowers the stage to 1 and eases the tension;
+  - NUCLEAR is a new case, with grave losses of standing.
+- **The weeks resume** on the next Monday.
+
+**The crisis room:**
+- the two ladders, America's clickable up to the commitment's cap, with a confirmation from rung 2;
+- the Western Pacific by sea zone (the waters around Taiwan as one marker), with your forces and the enemy as your intelligence sees them;
+- Taiwan by sector, with the waters around it zone by zone;
+- warning and intelligence: the five levels, China's likely plan, the indicators with their confidence;
+- the theatre directives: mainland strikes, the carriers, submarines, air priority, munitions, convoys, a pre-emptive strike, and handing everything back to the staff;
+- requests to Taipei;
+- the allies, with the role asked of each, and diplomacy;
+- the preparations;
+- the economy and sanctions, the heavier ones confirmed;
+- nuclear risk, posture and the ceasefire terms, with the other side's offers to answer;
+- the toll by nation and the log.
+
+**Island Chain on its own:**
+- **Start:** from the start screen, a chosen year (2029–2036), America or China, and a preset.
+- **Engine:** it runs in the web engine as a separate session (`op: islandChain`), on 1 March of the year. Both sides' politics are the source's own.
+- **As China:** the room offers the course of action (the plan, the H-hour options, the landing region, the blockade's lethality), D-day, preparations, deception and standing down.
+
+**Measured** (whole autoplayed games, seeds 1–12): 8 reached office, and 4 of those had a Taiwan crisis:
+- three ended with "Deterrence holds" after about 70 days;
+- one ended in a "Partial PRC success" after 124 days, with 9,210 Americans killed.
+
+A crisis adds 70–230 turns to a game.

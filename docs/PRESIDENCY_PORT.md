@@ -511,6 +511,21 @@ The first in-depth crisis from `CRISES.md`, designed in `HORMUZ.md` (with its nu
   - a crisis in the parity run;
   - `src/test/browser/hormuz.js`.
 
+## The Taiwan crisis: Island Chain (after milestone 10)
+
+The second in-depth crisis from `CRISES.md`, ported from the Island Chain wargame (`ISLAND_CHAIN.md`, with its calibration and its presidency wiring):
+- **It replaces the simple Taiwan war.** China's escalation to a quarantine or a blockade opens it; an attack without a crisis opens it with the invasion plan fixed.
+- **Time:** crisis days, then war turns of 1, 6 and 12 hours. The Oval Office's button reads "Next day" or "Next 6 hours", and the crisis card replaces the week's.
+- **The crisis room** (the globe, or the card) shows both ladders, the Western Pacific and Taiwan, warning and intelligence, the theatre directives, Taipei, the allies, the preparations, the economy and sanctions, nuclear risk and the terms, and the toll.
+- **Fallout:** through the effects (the dead, the rally, approval, the economy and markets, the deficit, deterrence, tension, relations, salience, strain, readiness), the war's record, the stockpile and the force, and the world's Strait.
+- **Island Chain on its own** from the start screen: a year, America or China, and a preset.
+- **Checks:**
+  - `TaiwanTest` (28 tests);
+  - `TaiwanInGameTest`;
+  - the war cases in `RequiredBehaviourTest`;
+  - two lines in the parity run;
+  - `src/test/browser/taiwan.js`.
+
 ## Quality bar
 
 These are the same as for the campaign:

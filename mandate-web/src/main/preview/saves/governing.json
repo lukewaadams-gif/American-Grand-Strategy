@@ -6123,6 +6123,7 @@
     },
     "hormuz": null,
     "taiwan": null,
+    "taiwanEscalated": false,
     "news": [{
         "date": "2029-01-25",
         "kind": "INFO",

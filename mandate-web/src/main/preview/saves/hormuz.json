@@ -6256,6 +6256,7 @@
       "message": "The Strategic Petroleum Reserve releases 1.0 million barrels a day (400 million left)."
     },
     "taiwan": null,
+    "taiwanEscalated": false,
     "news": [{
         "date": "2029-01-25",
         "kind": "INFO",
