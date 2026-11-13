@@ -103,3 +103,22 @@ export interface ActivityInfo {
 
 export interface DecisionOption { label: string; detail: string; tag: string | null; tone: Tone | null; command: object; }
 export interface Decision { kind: string; eyebrow: string; title: string; body: string; options: DecisionOption[]; }
+
+// ---- the presidency ----------------------------------------------------------------------------------------------
+
+export interface PresidencyBill { id: string; name: string; stage: string; }
+
+/** What the Oval Office shows (EngineApi.presidency). Figures that do not exist yet (before the first reading) are null. */
+export interface PresidencyView {
+  phase: string; date: string; dateLabel: string;
+  president: { name: string; id: string; party: 'D' | 'R'; partyName: string };
+  approval: number | null; approvalChange: number | null;
+  unemployment?: number | null; inflation?: number | null; growth?: number | null; gas: number | null;
+  termWeek: number; termWeeks: number;
+  pendingDecisions: number; congress: string;
+  /** The length of the turn the End button plays: 'week', 'month', 'transition', or null when there is none. */
+  turnUnit: 'week' | 'month' | 'transition' | null;
+  upcoming: { date: string; what: string }[];
+  bills: PresidencyBill[];
+  news: NewsItem[];
+}

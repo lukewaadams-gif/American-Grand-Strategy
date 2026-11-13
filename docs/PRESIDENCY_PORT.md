@@ -61,6 +61,45 @@ Each milestone goes to the preview.
 7. **The world.** On screen: the presidency's Situation Room.
 8. **The rest.** The transition office, sound (Web Audio), the audits and the final preview.
 
+## The Oval Office (milestone 2)
+
+The first screen of the presidency, for approval from screenshots (Q39). It opens at `preview/presidency.html`, with a save from week 1 of the term. `?save=saves/governing.json` opens September 2029 instead.
+
+**The room** (`presidency/oval.ts`) is Resolute Desk's `OvalArt`, shape for shape in its 1600 × 800 frame.
+- The toolbox (`presidency/paint.ts`) ports `ui/Art.java`. It includes Java's own random generator, so the plaster flecks, wood grain, floor planks, clouds, trees and dust fall exactly where Resolute Desk puts them.
+- **Q27, the palette:** the creams are greyed a little, and the golds, drapes and rug more.
+- **Q28, the desk:** its objects are drawn larger than in the original, because they are the actions. They are a tray of documents to sign, the agenda's folders, the pen set and a multi-line telephone.
+- The president at the desk is the game's own portrait, without its backdrop.
+- **Movement:** the flags sway, the globe turns and dust drifts through the sunbeams, at about 30 frames a second. All of it stops under reduced motion.
+
+**The light** (`presidency/lighting.ts`, Q30, new):
+- The hour comes from the player's clock (or `?hour=`, or the menu). The season comes from the game's date (or `?month=`).
+- Sunrise, sunset and the noon sun's height follow Washington's by month.
+- The windows face south. So the morning sun comes in from the left, the evening sun from the right, and the low winter sun reaches further into the room.
+- **Through the windows:** a night sky with stars and the floodlit Washington Monument (with its red aircraft lights), a warm dawn or dusk, an overcast winter sky, bare trees and snow, April's blossom, and October's colours.
+- **The room:** it darkens by a multiply blend, cool at night and warm at the ends of the day. The lamp, the picture lights and the ceiling's cove light then shine through by a screen blend. The outdoor colours are divided by the room's tint first, so the windows keep their own light.
+
+**The screen** (`presidency/oval-screen.ts`) is Resolute Desk's `Oval` screen.
+- **The top bar:** the seal, the date, approval and its change, unemployment, inflation, gas and the week of the term. Stamina and stress show empty until the weekly schedule (milestone 3) gives them values.
+- **The room's twelve hotspots:** the desk's three objects, the desk, the briefing book, today's paper, the windows, the globe and the four doors. Each is a real button laid over the picture, with Resolute Desk's gold label on hover and on focus.
+- **The cards:** "This week" (decisions waiting and what is coming: the Fed, day 100, the midterms, Election Day) and "On the Hill" (the agenda's bills and their stages, and the House and Senate).
+- **The Ledger** runs along the bottom. It has a pause button and stands still under reduced motion.
+
+**What works now.**
+- The documents open any waiting decisions.
+- The folders, the briefing book and the paper show the engine's real agenda, economy and news.
+- The other doors and objects say which milestone opens them.
+- The End button plays the engine's current turn: a week in the first hundred days, a month while governing, until milestone 3 makes every turn a week.
+
+The engine's `presidency` view adds the turn's length and the dates that are coming.
+
+`mandate-web/src/test/browser/presidency.js` checks the screen in Chromium:
+- every hotspot by mouse, with its label, its dialog and focus coming back;
+- the Tab order, the menu's light, and The Ledger's pause;
+- three weeks and a month of turns;
+- axe audits and the 12 px minimum in three palettes, with reduced motion and 125% text, at 1600, 1280, 1000 and 390 pixels wide;
+- every hotspot at least 24 pixels from 1000 pixels up.
+
 ## Quality bar
 
 These are the same as for the campaign:

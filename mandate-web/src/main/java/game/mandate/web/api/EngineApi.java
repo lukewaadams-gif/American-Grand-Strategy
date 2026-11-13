@@ -64,6 +64,7 @@ public final class EngineApi {
             case "view" -> switch ((String) req.get("name")) {
                 case "campaign" -> campaign(need());
                 case "decisions" -> ok("decisions", decisions(need()));
+                case "presidency" -> presidency(need());
                 default -> throw new IllegalArgumentException("No view called " + req.get("name"));
             };
             default -> throw new IllegalArgumentException("No op called " + op);
@@ -152,6 +153,82 @@ public final class EngineApi {
             m.put("states", margins);
             v.put("result", m);
         });
+        return v;
+    }
+
+    // ---- the presidency (the Oval Office's top bar and cards) --------------------------------------------------------
+
+    /**
+     * What the Oval Office shows: the date, approval and its move, the economy people feel, the week of the term, what
+     * waits on the desk, the agenda's bills and their progress, and the latest headlines. Readers only, as everywhere.
+     */
+    static Map<String, Object> presidency(GameEngine g) {
+        Map<String, Object> v = ok();
+        v.put("phase", g.phase().name());
+        v.put("date", g.date().toString());
+        v.put("dateLabel", Notable.date(g.date()));
+        var me = g.player();
+        v.put("president", Map.of("name", me.candidate().name(), "id", me.candidate().id(), "party", me.party().code(),
+                "partyName", me.party() == Party.DEMOCRAT ? "Democrat" : "Republican"));
+        v.put("approval", n2(g.approval()));
+        var ind = g.indicators();
+        v.put("approvalChange", ind.size() >= 2 ? n2(ind.get(ind.size() - 1).approval() - ind.get(ind.size() - 2).approval()) : 0.0);
+        g.economy().ifPresent(e -> {
+            v.put("unemployment", n2(e.unemployment()));
+            v.put("inflation", n2(e.inflation()));
+            v.put("growth", n2(e.growth()));
+        });
+        v.put("gas", n2(g.gas()));
+        LocalDate inaug = g.calendar().inauguration();
+        long week = g.date().isBefore(inaug) ? 0 : ChronoUnit.WEEKS.between(inaug, g.date()) + 1;
+        v.put("termWeek", week);
+        v.put("termWeeks", ChronoUnit.WEEKS.between(inaug, inaug.plusYears(4)));
+        v.put("pendingDecisions", g.pendingEvents().size());
+        v.put("congress", g.congress().toString());
+        // how long the End button's turn is: a week in the first hundred days, a month while governing (until the
+        // presidency port makes every turn a week), none in the other phases
+        v.put("turnUnit", g.operationsActive() ? "week" : switch (g.phase()) {
+            case FIRST_100_DAYS -> "week";
+            case GOVERNING -> "month";
+            case TRANSITION -> "transition";
+            default -> null;
+        });
+        // what is coming: the Fed's next meeting, day 100, the midterms, the 2032 election
+        List<Object> upcoming = new ArrayList<>();
+        var cal = g.calendar();
+        LocalDate today = g.date();
+        g.nextFedMeeting().ifPresent(d -> upcoming.add(Map.of("date", d.toString(), "what", "The Fed meets")));
+        LocalDate day100 = inaug.plusDays(99);
+        if (!today.isAfter(day100)) upcoming.add(Map.of("date", day100.toString(), "what", "Day 100"));
+        if (!today.isAfter(cal.midterms())) upcoming.add(Map.of("date", cal.midterms().toString(), "what", "The midterm elections"));
+        if (!today.isAfter(cal.election2032())) upcoming.add(Map.of("date", cal.election2032().toString(), "what", "Election Day 2032"));
+        v.put("upcoming", upcoming);
+        List<Object> bills = new ArrayList<>();
+        var hd = g.hundredDays();
+        for (String id : g.agenda()) {
+            Map<String, Object> b = new LinkedHashMap<>();
+            var bill = g.bill(id);
+            b.put("id", id); b.put("name", bill.name());
+            String stage = g.laws().contains(id) ? "Law" : "Not yet moving";
+            if (!g.laws().contains(id) && hd.isPresent() && id.equals(g.state().hundredDays().flagshipId())) stage = switch (hd.get().stage()) {
+                case NOT_DRAFTED -> "Being drafted";
+                case COMMITTEE -> "In committee";
+                case HOUSE_FLOOR -> "On the House floor";
+                case SENATE_FLOOR -> "On the Senate floor";
+                case LAW -> "Law";
+                case DEAD -> "Dead";
+            };
+            b.put("stage", stage);
+            bills.add(b);
+        }
+        v.put("bills", bills);
+        List<Object> heads = new ArrayList<>();
+        for (Object n : news(g, 0)) {
+            @SuppressWarnings("unchecked") Map<String, Object> m = (Map<String, Object>) n;
+            heads.add(m);
+            if (heads.size() >= 12) break;
+        }
+        v.put("news", heads);
         return v;
     }
 
@@ -526,6 +603,8 @@ public final class EngineApi {
     }
 
     static double r2(double v) { return Math.round(v * 100) / 100.0; }
+    /** As r2, but null for a figure that does not exist yet (NaN before the term's first reading). */
+    static Double n2(double v) { return Double.isNaN(v) || Double.isInfinite(v) ? null : r2(v); }
     static double r3(double v) { return Math.round(v * 1000) / 1000.0; }
 
     /** For tests on the JVM: the same call, with a command object rather than JSON. */

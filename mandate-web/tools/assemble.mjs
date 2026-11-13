@@ -9,6 +9,6 @@ const out = path.join(root, 'target/preview');
 const copy = (from, to) => fs.cpSync(path.join(root, from), path.join(out, to), { recursive: true });
 copy('src/main/preview', '.');
 copy('src/main/webapp/fonts', 'fonts');
-for (const need of ['engine/engine.js', 'app/main.js', 'saves/campaign.json'])
+for (const need of ['engine/engine.js', 'app/main.js', 'app/presidency-main.js', 'saves/campaign.json', 'saves/presidency.json'])
   if (!fs.existsSync(path.join(out, need))) console.warn('missing ' + need + (need.startsWith('engine') ? ' (run mvn -pl mandate-web package)' : ''));
 console.log('preview assembled in target/preview');

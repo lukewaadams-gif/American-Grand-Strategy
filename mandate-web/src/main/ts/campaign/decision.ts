@@ -2,8 +2,7 @@
 // choice, the card says what happened. Number keys choose; Escape puts the card aside until later.
 import type { Decision, NewsItem } from '../core/types.js';
 import { h } from '../core/dom.js';
-
-export interface DialogHost { open(content: HTMLElement, label: string, onClose?: () => void): void; close(): void; }
+import type { DialogHost } from '../core/dialog.js';
 
 export function decisionCard(d: Decision, n: number, total: number, host: DialogHost, choose: (command: object) => NewsItem[] | null, after: () => void): void {
   const options = d.options.map((o, i) => h('button', { class: 'choice', type: 'button', 'data-key': String(i + 1),

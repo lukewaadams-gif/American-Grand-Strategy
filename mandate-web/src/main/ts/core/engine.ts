@@ -1,6 +1,6 @@
 // The engine: the Java simulation compiled to JavaScript (target/preview/engine/engine.js), behind one call that
 // takes and returns JSON. Everything the interface shows comes from its view models; everything it does is a command.
-import type { CampaignView, Decision, NewsItem } from './types.js';
+import type { CampaignView, Decision, NewsItem, PresidencyView } from './types.js';
 
 interface EngineModule { call(request: string): string; }
 let mod: EngineModule | null = null;
@@ -23,6 +23,7 @@ export const engine = {
   load(text: string): void { request({ op: 'load', text }); },
   save(ui: object | null = null): string { return request<{ text: string }>({ op: 'save', ui }).text; },
   campaign(): CampaignView { return request<CampaignView>({ op: 'view', name: 'campaign' }); },
+  presidency(): PresidencyView { return request<PresidencyView>({ op: 'view', name: 'presidency' }); },
   decisions(): Decision[] { return request<{ decisions: Decision[] }>({ op: 'view', name: 'decisions' }).decisions; },
   /** Applies a command (in the save file's command format); returns the log lines it produced, newest first. */
   command(command: object): NewsItem[] { return request<{ news: NewsItem[] }>({ op: 'command', command }).news; },

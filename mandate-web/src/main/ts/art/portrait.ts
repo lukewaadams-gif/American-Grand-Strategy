@@ -38,8 +38,11 @@ function shade(hex: string, f: number): string {
   return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
 }
 
-/** A portrait as an SVG (decorative: the name always appears beside it). */
-export function portrait(id: string, party: 'D' | 'R', size = 96): SVGSVGElement {
+/**
+ * A portrait as an SVG (decorative: the name always appears beside it). Without the backdrop, the bust stands on its
+ * own, for placing in a scene (the president at the Resolute Desk).
+ */
+export function portrait(id: string, party: 'D' | 'R', size = 96, backdrop = true): SVGSVGElement {
   const L = lookFor(id), uid = 'p' + hash(id + party).toString(36);
   const skin = L.skin, skinShadow = shade(skin, -0.16), skinDeep = shade(skin, -0.3), hair = L.hairColour, hairLight = shade(hair, 0.18);
   const bgTop = party === 'D' ? '#22314a' : '#3a2629', bgBottom = '#121820';
@@ -48,7 +51,7 @@ export function portrait(id: string, party: 'D' | 'R', size = 96): SVGSVGElement
     s('linearGradient', { id: uid + 'bg', x1: 0, y1: 0, x2: 0, y2: 1 }, s('stop', { offset: '0', 'stop-color': bgTop }), s('stop', { offset: '1', 'stop-color': bgBottom })),
     s('radialGradient', { id: uid + 'face', cx: '0.42', cy: '0.38', r: '0.75' }, s('stop', { offset: '0', 'stop-color': shade(skin, 0.06) }), s('stop', { offset: '1', 'stop-color': skinShadow })),
     s('linearGradient', { id: uid + 'suit', x1: 0, y1: 0, x2: 1, y2: 1 }, s('stop', { offset: '0', 'stop-color': shade(L.suit, 0.12) }), s('stop', { offset: '1', 'stop-color': shade(L.suit, -0.2) }))));
-  svg.append(s('rect', { width: 120, height: 140, fill: `url(#${uid}bg)` }));
+  if (backdrop) svg.append(s('rect', { width: 120, height: 140, fill: `url(#${uid}bg)` }));
 
   // hair that falls behind the shoulders goes first
   if (L.hair === 'shoulder') svg.append(s('path', { d: 'M37 52 C35 76 34 96 40 108 L80 108 C86 96 85 76 83 52 Z', fill: hair }));
