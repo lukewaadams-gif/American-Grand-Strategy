@@ -105,7 +105,23 @@ This builds the browser game: the map data, the TypeScript interface, and the en
 
 **Checks:**
 - **The browser checks** are Playwright scripts. They cover every room at desktop and phone widths, in three palettes and at 125% text, with axe-core WCAG 2.1 AA audits. They are in `mandate-web/src/test/browser` (see its README).
-- **The parity check** shows that the same seed plays the same game in Java and in JavaScript. Its steps are in `mandate-web/src/main/java/game/mandate/web/ParityCheck.java`.
+- **The parity check** shows that the same seed plays the same game in Java and in JavaScript. It covers forty autopilot games, the policy scores, a Hormuz crisis, a Taiwan crisis in the presidency, and an Island Chain invasion. The two outputs must match apart from the timings:
+
+```bash
+mvn -B -pl mandate-web package -Pparity -DskipTests
+```
+
+```bash
+cp mandate-web/target/parity/parity.js /tmp/parity.cjs && node -e "require('/tmp/parity.cjs').main([])" > parity-js.txt
+```
+
+```bash
+java -cp mandate-web/target/classes:mandate-core/target/classes game.mandate.web.ParityCheck > parity-jvm.txt
+```
+
+```bash
+diff <(grep -v '^ms ' parity-js.txt) <(grep -v '^ms ' parity-jvm.txt)
+```
 
 ## Play on the desktop
 
