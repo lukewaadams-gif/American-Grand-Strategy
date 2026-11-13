@@ -7,6 +7,7 @@ import { cost } from './campaign/schedule.js';
 import { compact } from './campaign/field.js';
 import { resetWarRoomMemory, warRoom } from './campaign/warroom.js';
 import { decisionCard } from './campaign/decision.js';
+import { host, toast } from './core/dialog.js';
 import { closeMenu, menuOpen } from './core/menu.js';
 import { adStudio } from './campaign/studio.js';
 import { usePalette } from './campaign/palette.js';
@@ -14,44 +15,6 @@ const root = document.getElementById('app');
 const state = { layer: 'margin', selected: null, tab: 'schedule', picking: null, desk: 'overview', digest: null };
 // keys 1-6 switch the left panel's tabs (as in Battleground 2028), when no dialog or menu is open and focus is not in a field
 const TAB_KEYS = { '1': 'schedule', '2': 'money', '3': 'field', '6': 'wire' };
-let toastTimer = 0;
-const host = (() => {
-    let scrim = null, onClose, returnTo = null;
-    return {
-        open(content, label, close) {
-            if (scrim)
-                scrim.remove();
-            else
-                returnTo = document.activeElement;
-            onClose = close;
-            scrim = h('div', { class: 'scrim' }, h('div', { class: 'dialog', role: 'dialog', 'aria-modal': 'true', 'aria-label': label }, content));
-            document.body.append(scrim);
-            scrim.querySelector('button.choice, button.primary, button')?.focus();
-        },
-        close() {
-            if (!scrim)
-                return;
-            scrim.remove();
-            scrim = null;
-            const cb = onClose;
-            onClose = undefined;
-            if (returnTo instanceof HTMLElement)
-                returnTo.focus();
-            cb?.();
-        },
-    };
-})();
-function toast(text) {
-    let t = document.getElementById('toast');
-    if (!t) {
-        t = h('div', { id: 'toast', class: 'toast', role: 'status', 'aria-live': 'polite' });
-        document.body.append(t);
-    }
-    t.textContent = text;
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(() => t.classList.remove('show'), 6000);
-}
 function render() {
     let v;
     try {

@@ -18,6 +18,7 @@ export const engine = {
     load(text) { request({ op: 'load', text }); },
     save(ui = null) { return request({ op: 'save', ui }).text; },
     campaign() { return request({ op: 'view', name: 'campaign' }); },
+    presidency() { return request({ op: 'view', name: 'presidency' }); },
     decisions() { return request({ op: 'view', name: 'decisions' }).decisions; },
     /** Applies a command (in the save file's command format); returns the log lines it produced, newest first. */
     command(command) { return request({ op: 'command', command }).news; },
