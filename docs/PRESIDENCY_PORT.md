@@ -15,6 +15,18 @@ This is the plan for porting Resolute Desk Version 2 (`lukewaadams-gif/resoluted
 | How laws act on it | Laws move **Resolute Desk's policy table**. Each policy level carries a full score: 10-year cost and how it is paid for, demand effects year by year, long-run effects on labour, productivity and investment, prices in the sectors it touches, and a phase-in. |
 | What the player sees | **Scores with ranges** before every vote; the range is wider where the evidence is weak. The actual effect is drawn within the range, and the briefing book shows which laws moved which numbers. |
 | Order | **The economy and the policy table come next (milestone 4)**, before Congress, so the laws Congress passes have their real effects from the start. |
+| Defaults, revised (13 November 2026) | The game is no longer limited to 2029–2033: a re-elected president serves a second term to January 2037 (below). |
+| A second term (13 November 2026) | **Its own milestone, after the world.** Winning in 2032 always carries on: the full-term game becomes "as long as you serve". |
+| Between the terms | **A short second transition:** some secretaries leave and are replaced, the second-term agenda is set, and the second inaugural address sets its tone. |
+| The second term's pace | **Weekly, as the first term**, with watch mode for quiet stretches. |
+| Second-term pressures | **Lame-duck decline** (capital and pull with Congress fade as the end nears, faster after the 2034 midterms), **staff and cabinet turnover** (departures between terms and during the second; replacements less experienced or less loyal), and **legacy and the succession** (legacy goals that count in the verdict; rivals for the 2036 nomination split the party). No extra second-term scandal risk. |
+| How a two-term game ends | **The president campaigns for the party's 2036 nominee** from the White House (trips, money, endorsements). The game ends at the January 2037 handoff. |
+| A 2032 loss | **The lame-duck weeks are played** to the January 2033 handoff (pardons, last orders and rules, the lame-duck session of Congress), then the epilogue. |
+| The verdict | **One verdict on the whole presidency**, across every term served: the economy, the laws and what they did, war and peace, approval, the Congresses faced, and a historians' ranking. |
+| Midterms (2030 and 2034) | **Every Senate race, and the House state by state:** the real Senate seats up in each year, each with its candidates and polls; the House's 435 seats moved state by state, with retirements and open seats. |
+| Midterm campaigning | **From the Oval Office calendar:** rallies and fundraisers as road trips, endorsements, and the party's war chest. No separate headquarters. |
+| A new Congress | **Leaders, blocs and members change:** leaders follow control of each chamber, Resolute Desk's blocs grow or shrink, new members bring their own leanings, and retirements and primaries reshape the caucuses. |
+| Divided government | An opposition chamber can **investigate and subpoena, impeach and try, force shutdown and debt-limit fights, and block nominees and judges.** |
 
 ## How Resolute Desk's systems map onto the engine
 
@@ -63,11 +75,16 @@ Each milestone goes to the preview.
    - the country through the windows;
    - the briefing book's economy.
 4. **The economy and the policy table** (built, for review). A new structural model, with Resolute Desk's sectors on top. Every policy level is scored, with ranges, and the effects are credited to the laws behind them. On screen: the briefing book's sectors and laws, and the Cabinet Room. The design and what was built are in `ECONOMY_MODEL.md`.
-5. **Congress and the budget.** Bills move the policy table. On screen: the Roosevelt Room.
+5. **Congress and the budget.** Bills move the policy table. Each Congress is seated after its election with its own leaders, blocs and members, so the game can face several. The 2030 midterms are race by race, and the president can campaign in them from the calendar. Divided government brings investigations, impeachment, shutdown and debt-limit fights, and blocked nominees. On screen: the Roosevelt Room.
 6. **The executive, the press and storylines.** On screen: the West Wing and the Press Briefing Room.
 7. **The Residence and the country's groups.** Approval by group from the 96-cell electorate.
 8. **The world.** On screen: the presidency's Situation Room.
-9. **The rest.** The transition office, sound (Web Audio), the audits and the final preview.
+9. **The second term.**
+   - The lame-duck weeks after a 2032 loss.
+   - After a win: the second transition and inauguration, then the second term to January 2037, with the 2034 midterms run on milestone 5's model.
+   - The pressures: lame-duck decline, turnover, legacy and the succession.
+   - The campaign for a successor in 2036, and one verdict on the whole presidency.
+10. **The rest.** The transition office, sound (Web Audio), the audits and the final preview.
 
 ## The Oval Office (milestone 2)
 
