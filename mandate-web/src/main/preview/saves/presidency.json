@@ -9,7 +9,7 @@
     "opponent": "bg_vance",
     "scenario": "TOSS_UP",
     "difficulty": "STANDARD",
-    "length": "FULL_TERM",
+    "mode": "FULL_GAME",
     "realRoster": true,
     "custom": null
   },
@@ -4582,7 +4582,10 @@
     "hormuz": null,
     "taiwan": null,
     "taiwanEscalated": false,
+    "taiwanAttack": false,
     "electionNightSeen": 2028,
+    "mode": "FULL_GAME",
+    "crisis": null,
     "news": [],
     "ambientUsed": [],
     "scheduler": {

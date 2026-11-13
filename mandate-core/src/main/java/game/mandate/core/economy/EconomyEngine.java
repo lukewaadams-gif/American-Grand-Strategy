@@ -181,7 +181,7 @@ public final class EconomyEngine {
             // until bills are re-expressed as the policy steps they make, a bill's demand arrives with its growth impulse
             // (an EconomyShock), so its deficit only adds to the debt
             case Effect.Deficit x -> addProgram(b, new Program("deficit-" + (b.programs.size() + 1), FiscalClass.NONE, x.pctGdp(),
-                    new double[]{1}, s.week, -1, 1));
+                    new double[]{1}, s.week, x.weeks() < 0 ? -1 : s.week + x.weeks(), 1));
             case Effect.FedPressure x -> {
                 s.credibility = Math.max(p.credibilityFloor, s.credibility - p.fedPressureCredibility);
                 s.fedPressured = true;

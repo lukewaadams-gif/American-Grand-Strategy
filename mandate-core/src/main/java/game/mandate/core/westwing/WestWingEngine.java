@@ -236,6 +236,7 @@ public final class WestWingEngine {
     void remove(WestWingState s, Person p) {
         if (p.role >= 0 && s.staff[p.role] == p) s.staff[p.role] = null;
         if (p.post >= 0 && s.post[p.post] == p) s.post[p.post] = null;
+        if (!s.departed.contains(p.name)) s.departed.add(p.name);     // whoever leaves is not hired back (B-09)
     }
 
     static String title(Person p) { return p.role >= 0 ? STAFF_TITLE[p.role] : p.post >= 0 ? POST_TITLE[p.post] : "Aide"; }
@@ -382,7 +383,9 @@ public final class WestWingEngine {
         return out;
     }
 
+    /** Whether a name is taken: serving, nominated, or departed from this administration (B-09: a resigned secretary was rehired). */
     private static boolean servingName(WestWingState s, String name) {
+        if (s.departed.contains(name)) return true;
         for (Person p : s.everyone()) if (p.name.equals(name)) return true;
         for (Person p : s.nominee) if (p != null && p.name.equals(name)) return true;
         return false;

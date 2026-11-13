@@ -212,8 +212,10 @@ class FlowTest {
         assertTrue(app.session.seenLessons().contains("days.crisis"));
     }
 
-    /** The campaign's end-turn button: "Run the day" in the final stretch, "Run the week" before it. */
+    /** The end-turn control's label: "Run the day" or "Run the week", or, while decisions wait, what it asks first (E-01). */
     static String runLabel(App app) {
+        String blocked = game.mandate.ui.screens.Shell.blockedLabelFor(app);
+        if (blocked != null) return blocked;
         return app.session.g().clock().mode() == game.mandate.core.time.SimulationClock.Granularity.DAILY ? "Run the day" : "Run the week";
     }
 }

@@ -54,11 +54,8 @@ public record Legacy(int score, String grade, List<String> lines, List<Integer> 
         int score = 0;
         ElectionResult r28 = g.result2028().orElseThrow();
         boolean won28 = r28.winner() == g.player().party();
-        if (!won28) {
-            lines.add("Lost the 2028 election, " + r28.electoralVotes(g.player().party()) + " electoral votes.");
-            score += Math.max(0, r28.electoralVotes(g.player().party()) - t.i("legacy.lossFloorEv"));
-            return new Legacy(score, grade(g, score), lines);
-        }
+        // a campaign that lost is judged as a campaign, never as a presidency it did not have (B-07)
+        if (!won28) return campaign(g);
         int win = t.i("legacy.win");
         score += win;
         lines.add("Won the presidency with " + r28.electoralVotes(g.player().party()) + " electoral votes (+" + win + ").");
@@ -94,7 +91,7 @@ public record Legacy(int score, String grade, List<String> lines, List<Integer> 
         return new Legacy(score, grade(g, score), lines);
     }
 
-    /** Campaign Only's verdict: the campaign's grade, score (its electoral votes) and assessment. */
+    /** A campaign's verdict (Campaign Only, or a 2028 defeat): the campaign's grade, score (its electoral votes) and assessment. */
     static Legacy campaign(GameEngine g) {
         var a = g.campaignAssessment().orElseThrow();
         List<String> lines = new ArrayList<>();

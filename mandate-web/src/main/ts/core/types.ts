@@ -105,6 +105,8 @@ export interface ActivityInfo {
 export interface DecisionOption { label: string; detail: string; tag: string | null; tone: Tone | null; command: object; }
 export interface Decision {
   kind: string; eyebrow: string; title: string; body: string; options: DecisionOption[];
+  /** Whether the turn waits for it (events, the hundred days' questions, the debate); the rooms' questions wait to their deadline. */
+  blocking?: boolean;
   /** In office: the option the staff would take, and the kind of stop watch mode makes for it (-1 for none). */
   recommended?: number; stop?: number;
 }
@@ -136,6 +138,8 @@ export interface PresidencyView {
   /** After an election that chose who comes next: the successor and the day of the handoff. */
   successor?: string; handoff?: string;
   pendingDecisions: number; congress: string;
+  /** The decisions the week cannot run without (events, the hundred days' questions); the others can wait to their deadline. */
+  blockingDecisions?: number;
   /** The length of the turn the End button plays: 'week', 'war' (an operational turn), 'transition', or null when there is none. */
   turnUnit: 'week' | 'war' | 'day' | 'transition' | null;
   /** The Strait of Hormuz crisis, while it lasts. */

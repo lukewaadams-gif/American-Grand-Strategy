@@ -18,6 +18,7 @@ import java.time.LocalDate;
  *       saved on the night itself before it is watched;</li>
  *   <li>the eve of 2028 in Campaign Only, won and lost (the same games, in that mode);</li>
  *   <li>the last turn of an Individual Crisis, Hormuz and Taiwan, from the shipped governing save;</li>
+ *   <li>the nights of the races to succeed the president: 2036, and 2032 without the president on the ballot;</li>
  *   <li>the last week of the first hundred days.</li>
  * </ul>
  * Usage: java -cp mandate.jar game.mandate.ui.ElectionSaves [out-dir] [shipped saves dir]
@@ -66,9 +67,24 @@ public final class ElectionSaves {
             for (int i = 0; i < turns - 1; i++) AutoPilot.playTurn(again);
             write(out, "crisis-" + kind + "-last", SaveManager.save(again));
         }
+        // the races to succeed the president, on their nights: 2036 after two terms, and 2032 when the president did not run
+        // (the lifecycle run's games: LifecycleTest.setup(0, 1) and setup(9, 10))
+        write(out, "night2036", SaveManager.save(toNight(new GameSetup(1, game.mandate.core.state.Party.DEMOCRAT, "bg_shapiro", "bg_vance",
+                game.mandate.core.game.Scenario.values()[0], GameSetup.Difficulty.values()[0], GameSetup.Mode.FULL_GAME, true, null), 2036)));
+        write(out, "night2032-successor", SaveManager.save(toNight(new GameSetup(10, game.mandate.core.state.Party.DEMOCRAT, "bg_shapiro", "bg_vance",
+                game.mandate.core.game.Scenario.values()[0], GameSetup.Difficulty.values()[0], GameSetup.Mode.GOVERNING_ONLY, true, null), 2032)));
         // the last week of the first hundred days
         GameEngine d = Fixtures.won(GameSetup.Mode.FULL_GAME, x -> x.phase() == Phase.FIRST_100_DAYS && x.hundredDays().map(h -> h.week() >= 14).orElse(false));
         write(out, "day100-eve", SaveManager.save(d));
+    }
+
+    /** The game played by the staff until that year's election night is waiting to be watched. */
+    static GameEngine toNight(GameSetup s, int year) {
+        GameEngine g = GameEngine.start(s);
+        int guard = 0;
+        while (!g.over() && g.electionNightPending() != year && guard++ < 6000) AutoPilot.playTurn(g);
+        if (g.electionNightPending() != year) throw new IllegalStateException("no " + year + " night in this game");
+        return g;
     }
 
     /** The same game, as Campaign Only: only what happens after the vote differs. */

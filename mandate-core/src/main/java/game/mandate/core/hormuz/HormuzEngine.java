@@ -36,6 +36,16 @@ public final class HormuzEngine {
     static final double[] PACE = {1.3, 6.0, 2.6};
     static final double[][] LOSSES = {{15, 40}, {4, 14}, {8, 24}};
 
+    /**
+     * The Strategic Petroleum Reserve this crisis starts with: what the last one left, refilled by about three million
+     * barrels a month since it began, up to the reserve's size (M8-F9: it used to be full for every crisis).
+     */
+    public void carryReserve(HormuzState s, HormuzState last, LocalDate date) {
+        if (last == null || last.started == null) return;
+        double months = java.time.temporal.ChronoUnit.DAYS.between(last.started, date) / 30.4;
+        s.sprLeft = Math.max(0, Math.min(HormuzState.SPR_START, last.sprLeft + 3 * Math.max(0, months)));
+    }
+
     public HormuzState newCrisis(LocalDate date, int startRung, String cause, int preset, DeterministicRandomManager rng) {
         HormuzState s = new HormuzState();
         s.active = true; s.started = date; s.cause = cause;
@@ -258,6 +268,12 @@ public final class HormuzEngine {
         }
     }
 
+    /** A cost of the crisis: booked as a deficit while the crisis lasts, and reversed when it ends. */
+    static void spend(HormuzState s, Outcome out, double pctGdp) {
+        s.spending += pctGdp;
+        out.effects().add(new Effect.Deficit(pctGdp));
+    }
+
     void end(HormuzState s, LocalDate date, String how, boolean ok, Outcome out) {
         s.active = false;
         s.outcome = how;
@@ -265,6 +281,9 @@ public final class HormuzEngine {
         log(s, date, "the crisis ends: " + how.toLowerCase(Locale.ROOT));
         news(out, date, ok ? News.Kind.GOOD : News.Kind.WORLD, ("The Strait of Hormuz crisis ends: " + how.toLowerCase(Locale.ROOT)).toUpperCase(Locale.ROOT),
                 Fmt.format("%d days; %d Americans killed; %d tankers seized and %d hit.", s.day, s.usKilled, s.tankersSeized, s.tankersHit), 4.5);
+        // the crisis's spending ends with it (an occupation's own war budget takes over from the build-up): M8-F8
+        if (Math.abs(s.spending) > 1e-9) out.effects().add(new Effect.Deficit(-s.spending));
+        s.spending = 0;
         out.effects().add(new Effect.Performance(ok ? 1.5 : -1));
         out.effects().add(new Effect.WorldShift("iran", how.equals("A settlement") ? -20 : 0));
         out.effects().add(new Effect.WorldShift("rel:IR", how.equals("A settlement") ? 15 : -10));
@@ -280,7 +299,7 @@ public final class HormuzEngine {
         s.message = switch (o) {
             case HormuzOrder.Escorts x -> {
                 int to = Math.max(0, Math.min(4, x.groups()));
-                out.effects().add(new Effect.Deficit(0.004 * (to - s.escorts)));
+                spend(s, out, 0.004 * (to - s.escorts));
                 s.escorts = to;
                 flow(s);
                 yield to == 0 ? "The escorts stand down." : to + (to == 1 ? " escort group" : " escort groups") + " now shepherd tankers through the lanes.";
@@ -321,7 +340,7 @@ public final class HormuzEngine {
         s.talks = Math.max(0, s.talks - (s.settled ? 0 : 8));
         s.stability = clamp(s.stability - 2, 5, 100);
         out.effects().add(new Effect.WorldShift("rel:IR", -8));
-        out.effects().add(new Effect.Deficit(0.01));
+        spend(s, out, 0.01);
         if (rng.uniform("hormuz.strike") < 0.04) { s.usKilled += 2; kia(out, date, 2, "An American jet is lost over Iran's coast"); }
         news(out, date, News.Kind.WORLD, "American strikes on Iran's " + kindName(kind) + " along the strait", null, 3);
         log(s, date, "struck the " + kindName(kind));
@@ -397,7 +416,7 @@ public final class HormuzEngine {
             }
             case "reinsure" -> {
                 s.reinsured = !s.reinsured;
-                if (s.reinsured) out.effects().add(new Effect.Deficit(0.01));
+                spend(s, out, s.reinsured ? 0.01 : -0.01);      // the reinsurance's cost ends when it does
                 flow(s);
                 return s.reinsured ? "Washington reinsures tankers against war risk: insurers come back." : "The federal reinsurance ends.";
             }
@@ -421,7 +440,7 @@ public final class HormuzEngine {
         if (s.invasion != 0) throw new IllegalArgumentException("An operation is already under way");
         if (option < 0 || option > 2) throw new IllegalArgumentException("No such plan");
         s.invasion = 1; s.invasionOption = option; s.invasionDays = 0; s.invasionProgress = 0;
-        out.effects().add(new Effect.Deficit(option == 0 ? 0.8 : option == 1 ? 0.1 : 0.3));
+        spend(s, out, option == 0 ? 0.8 : option == 1 ? 0.1 : 0.3);
         news(out, date, News.Kind.WORLD, ("The Pentagon builds up forces in the Gulf").toUpperCase(Locale.ROOT), INVASION[option] + " is being prepared.", 4);
         log(s, date, "ordered the build-up: " + INVASION[option].toLowerCase(Locale.ROOT));
         return INVASION[option] + ": the build-up takes about " + BUILD_DAYS[option] + " days.";

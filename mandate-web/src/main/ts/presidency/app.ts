@@ -108,10 +108,20 @@ function openDecisions(after: () => void = render): void {
   }, () => { render(); if (engine.decisions().length) openDecisions(after); else after(); });
 }
 
+/** The decisions the week cannot run without, one after another, then `after`. */
+function openBlocking(after: () => void): void {
+  const ds = engine.decisions().filter(d => d.blocking !== false);
+  if (!ds.length) { after(); return; }
+  decisionCard(ds[0]!, 1, ds.length, host, c => {
+    try { return engine.command(c); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); return null; }
+  }, () => { render(); if (engine.decisions().some(d => d.blocking !== false)) openBlocking(after); else after(); });
+}
+
 function endTurn(): void {
   const v = engine.presidency();
   if (!v.turnUnit || watching) return;
-  if (v.pendingDecisions > 0) { openDecisions(endTurn); return; }
+  // only what the engine will not end the week without stops it (E-04); the rooms' questions wait on the desk to their deadline
+  if ((v.blockingDecisions ?? v.pendingDecisions) > 0) { openBlocking(endTurn); return; }
   if (!command({ type: 'EndTurn' })) return;
   chime();
   render();
@@ -122,7 +132,7 @@ function endTurn(): void {
   if (crisis(after)) {
     const room = after.taiwan ? openTaiwan : openHormuz;
     if (!crisis(v)) showPaper(() => room());
-    else if (after.pendingDecisions > 0) openDecisions(() => room());
+    else if ((after.blockingDecisions ?? after.pendingDecisions) > 0) openBlocking(() => room());   // the rest wait on the desk
     else room();
     return;
   }

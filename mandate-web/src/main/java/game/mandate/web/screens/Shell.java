@@ -144,7 +144,8 @@ public final class Shell {
             p.add(Btn.secondary("Advisor", e -> app.toggleAdvisor()).selected(app.advisorOpen()).tip((app.advisorOpen() ? "Hide" : "Show") + " your chief adviser's brief (A)"));
         p.add(Btn.secondary("Menu", e -> menu(app)).tip("Save, load, settings, help, or return to the main menu"));
         String why = endTurnBlocked(app, g);
-        Btn end = Btn.primary(endTurnLabel(g), e -> endTurn(app)).hint("Ctrl+Enter");
+        // the control says what it will do: while the turn is blocked it goes to what blocks it, and its label says so (E-01)
+        Btn end = Btn.primary(why == null ? endTurnLabel(g) : blockedLabel(app, g), e -> endTurn(app)).hint("Ctrl+Enter");
         if (why != null) end.tip(why); else end.tip(endTurnTip(g));
         if (g.over()) end.disabledBecause("The game is over: see Results");
         p.add(end);
@@ -157,7 +158,7 @@ public final class Shell {
             case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> g.clock().mode() == game.mandate.core.time.SimulationClock.Granularity.DAILY ? "Run the day" : "Run the week";
             case TRANSITION -> "Take the oath";
             case FIRST_100_DAYS -> "End the week";
-            case GOVERNING -> "End the month";
+            case GOVERNING -> "End the week";     // the presidency's turns are weeks (Resolute Desk), not months
             default -> "Finished";
         };
     }
@@ -167,9 +168,16 @@ public final class Shell {
             case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> "Both campaigns carry out their plans, a debate is held if one is due, and the polls update.";
             case TRANSITION -> "Inauguration Day: your agenda's first priority becomes your flagship bill and the first hundred days begin.";
             case FIRST_100_DAYS -> "Hearings and votes happen, the economy and opinion move, and you get the week's briefing.";
-            case GOVERNING -> "The month resolves: the economy, opinion, the world and events.";
+            case GOVERNING -> "The week resolves: the president's week, Congress, the West Wing, the economy, opinion, the world and events.";
             default -> "";
         };
+    }
+
+    /** The end-turn control's label while the turn is blocked: where it will take the player instead. */
+    static String blockedLabel(App app, GameEngine g) {
+        int n = Decisions.count(app);
+        if (n > 0) return "Answer " + n + (n == 1 ? " decision" : " decisions") + " first";
+        return "Choose your agenda first";
     }
 
     /** Why the turn cannot end right now, or null. */

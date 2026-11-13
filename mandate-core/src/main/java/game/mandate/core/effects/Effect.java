@@ -85,8 +85,12 @@ public sealed interface Effect {
         public String describe() { return signed("Campaign cash ($M)", millions); }
     }
 
-    /** Deficit change as percent of GDP (positive = bigger deficit). */
-    record Deficit(double pctGdp) implements Effect {
+    /**
+     * Deficit change as percent of GDP (positive = bigger deficit), every year from now, or for {@code weeks} weeks when
+     * the cost is temporary (a crisis's spending, a war's one-time bill).
+     */
+    record Deficit(double pctGdp, int weeks) implements Effect {
+        public Deficit(double pctGdp) { this(pctGdp, -1); }
         public String describe() { return signed("Deficit (% of GDP)", pctGdp); }
     }
 

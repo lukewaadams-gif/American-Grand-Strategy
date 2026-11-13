@@ -146,6 +146,19 @@ public final class TermsEngine {
         return out;
     }
 
+    /** Whether the race to succeed the president is due: its Election Day has come, and it is not yet decided. */
+    public static boolean electionDue(TermsState s, LocalDate date) {
+        return s != null && s.race != null && !s.race.done && !date.isBefore(s.race.electionDay);
+    }
+
+    /**
+     * Election Day in the race to succeed the president. The game engine holds it on the turn whose days reach it (at the
+     * end of a week, as the midterms are, or on the day itself in a crisis's days), so the result never waits a week.
+     */
+    public Outcome holdElection(TermsState s, Context c, DeterministicRandomManager rng) {
+        return election(s, c, s.race, Outcome.empty(), rng).held();
+    }
+
     // ---- another four years? ----
 
     void askToRun(TermsState s, Context c) {
@@ -433,7 +446,7 @@ public final class TermsEngine {
         String body = last(me.name) + " " + r.evMe + ", " + last(r.opponent.name) + " " + r.evOpp + " in the Electoral College; the popular vote "
                 + Fmt.format("%.1f%% to %.1f%%.", r.popMe, r.popOpp);
         out.news().add(new News(c.date(), r.won ? News.Kind.GOOD : News.Kind.BAD, head, body, 6, null));
-        out.log().add("Election Night " + r.year + ": " + head.charAt(0) + head.substring(1).toLowerCase() + ". " + body);
+        out.log().add("Election Night " + r.year + ": " + (r.won ? me.name + " wins the presidency" : r.opponent.name + " is elected president") + ". " + body);
         s.record.add(c.date() + ": " + (r.won ? me.name + " elected to succeed you, " : r.opponent.name + " elected over " + me.name + ", ") + r.evMe + "-" + r.evOpp);
         return out;
     }

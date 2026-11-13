@@ -334,6 +334,8 @@ public final class WestWingState {
     final List<Storyline> storylines = new ArrayList<>();
     final Map<String, Integer> storyCool = new TreeMap<>();
     final List<String> record = new ArrayList<>();
+    /** Everyone who has left the administration (resigned, fired, or gone at a term's end): never a prospect again (B-09). */
+    final List<String> departed = new ArrayList<>();
 
     WestWingState() {}
 
@@ -410,6 +412,9 @@ public final class WestWingState {
     }
 
     /** Every person serving, staff first then the cabinet (Resolute Desk's {@code everyone()}, whose order sets the draws). */
+    /** Everyone who has left the administration: never a prospect again. */
+    public List<String> departed() { return java.util.Collections.unmodifiableList(departed); }
+
     public List<Person> everyone() {
         List<Person> out = new ArrayList<>();
         for (Person p : staff) if (p != null) out.add(p);
@@ -461,6 +466,7 @@ public final class WestWingState {
         m.put("storylines", st);
         m.put("storyCool", new LinkedHashMap<String, Object>(storyCool));
         m.put("record", new ArrayList<Object>(record));
+        m.put("departed", new ArrayList<Object>(departed));
         return m;
     }
 
@@ -514,6 +520,7 @@ public final class WestWingState {
         for (Object o : Json.array(m.get("storylines"))) s.storylines.add(Storyline.fromJson(Json.object(o)));
         Json.object(m.get("storyCool")).forEach((key, v) -> s.storyCool.put(key, Json.integer(v)));
         for (Object o : Json.array(m.get("record"))) s.record.add((String) o);
+        if (m.get("departed") != null) for (Object o : Json.array(m.get("departed"))) s.departed.add((String) o);   // older saves: none recorded
         return s;
     }
 

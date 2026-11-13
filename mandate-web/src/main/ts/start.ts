@@ -7,6 +7,7 @@
 // The world is real people by default; the fictional cast is the alternative.
 import { h } from './core/dom.js';
 import { portrait, type Look } from './art/portrait.js';
+import { buildInfo } from './core/engine.js';
 
 export interface StartCandidate { id: string; name: string; home: string; charisma: number; debate: number; fundraising: number; policy: number;
   discipline: number; ideology: number; real: boolean; look?: Look | null }
@@ -148,7 +149,9 @@ export function startScreen(act: StartActions): HTMLElement {
           } })),
         h('h3', { class: 'start-sub' }, 'Or start the Full Game at a moment'),
         h('ul', { class: 'start-quick' }, ...QUICK.map(q => h('li', null,
-          h('button', { class: 'btn link', type: 'button', onclick: () => act.quick(q.save) }, q.label), h('span', { class: 'muted small' }, ' · ' + q.detail))))));
+          h('button', { class: 'btn link', type: 'button', onclick: () => act.quick(q.save) }, q.label), h('span', { class: 'muted small' }, ' · ' + q.detail))))),
+      ...(buildInfo.build ? [h('footer', { class: 'start-foot muted small' }, `Build ${buildInfo.build}` + (buildInfo.commit ? ` · source ${buildInfo.commit}${buildInfo.dirty ? ' (with uncommitted changes)' : ''}` : '')
+        + (buildInfo.built ? ` · built ${buildInfo.built}` : ''))] : []));
   }
 
   draw();

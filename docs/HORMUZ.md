@@ -105,7 +105,9 @@ The verdict counts it as a crisis (crisis leadership) and, if it becomes a war, 
 
 ## Standalone
 
-From the start screen, with presets (base case, optimistic, pessimistic, custom) and a year (2029–2036): the crisis begins weeks before the first seizure, with the American forces and Iran's arsenal of that year.
+As planned: from the start screen, with presets (base case, optimistic, pessimistic, custom) and a year (2029–2036), the crisis beginning weeks before the first seizure, with the American forces and Iran's arsenal of that year.
+
+As built (13 November 2026, docs/MODES.md): **Individual Crisis** on the start screen begins the crisis at once in the sample presidency of September 2029, with the base case, optimistic or pessimistic preset (`Command.IndividualCrisis`). The game ends when the crisis does, with an after-action report. The custom preset and the choice of year are not built.
 
 ## As built (13 November 2026)
 

@@ -86,6 +86,11 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
     const page = await open('secondterm.json');
     console.log('re-elected: top bar term', await termLabel(page));
     await page.locator('.ov-actions button', { hasText: /End week/ }).click();
+    // the theme waits on the desk (it has a deadline, so the week runs: E-04): the paper first, then the desk's questions
+    for (let i = 0; i < 20 && !(await page.locator('.scrim button.choice').count()); i++) {
+      if (await page.locator('.scrim .lg').count()) await page.keyboard.press('Escape');
+      await page.waitForTimeout(250);
+    }
     await page.waitForSelector('.scrim button.choice', { timeout: 10000 });
     const title = await page.locator('.scrim .dialog-title').first().textContent();
     console.log('on the desk:', title);

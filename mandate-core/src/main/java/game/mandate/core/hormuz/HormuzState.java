@@ -106,6 +106,8 @@ public final class HormuzState {
     int usKilled, shipsHit, tankersSeized, tankersHit, strikes;
     // an invasion: 0 none, 1 build-up, 2 the invasion, 3 occupation; option 0 full, 1 the islands, 2 the coast
     int invasion, invasionOption, invasionDays;
+    /** The crisis's standing spending, % of GDP a year (escorts, reinsurance, strikes, a build-up): ended with the crisis (M8-F8). */
+    double spending;
     double invasionProgress;
     final List<String> log = new ArrayList<>();
     String message;
@@ -132,6 +134,8 @@ public final class HormuzState {
     public double spr() { return spr; }
     public double iea() { return iea; }
     public double sprLeft() { return sprLeft; }
+    /** The crisis's standing spending, % of GDP a year: ended with the crisis. */
+    public double spending() { return spending; }
     public double insurance() { return insurance; }
     public boolean reinsured() { return reinsured; }
     public double hawk() { return hawk; }
@@ -176,6 +180,7 @@ public final class HormuzState {
         m.put("d", nums(tehran, guards, stability, arsenalBoats, arsenalMines, arsenalMissiles, flow, bypass, spr, iea, sprLeft, insurance, premium, talks,
                 chinaPressure, gulfCalm, invasionProgress, hawk, anger));
         m.put("b", List.of(reinsured, hostsConsent, israelRestrained, bypassAsked, settled));
+        m.put("spending", spending);
         List<Object> ss = new ArrayList<>();
         for (Site s : sites) ss.add(s.toJson());
         m.put("sites", ss);
@@ -189,6 +194,7 @@ public final class HormuzState {
     public static HormuzState fromJson(Map<String, Object> m) {
         HormuzState s = new HormuzState();
         s.active = (Boolean) m.get("active");
+        s.spending = m.get("spending") == null ? 0 : Json.num(m.get("spending"));   // older saves: none tracked
         s.started = m.get("started") == null ? null : LocalDate.parse((String) m.get("started"));
         List<Object> i = Json.array(m.get("i"));
         int k = 0;

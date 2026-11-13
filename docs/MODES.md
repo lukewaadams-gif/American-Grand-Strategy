@@ -13,7 +13,10 @@ American Grand Strategy is one game engine (`mandate-core`'s `GameEngine`) with 
 
 Both modes run the same code from the transition on. Nothing in the presidency asks which mode it is in. A second-term bug fixed in one is therefore fixed in both.
 
-> **Status:** the hundred days as the opening chapter are verified (`HundredDaysInGameTest`, `ModesTest`, `modes.js`). The lifecycle from 2032 to 2037 below is how the engine is built. Milestone 7 verifies it end to end, with headless simulations of every branch, in `SECOND_TERM_VALIDATION.md`.
+> **Status:** verified end to end.
+> - **The hundred days:** `HundredDaysInGameTest`, `ModesTest` and `modes.js`.
+> - **The lifecycle to January 20, 2037:** 160 headless whole games across both modes with no broken rule (`LifecycleTest`; docs/SECOND_TERM_VALIDATION.md).
+> - **Every election night**, the successor's in 2036 included: `election.js`.
 
 1. **The transition:**
    - the agenda;
@@ -30,6 +33,14 @@ Both modes run the same code from the transition on. Nothing in the presidency a
 4. **Re-election in 2032.** A weak president can draw a primary challenge; a president can also choose not to run.
    - **Lost or not run:** the lame-duck weeks to January 20, 2033, then the verdict of history on four years.
    - **Won:** the second inauguration and a second term with its own theme and legacy goals, the lame-duck decline and the **2034 midterms**. There is no third term: the **2036 election** is for the party's successor, with primaries, the president's endorsement and the campaign from the White House. The game ends on January 20, 2037, with the verdict of history on eight years.
+   - **Removed from office** (impeached and convicted): the game ends that day, with the verdict on the years served.
+5. **Every presidential election has its election night,** computed once on Election Day and shown before anything else:
+   - 2028;
+   - 2032, the president's own race, or the successor's if the president is not on the ballot;
+   - 2036, the successor's.
+
+   Its last word is the player's ("Four more years") or the party's ("Your party keeps the White House"). Weekly turns report a Tuesday election with the week that holds it, on the Monday after. The night itself is dated on Election Day.
+6. **A crisis never moves the calendar.** The midterms, the re-election campaign, Election Day, the second oath and the handoff keep their dates during a crisis's days and hours. The rest of the presidency's week (Congress, the West Wing, the president's slots) pauses until it ends.
 
 Saves carry the whole state across the terms: the economy, the budget and the debt, Congress, the appointments, the laws and policies, diplomacy and the military's inventories.
 

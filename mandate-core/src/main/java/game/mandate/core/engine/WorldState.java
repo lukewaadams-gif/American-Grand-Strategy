@@ -74,6 +74,8 @@ public final class WorldState {
     TaiwanState taiwan;
     /** China escalated around Taiwan this week (a quarantine or a blockade): the week's end may open the crisis. */
     boolean taiwanEscalated;
+    /** China attacked Taiwan during this week's world step: the crisis opens at the week's end (docs/BUG_FIX_REPORT.md, M8-F2). */
+    boolean taiwanAttack;
     /**
      * The last presidential election whose night the player has watched (its year; 0 for none). The result is computed
      * once, on Election Day; this records only that its broadcast has been seen, so a reload never skips or replays it.
@@ -151,6 +153,7 @@ public final class WorldState {
         m.put("hormuz", hormuz == null ? null : hormuz.toJson());
         m.put("taiwan", taiwan == null ? null : taiwan.toJson());
         m.put("taiwanEscalated", taiwanEscalated);
+        m.put("taiwanAttack", taiwanAttack);
         m.put("electionNightSeen", electionNightSeen);
         m.put("mode", mode == null ? null : mode.name());
         m.put("crisis", crisis == null ? null : crisis.toJson());
@@ -190,6 +193,7 @@ public final class WorldState {
         w.hormuz = m.get("hormuz") == null ? null : HormuzState.fromJson(Json.object(m.get("hormuz")));
         w.taiwan = m.get("taiwan") == null ? null : TaiwanState.fromJson(Json.object(m.get("taiwan")));
         w.taiwanEscalated = Boolean.TRUE.equals(m.get("taiwanEscalated"));
+        w.taiwanAttack = Boolean.TRUE.equals(m.get("taiwanAttack"));
         w.electionNightSeen = m.get("electionNightSeen") == null ? -1 : Json.integer(m.get("electionNightSeen"));   // -1: an older save, settled by the engine
         w.mode = m.get("mode") == null ? null : game.mandate.core.game.GameSetup.Mode.valueOf((String) m.get("mode"));   // null: an older save, from its setup
         w.crisis = m.get("crisis") == null ? null : CrisisRecord.fromJson(Json.object(m.get("crisis")));

@@ -39,21 +39,25 @@ public final class Results {
         ElectionResult r = g.latestPresidentialResult().orElseThrow();
         int year = r.year();
         boolean second = year > 2028;
+        boolean succession = g.electionKind(year).equals("succession");
         Party me = g.player().party();
         boolean won = r.winner() == me;
         // the night is over when the player moves on: the engine records it (ElectionNightSeen), so it is not shown again
         Runnable seen = () -> { if (g.electionNightPending() == year) app.session.apply(new game.mandate.core.command.Command.ElectionNightSeen(year)); };
         Card c = new Card(null).stroke(won ? t.accent : t.borderStrong);
-        c.with(new Text(("Election night  ·  " + game.mandate.web.Notable.date(second ? g.calendar().election2032() : g.calendar().election2028())).toUpperCase(), t.bold(Theme.Size.CAPTION), t.accent),
-                Text.display(won ? (second ? "Four more years" : "You win the presidency") : (second ? "You lose re-election" : "You lose"), Theme.Size.DISPLAY), Text.body(Views.resultLine(r)));
-        c.with(new Widgets.RaceBar(r.demElectoralVotes(), 0, r.repElectoralVotes(), g.side(Party.DEMOCRAT).candidate().name() + " (D)",
-                g.side(Party.REPUBLICAN).candidate().name() + " (R)"));
+        c.with(new Text(("Election night  ·  " + game.mandate.web.Notable.date(g.electionDayOf(year))).toUpperCase(), t.bold(Theme.Size.CAPTION), t.accent),
+                Text.display(succession ? (won ? "Your party keeps the White House" : "The White House changes hands")
+                        : won ? (second ? "Four more years" : "You win the presidency") : (second ? "You lose re-election" : "You lose"), Theme.Size.DISPLAY), Text.body(Views.resultLine(r)));
+        var sides = g.electionSides(year);
+        String demName = sides.stream().filter(x -> x.party() == Party.DEMOCRAT).findFirst().map(x -> x.name()).orElse("");
+        String repName = sides.stream().filter(x -> x.party() == Party.REPUBLICAN).findFirst().map(x -> x.name()).orElse("");
+        c.with(new Widgets.RaceBar(r.demElectoralVotes(), 0, r.repElectoralVotes(), demName + " (D)", repName + " (R)"));
         Map<String, Double> m = r.stateMargins();
         StringBuilder close = new StringBuilder();
         for (String code : Views.closest(g, m, 8)) close.append(code).append(' ').append(Parts.margin(m.get(code))).append("   ");
         c.with(Text.eyebrow("The closest states"), Text.muted(close.toString().trim()));
         if (second) {
-            c.with(Text.body(g.congress() + ". " + (won ? "The second term begins on January 20." : "You are president until the handoff on January 20.")));
+            c.with(Text.body(g.congress() + ". " + (won && !succession ? "The second term begins on January 20." : "You are president until the handoff on January 20.")));
             c.with(Layouts.wrap(t.u(2), t.u(1), Btn.primary("Back to the Oval Office", e -> { seen.run(); app.stage.closeModal(); app.open(App.ScreenId.OVAL); })));
         } else if (won && g.mode() == game.mandate.core.game.GameSetup.Mode.CAMPAIGN_ONLY) {
             // Campaign Only ends here: the campaign's assessment, a replay, or the menu

@@ -202,3 +202,31 @@ Choices made while building overnight that we had not discussed. Each was made i
    - A day-150 stalemate is judged by the oil: 60% of normal flow or more is an end in part; less is a loss.
 7. **Island Chain (the Taiwan war game alone) is offered alongside Individual Crisis**, not as a fifth mode.
 8. **The older interfaces offer Full Game and Campaign Only.** The desktop is to serve the browser game locally (Milestone 10), so that it has all four.
+
+## The two terms (13 November 2026)
+
+1. **One presidency for both modes that govern.** Nothing from the transition on asks whether the game is a Full Game or Governing Only. `LifecycleTest` plays both to their ends.
+2. **Elections on weekly turns are reported with their week.** The midterms and the race to succeed the president are held on the turn whose days hold Election Day, so a weekly turn gives the results the Monday after. The night is dated on Election Day itself. During a crisis's daily turns they come on the day.
+3. **The second oath** is taken on the first turn on or after January 20, 2033: the Monday after, on weekly turns. The handoffs at the end are dated January 20 exactly.
+4. **A crisis does not move the calendar** (this reverses the Taiwan crisis's decision 5 above, under which the hand-off waited until the crisis ended).
+   - The midterms, the re-election campaign's start, Election Day, the second oath and the handoff keep their dates.
+   - A term that ends mid-crisis ends the game, with the crisis unfinished.
+   - A crisis that runs into the 2032 campaign is fought from the Oval Office. The war room waits, and the campaign's lost weeks are the crisis.
+5. **Removal from office ends the game** that day, with the verdict on the years served. There is no vice-presidential succession for the player to play on.
+6. **A 2028 defeat is judged as a campaign** (the campaign's grade and assessment), never as a presidency.
+
+## Who counts what in a crisis (13 November 2026, E-06)
+
+1. **Each consequence of a crisis has one owner:**
+   - **The oil price:** before a crisis, the world's supply shock; during a Taiwan crisis, its Brent; during Hormuz, its premium. The old escalation ladder prices nothing once the world model exists.
+   - **Inflation after Taiwan:** the chip shortage only. The oil already reached prices through the oil price.
+   - **Relations when Taiwan falls:** the world model (Taiwan, Japan, Korea). The crisis's fallout keeps the Philippines and Australia, and a defence's gains.
+   - **Americans killed:** the world model's count, which each crisis reports as the dead fall.
+   - **The fall of Tehran:** the strait's crisis reports and rewards it. The world's occupation takes over without a second rally or story.
+2. **A crisis's spending lasts as long as the crisis.**
+   - Escorts, strikes, reinsurance and a build-up are booked while the crisis lasts and reversed when it ends. An occupation's own war budget takes over from a build-up.
+   - A war's one-time bill is paid over one year (`Effect.Deficit` with a duration).
+3. **The Strategic Petroleum Reserve carries over** from crisis to crisis, refilled by about three million barrels a month.
+4. **China's attack, if decided during a week's world step, opens the crisis at the week's end.** If no crisis can begin, the world steps back from the war.
+5. **The first hundred days' crisis carries into the world** as shifts in the Taiwan Strait's tension, deterrence and the Middle East.
+6. **A crisis week runs the economy's whole week,** the data releases included, and the military's monthly production.

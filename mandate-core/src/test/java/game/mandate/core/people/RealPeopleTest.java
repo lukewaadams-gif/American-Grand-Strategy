@@ -117,6 +117,29 @@ class RealPeopleTest {
         assertTrue(found > 0, "fictional newcomers have emerged by 2033");
     }
 
+    /** B-09: a real secretary who resigned was hired back to the same post; whoever leaves is never a prospect again. */
+    @Test
+    void noOneIsHiredBackAfterLeaving() {
+        int checked = 0;
+        for (long seed = 4; seed < 40 && checked < 3; seed += 2) {
+            GameSetup setup = new GameSetup(seed, Party.DEMOCRAT, "bg_shapiro", "bg_vance", Scenario.BLUE_ENVIRONMENT, GameSetup.Difficulty.STORY,
+                    GameSetup.Mode.FULL_GAME, true, null);
+            GameEngine g = new GameEngine(setup);
+            int guard = 0;
+            while (!g.over() && guard++ < 6000) AutoPilot.playTurn(g);
+            var ww = g.westWing();
+            if (ww.isEmpty()) continue;
+            checked++;
+            Map<String, Integer> resigned = new TreeMap<>();
+            for (String line : ww.get().record()) if (line.contains(" resigned ")) {
+                for (var p : ww.get().departed()) if (line.contains(" " + p + " resigned ")) resigned.merge(p, 1, Integer::sum);
+            }
+            for (var e : resigned.entrySet()) assertEquals(1, e.getValue(), "seed " + seed + ": " + e.getKey() + " resigned " + e.getValue() + " times");
+            for (var p : ww.get().everyone()) assertFalse(ww.get().departed().contains(p.name()), "seed " + seed + ": " + p.name() + " left and is serving again");
+        }
+        assertTrue(checked > 0, "presidencies to check");
+    }
+
     @Test
     void newcomersAppearOnlyFrom2030AtTheConfiguredRate() {
         People p = People.of(true, Tuning.defaults());

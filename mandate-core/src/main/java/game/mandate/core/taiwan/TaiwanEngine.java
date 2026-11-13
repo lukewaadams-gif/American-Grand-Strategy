@@ -820,22 +820,25 @@ public final class TaiwanEngine {
         l.add(new Effect.Performance(round1((s.scoreUS - 50) / 10)));
         if (s.econDays > 0) {
             double gap = s.usGapSum / s.econDays, brent = s.brentSum / s.econDays;
-            double growth = -gap * 100, inflation = 0.02 * Math.max(0, brent - 92) + 1.5 * s.chipShockMax;
+            // the oil already reached prices through the presidency's oil price during the crisis (marketContext); the chips
+            // did not (M8-F3)
+            double growth = -gap * 100, inflation = 1.5 * s.chipShockMax;
             if (Math.abs(growth) >= 0.05 || inflation >= 0.05) l.add(new Effect.EconomyShock(round1(growth), round1(inflation), (int) Math.floor(wd / 30) + 6));
         }
         double drawdown = Math.max(0, 1 - s.equityLow);
         if (drawdown > 0.01) l.add(new Effect.FinancialShock(round1(-Math.min(15, 40 * drawdown))));
         double cost = s.costUS + us.ships * 2000 + us.carriers * 11000 + (s.usCombat ? (s.hour - s.usCombatHour) / 24.0 * 300 : 0);
-        if (cost > 0) l.add(new Effect.Deficit(round2(cost / 310000.0)));
+        if (cost > 0) l.add(new Effect.Deficit(round2(cost / 310000.0), 52));      // a one-time bill, paid over a year (M8-F8)
         if (TaiwanWorld.progDone(c, US, "mobilise")) l.add(new Effect.Munitions(0.3));
         switch (st) {
             case DETERRED -> { l.add(new Effect.Deterrence(5)); l.add(new Effect.Tension(HotSpot.TAIWAN_STRAIT, -15)); }
             case DEFENDED -> { l.add(new Effect.WarEnded(s.outcome == 2 ? 65 : 75)); l.add(new Effect.Tension(HotSpot.TAIWAN_STRAIT, -10)); l.add(new Effect.WorldShift("rel:TW", 15)); }
             case STALEMATE -> { l.add(new Effect.WarEnded(45)); l.add(new Effect.Tension(HotSpot.TAIWAN_STRAIT, 5)); }
-            case FALLEN -> { l.add(new Effect.WarEnded(15)); l.add(new Effect.Tension(HotSpot.TAIWAN_STRAIT, 10)); l.add(new Effect.WorldShift("rel:TW", s.usCombat ? -10 : -40)); }
+            // the world (ForeignEngine.taiwanWarOver) moves Taiwan's, Japan's and Korea's relations when Taiwan falls (M8-F5)
+            case FALLEN -> { l.add(new Effect.WarEnded(15)); l.add(new Effect.Tension(HotSpot.TAIWAN_STRAIT, 10)); }
             case NUCLEAR -> { l.add(new Effect.WarEnded(5)); l.add(new Effect.Tension(HotSpot.TAIWAN_STRAIT, 20)); }
         }
-        if (st == TaiwanResult.Status.FALLEN && !s.usCombat) for (String k : new String[]{"JP", "KR", "PH", "AU"}) l.add(new Effect.WorldShift("rel:" + k, -15));
+        if (st == TaiwanResult.Status.FALLEN && !s.usCombat) for (String k : new String[]{"PH", "AU"}) l.add(new Effect.WorldShift("rel:" + k, -15));
         if (st == TaiwanResult.Status.DEFENDED && s.usCombat) for (String k : new String[]{"JP", "KR", "PH", "AU"}) l.add(new Effect.WorldShift("rel:" + k, 5));
         if (s.atWar() || s.dHour >= 0) {
             l.add(new Effect.Salience(Issue.CHINA, 2));

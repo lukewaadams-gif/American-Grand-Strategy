@@ -1624,6 +1624,27 @@ public final class ForeignEngine {
     }
 
     /** The game engine's crisis or war over Taiwan has ended: how it ended sets the Strait (Resolute Desk's tw_war outcomes). */
+    /**
+     * China's attack could not open the crisis (one has been fought within the year, or Taiwan has fallen): the world
+     * steps back from the war it declared, so no war stands that no engine fights (M8-F10).
+     */
+    /**
+     * The world at day 100 carries what the first hundred days did to it: their crisis's shifts in the Taiwan Strait's
+     * tension, in deterrence and in the Middle East (M8-F11: they used to be thrown away when the world was seated).
+     */
+    public void carryOpening(ForeignState s, double taiwanTension, double deterrence, double middleEast) {
+        s.twt = clamp(s.twt + taiwanTension, 0, 100);
+        s.deter = clamp(s.deter + deterrence, 0, 100);
+        s.redsea = clamp(s.redsea + middleEast, 0, 100); s.iran = clamp(s.iran + middleEast, 0, 100);
+        s.gaza = clamp(s.gaza + middleEast, 0, 100); s.proxy = clamp(s.proxy + middleEast, 0, 100);
+    }
+
+    public void taiwanWarRefused(ForeignState s) {
+        if (s == null || !s.taiwanWar) return;
+        s.taiwanWar = false;
+        s.twStage = Math.min(s.twStage, 4);
+    }
+
     public void taiwanWarOver(ForeignState s, Context c, String status, int killed, Outcome out) {
         s.taiwanWar = false;
         s.kia += killed;
@@ -1745,7 +1766,12 @@ public final class ForeignEngine {
         s.wars.add(x);
         s.rel[i] = -100; s.ties[i] = 0; s.sanction[i] = 3;
         s.record.add(stamp(c) + "the invasion of Iran from the strait took Tehran");
-        victory(s, c, x, out);
+        // the strait's crisis has already reported the fall and its reward: the war becomes the occupation quietly (M8-F7)
+        Outcome quiet = Outcome.empty();
+        victory(s, c, x, quiet);
+        for (var n : quiet.news()) if (!n.head().contains("FALLS")) out.news().add(n);
+        for (var e : quiet.effects()) if (!(e instanceof Effect.Rally) && !(e instanceof Effect.Performance)) out.effects().add(e);
+        out.log().addAll(quiet.log());
         warSpend(s, out);
     }
 

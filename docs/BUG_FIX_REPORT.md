@@ -194,3 +194,197 @@ The same path hit the 2032 re-election, in both outcomes.
 
 - **What happened:** `preview.js` reported low contrast on the news ticker's flag and text. The colours it measured were the ticker's real ones, blended at partial opacity during its 0.6 s fade-in.
 - **Fix:** the suites' audits now wait for running animations to finish (`preview.js`, `modes.js`). The ticker's real colours pass.
+
+## B-02: a crisis postponed the calendar's fixed dates (headless simulation; high): fixed
+
+**Reproduction:** the lifecycle run (`LifecycleTest`; the 40-game run in SECOND_TERM_VALIDATION.md), Full Game seed 29.
+- China's coast guard closed on Taiwan on October 7, 2030, and the crisis ran in daily turns to December 16.
+- The November 5 midterms were held on December 23, the first ordinary week after the crisis.
+
+**Root cause:**
+- A crisis's turns are its days and hours, and its weekly tick (`crisisWeek`) ran only the economy, the Fed and opinion.
+- Every fixed date was checked only in the ordinary governing week. That covers the midterms, the start of the 2032 re-election campaign, the 2032 vote, the race to succeed the president, the second oath and the January 20 handoffs.
+- So all of them waited for the crisis to end.
+
+**Worse cases found by reading the code:**
+- A crisis spanning July 19, 2032 would have begun the re-election campaign afterwards by setting the clock back to July 19.
+- One spanning November 2, 2032 would have held the vote weeks late.
+
+**Fix:**
+- **Every crisis turn** checks the fixed dates (`crisisCalendar`): the midterms, the campaign's start, Election Day, the race to succeed the president, the second oath and the handoff.
+- **The crisis week** runs the terms of office: the question of running again, the primaries and the race.
+- **The clock:** the re-election campaign never moves it back, and neither the campaign nor the vote changes a crisis's clock.
+- **Orders:** a crisis that runs into the campaign is still fought from the Oval Office. Its orders are accepted in the campaign phase, and the browser game shows the Oval Office instead of the war room until the crisis ends.
+- **What still pauses:** Congress, the West Wing and the president's slots, as before.
+
+**Tests:**
+- `LifecycleTest.aCrisisDoesNotMoveTheMidterms`: the midterms are held on November 5 inside a crisis.
+- `LifecycleTest.aCrisisDoesNotMoveTheReelectionCampaignOrElectionDay`: the campaign begins and the vote is held on November 2 inside a crisis, the clock never goes back, and the game then goes on to the end of a term.
+
+## B-03: a game that ended mid-crisis could be played on (code reading; medium): fixed
+
+- **Root cause:** `endTurn` checked for an active crisis before the game's phase. A game whose presidency ended during a crisis would have played the crisis on after its end, if asked for another turn.
+- **Fix:** an ended game takes no more turns.
+- **Test:** `LifecycleTest.aCrisisDoesNotMoveTheReelectionCampaignOrElectionDay`: after the end, one more turn closes the game, and any turn after that is refused.
+
+## B-04: no election night for the races to succeed the president (lifecycle run; high): fixed
+
+**Root cause:**
+- The 2036 election and the 2032 election without the president on the ballot are decided by the terms of office (`TermsEngine.election`), not as an `ElectionResult`.
+- Election night knew only 2028 and the president's own 2032 race, so neither night was ever shown.
+
+**Fix:**
+- `GameEngine.successionResult` presents the decided race as an election: every state's margin, the electoral and popular votes, and the tipping point. It reads what Election Day computed, once.
+- Election night shows it like any other night, through the same broadcast and the same pending-night record:
+  - the latest presidential night is now whichever came last;
+  - `electionKind`, `electionDayOf` and `electionSides` give its kind, its day and its two sides;
+  - its last word is "Your party keeps the White House" or "The White House changes hands";
+  - it goes back to the Oval Office for the lame-duck weeks.
+- The older interfaces show it too.
+
+**Tests:**
+- `LifecycleTest`: every night of every game has 538 electors and two parties, and the 2036 night survives a reload until it is watched.
+- `election.js`: the 2036 night and a 2032 night without the president.
+
+## B-05: the race to succeed the president was decided a week late (lifecycle run; low): fixed
+
+- **Root cause:** the race was checked at the start of a weekly turn, so a turn that began before Election Day left it to the next. The 2032 race came with the clock at November 15.
+- **Fix:** it is held on the turn whose days reach Election Day, as the midterms are (`GameEngine.successionDue`).
+  - In ordinary weekly turns the results come with that week, on the Monday after.
+  - In a crisis's days they come on the day itself.
+- **Test:** `LifecycleTest.theSuccessorsNightIsAnElectionNightAndSurvivesAReload` (within the week of November 4, 2036).
+
+## B-06: the successor's name lower-cased in the record (lifecycle run; low): fixed
+
+- The election-night log line lower-cased its headline, giving "Marco rubio is elected president".
+- It is now written from the names themselves.
+
+## B-07: a lost 2028 campaign graded as a "Failed presidency" (lifecycle run; low): fixed
+
+- **What happened:** a Full Game lost in 2028 scored its legacy on the presidency's scale. A high-enough score was graded "Failed presidency", in the record and in the older interfaces, for a candidate who was never president.
+- **Fix:** a lost campaign is judged as a campaign: the same grade and assessment as Campaign Only ("A narrow loss", "A clear loss" and so on).
+- **Test:** `ModesTest.campaignOnlyEndsOnElectionNightWonOrLost` checks the verdict's grade against the campaign's assessment. `LifecycleTest.bothModesRunOnePresidencyToItsEnd` checks every lost 2028 game.
+
+## B-08: the economy stood still through the 2032 re-election campaign (lifecycle run; high): fixed
+
+- **Reproduction:** `LifecycleTest` counts the economy's weekly steps against the calendar. A two-term Full Game stepped 388 weeks in 403. The fifteen missing were the re-election campaign, from July 19 to Election Day 2032.
+- **Root cause:** the re-election campaign runs the 2028 campaign's turns. With a president in office, those turns never stepped the economy, the Fed or the data releases.
+- **Fix:**
+  - A weekly campaign turn steps the economy's week.
+  - In the daily final stretch, each Monday steps the week just past.
+  - After the vote, the week that holds it is stepped before the governing weeks resume.
+- **Test:** `LifecycleTest.bothModesRunOnePresidencyToItsEnd`: in every game the economy is stepped once a calendar week from day 100 to the end, within three weeks.
+- **Remaining, by design for now:** the world, Congress, the West Wing and the president's slots still pause during the campaign's weeks, as they did. A campaign that runs the presidency alongside is to review.
+
+## E-01: the end-turn control said one thing, its tooltip another, and it did a third (external review; low): confirmed, fixed
+
+- **What happened:** in the older interfaces (desktop and old browser), the end-turn button kept its label ("End the month") while decisions waited. Its tooltip said "Answer the decisions waiting for you first", and pressing it opened the decisions.
+- **Also:** governing turns have been weeks since the presidency port, but the button still said "End the month", and its tooltip said the month resolves.
+- **Fix:**
+  - While the turn is blocked, the control is labelled with what it will do: "Answer 2 decisions first", or "Choose your agenda first". Its tooltip and its action match.
+  - Governing turns read "End the week".
+- **Test:** `FlowTest` (desktop) drives the turns by the control's own label. `flow.js` (old browser) plays its whole flow with no console errors.
+
+## E-04: the preview blocked the week on decisions the engine does not require (external review; medium): confirmed, fixed
+
+**What happened:**
+- In the preview's Oval Office, ending the week opened every pending decision first, and "Decide later" said "the week cannot run until it is answered".
+- But the engine refuses to end a turn only while an event, one of the hundred days' questions, or the week's debate waits.
+- The Hill's, the West Wing's, the terms' and the world's questions have deadlines, and the staff answer them when due.
+- So a question due in four weeks held up every week until it was answered.
+- In a crisis's days, "Decide later" also left the player outside the crisis room.
+
+**Fix:**
+- **The decisions view** marks each decision `blocking`, and the presidency view counts the blocking ones (`blockingDecisions`).
+- **Only those stop the week.** The rest wait on the desk, with their badge, and come up after the paper.
+- **"Decide later"** says what it does for each kind.
+
+**Test:** `terms.js`: after re-election the week runs, then the second term's theme question comes up from the desk. `presidency.js`, `westwing.js`, `congress.js` and `sitroom.js` play weeks with questions on the desk.
+
+## E-06: crises counted their consequences twice (external review; high): confirmed, fixed
+
+A read of every path from the two crises into the rest of the game found these:
+
+| ID | Double count or conflict | Fix |
+|---|---|---|
+| F1 | A Taiwan crisis ending within a day of its weekly tick stepped that week twice: once in its closing tick, then again in the ordinary week from the same Monday. | The closing tick steps only if a day has passed since the last. |
+| F2 | A war China began during the world's weekly step switched the clock to days mid-week. The week was stepped as seven days while the clock moved one, so the crisis's first tick stepped those days again. | The attack opens the crisis at the week's end (`WorldState.taiwanAttack`). |
+| F3 | The oil price counted Taiwan twice: the crisis's own Brent and the old escalation ladder's premium and market stress. At the end the crisis added an inflation shock from the same Brent. | With the world model, the old ladder adds no premium or stress. The crisis's fallout adds the chip shortage's inflation, not the oil's. |
+| F4 | Before any crisis, a quarantine or blockade had two supply-shock models: the world's weekly shock and the ladder's premium. | As F3: the world's shock is the one. |
+| F5 | When Taiwan fell, the crisis's fallout and the world both cut Taiwan's, Japan's and Korea's relations. Taiwan lost up to 90 points. | The world owns those shifts. The fallout keeps the Philippines and Australia, and a defence's gains. |
+| F6 | American dead in a Taiwan war were counted twice in the "Americans killed" measure: in the world's count, which the crisis reports as they die, and on the war's record. | With the world model, its count alone. |
+| F7 | The fall of Tehran was reported and rewarded twice. The strait's ending gave a performance bonus; the world's invasion victory added a rally, more performance and a second "government falls" story. | The occupation takes over quietly: no second rally, bonus or story. |
+| F8 | Crisis costs were booked as permanent annual deficits: escorts, strikes, reinsurance, a build-up, and a Taiwan war's one-time bill. Turning reinsurance off never ended its cost. | The strait's spending is tracked and reversed when the crisis ends. A war's bill is paid over one year (`Effect.Deficit` takes a duration). |
+| F9 | The Strategic Petroleum Reserve was full again for every Hormuz crisis. | A crisis starts with what the last left, refilled by about three million barrels a month. |
+| F10 | The world could declare a Taiwan war that no engine fought, when a crisis could not begin within a year of the last or after Taiwan fell. The theater then stayed frozen at war. | The world steps back from it (`taiwanWarRefused`). |
+| F11 | The first hundred days' crisis outcome was thrown away at day 100: the world was seated from defaults. | The world starts from the shifts the hundred days left in the strait's tension, deterrence and the Middle East. |
+
+**Tests:**
+- **`CrisisAccountingTest`:**
+  - the strait's spending comes to nothing once the crisis ends;
+  - the fall of Tehran is one story;
+  - the reserve carries over.
+- **`LifecycleTest`:** the economy is stepped once a calendar week in every game (F1, F2).
+- **The rest are fixes to code paths read in the audit,** with the crisis tests (`HormuzTest`, `TaiwanInGameTest`, `TaiwanTest`, `ForeignTest`) still passing.
+
+**Also fixed:** a crisis week now runs the economy's whole week, the jobs, prices and GDP releases included, and the military's monthly production. Before, it ran only the economy's step and the Fed.
+
+**Remaining (to review):**
+- **A provoked attack** dispatches both a rally and an approval bonus.
+- **A Taiwan crisis deterred without a war** counts nowhere in the verdict's crisis record.
+
+## E-05: the main site's and the preview's builds could not be told apart (external review; medium): confirmed, fixed
+
+**What was wrong:**
+- **The root:** the site's root serves the older vertical slice, the desktop interface ported to the browser. It had no build stamp.
+- **The preview:** its `version.json` held only a hash of the engine and the sample saves. Nothing said which source commit either page came from, or whether it was built from uncommitted changes.
+- **Its own engine is current, not stale:** `mandate.js` is rebuilt by every `mvn install`.
+
+**Fix:**
+- **What `version.json` holds:** `mandate-web/tools/assemble.mjs` writes into both sites the build, the source commit, whether the tree had uncommitted changes, and the day.
+- **The root says what it is:** its `version.json` names itself "the older vertical slice".
+- **The start screen** shows the preview's stamp at its foot.
+- **The README** says which page is which.
+
+**Publishing:** the preview is published to `preview/` on gh-pages, and the root changes only once the preview is approved (see the README).
+
+## E-07: documentation out of date (external review; low): confirmed, fixed
+
+Several documents had fallen behind:
+- The README described a start screen with a separate crisis start and a hundred-days moment, and the front page as "the 2028 election and the first hundred days".
+- `docs/HORMUZ.md` described a standalone start with a year and a custom preset that was never built.
+- `docs/ISLAND_CHAIN.md` described starting the crisis from the moments list.
+
+The README, `docs/HORMUZ.md` and `docs/ISLAND_CHAIN.md` now describe the four games and how each crisis begins. The new `docs/MODES.md` and `docs/SECOND_TERM_VALIDATION.md` cover the modes and the two terms. `docs/PRESIDENCY_PORT.md` is kept as the port's historical record.
+
+## E-08: older saves (external review; medium): confirmed partly, fixed
+
+**What was wrong:**
+- Saves before this round had no record of which election nights were watched (fixed in U-02).
+- They named a game *length*: the hundred-days slice was its own game (fixed in R-02).
+- They had none of this round's other fields: the mode, the individual crisis, China's pending attack, the strait's spending.
+
+**Fix:** every new field has a default for an older save.
+- `electionNightSeen` is settled by the older-save rule in U-02.
+- A length loads as the Full Game.
+- No crisis, attack or spending is pending.
+
+Nothing an older save holds is changed.
+
+**Test:** `OlderSavesTest`. The shipped sample saves from before this round (campaign, inauguration week and governing, from commit `09aab1c`) load as the Full Game at the same date. They play six turns on, save in the new format, and that save reloads to the same world. `ModesTest` covers a hundred-days slice save; `ElectionDayTest` covers the night record.
+
+## B-09: a secretary who resigned was hired back (lifecycle run; low): fixed
+
+- **Reproduction:** in a Governing Only game (seed 4, real people), "Secretary of State Mike Pompeo resigns to return to private life" appears twice: in July 2030, then again in December 2031.
+- **Root cause:** a prospect was skipped only while serving or nominated. Anyone who had left the administration could be named again, and with real people the shortlist is the same few names.
+- **Fix:** the West Wing keeps everyone who has left (resigned, fired, or gone at a term's end) and never offers them again (`WestWingState.departed`). Older saves start with an empty list.
+- **Test:** `RealPeopleTest.noOneIsHiredBackAfterLeaving`, over whole real-people presidencies: no one resigns twice, and no one who left is serving.
+
+## B-10: the clock went back after a crisis that ended just before a handoff (160-game lifecycle run; low): fixed
+
+- **Reproduction:** `LifecycleTest -Dmandate.lifecycleGames=160`, Governing Only seed 82.
+  - A Taiwan crisis that began in late 2032 ended on January 17–18, 2033.
+  - The end of a crisis jumps the clock to the next Monday, January 24, which put the January 20 handoff behind it.
+  - The next turn's handoff then set the clock back to January 20.
+- **Fix:** after a crisis, if the term's handoff comes before the next Monday, the clock stops on its day and the handoff is held at once (`GameEngine.resumeWeeks`).
+- **Test:** `LifecycleTest`, whose check that the clock never goes back from one turn to the next caught it.

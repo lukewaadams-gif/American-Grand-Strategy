@@ -33,10 +33,12 @@ function command(c: object): boolean {
 /** Shows the screen for where the game stands. */
 function route(): void {
   leave();
-  let phase: string, night = 0;
-  try { const p = engine.presidency(); phase = p.phase; night = p.electionNight; } catch { showStart(); return; }
+  let phase: string, night = 0, crisis = false;
+  try { const p = engine.presidency(); phase = p.phase; night = p.electionNight; crisis = !!(p.taiwan || p.hormuz) && p.turnUnit !== null && !p.over; } catch { showStart(); return; }
   // a presidential election night not yet watched always comes first, whatever the phase has moved on to
   if (night) { body('presidency'); showElectionNight(night); return; }
+  // a crisis that runs on into the 2032 campaign is fought from the Oval Office; the war room waits for it to end
+  if (CAMPAIGN.includes(phase) && crisis) { body('presidency'); mountPresidency({ onLeave: route, restart: showStart, restartLabel: 'Back to the start', menuItems: gameMenu }); return; }
   if (CAMPAIGN.includes(phase)) { body(''); mountCampaign({ onElectionOver: route, restart: showStart }); }
   else if (phase === 'TRANSITION') { body('presidency'); showTransition(); }
   else if (OFFICE.includes(phase)) { body('presidency'); mountPresidency({ onLeave: route, restart: showStart, restartLabel: 'Back to the start', menuItems: gameMenu }); }

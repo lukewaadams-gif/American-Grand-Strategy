@@ -22,24 +22,38 @@ Those repositories are kept untouched; see `docs/SOURCE_AUDIT.md`.
 
 Nothing to install: the simulation runs in the page. Use a current Chrome, Edge, Firefox or Safari, on a computer or a phone.
 
-**The start screen offers:**
-- **A new campaign.** Choose your party, your candidate and your opponent, the country's mood, and how hard the other side campaigns. Everyone is fictional unless you turn on real people: real politicians, real leaders abroad and the real Supreme Court.
+**The start screen offers four games** on one engine (`docs/MODES.md`):
+- **Full Game.** The 2028 campaign. If you win, you govern:
+  - the first hundred days, which open the presidency (day 100 brings a report card, then the presidency goes on);
+  - the 2030 midterms;
+  - re-election in 2032;
+  - if you are re-elected, a second term to January 20, 2037, with the 2034 midterms and the 2036 race to succeed you.
+
+  Lose in 2028, and the game ends on election night.
+- **Campaign Only.** The 2028 campaign alone, to election night: the result, the popular vote, every state and an assessment of the campaign.
+- **Governing Only.** The presidency alone, from election night on November 7, 2028, with the administration you choose already elected. It is the same presidency as the Full Game.
+- **Individual Crisis.** The Taiwan crisis or the Strait of Hormuz, with a preset (base case, optimistic or pessimistic), on the presidency's own systems. It ends when the crisis does: won, lost or ended in part, with an after-action report. Alongside it is **Island Chain**, the Taiwan war game on its own: pick a year from 2029 to 2036 and play America or China.
+
+The world is **real people** by default: the candidates, senators, congressional leaders, cabinet prospects, justices and leaders abroad of 2028. Fictional newcomers appear from 2030. Turn real people off for a fictional cast throughout.
+
+**Also on the start screen:**
 - **A saved game.** **Save the game** (in the menu) writes a file you can open again here.
-- **A moment:**
+- **A moment of the Full Game:**
   - the campaign at week 9;
-  - the first hundred days;
+  - Inauguration week;
   - governing in September 2029;
-  - the Taiwan crisis;
+  - a Taiwan crisis;
   - four more years;
   - the race to succeed you.
-- **A crisis at once:** the Strait of Hormuz (base case, optimistic or pessimistic).
-- **Island Chain on its own:** the Taiwan Strait war game without a presidency. Pick a year from 2029 to 2036, play America or China, and choose a preset.
+- **The build stamp,** at the foot of the screen: the build, its source commit and the day it was built.
+
+**Every presidential election has its election night:** 2028, 2032, and the 2036 race to succeed you. Each is a broadcast of poll closings, the count, race calls and the projection. The result is computed once, on Election Day, and a reload resumes the night where it was.
 
 **Keys:**
 - **Ctrl+Enter** (⌘+Enter on a Mac) plays the turn, in the Oval Office or inside a crisis room.
 - **Escape** closes a room, or takes the controls back from watch mode.
 
-The site's front page (https://lukewaadams-gif.github.io/American-Grand-Strategy/) still has the first playable slice: the 2028 election and the first hundred days, in the earlier interface. The preview replaces it once it is approved.
+The site's front page (https://lukewaadams-gif.github.io/American-Grand-Strategy/) still has the first playable slice, in the earlier interface: the 2028 election and the presidency's first years, with Full Game and Campaign Only. Its `version.json` says so. The preview replaces it once it is approved.
 
 ## What a game plays
 
@@ -79,8 +93,31 @@ The site's front page (https://lukewaadams-gif.github.io/American-Grand-Strategy
 
      You set the rules of engagement and the theatre directives; the staff runs the units.
    - **Their fallout** reaches the whole presidency: the dead, approval, the economy and markets, the deficit, the allies, and the record.
-6. **The midterms, the 2032 campaign, and a second term.** The second term brings the lame-duck decline, staff turnover, legacy goals, and campaigning for your party's 2036 nominee.
-7. **The verdict of history,** on the whole presidency: the economy, the laws and what they did, war and peace, approval and the Congresses faced, and a historians' ranking.
+6. **The midterms, the 2032 campaign, and a second term.**
+   - **A lost 2032:** the lame-duck weeks to January 20, 2033.
+   - **A second term** has its own theme and legacy goals, staff turnover at the oath, the lame-duck decline and the 2034 midterms. It ends with the race to succeed you in 2036, with its own election night, and the handoff on January 20, 2037.
+   - **No third term.**
+
+   The economy, the budget and debt, Congress, the appointments, the laws, the world and the military's stocks carry across the terms (`docs/SECOND_TERM_VALIDATION.md`).
+7. **The verdict of history,** on four years or eight: the economy, the laws and what they did, war and peace, approval and the Congresses faced, and a historians' ranking. A campaign that ends on election night gets the campaign's assessment instead, and an Individual Crisis an after-action report.
+
+### How long a game takes
+
+These are estimates from the number of turns. No timed human playtest has been run yet.
+
+| Game | Turns | At a deliberate pace | Mostly delegated, with watch mode |
+|---|---|---|---|
+| Campaign Only | About 16 weekly turns, then 14 days | 1–2 hours | 30–45 minutes |
+| A first term (Full Game or Governing Only) | The transition, the 14-week hundred days, about 165 weeks of governing, then the 2032 campaign | 5–8 hours | 1.5–3 hours |
+| Two terms | The above, and 208 weeks of a second term | 10–15 hours | 3–5 hours |
+| Individual Crisis | 20 to 170 days of the crisis (hours, at war) | 30–90 minutes | 15–30 minutes |
+
+**What keeps a long game moving:**
+- **The chief of staff can take over** the calendar, the Hill, hiring and pardons.
+- **Watch mode** plays quiet weeks itself, and stops for what matters: a crisis, the budget, a bill to sign, a scandal.
+- **The desk sorts decisions.** Only events and the hundred days' questions hold up the week. The rooms' questions wait to their deadline, and the staff answer them if they are left.
+- **The top bar** shows the week of the term ("Week 15 of 208") and what is next.
+- **Reports along the way:** the weekly paper, the 100-day report, each election night, and the end's verdict or report.
 
 The documents behind each part:
 - the plans and decisions: `docs/CAMPAIGN_PORT.md`, `docs/PRESIDENCY_PORT.md` and `docs/CRISES.md`;
@@ -188,6 +225,11 @@ docs/           the port plans, the crises, the economy's model, decisions to re
 | [docs/CAMPAIGN_PORT.md](docs/CAMPAIGN_PORT.md) | The campaign: Battleground 2028's war room, ported |
 | [docs/CRISES.md](docs/CRISES.md), [docs/HORMUZ.md](docs/HORMUZ.md), [docs/ISLAND_CHAIN.md](docs/ISLAND_CHAIN.md) | The two in-depth crises: design, calibration and how they reach the presidency |
 | [docs/ECONOMY_MODEL.md](docs/ECONOMY_MODEL.md) | The structural economy and the policy table |
+| [docs/MODES.md](docs/MODES.md) | The four games on one engine: Full Game, Campaign Only, Governing Only, Individual Crisis |
+| [docs/SECOND_TERM_VALIDATION.md](docs/SECOND_TERM_VALIDATION.md) | The presidency to its end in both modes that govern: whole games simulated, what carries across terms |
+| [docs/MODE_TEST_MATRIX.md](docs/MODE_TEST_MATRIX.md) | What is tested for each game and each ending, and where |
+| [docs/BUG_FIX_REPORT.md](docs/BUG_FIX_REPORT.md) | Every bug found and fixed in this round: reproduction, cause, fix, test, what remains |
+| [docs/REMAINING_ISSUES.md](docs/REMAINING_ISSUES.md) | What is known and not yet fixed |
 | [docs/DECISIONS_TO_REVIEW.md](docs/DECISIONS_TO_REVIEW.md) | Choices made without being discussed, for review |
 | [PRODUCT_VISION.md](PRODUCT_VISION.md) | What the game is and is not, the pillars, the audience |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Modules, command model, determinism, formulas, ADRs |

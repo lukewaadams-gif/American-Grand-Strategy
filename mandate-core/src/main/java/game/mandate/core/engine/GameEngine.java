@@ -460,6 +460,8 @@ public final class GameEngine implements WorldView {
     // =========================================================================================
 
     private void endTurn() {
+        if (w.phase == Phase.EPILOGUE) { w.phase = Phase.GAME_OVER; return; }        // a game ended mid-crisis stays ended
+        if (w.phase == Phase.GAME_OVER) throw new IllegalCommandException("The game is over");
         if (w.scheduler.hasPending()) throw new IllegalCommandException("Decide the pending events first");
         if (w.military.operationActive()) { operationalTurn(); return; }
         if (taiwanActive()) { taiwanTurn(); return; }
@@ -488,7 +490,10 @@ public final class GameEngine implements WorldView {
                         + Fmt.format(" (%+.1f).", forPlayer)));
         for (String line : news) log(line);
         rollEvents();
+        LocalDate turnFrom = date();
+        boolean weeklyTurn = w.clock.mode() == Granularity.WEEKLY;
         w.clock.advance();
+        campaignEconomy(turnFrom, weeklyTurn);
         LocalDate electionDay = electionDay();
         if (w.clock.mode() == Granularity.WEEKLY && !date().isBefore(dailyStart(electionDay))) {
             w.clock.setMode(Granularity.DAILY);
@@ -692,8 +697,12 @@ public final class GameEngine implements WorldView {
             // the presidency goes on: four more years, or the lame-duck weeks to the handoff
             presidentEngine.clearCampaign(w.president);
             w.phase = Phase.GOVERNING;
-            w.clock.set(date().with(TemporalAdjusters.next(DayOfWeek.MONDAY)));
-            w.clock.setMode(Granularity.WEEKLY);
+            if (!crisisActive()) {
+                LocalDate monday = date().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+                economyWeek(monday.minusWeeks(1), monday);      // the week of the vote, which the campaign's Mondays did not step
+                w.clock.set(monday);
+                w.clock.setMode(Granularity.WEEKLY);
+            }
             if (winner == player().party()) {
                 log("You are re-elected. Four more years: choose what your second term is about, and name the people to serve in it.");
                 termsEngine.reelected(w.terms, termsContext());
@@ -931,15 +940,18 @@ public final class GameEngine implements WorldView {
      * move on the first week of each month, as before; then events, at their monthly odds spread over the weeks.
      */
     private void governingWeek() {
-        LocalDate from = date(), to = from.plusWeeks(1);
-        presidentWeek();
-        hillWeek();
-        if (w.phase != Phase.GOVERNING) return;       // removed from office
-        westWingWeek();
-        termsWeek();
-        if (w.phase != Phase.GOVERNING) return;
-        foreignWeek();
+        inGoverningWeek = true;
+        try { governingWeekBody(); } finally { inGoverningWeek = false; }
+        // China's attack, decided during the week's world step, opens the crisis now that the week is done (M8-F2)
+        if (w.taiwanAttack && w.phase == Phase.GOVERNING) {
+            w.taiwanAttack = false;
+            if (taiwanMayBegin()) startTaiwan(0, "invasion", TaiwanScenario.Commitment.INTERVENE, "Chinese forces move to attack Taiwan");
+            else foreignEngine.taiwanWarRefused(w.foreign);
+        }
+    }
 
+    /** The economy's week: one step, then the Fed's meetings and the data releases that fall in it. */
+    private void economyWeek(LocalDate from, LocalDate to) {
         economyEngine.step(w.economy, w.budget, 1.0 / EconomyEngine.WEEKS_PER_MONTH, marketContext(), rng);
         EconomyEngine.Shock shock = economyEngine.lastShock(w.economy);
         if (shock != null) news(Releases.shock(from, shock));
@@ -958,6 +970,32 @@ public final class GameEngine implements WorldView {
             economyEngine.gdpReport(w.economy, rng);
             news(Releases.gdp(from, w.economy));
         }
+    }
+
+    /**
+     * The re-election campaign does not stop the economy (M7-B08: it used to stand still from July 19 to Election Day):
+     * a weekly turn steps its week; in the daily final stretch each Monday steps the week just past.
+     */
+    private void campaignEconomy(LocalDate from, boolean weeklyTurn) {
+        if (w.phase != Phase.REELECTION_CAMPAIGN_2032 || w.president == null) return;
+        if (weeklyTurn) economyWeek(from, date());
+        else if (date().getDayOfWeek() == DayOfWeek.MONDAY) economyWeek(date().minusWeeks(1), date());
+    }
+
+    /** Whether the ordinary governing week is being stepped (a crisis that starts inside it waits for its end). */
+    private boolean inGoverningWeek;
+
+    private void governingWeekBody() {
+        LocalDate from = date(), to = from.plusWeeks(1);
+        presidentWeek();
+        hillWeek();
+        if (w.phase != Phase.GOVERNING) return;       // removed from office
+        westWingWeek();
+        termsWeek();
+        if (w.phase != Phase.GOVERNING) return;
+        foreignWeek();
+
+        economyWeek(from, to);
 
         politicsEngine.step(w.politics, 1.0, opinionInputs(), rng);
         for (String line : politicsEngine.partyWeek(w.politics, midtermSeason(), termWeek(), rng))
@@ -977,6 +1015,7 @@ public final class GameEngine implements WorldView {
         afterWeek();
 
         if (!w.midtermsHeld && !date().isBefore(calendar.midterms(term()))) holdMidterms();
+        successionDue();
         if (w.terms != null && w.terms.leaving() && !date().isBefore(w.terms.handoff())) { handoff(); return; }
         if (secondTermPending()) {
             LocalDate oath = calendar.inauguration(2);
@@ -1023,7 +1062,8 @@ public final class GameEngine implements WorldView {
             case "month" -> date().getMonthValue();
             case "ai" -> 1;
             case "wars" -> w.foreign != null ? foreignEngine.var(w.foreign, "wars") : w.military.operationActive() ? 1 : 0;
-            case "kia" -> war().map(o -> (double) o.usKilled()).orElse(0.0) + (w.foreign == null ? 0 : w.foreign.kia());
+            // with the world, every death is already in its count (the crises report them as they happen); M8-F6
+            case "kia" -> w.foreign != null ? w.foreign.kia() : war().map(o -> (double) o.usKilled()).orElse(0.0);
             case "sent" -> e.sentiment();
             case "uchg" -> w.indicators.size() > 26 ? e.unemployment() - w.indicators.get(w.indicators.size() - 27).unemployment() : 0;
             case "tw" -> termWeek();
@@ -1144,7 +1184,13 @@ public final class GameEngine implements WorldView {
         java.util.Map<String, String> real = new TreeMap<>();
         if (setup.realRoster())
             for (String[] r : game.mandate.core.data.Csv.readTsv("/data/rd/real_names.tsv")) if (r[0].startsWith("leader")) real.put(r[1], r[2]);
+        // the first hundred days' crisis moved the old diplomacy from where it began: the new world starts from those shifts
+        DiplomacyState start = diplomacyEngine.newDiplomacy();
+        double dTaiwan = w.diplomacy.tension(HotSpot.TAIWAN_STRAIT) - start.tension(HotSpot.TAIWAN_STRAIT);
+        double dDeter = w.diplomacy.deterrence() - start.deterrence();
+        double dMiddleEast = w.diplomacy.tension(HotSpot.MIDDLE_EAST) - start.tension(HotSpot.MIDDLE_EAST);
         w.foreign = foreignEngine.newWorld(foreignContext(), w.president == null ? 0 : w.president.week(), setup.realRoster(), real);
+        foreignEngine.carryOpening(w.foreign, dTaiwan, dDeter, dMiddleEast);
         followWorld();
     }
 
@@ -1198,8 +1244,12 @@ public final class GameEngine implements WorldView {
         // China escalates to a quarantine or a blockade: the Taiwan crisis begins. If it goes to war without a crisis first,
         // its attack opens the crisis with the plan fixed.
         if (o.escalatesOverTaiwan()) w.taiwanEscalated = true;
-        if (o.startsTaiwanWar() && taiwanMayBegin())
-            startTaiwan(0, "invasion", TaiwanScenario.Commitment.INTERVENE, "Chinese forces move to attack Taiwan");
+        if (o.startsTaiwanWar()) {
+            if (!taiwanMayBegin()) foreignEngine.taiwanWarRefused(w.foreign);       // M8-F10: no war that no engine fights
+            // inside the week's world step the war waits for the week's end, so the week is not stepped as days (M8-F2)
+            else if (inGoverningWeek) w.taiwanAttack = true;
+            else startTaiwan(0, "invasion", TaiwanScenario.Commitment.INTERVENE, "Chinese forces move to attack Taiwan");
+        }
     }
 
     private void foreignOrder(ForeignOrder o) {
@@ -1243,7 +1293,9 @@ public final class GameEngine implements WorldView {
     }
 
     private void startHormuz(int preset, int rung, String cause) {
+        HormuzState last = w.hormuz;
         w.hormuz = hormuzEngine.newCrisis(date(), rung, cause, preset, rng);
+        hormuzEngine.carryReserve(w.hormuz, last, date());
         foreignEngine.hormuzBegan(w.foreign);
         w.clock.setMode(Granularity.DAILY);
         news(new News(date(), News.Kind.WORLD, "CRISIS IN THE STRAIT OF HORMUZ", cause + ". " + HormuzEngine.RUNG_DESC[w.hormuz.rung()], 5, null));
@@ -1255,6 +1307,8 @@ public final class GameEngine implements WorldView {
     private void hormuzDay() {
         hormuzOutcome("The Strait of Hormuz", hormuzEngine.day(w.hormuz, date(), rng), null);
         w.clock.advance();
+        crisisCalendar();
+        if (over()) return;
         if (w.hormuz.day() - w.hormuz.lastTick() >= 7 || !w.hormuz.active()) {
             int days = w.hormuz.day() - w.hormuz.lastTick();
             hormuzEngine.ticked(w.hormuz);
@@ -1267,20 +1321,46 @@ public final class GameEngine implements WorldView {
                 foreignEngine.hormuzOccupation(w.foreign, foreignContext(), occ);
                 foreignOutcome("The occupation of Iran", occ, null);
             }
-            w.clock.setMode(Granularity.WEEKLY);
-            w.clock.set(date().with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)));
+            resumeWeeks();
             log("The Strait of Hormuz crisis is over: " + w.hormuz.outcome() + ". The weeks resume.");
             if (crisisModeFor("hormuz")) endIndividualCrisis(hormuzReport(w.hormuz));
+            else if (handoffDue()) handoff();
         }
     }
 
     /** The week a crisis has paused: the economy (with the crisis's oil premium), the Fed and the reports, and opinion. */
     private void crisisWeek(int days) {
         LocalDate to = date(), from = to.minusDays(Math.max(1, days));
-        economyEngine.step(w.economy, w.budget, 1.0 / EconomyEngine.WEEKS_PER_MONTH, marketContext(), rng);
-        for (int i = 0; i < calendar.fomcMeetings(from, to); i++) news(Releases.fed(from, w.economy, economyEngine.fedMeeting(w.economy, w.budget)));
+        // the economy's week, its releases included (the jobs, prices and GDP reports do not wait for a crisis either)
+        economyWeek(from, to);
+        if (to.getMonthValue() != from.getMonthValue()) militaryEngine.stepMonth(w.military);     // the month's production
         politicsEngine.step(w.politics, 1.0, opinionInputs(), rng);
         recordIndicators();
+        // the terms of office do not wait for a crisis: the question of running again, the primaries, the race to succeed
+        if (w.phase == Phase.GOVERNING || w.phase == Phase.REELECTION_CAMPAIGN_2032) termsWeek();
+    }
+
+    /** A crisis (or an operation) is being fought: its days and hours, not the presidency's weeks, are the turns. */
+    private boolean crisisActive() { return taiwanActive() || hormuzActive() || w.military.operationActive(); }
+
+    /**
+     * The calendar's fixed dates during a crisis's days and hours (docs/BUG_FIX_REPORT.md, B-02). The midterms, the
+     * re-election campaign's start, Election Day, the second oath and the handoff do not wait for a crisis to end. The
+     * rest of the presidency's week (Congress, the West Wing, the president's slots) pauses, as it always has.
+     */
+    private void crisisCalendar() {
+        if (over() || w.president == null) return;
+        if (!w.midtermsHeld && !date().isBefore(calendar.midterms(term()))) holdMidterms();
+        successionDue();
+        if (w.phase == Phase.GOVERNING && term() == 1 && w.election.result2032() == null && (w.terms == null || TermsEngine.running(w.terms))
+                && !date().isBefore(calendar.reelectionStart())) beginReelection();
+        if (w.phase == Phase.REELECTION_CAMPAIGN_2032 && !date().isBefore(calendar.election2032())) {
+            log("Election Day comes in the middle of the crisis: the campaign's last weeks were the crisis.");
+            holdPresidentialElection();
+            if (over()) return;
+        }
+        if (secondTermPending() && !date().isBefore(calendar.inauguration(2))) secondInauguration();
+        if (w.terms != null && w.terms.leaving() && !date().isBefore(w.terms.handoff())) handoff();
     }
 
     private void hormuzOutcome(String cause, HormuzEngine.Outcome o, String what) {
@@ -1299,8 +1379,11 @@ public final class GameEngine implements WorldView {
     }
 
     private void hormuzOrder(HormuzOrder o) {
-        if (w.phase != Phase.GOVERNING || w.foreign == null) throw new IllegalCommandException("Only in office, once the Situation Room is open");
+        // in office: governing, or a crisis that has run on into the re-election campaign
+        boolean inOffice = w.phase == Phase.GOVERNING || w.phase == Phase.REELECTION_CAMPAIGN_2032 && hormuzActive();
+        if (!inOffice || w.foreign == null) throw new IllegalCommandException("Only in office, once the Situation Room is open");
         if (o instanceof HormuzOrder.Begin b) {
+            if (w.phase != Phase.GOVERNING) throw new IllegalCommandException("Only while governing");
             if (hormuzActive() || taiwanActive() || w.military.operationActive()) throw new IllegalCommandException("A crisis is already under way");
             startHormuz(Math.max(0, Math.min(2, b.preset())), 2, "the Guards seize a tanker, and Tehran threatens to close the strait");
             return;
@@ -1468,6 +1551,8 @@ public final class GameEngine implements WorldView {
         taiwanOutcome(taiwanEngine.turn(s, date(), rng), null);
         w.clock.advanceHours(hours);
         w.clock.setMode(s.atWar() ? Granularity.OPERATIONAL : Granularity.DAILY);
+        crisisCalendar();
+        if (over()) return;
         if (s.over()) { taiwanEnded(); return; }
         if (s.hour() - s.tickHour() >= 168) { int days = (s.hour() - s.tickHour()) / 24; taiwanEngine.ticked(s); crisisWeek(days); }
     }
@@ -1503,7 +1588,10 @@ public final class GameEngine implements WorldView {
     /** The crisis is over: the war on the record, the stockpile and the force written down, the world told, and the weeks again. */
     private void taiwanEnded() {
         TaiwanState s = w.taiwan;
-        crisisWeek(Math.max(1, (s.hour() - s.tickHour()) / 24));
+        // the days since the last weekly tick; under a day, the ordinary week that starts this Monday covers them (M8-F1:
+        // stepping them here as well counted that week twice)
+        int days = (s.hour() - s.tickHour()) / 24;
+        if (days >= 1) crisisWeek(days);
         taiwanEngine.ticked(s);
         TaiwanResult r = taiwanEngine.result(s);
         TaiwanResult.Status st = r.status() == null ? TaiwanResult.Status.STALEMATE : r.status();
@@ -1522,13 +1610,29 @@ public final class GameEngine implements WorldView {
             foreignEngine.taiwanWarOver(w.foreign, foreignContext(), st.name(), 0, fo);
             foreignOutcome("The Taiwan Strait", fo, null);
         }
-        w.clock.setMode(Granularity.WEEKLY);
-        w.clock.set(date().with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)));
+        resumeWeeks();
         news(new News(date(), st == TaiwanResult.Status.DETERRED || st == TaiwanResult.Status.DEFENDED ? News.Kind.GOOD : News.Kind.WORLD,
                 "THE TAIWAN CRISIS ENDS: " + r.outcome().toUpperCase(java.util.Locale.ROOT), r.reason(), 5, null));
         log("The Taiwan crisis is over: " + r.outcome() + (r.usKilled() > 0 ? ", " + r.usKilled() + " Americans killed" : "") + ". The weeks resume.");
         if (crisisModeFor("taiwan")) endIndividualCrisis(taiwanReport(s, r, st));
+        else if (handoffDue()) handoff();
     }
+
+    /**
+     * After a crisis the weeks resume on the next Monday. If the term's handoff comes first, the clock stops on its day
+     * and the caller holds it: a jump to the Monday after would put the handoff behind the clock (B-10).
+     */
+    private void resumeWeeks() {
+        w.clock.setMode(Granularity.WEEKLY);
+        LocalDate monday = date().with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
+        if (w.terms != null && w.terms.leaving() && !monday.isBefore(w.terms.handoff())) {
+            if (date().isBefore(w.terms.handoff())) w.clock.set(w.terms.handoff());
+            return;
+        }
+        w.clock.set(monday);
+    }
+
+    private boolean handoffDue() { return !over() && w.terms != null && w.terms.leaving() && !date().isBefore(w.terms.handoff()); }
 
     // ---- terms of office (Resolute Desk's Terms and Reelection) ----------------------------------------------------
 
@@ -1629,6 +1733,13 @@ public final class GameEngine implements WorldView {
         }
         for (News n : o.news()) news(n);
         for (String line : o.log()) log(line);
+    }
+
+    /** The race to succeed the president, on the turn that reaches its Election Day (like the midterms: never a week late). */
+    private void successionDue() {
+        if (w.terms == null || !TermsEngine.electionDue(w.terms, date())) return;
+        termsOutcome("Terms of office", termsEngine.holdElection(w.terms, termsContext(), rng), null);
+        successionElection();
     }
 
     /** Election Day without the president on the ballot: the nominee's race decides who comes next, and Congress with it. */
@@ -1999,14 +2110,16 @@ public final class GameEngine implements WorldView {
             dispatch(decision, "Midterms", result);
         }
         if (w.terms != null) termsEngine.noteMidterms(w.terms, congress().house(player().party()) >= 218);
-        log(Fmt.format("Midterms: your party %+d House seats, %+d Senate seats. %s.",
+        // the results come with the turn whose days hold Election Day (a weekly turn reports them the Monday after)
+        log(Fmt.format("Midterms: your party %+d House seats, %+d Senate seats. %s. (Election Day " + calendar.midterms(term()) + ".)",
                 congress().house(player().party()) - before, congress().senate(player().party()) - senBefore, congress()));
     }
 
     private void beginReelection() {
         w.phase = Phase.REELECTION_CAMPAIGN_2032;
-        w.clock.set(calendar.reelectionStart());
-        w.clock.setMode(Granularity.WEEKLY);
+        // never back in time (a crisis may have run past the campaign's start), and a crisis keeps its days and hours
+        if (date().isBefore(calendar.reelectionStart())) w.clock.set(calendar.reelectionStart());
+        if (!crisisActive()) w.clock.setMode(Granularity.WEEKLY);
         Candidate challenger = electionEngine.pickChallenger(w.election, rng);
         electionEngine.beginReelection(w.election, challenger, capital(), setup.difficulty().opponentResources(), rng);
         politicsEngine.setLeader(w.politics, challenger.party(), challenger.id());
@@ -2167,10 +2280,14 @@ public final class GameEngine implements WorldView {
     // =========================================================================================
 
     private MarketContext marketContext() {
+        // the old escalation ladder prices Taiwan only without Resolute Desk's world: with it, the world's own supply shock
+        // before a crisis and the crisis's Brent during one are the prices, and the ladder (which only follows the world)
+        // would count them again (M8-F3, F4)
+        boolean ladder = w.foreign == null && w.diplomacy.rung() != null && !w.diplomacy.warOver();
         double premium = Math.max(0, w.diplomacy.tension(HotSpot.MIDDLE_EAST) - middleEastPivot) * premiumPerMiddleEast + (w.hormuz == null ? 0 : w.hormuz.premium())
                 + (taiwanActive() ? Math.max(0, w.taiwan.brent() - 92) : 0)
-                + (w.diplomacy.rung() == null || w.diplomacy.warOver() ? 0 : premiumPerRung * (w.diplomacy.rung().ordinal() + 1));
-        double stress = (w.diplomacy.rung() == null || w.diplomacy.warOver() ? 0 : stressPerRung * (w.diplomacy.rung().ordinal() + 1))
+                + (ladder ? premiumPerRung * (w.diplomacy.rung().ordinal() + 1) : 0);
+        double stress = (ladder ? stressPerRung * (w.diplomacy.rung().ordinal() + 1) : 0)
                 + (w.military.operationActive() || taiwanAtWar() ? stressWar : 0);
         return new MarketContext(premium, 0, cabinetCompetence(Post.TREASURY), stress);
     }
@@ -2306,10 +2423,71 @@ public final class GameEngine implements WorldView {
     public Optional<ElectionResult> result2028() { return Optional.ofNullable(w.election.result2028()); }
 
     /** The year of the latest presidential election held in this game (2028 or 2032), or 0. */
-    public int latestPresidentialYear() { return w.election.result2032() != null ? 2032 : w.election.result2028() != null ? 2028 : 0; }
+    public int latestPresidentialYear() { return latestPresidentialResult().map(ElectionResult::year).orElse(0); }
 
-    /** The latest presidential election held, if any: the one election night presents. */
-    public Optional<ElectionResult> latestPresidentialResult() { return Optional.ofNullable(w.election.result2032() != null ? w.election.result2032() : w.election.result2028()); }
+    /**
+     * The latest presidential election held, if any: the one election night presents. The player's own races (2028,
+     * re-election in 2032), or the race to succeed them (2032 when they did not run, or 2036), whichever came last.
+     */
+    public Optional<ElectionResult> latestPresidentialResult() {
+        Optional<ElectionResult> succession = successionResult();
+        ElectionResult own = w.election.result2032() != null ? w.election.result2032() : w.election.result2028();
+        if (succession.isPresent() && (own == null || succession.get().year() > own.year())) return succession;
+        return Optional.ofNullable(own);
+    }
+
+    /**
+     * The race to succeed the president, once decided, as an election: the president's party's nominee against the
+     * other party's, every state's margin (Democratic minus Republican), the electoral and popular votes and the
+     * tipping-point state. Computed once, on Election Day, by the terms of office; this only reads it.
+     */
+    public Optional<ElectionResult> successionResult() {
+        if (w.terms == null || w.terms.race() == null || !w.terms.race().done()) return Optional.empty();
+        TermsState.Race r = w.terms.race();
+        int sign = player().party().sign();
+        Map<String, Double> margins = new TreeMap<>();
+        for (Map.Entry<String, Double> e : r.margins().entrySet()) margins.put(e.getKey(), e.getValue() * sign);
+        boolean dem = player().party() == Party.DEMOCRAT;
+        int demEv = dem ? r.evMe() : r.evOpp(), repEv = dem ? r.evOpp() : r.evMe();
+        double popular = (r.popMe() - r.popOpp()) * sign;
+        // the tipping point: the winner's states from the safest down, until 270
+        Party winner = demEv == repEv ? (popular >= 0 ? Party.DEMOCRAT : Party.REPUBLICAN) : demEv > repEv ? Party.DEMOCRAT : Party.REPUBLICAN;
+        List<UsState> won = new ArrayList<>();
+        for (UsState u : states.all()) { Double m = margins.get(u.code()); if (m != null && m * winner.sign() > 0) won.add(u); }
+        won.sort(java.util.Comparator.comparingDouble((UsState u) -> -margins.get(u.code()) * winner.sign()));
+        String tipping = won.isEmpty() ? "" : won.get(won.size() - 1).code();
+        int ev = 0;
+        for (UsState u : won) { ev += u.electoralVotes(); if (ev >= 270) { tipping = u.code(); break; } }
+        return Optional.of(new ElectionResult(r.year(), margins, demEv, repEv, popular, tipping));
+    }
+
+    /** Whose race a presidential election night is: "first" (2028), "reelection" (2032 on the ballot) or "succession". */
+    public String electionKind(int year) {
+        if (year == 2028) return "first";
+        if (year == 2032 && w.election.result2032() != null) return "reelection";
+        return "succession";
+    }
+
+    /** A presidential election's day: 2028, 2032, or the race to succeed the president. */
+    public LocalDate electionDayOf(int year) {
+        if (year == 2028) return calendar.election2028();
+        if (electionKind(year).equals("reelection")) return calendar.election2032();
+        return w.terms != null && w.terms.race() != null ? w.terms.race().electionDay() : calendar.election2032();
+    }
+
+    /** One side of a presidential election night: who ran, for which party. */
+    public record NightSide(String id, String name, Party party) {}
+
+    /** The night's two sides, the president's own party's first: the player and the opponent, or the nominees to succeed them. */
+    public List<NightSide> electionSides(int year) {
+        if (electionKind(year).equals("succession")) {
+            TermsState.Race r = w.terms.race();
+            TermsState.Contender mine = r.nomineeContender(), theirs = r.opponent();
+            return List.of(new NightSide(mine.id(), mine.name(), mine.party()), new NightSide(theirs.id(), theirs.name(), theirs.party()));
+        }
+        Candidate me = player().candidate(), them = opponent().candidate();
+        return List.of(new NightSide(me.id(), me.name(), me.party()), new NightSide(them.id(), them.name(), them.party()));
+    }
 
     /** The year of a presidential election night the player has not yet watched, or 0. Election night always comes first. */
     public int electionNightPending() {

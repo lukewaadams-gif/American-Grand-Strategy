@@ -190,7 +190,9 @@ public final class EngineApi {
         int year = r.year();
         v.put("year", year);
         v.put("pending", g.electionNightPending() == year);
-        v.put("electionDay", (year == 2032 ? g.calendar().election2032() : g.calendar().election2028()).toString());
+        v.put("electionDay", g.electionDayOf(year).toString());
+        String kind = g.electionKind(year);
+        v.put("kind", kind);
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("dem", r.demElectoralVotes()); m.put("rep", r.repElectoralVotes()); m.put("popular", r2(r.popularMargin()));
         m.put("winner", r.winner().code()); m.put("tipping", r.tippingPoint());
@@ -205,16 +207,18 @@ public final class EngineApi {
             states.add(x);
         }
         v.put("states", states);
-        var me = g.player(); var them = g.opponent();
-        for (var x : List.of(Map.entry("player", me), Map.entry("opponent", them))) {
+        // the night's two sides: the player and the opponent, or the nominees to succeed the president (their party's first)
+        var sides = g.electionSides(year);
+        for (int i = 0; i < 2; i++) {
+            var x = sides.get(i);
             Map<String, Object> p = new LinkedHashMap<>();
-            p.put("name", x.getValue().candidate().name()); p.put("id", x.getValue().candidate().id()); p.put("party", x.getValue().party().code());
-            p.put("look", look(x.getValue().candidate().id()));
-            v.put(x.getKey(), p);
+            p.put("name", x.name()); p.put("id", x.id()); p.put("party", x.party().code());
+            p.put("look", look(x.id()));
+            v.put(i == 0 ? "player" : "opponent", p);
         }
-        boolean won = r.winner() == me.party();
+        boolean won = r.winner() == g.player().party();
         v.put("won", won);
-        v.put("postMortem", g.postMortem());
+        v.put("postMortem", kind.equals("succession") ? List.of() : g.postMortem());
         v.put("congress", g.congress().toString());
         v.put("mode", g.mode().name());
         // Campaign Only's night ends on the campaign's assessment, won or lost
@@ -222,7 +226,7 @@ public final class EngineApi {
             g.campaignAssessment().ifPresent(a -> v.put("assessment", Map.of("grade", a.grade(), "headline", a.headline(), "lines", a.lines())));
         // what comes after the night, for the button that ends it
         boolean ends = !won || g.mode() == game.mandate.core.game.GameSetup.Mode.CAMPAIGN_ONLY;
-        v.put("next", year == 2028 ? (ends ? "end" : "transition") : (won ? "second" : "lameduck"));
+        v.put("next", year == 2028 ? (ends ? "end" : "transition") : kind.equals("succession") ? "lameduck" : won ? "second" : "lameduck");
         return v;
     }
 
@@ -276,6 +280,8 @@ public final class EngineApi {
         g.terms().ifPresent(t -> { if (t.leaving()) { v.put("successor", t.successor()); v.put("handoff", t.handoff().toString()); } });
         v.put("pendingDecisions", g.pendingEvents().size() + (g.phase() == Phase.FIRST_100_DAYS ? g.hundredDays().map(h -> h.pending().size()).orElse(0) : 0)
                 + HillViews.count(g) + WestWingViews.decisions(g).size() + TermsViews.count(g) + ForeignViews.count(g));
+        // what the engine will not end the week without: events and the hundred days' questions; the rest can wait to their deadline
+        v.put("blockingDecisions", g.pendingEvents().size() + (g.phase() == Phase.FIRST_100_DAYS ? g.hundredDays().map(h -> h.pending().size()).orElse(0) : 0));
         v.put("congress", g.congress().toString());
         // how long the End button's turn is: a week in office (an operational turn in a war), none in the other phases
         v.put("hormuz", HormuzViews.summary(g));
@@ -633,6 +639,7 @@ public final class EngineApi {
                         o.successChance() < 1 ? "WARN" : null, new Command.ResolveEvent(p.instanceId(), i)));
             }
             Map<String, Object> d = decision("event", "Event", p.definition().title(), p.definition().body(), options);
+            d.put("blocking", true);       // the engine refuses to end the turn while an event waits
             d.put("recommended", game.mandate.core.ai.AutoPilot.chooseOption(p));
             d.put("stop", game.mandate.core.presidency.WatchPlan.STOP_WORLD);
             out.add(d);
@@ -646,6 +653,7 @@ public final class EngineApi {
                     options.add(option(o.label(), o.preview(), null, null, new Command.Act(new game.mandate.core.opening.OpeningAction.Decide(hd.id(), i))));
                 }
                 Map<String, Object> d = decision("hundredDays", "The first hundred days", hd.title(), hd.situation(), options);
+                d.put("blocking", true);   // answered before the week ends
                 d.put("recommended", game.mandate.core.opening.ChiefOfStaff.recommend(h, hd));
                 d.put("stop", switch (hd.kind()) {
                     case CRISIS, AFTERMATH -> game.mandate.core.presidency.WatchPlan.STOP_WORLD;
@@ -657,10 +665,9 @@ public final class EngineApi {
                 out.add(d);
             }
         });
-        out.addAll(HillViews.decisions(g));
-        out.addAll(WestWingViews.decisions(g));
-        out.addAll(TermsViews.decisions(g));
-        out.addAll(ForeignViews.decisions(g));
+        // the rooms' questions have deadlines: left, the staff answer them when due, so the week can run (E-04)
+        for (List<Object> room : List.of(HillViews.decisions(g), WestWingViews.decisions(g), TermsViews.decisions(g), ForeignViews.decisions(g)))
+            for (Object o : room) { @SuppressWarnings("unchecked") Map<String, Object> m = (Map<String, Object>) o; m.put("blocking", false); out.add(m); }
         boolean campaign = g.phase() == Phase.GENERAL_CAMPAIGN_2028 || g.phase() == Phase.REELECTION_CAMPAIGN_2032;
         if (campaign && g.debateThisWeek().isPresent() && g.election().pendingPosture() == null) {
             var theirs = game.mandate.core.campaign.DebatePosture.tendencyOf(g.opponent().candidate());
@@ -671,9 +678,11 @@ public final class EngineApi {
                         + (counters ? " It counters your opponent's usual style." : ""), counters ? "Counters them" : null, counters ? "GOOD" : null,
                         new Command.ChooseDebatePosture(d)));
             }
-            out.add(decision("debate", "Debate this week", "How will you debate?",
+            Map<String, Object> deb = decision("debate", "Debate this week", "How will you debate?",
                     "Prep notes: your opponent tends to \"" + theirs.label().toLowerCase() + "\". A posture that counters theirs scores extra; a steady one limits the risk of a bad night.",
-                    options));
+                    options);
+            deb.put("blocking", true);     // the week's debate needs an approach before the week runs
+            out.add(deb);
         }
         return out;
     }

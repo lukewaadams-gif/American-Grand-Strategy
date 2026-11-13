@@ -170,11 +170,13 @@ function weekCard(v: PresidencyView, hd: OvalHandlers): HTMLElement {
       h('span', { class: 'ov-card-meter-value' }, String(Math.round(w.projected)))) : null,
     w ? h('p', { class: 'ov-card-line quiet' }, `Sleep about ${w.sleepAhead.toFixed(1)} hours a night`) : null,
     h('p', { class: 'ov-card-line ' + (waiting ? 'warn' : 'quiet') }, waiting ? `${waiting} ${waiting === 1 ? 'decision' : 'decisions'} waiting on the desk`
-      : next ? `Next: ${SHORT[next.what] ?? next.what}, ${weeksBetween(v.date, next.date) < 26 ? day(next.date) : day(next.date, next.date.slice(0, 4) !== thisYear)}` : 'Nothing waiting on the desk'),
+      : next ? `Next: ${short(next.what)}, ${weeksBetween(v.date, next.date) < 26 ? day(next.date) : day(next.date, next.date.slice(0, 4) !== thisYear)}` : 'Nothing waiting on the desk'),
     h('button', { class: 'btn small ov-card-btn', type: 'button', onclick: () => hd.spot('desk') }, 'Plan the week'));
 }
 
-const SHORT: Record<string, string> = { 'The midterm elections': 'Midterms', 'Election Day 2032': 'Election Day' };
+/** Short labels for the card: "Election Day" of any year (2032, or the successor's race in 2036). */
+const SHORT: Record<string, string> = { 'The midterm elections': 'Midterms' };
+const short = (what: string) => SHORT[what] ?? (/^Election Day \d{4}$/.test(what) ? 'Election Day' : what);
 
 const STAGE_TONE: Record<string, string> = { 'Law': 'good', 'Dead': 'bad', 'Not yet moving': 'quiet' };
 

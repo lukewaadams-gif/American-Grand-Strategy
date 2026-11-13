@@ -335,7 +335,10 @@ Map<String, Object> json = s.toJson();  TaiwanState t = TaiwanState.fromJson(jso
 **How it starts:**
 - **China escalates to a quarantine or a blockade.** The world's Taiwan stage rises to 3 or 4 (milestone 8's `ForeignEngine.theaters`). The crisis then opens at the end of that week, with China's plan left to its planner, which may stand down.
 - **China attacks without a crisis first.** The stage reaches 5, or the old monthly ladder's war event is answered. The crisis opens with the invasion plan fixed. The old war event's three answers become the commitment.
-- **From the start screen,** under "Or start at a moment", the Taiwan crisis begins in a governing presidency in September 2029. `Command.TaiwanBegin(preset)` does the same.
+- **From the start screen:**
+  - **Individual Crisis** begins the crisis at once in the sample presidency of September 2029, with a preset (`Command.IndividualCrisis`; docs/MODES.md). The game ends when the crisis does, with an after-action report.
+  - **The moment "A Taiwan crisis in the Full Game"** opens a Full Game in which the crisis has just begun.
+  - `Command.TaiwanBegin(preset)` begins one in a Full Game without ending it.
 - **No new crisis** while another (Hormuz or Taiwan) is under way, within a year of the last Taiwan crisis, or once Taiwan has fallen.
 
 **The scenario comes from the presidency:**

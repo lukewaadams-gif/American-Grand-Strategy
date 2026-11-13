@@ -1,7 +1,8 @@
 // Election Day and election night (docs/BUG_FIX_REPORT.md, the Election Day softlock): from the eve of each
 // presidential election, the campaign is run a day at a time through the war room's own button to election night, and
 // on to the next phase (the transition, the final report, or the Oval Office); a game saved on the night opens on it,
-// shows the same night after a reload, and does not show it again once watched. Fails on any console error.
+// shows the same night after a reload, and does not show it again once watched; and the nights of the races to succeed
+// the president (2036, and 2032 without the president on the ballot) go back to the Oval Office. Fails on any console error.
 // Needs the test saves: java -cp mandate-cli/target/mandate.jar game.mandate.ui.ElectionSaves mandate-web/target/preview/saves/test
 // Usage: node election.js
 const { chromium } = require('playwright');
@@ -65,6 +66,30 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
       if (await page.locator('.en').count()) fail(`${save}: election night is still showing`);
       console.log('   ->', title);
     }
+    if (errors.length) fail(`${save}: ${errors.slice(0, 3).join(' | ')}`);
+    await page.close();
+  }
+  // the races to succeed the president: their own nights, on the same broadcast, back to the Oval Office after
+  for (const save of ['night2036', 'night2032-successor']) {
+    const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+    const errors = []; page.on('pageerror', e => errors.push(String(e)));
+    await page.goto(BASE + save + '.json');
+    const opened = await page.waitForSelector('.en', { timeout: 30000 }).then(() => true).catch(() => false);
+    if (!opened) { fail(`${save}: did not open on election night`); await page.close(); continue; }
+    const year = save.slice(5, 9);
+    if (!(await page.title()).includes(year)) fail(`${save}: the night is not ${year}'s: "${await page.title()}"`);
+    await page.locator('.en-controls button', { hasText: 'Skip to the result' }).click();
+    await page.waitForTimeout(200);
+    const head = ((await page.locator('.en-head h1').textContent()) || '').trim();
+    if (!/Your party keeps the White House|The White House changes hands/.test(head)) fail(`${save}: the successor's night ends with "${head}"`);
+    const ev = (await page.locator('.en-ev').allTextContents()).map(Number);
+    if (ev[0] + ev[1] !== 538) fail(`${save}: the final count adds up to ${ev[0] + ev[1]}`);
+    const cont = ((await page.locator('.en-continue').textContent()) || '').trim();
+    if (!/Back to the Oval Office/.test(cont)) fail(`${save}: the night goes on to "${cont}"`);
+    await page.locator('.en-continue').click();
+    await page.waitForTimeout(600);
+    if (!/The Oval Office/.test(await page.title())) fail(`${save}: after the night the page is "${await page.title()}"`);
+    console.log(save.padEnd(20), head, '|', ev.join('-'), '->', await page.title());
     if (errors.length) fail(`${save}: ${errors.slice(0, 3).join(' | ')}`);
     await page.close();
   }

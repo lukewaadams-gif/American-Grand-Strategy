@@ -21,7 +21,8 @@ export function decisionCard(d: Decision, n: number, total: number, host: Dialog
     h('p', null, d.body),
     h('div', { class: 'choices' }, ...options),
     h('div', { class: 'dialog-foot' },
-      h('button', { class: 'btn quiet', type: 'button', onclick: () => host.close(), title: 'Put it aside; the week cannot run until it is answered' }, 'Decide later'),
+      h('button', { class: 'btn quiet', type: 'button', onclick: () => host.close(),
+        title: d.blocking === false ? 'Put it aside: it waits on the desk, and if it is left to its deadline the staff answer it' : 'Put it aside; the week cannot run until it is answered' }, 'Decide later'),
       h('span', { class: 'faint' }, `Press 1–${d.options.length} to choose, Esc to decide later.`)));
   card.addEventListener('keydown', e => {
     const k = Number(e.key);

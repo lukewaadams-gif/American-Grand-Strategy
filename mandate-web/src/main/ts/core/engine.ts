@@ -7,6 +7,8 @@ interface EngineModule { call(request: string): string; }
 let mod: EngineModule | null = null;
 /** The site's build (version.json), so the engine and the saves always come from the same one; empty if there is none. */
 let build = '';
+/** Where this build came from (E-05): its source commit, uncommitted changes, and the day it was built. */
+export let buildInfo: { build: string; commit?: string; dirty?: boolean; built?: string } = { build: '' };
 
 /** A URL for this build's copy of a file, so a browser's cached copy from an earlier build is never used with this one. */
 function versioned(url: string): string { return build ? url + (url.includes('?') ? '&' : '?') + 'v=' + build : url; }
@@ -19,7 +21,7 @@ export async function start(url = new URL('../../engine/engine.js', import.meta.
   if (mod) return;
   try {
     const r = await fetch(new URL('../../version.json', import.meta.url).href, { cache: 'no-cache' });
-    if (r.ok) build = ((await r.json()) as { build?: string }).build ?? '';
+    if (r.ok) { buildInfo = await r.json(); build = buildInfo.build ?? ''; }
   } catch { /* a build without version.json: load as before */ }
   mod = (await import(versioned(url))) as EngineModule;
 }
