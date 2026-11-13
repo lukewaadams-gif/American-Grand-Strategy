@@ -94,8 +94,10 @@ final class Trouble {
                 "second thoughts about the administration's agenda", "who's up and who's down in the West Wing"};
         String what = about[rng.nextInt("ww.leak", about.length)];
         if (c.stamina() < 30) what = "how tired the president looks after long days";
-        boolean named = p.trait == T_LEAKER || p.morale < 35;
-        String source = named ? "aides close to " + p.name : "people inside the White House";
+        boolean leaky = p.trait == T_LEAKER || p.morale < 35;
+        // a real person is never named as a leak's source, nor pushed out for it: the office is named instead
+        boolean named = leaky && !realPerson(p);
+        String source = named ? "aides close to " + p.name : leaky ? "aides close to the " + WestWingEngine.title(p).toLowerCase(java.util.Locale.ROOT) : "people inside the White House";
         double sev = 1 + rng.uniform("ww.leak") * 1.2;
         s.leaks++;
         add(s, c, Scandal.LEAK, "Leaks describe " + what, "The stories cite " + source + ".", sev, named ? p : null, false, out);
@@ -124,8 +126,19 @@ final class Trouble {
 
     void ethics(WestWingState s, Context c, Person p, Outcome out, DeterministicRandomManager rng) {
         String what = ETHICS[rng.nextInt("ww.ethics", ETHICS.length)];
+        if (realPerson(p)) {
+            // invented misconduct is never put on a real person's name: with real people the story is about an unnamed
+            // senior aide in that office, and the official is not the one forced out
+            String office = WestWingEngine.title(p).toLowerCase(java.util.Locale.ROOT);
+            add(s, c, Scandal.ETHICS, "A senior aide to the " + office + " under fire", "Reporters say a senior aide to the " + office + " " + what + ".",
+                    2.5 + rng.uniform("ww.ethics") * 2.5, null, false, out);
+            return;
+        }
         add(s, c, Scandal.ETHICS, title(p) + " " + p.name + " under fire", "Reporters say " + p.name + " " + what + ".", 2.5 + rng.uniform("ww.ethics") * 2.5, p, false, out);
     }
+
+    /** A real person (in a real-people game), whom no invented scandal may name. */
+    private boolean realPerson(Person p) { return e.people().real() && e.people().data().isReal(p.name); }
 
     void week(WestWingState s, Context c, Outcome out, DeterministicRandomManager rng) {
         Person ag = s.post[P_DOJ];

@@ -27,6 +27,24 @@ public final class Fixtures {
                 GameSetup.Difficulty.STANDARD, length, false, null);
     }
 
+    /** The same moments with real people, the game's default (the shipped sample saves). */
+    static GameSetup realSetup(long seed, GameSetup.Length length) {
+        boolean dem = seed % 2 == 0;
+        return new GameSetup(seed, dem ? Party.DEMOCRAT : Party.REPUBLICAN, dem ? "bg_shapiro" : "bg_vance", dem ? "bg_vance" : "bg_shapiro", Scenario.TOSS_UP,
+                GameSetup.Difficulty.STANDARD, length, true, null);
+    }
+
+    /** A won election with real people, played to the moment {@code stop} holds. */
+    static GameEngine wonReal(GameSetup.Length length, Predicate<GameEngine> stop) {
+        for (long seed = 1; seed < 200; seed++) {
+            GameEngine g = until(new GameEngine(realSetup(seed, length)), x -> x.phase() == Phase.TRANSITION);
+            if (g.phase() != Phase.TRANSITION) continue;
+            until(g, stop);
+            if (!g.over() || stop.test(g)) return g;
+        }
+        throw new IllegalStateException("no seed reached the state");
+    }
+
     static GameEngine until(GameEngine g, Predicate<GameEngine> stop) {
         int guard = 0;
         while (!g.over() && !stop.test(g) && guard++ < 1200) AutoPilot.playTurn(g);

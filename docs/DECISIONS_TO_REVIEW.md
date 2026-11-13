@@ -146,3 +146,36 @@ Choices made while building overnight that we had not discussed. Each was made i
 2. **Its place in the night is kept for the browser session,** so a reload resumes at the same report. A new session starts the night again; it is the same night.
 3. **"Leave the broadcast" is always offered,** so the player is never held. Leaving counts the night as watched.
 4. **The broadcast ends on the analysis:** the tipping-point state, the closest states, the flips since 2024, Congress, and for a loss the campaign's post-mortem. The full campaign assessment for Campaign Only comes with the four game modes.
+
+## Real people in 2029, and the newcomers who follow (13 November 2026)
+
+1. **"Real people" is now the default on the start screen.** The fictional cast stays available as the alternative, and the custom candidate is allowed in either.
+2. **The 2029 world is drawn from public records as of 2025–26** (`data/people_2029.tsv`). It covers:
+   - all 100 senators;
+   - both parties' leaders in each chamber;
+   - the leading member of each party on the committees the game models;
+   - the moderates the whips count on, and a stalwart of each party's base;
+   - cabinet and White House staff prospects from the last two administrations of each party;
+   - federal appeals judges as Supreme Court prospects;
+   - moderates of each party now out of office, for a president's bipartisan pick.
+3. **No one is invented in 2029.** Where the record runs out, the seat goes to its office: "Senator from Ohio", "the House Armed Services chair", "Acting Secretary of Labor", "A federal appeals judge". The same applies to a senator known to be leaving before 2029.
+4. **A real officeholder is never replaced at random.** A real person leaves a seat only through the game's own events: an election, a retirement from the Court, a resignation from the administration, or a firing or confirmation the player chooses. The game models no deaths.
+5. **Fictional newcomers appear only from 2030,** whenever a seat or post opens. The chance that the new holder is a newcomer rather than a real person or a placeholder rises each year: 20% in 2030, 35% in 2031, 50% in 2032, then 60%, 70%, 80% and 90% in 2036. It is set in `tuning.properties` (`people.newcomers.*`).
+6. **Each newcomer has a stable identity.**
+   - Their name is drawn from the game's named random stream, so a save always replays to the same person.
+   - They have a party, an ideology and a background.
+   - They have a career record in the role they hold.
+   - They get a portrait look made from their ID (`Portraits.generated`).
+7. **Rules for real people:**
+   - No real person is given an invented scandal, invented baggage or an invented profile.
+   - The transition office's vetting finds nothing on a real nominee. Its findings apply only to newcomers.
+   - An ethics or leak storyline that would name a real official names "a senior aide to the …" instead.
+   - Storyline characters and reporters stay fictional, since they are not political figures.
+   - Each real person's background line is a short public fact.
+8. **A president's bipartisan pick is a moderate of the other party now out of office.** Examples are Charlie Baker or Larry Hogan for a Democrat, and Joe Manchin or Heidi Heitkamp for a Republican. It is never an official of the other party's last administration, and White House staff never cross the aisle.
+9. **Not represented:**
+   - governors;
+   - House members other than the leaders, the committee leaders, the swing members and the base members;
+   - anyone's record after early 2026.
+
+   The data needs a refresh before release.

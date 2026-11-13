@@ -198,12 +198,23 @@ final class Courts {
         double[] ideo = {0.85, 0.5, 0.2};
         int[] age = {46, 53, 60};
         List<Justice> out = new ArrayList<>();
+        // with real people: federal appellate judges of the president's party while any are free; newcomers from 2030
+        List<game.mandate.core.people.RealPeople.Judge> real = new ArrayList<>();
+        if (e.people().real()) for (var x : e.people().data().judges(c.president())) {
+            boolean serving = false;
+            for (Justice k : s.justices) if (k.name.equals(x.name())) serving = true;
+            if (!serving) real.add(x);
+        }
         for (int i = 0; i < 3; i++) {
             Justice j = new Justice();
             boolean f = r.u() < 0.5;
             j.name = "Judge " + e.pick(r, f ? "first_f" : "first_m") + " " + e.pick(r, "more_lasts");
             j.ideo = clamp(side * ideo[i] + r.g() * 0.05, -1, 1);
             j.born = year - (age[i] + r.n(4));
+            if (e.people().real()) {
+                if (i < real.size()) { j.name = real.get(i).name(); j.born = real.get(i).born(); }
+                else if (!e.people().newcomer(year, r.u())) { if (i > 0) break; j.name = "A federal appeals judge"; }
+            }
             j.party = c.president();
             out.add(j);
         }
@@ -213,8 +224,9 @@ final class Courts {
     void nominate(WestWingState s, Context c, int option, Outcome out, DeterministicRandomManager rng) {
         if (s.justices.size() >= 9) throw new IllegalArgumentException("There is no vacancy on the Court");
         if (s.nomineeJ != null) throw new IllegalArgumentException("A nominee is already before the Senate");
-        if (option < 0 || option > 2) throw new IllegalArgumentException("No such choice");
-        Justice j = shortlist(s, c).get(option);
+        List<Justice> list = shortlist(s, c);
+        if (option < 0 || option > 2 || option >= list.size()) throw new IllegalArgumentException("No such choice");
+        Justice j = list.get(option);
         s.nomineeJ = j;
         s.scotusVoteAt = s.week + 7 + (rng == null ? 2 : rng.nextInt("ww.scotus", 4));
         out.news().add(news(c, News.Kind.INFO, "The president nominates " + j.name + " to the Supreme Court", SHORTLIST_WHAT[option] + ".", 3.2, null));

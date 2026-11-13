@@ -522,6 +522,8 @@ public final class ElectionEngine {
     public Candidate pickChallenger(ElectionState e, DeterministicRandomManager rng) {
         var field = candidates.forParty(e.opponent.party()).stream()
                 .filter(c -> !c.id().equals(e.opponent.candidate().id()) && !c.id().equals(Candidate.CUSTOM_ID)).toList();
+        // with real people, the challenger is one of them (the fictional cast is not part of that world)
+        if (field.stream().anyMatch(Candidate::isReal)) field = field.stream().filter(Candidate::isReal).toList();
         return field.get(rng.nextInt("reelection", field.size()));
     }
 }

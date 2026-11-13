@@ -72,6 +72,11 @@ public final class HillEngine {
     private final PolicyCatalog policies;
     private final Map<String, List<String>> names = new TreeMap<>();
     private final Map<String, String> firstLeaders;
+    /** Who is seated: the real roster in 2028-29 and fictional newcomers from 2030, or the fictional cast throughout. */
+    private game.mandate.core.people.People people = game.mandate.core.people.People.fictional();
+
+    /** Sets who the Hill seats (GameEngine, from the game's setup). */
+    public void people(game.mandate.core.people.People p) { this.people = p; }
 
     public HillEngine(BillCatalog catalog, PolicyCatalog policies) {
         this.catalog = catalog;
@@ -82,8 +87,16 @@ public final class HillEngine {
         firstLeaders = Map.of("houseD", era.get("speakerD"), "houseR", era.get("speakerR"), "senateD", era.get("leaderD"), "senateR", era.get("leaderR"));
     }
 
-    /** The party leaders of January 2029 (Resolute Desk's era file), by chamber and party: houseD, houseR, senateD, senateR. */
-    public Map<String, String> firstLeaders() { return firstLeaders; }
+    /**
+     * The party leaders of January 2029, by chamber and party (houseD, houseR, senateD, senateR): the real leaders with real
+     * people, else Resolute Desk's era file.
+     */
+    public Map<String, String> firstLeaders() {
+        if (!people.real()) return firstLeaders;
+        Map<String, String> m = new TreeMap<>();
+        for (String k : List.of("houseD", "houseR", "senateD", "senateR")) m.put(k, people.data().leader(k).orElse(firstLeaders.get(k)));
+        return m;
+    }
 
     /** What the Hill reads from the rest of the game for one step. */
     public record Context(LocalDate date, int termWeek, Party president, double approval, double charisma, double establishment, double staffQuality,
@@ -131,7 +144,8 @@ public final class HillEngine {
         HillState s = new HillState();
         // the Senate: class I as the data says; classes II and III so the Democrats' total is right, most Democratic states first
         List<String> states = new ArrayList<>(houseSeats.keySet());
-        for (String st : states) if (classOne.containsKey(st)) s.senate.add(seat(st, 1, classOne.get(st), rng));
+        int year = c.date().getYear();
+        for (String st : states) if (classOne.containsKey(st)) s.senate.add(seat(st, 1, classOne.get(st), year, rng));
         int dLeft = c.senateDem() - (int) s.senate.stream().filter(x -> x.party == Party.DEMOCRAT).count();
         // each state's other seat (or seats): class III where the data has one, class II for the rest
         List<String[]> open = new ArrayList<>();
@@ -145,7 +159,7 @@ public final class HillEngine {
         open.sort((a, b) -> Double.compare(c.stateLean().getOrDefault(b[0], 0.0), c.stateLean().getOrDefault(a[0], 0.0)));
         for (String[] r : open) {
             Party p = dLeft-- > 0 ? Party.DEMOCRAT : Party.REPUBLICAN;
-            s.senate.add(seat(r[0], Integer.parseInt(r[1]), p, rng));
+            s.senate.add(seat(r[0], Integer.parseInt(r[1]), p, year, rng));
         }
         // the House by state, with a national swing that makes the total right
         s.houseSeats.putAll(houseSeats);
@@ -160,9 +174,11 @@ public final class HillEngine {
         return s;
     }
 
-    private Seat seat(String state, int cl, Party p, DeterministicRandomManager rng) {
+    private Seat seat(String state, int cl, Party p, int year, DeterministicRandomManager rng) {
         Seat x = new Seat();
-        x.state = state; x.seatClass = cl; x.party = p; x.holder = person(rng);
+        x.state = state; x.seatClass = cl; x.party = p;
+        // with real people, the seat's real senator if the record has one of that party still serving; else the office
+        x.holder = people.real() ? people.data().senator(state, cl, p, year).orElse(game.mandate.core.people.People.office("Senator", state)) : person(rng);
         return x;
     }
 
@@ -255,7 +271,7 @@ public final class HillEngine {
                 Member prior = old.get("Chair|" + ch + "|" + maj + "|" + committee);
                 Member m = new Member();
                 m.id = prior != null ? prior.id : "m" + s.nextId++;
-                m.name = prior != null ? prior.name : person(rng);
+                m.name = prior != null ? prior.name : fill(ch == H ? "H" : "S", committee, maj, c.date().getYear(), taken(s), rng);
                 m.role = "Chair"; m.committee = committee; m.party = maj; m.chamber = ch;
                 double r = rng.uniform("hill.seat");
                 m.bloc = blocIndex(s, ch, maj, r < 0.7 ? 1 : r < 0.85 ? 0 : 2);
@@ -276,11 +292,18 @@ public final class HillEngine {
                     else {
                         m = new Member();
                         m.id = "m" + s.nextId++;
-                        m.name = person(rng);
                         m.role = "Swing vote"; m.party = p; m.chamber = ch;
                         boolean base = p == c.president() && k == 2;
                         m.bloc = blocIndex(s, ch, p, base ? 0 : 2);
                         m.state = swingState(s, ch, p, rng);
+                        // a real moderate of that party while the record has one, a newcomer from 2030, else the office
+                        int year = c.date().getYear();
+                        game.mandate.core.people.RealPeople.Swing real = null;
+                        if (people.real()) for (var x : base ? people.data().base(ch == H ? "H" : "S", p) : people.data().swing(ch == H ? "H" : "S", p, year))
+                            if (!taken(s).contains(x.name())) { real = x; break; }
+                        if (real != null) { m.name = real.name(); m.state = real.state(); }
+                        else if (people.newcomer(year, rng.uniform("hill.people"))) m.name = person(rng);
+                        else m.name = game.mandate.core.people.People.office(ch == H ? "Representative" : "Senator", m.state);
                         m.price = PRICES[rng.nextInt("hill.seat", PRICES.length)];
                         m.rel = 45 + 15 * rng.uniform("hill.seat");
                         m.econ = s.blocs.get(m.bloc).econ + 0.08 * rng.gaussian("hill.seat"); m.cult = s.blocs.get(m.bloc).cult + 0.08 * rng.gaussian("hill.seat");
@@ -1322,8 +1345,8 @@ public final class HillEngine {
             Race r = new Race();
             r.state = x.state; r.seatClass = cl; r.holder = x.party;
             r.open = rng.uniform("hill.race") < 0.1;
-            String incumbent = x.holder, challenger = person(rng);
-            String fresh = r.open ? person(rng) : incumbent;
+            String incumbent = x.holder, challenger = nominee(x.party.opponent(), x.state, eday.getYear(), rng);
+            String fresh = r.open ? nominee(x.party, x.state, eday.getYear(), rng) : incumbent;
             r.democrat = x.party == Party.DEMOCRAT ? fresh : challenger;
             r.republican = x.party == Party.REPUBLICAN ? fresh : challenger;
             s.races.add(r);
@@ -1358,6 +1381,7 @@ public final class HillEngine {
                 if (x.party != won) gained += won == c.president() ? 1 : -1;
                 x.party = won;
                 x.holder = won == Party.DEMOCRAT ? r.democrat : r.republican;
+                if (x.holder.startsWith("the ") && x.holder.contains(" nominee in ")) x.holder = game.mandate.core.people.People.office("Senator", x.state);
             }
         }
         int senateD = (int) s.senate.stream().filter(x -> x.party == Party.DEMOCRAT).count();
@@ -1626,6 +1650,32 @@ public final class HillEngine {
 
     boolean midtermSeason(Context c) {
         return c.electionDay() != null && ChronoUnit.DAYS.between(c.date(), c.electionDay()) <= 100 && c.electionDay().getYear() % 4 == 2;
+    }
+
+    /** The names already serving (so a real person is never seated twice). */
+    private static java.util.Set<String> taken(HillState s) {
+        java.util.Set<String> t = new java.util.TreeSet<>();
+        for (Member m : s.members) t.add(m.name);
+        return t;
+    }
+
+    /**
+     * A committee's leader for a new Congress: the real chair or ranking member while the record has one serving and not
+     * already seated, a newcomer from 2030 (at the year's rate), else the office.
+     */
+    private String fill(String chamber, String committee, Party party, int year, java.util.Set<String> taken, DeterministicRandomManager rng) {
+        if (!people.real()) return person(rng);
+        var real = people.data().committeeLeader(chamber, committee, party, year);
+        if (real.isPresent() && !taken.contains(real.get())) return real.get();
+        if (people.newcomer(year, rng.uniform("hill.people"))) return person(rng);
+        return "the " + (chamber.equals("H") ? "House " : "Senate ") + committee + " chair";
+    }
+
+    /** A party's Senate nominee: a fictional newcomer at the year's rate, else the office ("the Republican nominee in Ohio"). */
+    private String nominee(Party party, String state, int year, DeterministicRandomManager rng) {
+        if (!people.real()) return person(rng);
+        if (people.newcomer(year, rng.uniform("hill.people"))) return person(rng);
+        return "the " + (party == Party.DEMOCRAT ? "Democratic" : "Republican") + " nominee in " + game.mandate.core.people.People.stateName(state);
     }
 
     String person(DeterministicRandomManager rng) {

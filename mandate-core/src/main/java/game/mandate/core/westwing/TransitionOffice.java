@@ -73,6 +73,19 @@ public final class TransitionOffice {
         WestWingEngine.Local r = new WestWingEngine.Local(WestWingEngine.mix(seed, 0x7A45L, 0, 0, 0));
         List<String> taken = new ArrayList<>();
         int n = 0;
+        if (engine.people().real()) {
+            // real people: the president's party's staff of the last two administrations, each with their real background (no
+            // other party's partisans on the president's own staff). No invented profile or baggage is attached to a real person.
+            for (int role = 0; role < STAFF_TITLE.length; role++) {
+                int kind = K_EXPERT;
+                for (var x : engine.people().data().staff(STAFF_TITLE[role], president)) {
+                    t.prospects.add(real(r, president, role, kind, x.name(), x.background(), taken, "t" + n++));
+                    kind = K_LOYAL;
+                }
+            }
+            t.news.add(day + ": the transition begins. Name your own people, check them, and keep the leaks down.");
+            return t;
+        }
         for (int role = 0; role < STAFF_TITLE.length; role++) {
             int[] more = {K_POL, K_OUTSIDER, K_CROSS};
             for (int i = more.length - 1; i > 0; i--) { int j = r.n(i + 1); int tmp = more[i]; more[i] = more[j]; more[j] = tmp; }
@@ -103,6 +116,13 @@ public final class TransitionOffice {
         q.loyaltySeen = clamp(p.loyalty + r.g() * 6, 20, 99);
         double risk = (p.trait == T_RISK ? 0.6 : 0.18) + (kind == K_OUTSIDER ? 0.1 : 0) + (kind == K_LOYAL ? 0.06 : 0);
         if (r.u() < risk) { int b = r.n(BAG_WHAT.length); q.baggage = BAG_WHAT[b]; q.baggageWeight = BAG_WEIGHT[b]; }
+        return q;
+    }
+
+    /** A real prospect: the numbers drawn as for anyone, the name and background from the record, no baggage. */
+    Prospect real(WestWingEngine.Local r, Party party, int role, int kind, String name, String background, List<String> taken, String id) {
+        Prospect q = prospect(r, party, role, kind, taken, id);
+        q.name = name; q.profile = background; q.baggage = null; q.baggageWeight = 0;
         return q;
     }
 

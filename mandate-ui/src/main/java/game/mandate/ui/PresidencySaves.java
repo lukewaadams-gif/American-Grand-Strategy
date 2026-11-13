@@ -15,10 +15,17 @@ import java.nio.file.Path;
 public final class PresidencySaves {
     public static void main(String[] a) throws Exception {
         Path out = Path.of(a[0]);
-        Files.writeString(out.resolve("presidency.json"), watched(Fixtures.won(GameSetup.Length.FULL_TERM, g -> g.phase() == Phase.FIRST_100_DAYS)));
+        // the campaign: week 9 and the final stretch, with real people (Josh Shapiro against JD Vance)
+        var camp = new game.mandate.core.engine.GameEngine(Fixtures.realSetup(2, GameSetup.Length.FULL_TERM));
+        Fixtures.until(camp, x -> !x.date().isBefore(java.time.LocalDate.of(2028, 9, 11)));
+        Files.writeString(out.resolve("campaign.json"), SaveManager.save(camp));
+        Fixtures.until(camp, x -> !x.date().isBefore(java.time.LocalDate.of(2028, 10, 25)));
+        Files.writeString(out.resolve("daily.json"), SaveManager.save(camp));
+        System.out.println("campaign: " + camp.player().candidate().name() + " against " + camp.opponent().candidate().name() + ", " + camp.date());
+        Files.writeString(out.resolve("presidency.json"), watched(Fixtures.wonReal(GameSetup.Length.FULL_TERM, g -> g.phase() == Phase.FIRST_100_DAYS)));
         // milestone 10: the transition office, the day after the 2028 election, before any choices
-        Files.writeString(out.resolve("transition.json"), watched(Fixtures.won(GameSetup.Length.FULL_TERM, g -> g.phase() == Phase.TRANSITION)));
-        var g = Fixtures.won(GameSetup.Length.FULL_TERM, x -> x.phase() == Phase.GOVERNING && !x.date().isBefore(java.time.LocalDate.of(2029, 9, 3)));
+        Files.writeString(out.resolve("transition.json"), watched(Fixtures.wonReal(GameSetup.Length.FULL_TERM, g -> g.phase() == Phase.TRANSITION)));
+        var g = Fixtures.wonReal(GameSetup.Length.FULL_TERM, x -> x.phase() == Phase.GOVERNING && !x.date().isBefore(java.time.LocalDate.of(2029, 9, 3)));
         // the autopilot handed the Hill to the staff: the player takes it back
         if (g.hill().map(h -> h.delegated()).orElse(false)) g.apply(new game.mandate.core.command.Command.Hill(new game.mandate.core.hill.HillOrder.Delegate(false)));
         if (g.westWing().isPresent()) {
@@ -52,11 +59,11 @@ public final class PresidencySaves {
         Files.writeString(out.resolve("taiwan-war.json"), watched(handBack(tww)));
         System.out.println("taiwan-war: day " + tww.taiwan().get().day() + " phase " + tww.taiwan().get().phase() + " war days " + tww.taiwan().get().warDays() + " active " + tww.taiwanActive());
         // milestone 9: just re-elected (the second term's theme on the desk), and the race to succeed a two-term president
-        var re = Fixtures.won(GameSetup.Length.FULL_TERM, x -> x.phase() == Phase.GOVERNING && x.result2032().map(r -> r.winner() == x.player().party()).orElse(false));
+        var re = Fixtures.wonReal(GameSetup.Length.FULL_TERM, x -> x.phase() == Phase.GOVERNING && x.result2032().map(r -> r.winner() == x.player().party()).orElse(false));
         Files.writeString(out.resolve("secondterm.json"), watched(handBack(re)));
-        var race = Fixtures.won(GameSetup.Length.FULL_TERM, x -> x.term() == 2 && !x.date().isBefore(java.time.LocalDate.of(2036, 3, 2)));
+        var race = Fixtures.wonReal(GameSetup.Length.FULL_TERM, x -> x.term() == 2 && !x.date().isBefore(java.time.LocalDate.of(2036, 3, 2)));
         Files.writeString(out.resolve("succession.json"), watched(handBack(race)));
-        var end = Fixtures.won(GameSetup.Length.FULL_TERM, x -> x.terms().map(t -> t.leaving()).orElse(false) && !x.date().isBefore(java.time.LocalDate.of(2036, 12, 28)));
+        var end = Fixtures.wonReal(GameSetup.Length.FULL_TERM, x -> x.terms().map(t -> t.leaving()).orElse(false) && !x.date().isBefore(java.time.LocalDate.of(2036, 12, 28)));
         Files.writeString(out.resolve("handoff.json"), watched(handBack(end)));
         for (var x : java.util.List.of(g, re, race, end)) System.out.println("crisis active in a preview save: " + x.hormuzActive() + " " + x.taiwanActive() + " " + x.date());
     }

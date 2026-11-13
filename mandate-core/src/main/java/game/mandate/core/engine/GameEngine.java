@@ -186,7 +186,7 @@ public final class GameEngine implements WorldView {
         this.policyTableEngine = new PolicyTableEngine(PolicyCatalog.shared(), economyEngine.params().nominalGdp());
         this.politicsEngine = new PoliticsEngine(PoliticsParams.from(tuning));
         this.congressEngine = new CongressEngine(tuning);
-        this.executiveEngine = new ExecutiveEngine(tuning, CabinetPool.load());
+        this.executiveEngine = new ExecutiveEngine(tuning, setup.realRoster() ? CabinetPool.real(game.mandate.core.people.RealPeople.load()) : CabinetPool.load());
         this.diplomacyEngine = new DiplomacyEngine(tuning, Country.load());
         this.militaryEngine = new MilitaryEngine(MilitaryParams.from(tuning), MilitaryCatalog.load());
         this.electionEngine = new ElectionEngine(states, candidates, CampaignParams.from(tuning));
@@ -194,6 +194,11 @@ public final class GameEngine implements WorldView {
         this.hillEngine = new HillEngine(bills, PolicyCatalog.shared());
         this.westWingEngine = new WestWingEngine(new WestWingData());
         this.termsEngine = new TermsEngine();
+        // who the game seats: real people at the start (newcomers from 2030), or the fictional cast throughout
+        game.mandate.core.people.People people = game.mandate.core.people.People.of(setup.realRoster(), tuning);
+        this.hillEngine.people(people);
+        this.westWingEngine.people(people);
+        this.termsEngine.people(people);
         this.foreignEngine = new ForeignEngine(new ForeignData());
         this.transitionOffice = new TransitionOffice(westWingEngine);
         this.ambient = new AmbientNews();
@@ -1424,7 +1429,8 @@ public final class GameEngine implements WorldView {
         used.add(opponent().candidate().id());
         used.add(Candidate.CUSTOM_ID);
         List<Candidate> own = new ArrayList<>(), other = new ArrayList<>();
-        for (Candidate c : setup.realRoster() ? candidates.all() : candidates.fictional(Party.DEMOCRAT).isEmpty() ? candidates.all() : fictionalCast()) {
+        // with real people, the field is the real roster (fictional newcomers join it through TermsEngine from 2030)
+        for (Candidate c : setup.realRoster() ? candidates.all().stream().filter(Candidate::isReal).toList() : candidates.fictional(Party.DEMOCRAT).isEmpty() ? candidates.all() : fictionalCast()) {
             if (used.contains(c.id())) continue;
             (c.party() == p.party() ? own : other).add(c);
         }

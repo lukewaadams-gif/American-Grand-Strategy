@@ -115,3 +115,39 @@ The same path hit the 2032 re-election, in both outcomes.
 - **Likeness.** The vector style gives correct, consistent and distinguishable likenesses, but not recognisable caricatures. Several real men with short dark hair still look alike. Recognisable caricatures need commissioned illustration, with commercial rights; this is listed in the remaining issues.
 - **Who has portraits.** Only presidential candidates are drawn anywhere in the game. Cabinet members, justices, members of Congress and foreign leaders appear by name only, so they cannot be drawn wrongly. If they are ever drawn, they take a row in `portraits.csv`.
 - **Desktop.** The desktop (Swing) and older browser interfaces draw no portraits.
+
+## R-01: the 2028–29 world filled with invented politicians (user request; high): fixed
+
+**Reproduction:**
+- **Steps:** start any game with "Use real people" on, win in 2028, and open the transition or the Hill.
+- **What happened:** the presidential candidates were real, but almost everyone else was invented, from the Senate and the House leaders to the committee chairs, the cabinet shortlists, the White House staff and the Supreme Court shortlist. The vice president was also invented when they were not one of the candidates.
+- **Worse:** the invented people came with invented scandals and baggage. With real names on the ticket, the ethics and leak storylines could attach them to real officials.
+
+**Root cause:** each system made up its own people from a name generator, whatever the setting. Only the candidate catalogue knew about real people.
+
+**Fix:**
+- **One source.** `people.People` and `people.RealPeople`, backed by `data/people_2029.tsv`, are now the only source. Each of these asks them for its people:
+  - the Hill: senators, leaders, committee leaders, swing and base members;
+  - the transition and the West Wing: staff, cabinet prospects and the bipartisan pick;
+  - the courts: the Supreme Court shortlist;
+  - the hundred days' cabinet pool;
+  - terms and elections: the 2032 challenger and open seats.
+- **What fills a seat** (see DECISIONS_TO_REVIEW, "Real people in 2029"):
+  - a real person;
+  - or, where the record has none, a labelled office placeholder;
+  - and, from 2030 on, a fictional newcomer at the configured rate.
+- **Real people come with no invented profile.** The transition's vetting finds nothing on them, and the storylines name a "senior aide" instead.
+- **The bipartisan pick** is now a moderate of the other party out of office, never an official of the other party's administration.
+- **The sample saves** in the preview were regenerated with the real roster: Shapiro against Vance.
+
+**Regression test:** `RealPeopleTest` (4 tests).
+- The data is whole: 100 senators, two to a state; all four leaders; and a real prospect for every cabinet post and staff role in both parties.
+- In a 2029 game played for each party, every senator, member, official and the vice president is in the real data or is an office placeholder. The test fails listing any name that is neither.
+- No newcomer appears before 2030, and newcomers have appeared by 2033.
+- The newcomer rate is 0 in 2028–29, rises each year from 2030 to 2036, holds after 2036, and is configurable.
+
+**Remaining:**
+- Governors are not represented.
+- House members other than the leaders, committee leaders, swing and base members are not represented.
+- The data is as of 2025–26.
+- A newcomer's career history is the record of the role they hold. It does not yet follow a newcomer from one office to another.

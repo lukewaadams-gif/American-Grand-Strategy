@@ -59,6 +59,13 @@ public final class WestWingEngine {
     final Press press;
     final Stories stories;
 
+    /** Who is appointed: the real roster in 2028-29 and fictional newcomers from 2030, or the fictional cast throughout. */
+    private game.mandate.core.people.People people = game.mandate.core.people.People.fictional();
+
+    /** Sets who the West Wing appoints (GameEngine, from the game's setup). */
+    public void people(game.mandate.core.people.People p) { this.people = p; }
+    game.mandate.core.people.People people() { return people; }
+
     public WestWingEngine(WestWingData data) {
         this.data = data;
         this.actions = new Actions(this);
@@ -103,10 +110,15 @@ public final class WestWingEngine {
             p.voteYes = 51 + init.n(30); p.voteNo = 100 - p.voteYes;
             s.post[k] = p;
         }
-        // the vice president, a running mate made up for the ticket
+        // the vice president: with real people, a running mate from the party's real roster; else made up for the ticket
         Local vp = new Local(mix(c.seed(), 0x7EEL, 0, 0, 0));
         boolean f = vp.u() < 0.4;
         s.vpName = pick(vp, f ? "first_f" : "first_m") + " " + pick(vp, "lasts");
+        if (people.real()) {
+            List<RealPick> mates = new ArrayList<>();
+            if (c.realPicks() != null) for (RealPick p : c.realPicks()) if (p.party() == c.president()) mates.add(p);
+            s.vpName = mates.isEmpty() ? "the Vice President" : mates.get(vp.n(mates.size())).name();
+        }
         for (int i = 0; i < 4; i++) s.vpSkill[i] = 50 + vp.n(30);
         // the Court
         for (JusticeDef d : data.court()) {
@@ -249,6 +261,20 @@ public final class WestWingEngine {
         Local r = new Local(mix(c.seed(), 0x57AFL, role, s.week / 4, salt));
         List<String> taken = taken(s);
         List<Person> out = new ArrayList<>();
+        if (people.real()) {
+            // the real staff of the last two administrations while any are free; newcomers from 2030; else an acting official
+            int year = c.date().getYear(), k = 0;
+            for (var x : people.data().staff(WestWingData.STAFF_TITLE[role], c.president())) {
+                if (out.size() >= 3 || servingName(s, x.name())) continue;
+                Person p = make(r, c.president(), new int[]{1, 0, 2}[k++ % 3], taken);
+                p.name = x.name(); p.background = x.background();
+                out.add(p);
+            }
+            while (out.size() < 3 && people.newcomer(year, r.u())) { Person p = make(r, c.president(), out.size() == 0 ? 1 : 0, taken); taken.add(last(p.name)); out.add(p); }
+            if (out.isEmpty()) out.add(acting(r, c.president(), "Acting " + WestWingData.STAFF_TITLE[role].toLowerCase(java.util.Locale.ROOT), taken));
+            secondTermPool(s, out);
+            return out;
+        }
         for (int kind : new int[]{1, 0, 2}) {
             Person p = make(r, c.president(), kind, taken);
             taken.add(last(p.name));
@@ -307,6 +333,32 @@ public final class WestWingEngine {
         Local r = new Local(mix(c.seed(), 0xCAB1L, post, s.week / 4, salt));
         List<String> taken = taken(s);
         List<Person> out = new ArrayList<>();
+        if (people.real()) {
+            // real prospects of the president's party, and one of the other party for the bipartisan pick; newcomers from
+            // 2030; else an acting secretary (never an invented name before 2030)
+            int year = c.date().getYear();
+            String postName = WestWingData.POST_NAME[post];
+            for (var x : people.data().cabinet(postName, c.president())) {
+                if (out.size() >= 2 || servingName(s, x.name())) continue;
+                Person p = make(r, c.president(), out.isEmpty() ? 1 : 0, taken);
+                p.name = x.name(); p.background = x.background();
+                out.add(p);
+            }
+            // the bipartisan pick: a moderate of the other party out of office, as presidents reach across in fact
+            List<game.mandate.core.people.RealPeople.Prospect> across = people.data().crossover(c.president().opponent());
+            for (int i = 0; i < across.size(); i++) {
+                var x = across.get((post + salt + i) % across.size());
+                if (servingName(s, x.name())) continue;
+                Person p = make(r, c.president().opponent(), 2, taken);
+                p.name = x.name(); p.background = x.background();
+                out.add(p);
+                break;
+            }
+            while (out.size() < 3 && people.newcomer(year, r.u())) { Person p = make(r, c.president(), out.size() == 0 ? 1 : 0, taken); taken.add(last(p.name)); out.add(p); }
+            if (out.isEmpty()) out.add(acting(r, c.president(), "Acting " + WestWingData.POST_TITLE[post].toLowerCase(java.util.Locale.ROOT), taken));
+            secondTermPool(s, out);
+            return out;
+        }
         Person e = make(r, c.president(), 1, taken); taken.add(last(e.name)); out.add(e);
         Person l = make(r, c.president(), 0, taken); taken.add(last(l.name)); out.add(l);
         RealPick big = null;
@@ -334,6 +386,14 @@ public final class WestWingEngine {
         for (Person p : s.everyone()) if (p.name.equals(name)) return true;
         for (Person p : s.nominee) if (p != null && p.name.equals(name)) return true;
         return false;
+    }
+
+    /** An office-labelled placeholder (an acting official) when the record has no one left and newcomers are not yet due. */
+    private Person acting(Local r, Party party, String title, List<String> taken) {
+        Person p = make(r, party, 0, taken);
+        p.name = Character.toUpperCase(title.charAt(0)) + title.substring(1);
+        p.background = "Serving in an acting capacity";
+        return p;
     }
 
     /** Resolute Desk's {@code Cabinet.make}: kind 0 loyalist, 1 expert, 2 bipartisan or outsider. */

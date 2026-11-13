@@ -40,7 +40,8 @@ function rating(c: StartCandidate): string {
 }
 
 export function startScreen(act: StartActions): HTMLElement {
-  let real = false;
+  // real people by default: the 2028 world is the real roster; the fictional cast is the alternative
+  let real = true;
   let party: 'DEMOCRAT' | 'REPUBLICAN' = 'DEMOCRAT';
   let player = '', opponent = '', scenario = 'TOSS_UP', difficulty = 'STANDARD';
   let icYear = 2030, icSide: 'US' | 'PRC' = 'US';
@@ -76,7 +77,7 @@ export function startScreen(act: StartActions): HTMLElement {
         choose('The country', o.scenarios, scenario, v => { scenario = v; }),
         choose('Your opponent’s campaign', o.difficulties, difficulty, v => { difficulty = v; }),
         h('label', { class: 'start-opt' }, h('input', { type: 'checkbox', checked: real, onchange: (e: Event) => { real = (e.target as HTMLInputElement).checked; draw(); } }),
-          h('span', null, 'Use real people', h('span', { class: 'muted small' }, ' · real politicians as candidates and in the cabinet, real leaders abroad, and the real Supreme Court. Off, everyone is fictional.'))),
+          h('span', null, 'Real people', h('span', { class: 'muted small' }, ' · the real candidates, senators, congressional leaders, cabinet prospects, justices and leaders abroad of 2028. Fictional newcomers appear from 2030. Off, a fictional cast throughout.'))),
         h('button', { class: 'btn primary start-go', type: 'button', disabled: !player || !opponent,
           onclick: () => act.newGame({ seed: Math.floor(Math.random() * 1e9), party, player, opponent, scenario, difficulty, realRoster: real }) }, 'Begin the campaign')),
       h('section', { class: 'start-card', 'aria-labelledby': 'st-load' },

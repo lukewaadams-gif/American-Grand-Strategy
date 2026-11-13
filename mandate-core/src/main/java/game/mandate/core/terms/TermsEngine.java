@@ -105,6 +105,12 @@ public final class TermsEngine {
 
     private final Map<String, List<String>> names = new TreeMap<>();
 
+    /** Who runs: the real roster, real senators and fictional newcomers from 2030; or the fictional cast throughout. */
+    private game.mandate.core.people.People people = game.mandate.core.people.People.fictional();
+
+    /** Sets who the races draw on (GameEngine, from the game's setup). */
+    public void people(game.mandate.core.people.People p) { this.people = p; }
+
     public TermsEngine() {
         for (String[] r : Csv.readTsv("/data/rd/names.tsv")) names.computeIfAbsent(r[0], k -> new ArrayList<>()).add(r[1]);
     }
@@ -244,6 +250,16 @@ public final class TermsEngine {
         x.charisma = 50 + rng.nextInt("terms.names", 25); x.debate = 50 + rng.nextInt("terms.names", 25); x.speech = 50 + rng.nextInt("terms.names", 25);
         x.crossover = 50 + rng.nextInt("terms.names", 25); x.scandal = 20 + rng.nextInt("terms.names", 30);
         x.ideology = (party == Party.DEMOCRAT ? -0.4 : 0.4) * (0.5 + rng.uniform("terms.names"));
+        // with real people: a sitting senator of the party unless a fictional newcomer is due this year (2030 on)
+        if (people.real() && name == null && !people.newcomer(c.date().getYear(), rng.uniform("terms.people"))) {
+            List<game.mandate.core.people.RealPeople.Senator> pool = new ArrayList<>();
+            for (var sen : people.data().senators()) if (sen.party() == party && sen.until() >= c.date().getYear()) pool.add(sen);
+            if (!pool.isEmpty()) {
+                var sen = pool.get(rng.nextInt("terms.people", pool.size()));
+                x.name = sen.name(); x.home = sen.state(); x.role = "Senator from " + game.mandate.core.people.People.stateName(sen.state());
+                x.id = "real_" + salt;
+            }
+        }
         return x;
     }
 
@@ -480,6 +496,12 @@ public final class TermsEngine {
                     if (c.approval() < 42 && rng.uniform("terms.challenge") < 0.4 + (42 - c.approval()) * 0.04) {
                         boolean f = rng.uniform("terms.names") < 0.4;
                         s.challenger = (rng.uniform("terms.names") < 0.5 ? "Senator " : "Governor ") + pick(f ? "first_f" : "first_m", rng) + " " + pick("lasts", rng);
+                        // with real people, a sitting senator of the president's party unless a newcomer is due
+                        if (people.real() && !people.newcomer(c.date().getYear(), rng.uniform("terms.people"))) {
+                            List<String> pool = new ArrayList<>();
+                            for (var sen : people.data().senators()) if (sen.party() == c.president() && sen.until() >= c.date().getYear()) pool.add(sen.name());
+                            if (!pool.isEmpty()) s.challenger = "Senator " + pool.get(rng.nextInt("terms.people", pool.size()));
+                        }
                         s.challengerStrength = 38 + (42 - c.approval()) * 1.2;
                         out.news().add(new News(c.date(), News.Kind.BAD, (s.challenger + " launches a primary challenge to the president").toUpperCase(),
                                 "The challenger says the party can't win with " + last(c.presidentName()) + " at the top of the ticket.", 3, null));

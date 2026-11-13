@@ -1,0 +1,359 @@
+# The real people of January 2029: who the game seats before any fictional newcomer can appear (2030 on; see
+# people.Newcomers and tuning.properties people.newcomers.*). From public records as of 2025-26 (the 119th Congress
+# and its committee leaders; the Trump and Biden administrations' officials as cabinet prospects; federal appellate
+# judges as Supreme Court prospects). 'until' is the last year in office of someone known to be leaving before 2029:
+# their seat goes to an office-labelled placeholder, never an invented name. Tab-separated; kinds:
+#   senator  state  class  party  name  until
+#   leader   houseD|houseR|senateD|senateR  name
+#   chair    H|S  committee  party  name  until       (the committee's leader for that party: chair or ranking member)
+#   swing    H|S  party  state  name  until           (moderates the whip counts on)
+#   base     H|S  party  state  name                  (stalwarts of each party's base, for the whip's base member)
+#   crossover  party  name  background               (the other party's moderates out of office, for a bipartisan pick)
+#   cabinet  post  party  name  background            (prospects for each post, WestWingData.POST_NAME)
+#   judge    party  name  born                        (prospects for the Supreme Court)
+#   staff    role  party  name  background             (White House staff prospects, WestWingData.STAFF_TITLE)
+kind	key	a	b	c	d
+senator	AZ	1	D	Ruben Gallego	
+senator	CA	1	D	Adam Schiff	
+senator	CT	1	D	Chris Murphy	
+senator	DE	1	D	Lisa Blunt Rochester	
+senator	FL	1	R	Rick Scott	
+senator	HI	1	D	Mazie Hirono	
+senator	IN	1	R	Jim Banks	
+senator	ME	1	D	Angus King	
+senator	MD	1	D	Angela Alsobrooks	
+senator	MA	1	D	Elizabeth Warren	
+senator	MI	1	D	Elissa Slotkin	
+senator	MN	1	D	Amy Klobuchar	
+senator	MS	1	R	Roger Wicker	
+senator	MO	1	R	Josh Hawley	
+senator	MT	1	R	Tim Sheehy	
+senator	NE	1	R	Deb Fischer	
+senator	NV	1	D	Jacky Rosen	
+senator	NJ	1	D	Andy Kim	
+senator	NM	1	D	Martin Heinrich	
+senator	NY	1	D	Kirsten Gillibrand	
+senator	ND	1	R	Kevin Cramer	
+senator	OH	1	R	Bernie Moreno	
+senator	PA	1	R	Dave McCormick	
+senator	RI	1	D	Sheldon Whitehouse	
+senator	TN	1	R	Marsha Blackburn	
+senator	TX	1	R	Ted Cruz	
+senator	UT	1	R	John Curtis	
+senator	VT	1	D	Bernie Sanders	
+senator	VA	1	D	Tim Kaine	
+senator	WA	1	D	Maria Cantwell	
+senator	WV	1	R	Jim Justice	
+senator	WI	1	D	Tammy Baldwin	
+senator	WY	1	R	John Barrasso	
+senator	AL	2	R	Tommy Tuberville	2026
+senator	AK	2	R	Dan Sullivan	
+senator	AR	2	R	Tom Cotton	
+senator	CO	2	D	John Hickenlooper	
+senator	DE	2	D	Chris Coons	
+senator	GA	2	D	Jon Ossoff	
+senator	ID	2	R	Jim Risch	
+senator	IL	2	D	Dick Durbin	2026
+senator	IA	2	R	Joni Ernst	2026
+senator	KS	2	R	Roger Marshall	
+senator	KY	2	R	Mitch McConnell	2026
+senator	LA	2	R	Bill Cassidy	
+senator	ME	2	R	Susan Collins	
+senator	MA	2	D	Ed Markey	
+senator	MI	2	D	Gary Peters	2026
+senator	MN	2	D	Tina Smith	2026
+senator	MS	2	R	Cindy Hyde-Smith	
+senator	MT	2	R	Steve Daines	
+senator	NE	2	R	Pete Ricketts	
+senator	NH	2	D	Jeanne Shaheen	2026
+senator	NJ	2	D	Cory Booker	
+senator	NM	2	D	Ben Ray Luján	
+senator	NC	2	R	Thom Tillis	2026
+senator	OK	2	R	Markwayne Mullin	
+senator	OR	2	D	Jeff Merkley	
+senator	RI	2	D	Jack Reed	
+senator	SC	2	R	Lindsey Graham	
+senator	SD	2	R	Mike Rounds	
+senator	TN	2	R	Bill Hagerty	
+senator	TX	2	R	John Cornyn	
+senator	VA	2	D	Mark Warner	
+senator	WV	2	R	Shelley Moore Capito	
+senator	WY	2	R	Cynthia Lummis	
+senator	AL	3	R	Katie Britt	
+senator	AK	3	R	Lisa Murkowski	
+senator	AZ	3	D	Mark Kelly	
+senator	AR	3	R	John Boozman	
+senator	CA	3	D	Alex Padilla	
+senator	CO	3	D	Michael Bennet	
+senator	CT	3	D	Richard Blumenthal	
+senator	FL	3	R	Ashley Moody	
+senator	GA	3	D	Raphael Warnock	
+senator	HI	3	D	Brian Schatz	
+senator	ID	3	R	Mike Crapo	
+senator	IL	3	D	Tammy Duckworth	
+senator	IN	3	R	Todd Young	
+senator	IA	3	R	Chuck Grassley	
+senator	KS	3	R	Jerry Moran	
+senator	KY	3	R	Rand Paul	
+senator	LA	3	R	John Kennedy	
+senator	MD	3	D	Chris Van Hollen	
+senator	MO	3	R	Eric Schmitt	
+senator	NV	3	D	Catherine Cortez Masto	
+senator	NH	3	D	Maggie Hassan	
+senator	NY	3	D	Chuck Schumer	
+senator	NC	3	R	Ted Budd	
+senator	ND	3	R	John Hoeven	
+senator	OH	3	R	Jon Husted	
+senator	OK	3	R	James Lankford	
+senator	OR	3	D	Ron Wyden	
+senator	PA	3	D	John Fetterman	
+senator	SC	3	R	Tim Scott	
+senator	SD	3	R	John Thune	
+senator	UT	3	R	Mike Lee	
+senator	VT	3	D	Peter Welch	
+senator	WA	3	D	Patty Murray	
+senator	WI	3	R	Ron Johnson	
+leader	houseD	Hakeem Jeffries
+leader	houseR	Mike Johnson
+leader	senateD	Chuck Schumer
+leader	senateR	John Thune
+chair	H	Ways and Means	R	Jason Smith	
+chair	H	Ways and Means	D	Richard Neal	
+chair	H	Appropriations	R	Tom Cole	
+chair	H	Appropriations	D	Rosa DeLauro	
+chair	H	Energy and Commerce	R	Brett Guthrie	
+chair	H	Energy and Commerce	D	Frank Pallone	
+chair	H	Financial Services	R	French Hill	
+chair	H	Financial Services	D	Maxine Waters	
+chair	H	Judiciary	R	Jim Jordan	
+chair	H	Judiciary	D	Jamie Raskin	
+chair	H	Armed Services	R	Mike Rogers	
+chair	H	Armed Services	D	Adam Smith	
+chair	H	Foreign Affairs	R	Brian Mast	
+chair	H	Foreign Affairs	D	Gregory Meeks	
+chair	H	Homeland Security	R	Andrew Garbarino	
+chair	H	Homeland Security	D	Bennie Thompson	
+chair	H	Education and the Workforce	R	Tim Walberg	
+chair	H	Education and the Workforce	D	Bobby Scott	
+chair	H	Agriculture	R	Glenn Thompson	
+chair	H	Agriculture	D	Angie Craig	2026
+chair	H	Transportation and Infrastructure	R	Sam Graves	
+chair	H	Transportation and Infrastructure	D	Rick Larsen	
+chair	H	Oversight	R	James Comer	
+chair	H	Oversight	D	Robert Garcia	
+chair	S	Finance	R	Mike Crapo	
+chair	S	Finance	D	Ron Wyden	
+chair	S	Appropriations	R	Susan Collins	
+chair	S	Appropriations	D	Patty Murray	
+chair	S	Commerce	R	Ted Cruz	
+chair	S	Commerce	D	Maria Cantwell	
+chair	S	Banking	R	Tim Scott	
+chair	S	Banking	D	Elizabeth Warren	
+chair	S	Judiciary	R	Chuck Grassley	
+chair	S	Judiciary	D	Dick Durbin	2026
+chair	S	Armed Services	R	Roger Wicker	
+chair	S	Armed Services	D	Jack Reed	
+chair	S	Foreign Relations	R	Jim Risch	
+chair	S	Foreign Relations	D	Jeanne Shaheen	2026
+chair	S	Homeland Security	R	Rand Paul	
+chair	S	Homeland Security	D	Gary Peters	2026
+chair	S	Health, Education, Labor and Pensions	R	Bill Cassidy	
+chair	S	Health, Education, Labor and Pensions	D	Bernie Sanders	
+chair	S	Agriculture	R	John Boozman	
+chair	S	Agriculture	D	Amy Klobuchar	
+chair	S	Environment and Public Works	R	Shelley Moore Capito	
+chair	S	Environment and Public Works	D	Sheldon Whitehouse	
+chair	S	Budget	R	Lindsey Graham	
+chair	S	Budget	D	Jeff Merkley	
+swing	S	D	PA	John Fetterman	
+swing	S	D	NV	Catherine Cortez Masto	
+swing	S	D	NH	Maggie Hassan	
+swing	S	D	AZ	Mark Kelly	
+swing	S	D	ME	Angus King	
+swing	S	D	MI	Elissa Slotkin	
+swing	S	R	ME	Susan Collins	
+swing	S	R	AK	Lisa Murkowski	
+swing	S	R	IN	Todd Young	
+swing	S	R	UT	John Curtis	
+swing	S	R	LA	Bill Cassidy	
+swing	S	R	KS	Jerry Moran	
+swing	H	D	TX	Henry Cuellar	
+swing	H	D	TX	Vicente Gonzalez	
+swing	H	D	WA	Marie Gluesenkamp Perez	
+swing	H	D	NC	Don Davis	
+swing	H	D	NY	Tom Suozzi	
+swing	H	D	NJ	Josh Gottheimer	
+swing	H	D	ME	Jared Golden	2026
+swing	H	R	PA	Brian Fitzpatrick	
+swing	H	R	NY	Mike Lawler	
+swing	H	R	CA	David Valadao	
+swing	H	R	VA	Jen Kiggans	
+swing	H	R	CA	Young Kim	
+swing	H	R	NE	Don Bacon	2026
+swing	H	R	PA	Rob Bresnahan	
+cabinet	State	D	Antony Blinken	A former secretary of state
+cabinet	State	D	Wendy Sherman	A former deputy secretary of state
+cabinet	State	D	Chris Coons	A senator on Foreign Relations
+cabinet	State	R	Mike Pompeo	A former secretary of state
+cabinet	State	R	Bill Hagerty	A senator and former ambassador to Japan
+cabinet	State	R	Richard Grenell	A former ambassador to Germany
+cabinet	Treasury	D	Wally Adeyemo	A former deputy Treasury secretary
+cabinet	Treasury	D	Lael Brainard	A former Fed vice chair
+cabinet	Treasury	D	Brian Deese	A former economic adviser
+cabinet	Treasury	R	Scott Bessent	A Treasury secretary in the Trump administration
+cabinet	Treasury	R	Steven Mnuchin	A former Treasury secretary
+cabinet	Treasury	R	Kevin Hassett	A former economic adviser
+cabinet	Defense	D	Kathleen Hicks	A former deputy defense secretary
+cabinet	Defense	D	Michèle Flournoy	A former under secretary of defense
+cabinet	Defense	D	Lloyd Austin	A former defense secretary
+cabinet	Defense	R	Pete Hegseth	A defense secretary in the Trump administration
+cabinet	Defense	R	Tom Cotton	A senator on Armed Services
+cabinet	Defense	R	Dan Sullivan	A senator on Armed Services
+cabinet	Justice	D	Lisa Monaco	A former deputy attorney general
+cabinet	Justice	D	Vanita Gupta	A former associate attorney general
+cabinet	Justice	D	Kwame Raoul	Illinois's attorney general
+cabinet	Justice	R	Pam Bondi	An attorney general in the Trump administration
+cabinet	Justice	R	Todd Blanche	A former deputy attorney general
+cabinet	Justice	R	Ken Paxton	Texas's attorney general
+cabinet	Interior	D	Deb Haaland	A former interior secretary
+cabinet	Interior	D	Tommy Beaudreau	A former deputy interior secretary
+cabinet	Interior	R	Doug Burgum	An interior secretary in the Trump administration
+cabinet	Interior	R	Ryan Zinke	A former interior secretary
+cabinet	Agriculture	D	Tom Vilsack	A former agriculture secretary
+cabinet	Agriculture	D	Heidi Heitkamp	A former senator from North Dakota
+cabinet	Agriculture	R	Brooke Rollins	An agriculture secretary in the Trump administration
+cabinet	Agriculture	R	Sonny Perdue	A former agriculture secretary
+cabinet	Commerce	D	Don Graves	A former deputy commerce secretary
+cabinet	Commerce	D	Penny Pritzker	A former commerce secretary
+cabinet	Commerce	R	Howard Lutnick	A commerce secretary in the Trump administration
+cabinet	Commerce	R	Wilbur Ross	A former commerce secretary
+cabinet	Labor	D	Julie Su	A former acting labor secretary
+cabinet	Labor	D	Marty Walsh	A former labor secretary
+cabinet	Labor	R	Lori Chavez-DeRemer	A labor secretary in the Trump administration
+cabinet	Labor	R	Eugene Scalia	A former labor secretary
+cabinet	Health and Human Services	D	Mandy Cohen	A former CDC director
+cabinet	Health and Human Services	D	Xavier Becerra	A former health secretary
+cabinet	Health and Human Services	D	Vivek Murthy	A former surgeon general
+cabinet	Health and Human Services	R	Mehmet Oz	A former Medicare administrator
+cabinet	Health and Human Services	R	Marty Makary	A former FDA commissioner
+cabinet	Housing and Urban Development	D	Adrianne Todman	A former acting housing secretary
+cabinet	Housing and Urban Development	D	Marcia Fudge	A former housing secretary
+cabinet	Housing and Urban Development	R	Scott Turner	A housing secretary in the Trump administration
+cabinet	Housing and Urban Development	R	Ben Carson	A former housing secretary
+cabinet	Transportation	D	Polly Trottenberg	A former deputy transportation secretary
+cabinet	Transportation	D	Pete Buttigieg	A former transportation secretary
+cabinet	Transportation	R	Sean Duffy	A transportation secretary in the Trump administration
+cabinet	Transportation	R	Elaine Chao	A former transportation secretary
+cabinet	Energy	D	Jennifer Granholm	A former energy secretary
+cabinet	Energy	D	David Turk	A former deputy energy secretary
+cabinet	Energy	R	Chris Wright	An energy secretary in the Trump administration
+cabinet	Energy	R	Dan Brouillette	A former energy secretary
+cabinet	Education	D	Miguel Cardona	A former education secretary
+cabinet	Education	D	Cindy Marten	A former deputy education secretary
+cabinet	Education	R	Linda McMahon	An education secretary in the Trump administration
+cabinet	Education	R	Betsy DeVos	A former education secretary
+cabinet	Veterans Affairs	D	Denis McDonough	A former veterans affairs secretary
+cabinet	Veterans Affairs	D	Tammy Duckworth	A senator and Army veteran
+cabinet	Veterans Affairs	R	Doug Collins	A veterans affairs secretary in the Trump administration
+cabinet	Veterans Affairs	R	Robert Wilkie	A former veterans affairs secretary
+cabinet	Homeland Security	D	John Tien	A former deputy homeland security secretary
+cabinet	Homeland Security	D	Alejandro Mayorkas	A former homeland security secretary
+cabinet	Homeland Security	R	Kristi Noem	A homeland security secretary in the Trump administration
+cabinet	Homeland Security	R	Chad Wolf	A former acting homeland security secretary
+cabinet	Environmental Protection Agency	D	Michael Regan	A former EPA administrator
+cabinet	Environmental Protection Agency	D	Gina McCarthy	A former EPA administrator
+cabinet	Environmental Protection Agency	R	Lee Zeldin	An EPA administrator in the Trump administration
+cabinet	Environmental Protection Agency	R	Andrew Wheeler	A former EPA administrator
+cabinet	Office of Management and Budget	D	Shalanda Young	A former budget director
+cabinet	Office of Management and Budget	D	Neera Tanden	A former domestic policy adviser
+cabinet	Office of Management and Budget	R	Russell Vought	A budget director in the Trump administration
+cabinet	Office of Management and Budget	R	Mick Mulvaney	A former budget director
+cabinet	Trade Representative	D	Katherine Tai	A former trade representative
+cabinet	Trade Representative	D	Jayme White	A former deputy trade representative
+cabinet	Trade Representative	R	Jamieson Greer	A trade representative in the Trump administration
+cabinet	Trade Representative	R	Robert Lighthizer	A former trade representative
+cabinet	Ambassador to the UN	D	Linda Thomas-Greenfield	A former UN ambassador
+cabinet	Ambassador to the UN	D	Susan Rice	A former UN ambassador
+cabinet	Ambassador to the UN	R	Elise Stefanik	A member of Congress from New York
+cabinet	Ambassador to the UN	R	Kelly Craft	A former UN ambassador
+cabinet	Director of National Intelligence	D	Avril Haines	A former director of national intelligence
+cabinet	Director of National Intelligence	D	Stacey Dixon	A former deputy director of national intelligence
+cabinet	Director of National Intelligence	R	Tulsi Gabbard	A director of national intelligence in the Trump administration
+cabinet	Director of National Intelligence	R	John Ratcliffe	A former director of national intelligence
+cabinet	CIA	D	William Burns	A former CIA director
+cabinet	CIA	D	David Cohen	A former deputy CIA director
+cabinet	CIA	R	John Ratcliffe	A CIA director in the Trump administration
+cabinet	CIA	R	Mike Pompeo	A former CIA director
+judge	D	Leondra Kruger	1976
+judge	D	J. Michelle Childs	1966
+judge	D	Arianna Freeman	1978
+judge	D	Ana de Alba	1979
+judge	D	Myrna Pérez	1974
+judge	D	Candace Jackson-Akiwumi	1979
+judge	R	James Ho	1973
+judge	R	Andrew Oldham	1978
+judge	R	Amul Thapar	1969
+judge	R	Neomi Rao	1973
+judge	R	Kyle Duncan	1972
+judge	R	Patrick Bumatay	1978
+judge	R	Lawrence VanDyke	1972
+staff	Chief of staff	D	Ron Klain	A former White House chief of staff
+staff	Chief of staff	D	Jeff Zients	A former White House chief of staff
+staff	Chief of staff	R	Susie Wiles	A White House chief of staff in the Trump administration
+staff	Chief of staff	R	Mark Meadows	A former White House chief of staff
+staff	National security adviser	D	Jake Sullivan	A former national security adviser
+staff	National security adviser	D	Jon Finer	A former deputy national security adviser
+staff	National security adviser	R	Mike Waltz	A former national security adviser
+staff	National security adviser	R	Robert O'Brien	A former national security adviser
+staff	Press secretary	D	Karine Jean-Pierre	A former White House press secretary
+staff	Press secretary	D	Jen Psaki	A former White House press secretary
+staff	Press secretary	R	Karoline Leavitt	A White House press secretary in the Trump administration
+staff	Press secretary	R	Kayleigh McEnany	A former White House press secretary
+staff	White House counsel	D	Dana Remus	A former White House counsel
+staff	White House counsel	D	Ed Siskel	A former White House counsel
+staff	White House counsel	R	David Warrington	A White House counsel in the Trump administration
+staff	White House counsel	R	Pat Cipollone	A former White House counsel
+staff	Economic adviser	D	Lael Brainard	A former National Economic Council director
+staff	Economic adviser	D	Brian Deese	A former National Economic Council director
+staff	Economic adviser	R	Kevin Hassett	A National Economic Council director in the Trump administration
+staff	Economic adviser	R	Larry Kudlow	A former National Economic Council director
+staff	Domestic policy adviser	D	Susan Rice	A former domestic policy adviser
+staff	Domestic policy adviser	D	Neera Tanden	A former domestic policy adviser
+staff	Domestic policy adviser	R	Vince Haley	A domestic policy adviser in the Trump administration
+staff	Domestic policy adviser	R	Brooke Rollins	A former domestic policy adviser
+staff	Legislative director	D	Louisa Terrell	A former director of legislative affairs
+staff	Legislative director	D	Shuwanza Goff	A former director of legislative affairs
+staff	Legislative director	R	James Braid	A director of legislative affairs in the Trump administration
+staff	Legislative director	R	Eric Ueland	A former director of legislative affairs
+staff	Political director	D	Jen O'Malley Dillon	A former deputy chief of staff and campaign chair
+staff	Political director	D	Emmy Ruiz	A former political director
+staff	Political director	R	James Blair	A deputy chief of staff in the Trump administration
+staff	Political director	R	Brian Jack	A former political director
+staff	Communications director	D	Kate Bedingfield	A former communications director
+staff	Communications director	D	Ben LaBolt	A former communications director
+staff	Communications director	R	Steven Cheung	A communications director in the Trump administration
+staff	Communications director	R	Alyssa Farah Griffin	A former communications director
+base	H	D	NY	Alexandria Ocasio-Cortez
+base	H	D	WA	Pramila Jayapal
+base	H	D	CA	Ro Khanna
+base	H	R	MD	Andy Harris
+base	H	R	OH	Jim Jordan
+base	H	R	AZ	Andy Biggs
+base	S	D	VT	Bernie Sanders
+base	S	D	MA	Elizabeth Warren
+base	S	D	MA	Ed Markey
+base	S	R	UT	Mike Lee
+base	S	R	KY	Rand Paul
+base	S	R	MO	Josh Hawley
+crossover	R	Larry Hogan	A former Republican governor of Maryland
+crossover	R	Charlie Baker	A former Republican governor of Massachusetts
+crossover	R	Mitt Romney	A former Republican senator from Utah
+crossover	R	Chris Sununu	A former Republican governor of New Hampshire
+crossover	R	Adam Kinzinger	A former Republican member of Congress from Illinois
+crossover	R	Liz Cheney	A former Republican member of Congress from Wyoming
+crossover	D	Joe Manchin	A former senator from West Virginia
+crossover	D	Kyrsten Sinema	A former senator from Arizona
+crossover	D	Heidi Heitkamp	A former Democratic senator from North Dakota
+crossover	D	Jared Polis	A former Democratic governor of Colorado
+crossover	D	Joe Donnelly	A former Democratic senator from Indiana
+crossover	D	Dan Lipinski	A former Democratic member of Congress from Illinois
