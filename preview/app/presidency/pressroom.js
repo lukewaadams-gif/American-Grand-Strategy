@@ -3,7 +3,7 @@
 // polls, and the party's wings and the opposition. A press conference or a speech is a run of questions on the desk.
 import { h } from '../core/dom.js';
 import { day } from '../core/format.js';
-const TABS = ['The press', 'Speeches', 'Social media', 'Your party'];
+const TABS = ['The press', 'Speeches', 'Social media', 'Your party', 'Your term'];
 function meter(v, label) {
     const tone = v >= 60 ? 'good' : v >= 40 ? 'mid' : 'bad';
     return h('span', { class: 'hill-meter ' + tone, role: 'meter', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(Math.round(v)), 'aria-label': label }, h('span', { style: `width:${Math.max(2, Math.min(100, v))}%` }), h('span', { class: 'hill-meter-value' }, String(Math.round(v))));
@@ -30,7 +30,8 @@ export function pressRoom(act, first = 'The press') {
             return;
         }
         const nav = h('nav', { class: 'cab-tabs', 'aria-label': 'The Press Briefing Room' }, ...TABS.map(t => h('button', { class: 'btn small toggle' + (t === tab ? ' on' : ''), type: 'button', 'aria-pressed': String(t === tab), onclick: () => { tab = t; draw(); } }, t)));
-        const body = tab === 'The press' ? pressTab(v) : tab === 'Speeches' ? speechTab(v) : tab === 'Social media' ? socialTab(v) : partyTab(v);
+        const body = tab === 'The press' ? pressTab(v) : tab === 'Speeches' ? speechTab(v) : tab === 'Social media' ? socialTab(v)
+            : tab === 'Your party' ? partyTab(v) : termTab();
         root.replaceChildren(top, nav, ...(v.busy ? [h('p', { class: 'hill-closed', role: 'note' }, 'A press conference or a speech is under way: its questions are on your desk.', h('button', { class: 'btn small', type: 'button', onclick: act.decide }, 'Continue'))] : []), body);
     }
     function pressTab(v) {
@@ -48,6 +49,27 @@ export function pressRoom(act, first = 'The press') {
     }
     function partyTab(v) {
         return h('div', { class: 'hill-body' }, h('div', { class: 'room-grid two' }, h('section', { class: 'room-card', 'aria-labelledby': 'pr-wings' }, h('h3', { class: 'room-card-title', id: 'pr-wings' }, 'Your party'), h('dl', { class: 'ww-stats' }, ...v.wings.flatMap(w => [h('dt', null, w.name), h('dd', null, meter(w.mood, `${w.name}: satisfaction`))])), h('p', null, v.record + '.'), h('p', { class: 'muted small' }, 'Each wing judges how close your laws, orders and policy moves sit to it, and how you are doing. A content wing keeps its members in Congress with you.')), h('section', { class: 'room-card', 'aria-labelledby': 'pr-opp' }, h('h3', { class: 'room-card-title', id: 'pr-opp' }, 'The opposition'), h('p', null, 'Their strategy: ' + v.opposition.toLowerCase() + '.'), (v.oppLeaders ?? []).length ? h('ul', { class: 'hill-list' }, ...(v.oppLeaders ?? []).map(l => h('li', null, l))) : null, h('p', { class: 'muted small' }, 'They choose every quarter by your approval, and harden as an election nears.'))));
+    }
+    function termTab() {
+        const t = act.terms?.();
+        if (!t || t.term === undefined)
+            return h('div', { class: 'hill-body' }, h('p', { class: 'muted' }, 'Your term begins at the inauguration.'));
+        const r = t.race;
+        const ordinal = t.term === 1 ? 'first' : 'second';
+        const status = h('section', { class: 'room-card', 'aria-labelledby': 'pr-term' }, h('h3', { class: 'room-card-title', id: 'pr-term' }, `Your ${ordinal} term`), h('p', null, `Week ${t.termWeek} of the ${ordinal} term. ${t.running}.`), t.leaving ? h('p', { class: 'hill-closed', role: 'note' }, `${t.successor} takes the oath on ${day(t.handoff, true)}. Until then you are still the president: pardons, last orders and rules, and the lame-duck session of Congress.`) : null, h('dl', { class: 'ww-stats' }, h('dt', null, 'Lame duck'), h('dd', null, meter(t.lameDuck ?? 0, 'How far members and nominees look past you'))), h('p', { class: 'muted small' }, 'As the end nears, members of Congress look past you and your pull on their votes fades; faster after a second term\'s midterms, entirely once a successor is chosen.'), t.challenger ? h('p', { class: 'small' }, `${t.challenger} is challenging you in the primaries, with ${t.challengerShare}% of the vote so far.`) : null);
+        const goals = h('section', { class: 'room-card', 'aria-labelledby': 'pr-goals' }, h('h3', { class: 'room-card-title', id: 'pr-goals' }, t.theme ? 'The second term: ' + t.theme.toLowerCase() : 'Legacy goals'), (t.goals ?? []).length
+            ? h('ul', { class: 'hill-list' }, ...(t.goals ?? []).map(g => h('li', null, h('span', { class: 'ww-goal ' + (g.met ? 'good' : 'mid') }, g.met ? 'On track' : 'Not yet'), ' ' + g.label)))
+            : h('p', { class: 'muted small' }, 'A re-elected president chooses what the second term is about; the theme sets three goals the verdict on your presidency counts.'));
+        const cards = [h('div', { class: 'room-grid two' }, status, goals)];
+        if (r) {
+            const rows = r.rivals.map(c => h('tr', null, h('th', { scope: 'row' }, c.name, c.nominee ? h('span', { class: 'muted small' }, ' (nominee)') : null, c.endorsed ? h('span', { class: 'muted small' }, ' (endorsed)') : null), h('td', null, c.role || c.home), h('td', null, r.contests ? `${c.share}%` : '—'), h('td', null, String(c.delegates)), h('td', null, r.canEndorse ? h('button', { class: 'btn small', type: 'button', onclick: () => { if (act.termsOrder?.({ type: 'Endorse', rival: c.index }))
+                    draw(); } }, 'Endorse') : null)));
+            cards.push(h('section', { class: 'room-card', 'aria-labelledby': 'pr-race' }, h('h3', { class: 'room-card-title', id: 'pr-race' }, `The race to succeed you, ${r.year}`), h('table', { class: 'hill-members' }, h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Candidate'), h('th', { scope: 'col' }, 'Now'), h('th', { scope: 'col' }, 'Primary vote'), h('th', { scope: 'col' }, 'Delegates'), h('th', { scope: 'col', 'aria-label': 'Endorse' }))), h('tbody', null, ...rows)), h('p', { class: 'small' }, r.split > 40 ? `The primaries have split the party (bitterness ${r.split} of 100).` : r.contests ? 'The party is holding together.' : 'The primaries begin in January.'), r.primaries.length ? h('ul', { class: 'hill-list small' }, ...r.primaries.map(p => h('li', null, p.replace(/^\d{4}-\d{2}-\d{2}: /, '')))) : null, r.nominee && r.opponent ? h('p', null, r.done
+                ? `${r.won ? r.nominee.name : r.opponent.name} won, ${Math.max(...r.ev)} electoral votes to ${Math.min(...r.ev)}.`
+                : `${r.nominee.name} against ${r.opponent.name}: ${(r.national ?? 0) >= 0 ? 'ahead' : 'behind'} by ${Math.abs(r.national ?? 0).toFixed(1)} points nationally; the polls point to ${r.forecast} electoral votes.`) : null, h('p', { class: 'muted small' }, r.season ? 'Campaign season: your campaign stops on the calendar count for the nominee, and the party\'s money buys the ads.'
+                : 'Your approval rubs off on the nominee. From a hundred days out, campaign stops on your calendar count, and so does the party\'s war chest.')));
+        }
+        return h('div', { class: 'hill-body' }, ...cards);
     }
     draw();
     return root;
