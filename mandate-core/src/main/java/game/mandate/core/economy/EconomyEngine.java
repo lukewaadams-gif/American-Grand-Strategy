@@ -187,9 +187,20 @@ public final class EconomyEngine {
                 s.fedPressured = true;
             }
             case Effect.OilRelease x -> s.sprRelief = Math.max(s.sprRelief, x.dollars());
+            case Effect.PolicyStep x -> enact(s, b, x);
             default -> { return false; }
         }
         return true;
+    }
+
+    /**
+     * A policy step becomes law: its money as a program from the next quarter (or its lag, if shorter), and its other
+     * channels as a law from the end of its lag.
+     */
+    void enact(EconomyState s, BudgetState b, Effect.PolicyStep x) {
+        int lag = Math.max(0, x.lagWeeks());
+        if (x.pctGdp() != 0) addProgram(b, new Program(x.id(), x.fiscalClass(), x.pctGdp(), x.phase(), s.week + Math.min(lag, p.moneyLagWeeks), -1, x.draw()));
+        s.laws.add(new Law(x.id(), x.label(), x.channels(), x.phase(), s.week + lag));
     }
 
     /** A law's money, from the week it starts. */
@@ -222,6 +233,7 @@ public final class EconomyEngine {
         double gapPush = 0, inflationPush = 0;
         for (EconomyState.Push x : s.pushes) { gapPush += x.gapPerWeek; inflationPush += x.inflation; x.weeksLeft--; }
         s.pushes.removeIf(x -> x.weeksLeft <= 0);
+        laws(s);
 
         // ---- supply: labour, productivity and capital make potential output
         s.population += (p.populationGrowth + s.immigration * p.immigrationLabour) / 5200;
@@ -276,11 +288,13 @@ public final class EconomyEngine {
             double partTarget = s.expected + p.wedge[i] + p.phillipsSlope * slack + driver + s.partPolicy[i] + s.supply + inflationPush;
             s.trend[i] += p.partAdjust * (partTarget - s.trend[i]) + p.partNoise * rng.gaussian("economy.prices");
             double last = s.prices[i][s.ring], now;
+            double push = s.partPush[i] / 100;
+            s.partPush[i] = 0;
             if (part == Part.ENERGY) {
-                s.utilities += s.trend[i] / 5200;
+                s.utilities += s.trend[i] / 5200 + push / (1 - p.energyGasShare);
                 now = p.energyGasShare * (Math.log(s.gas) - s.gasLog0) + (1 - p.energyGasShare) * s.utilities;
             } else {
-                now = last + s.trend[i] / 5200;
+                now = last + s.trend[i] / 5200 + push;
                 if (part == Part.GOODS) now += p.tariffGoods / 100 * absorb - p.dollarGoods * dollarMove;
                 else if (part == Part.FOOD) now += p.tariffFood / 100 * absorb;
                 else now += p.tariffOther / 100 * absorb;
@@ -304,6 +318,49 @@ public final class EconomyEngine {
         s.week++;
         b.week = s.week;
         budget(b, s);
+    }
+
+    /** Each law's channels, phased in: what has not yet been applied of its share this week is applied now. */
+    private void laws(EconomyState s) {
+        for (Law l : s.laws) {
+            double share = Law.share(l.phase, (s.week - l.startWeek) / 52.0);
+            for (Channel c : Channel.values()) {
+                int i = c.ordinal();
+                double d = l.channels[i] * share - l.applied[i];
+                if (d == 0) continue;
+                l.applied[i] += d;
+                channel(s, l, c, d);
+            }
+            // a law's productivity growth adds to the level each week it is in force
+            l.potentialCredit += l.applied[Channel.TFP_GROWTH.ordinal()] / 52;
+            l.potentialCredit += (1 - p.capitalShare) * l.applied[Channel.IMMIGRATION.ordinal()] * p.immigrationLabour / 52;
+        }
+    }
+
+    /** Applies {@code d} of one channel of a law, and credits the law with it. */
+    private void channel(EconomyState s, Law l, Channel c, double d) {
+        double labour = 1 - p.capitalShare;
+        switch (c) {
+            case IMMIGRATION -> s.immigration += d;
+            case PARTICIPATION -> { s.participation += d; l.potentialCredit += labour * 100 * d / s.participation; }
+            case NAIRU -> { s.nairu += d; l.potentialCredit -= labour * 100 * d / (100 - s.nairu); }
+            case TFP_LEVEL -> { s.tfp += d / 100; l.potentialCredit += d; }
+            case TFP_GROWTH -> s.tfpPolicy += d;
+            case USER_COST -> s.userCost += d;
+            case SHELTER, FOOD, ENERGY, MEDICAL, GOODS, SERVICES -> {
+                Part part = c.part();
+                s.partPush[part.ordinal()] += d;
+                l.priceCredit += part.weight * d;
+            }
+            case OIL -> { s.oilBase += d; l.priceCredit += Part.ENERGY.weight * p.energyGasShare * 100 * p.gasPerOilDollar * d / Math.max(1, s.gas); }
+            case GAS -> { s.gasPolicy += d; l.priceCredit += Part.ENERGY.weight * p.energyGasShare * 100 * d / Math.max(1, s.gas); }
+            case HOUSING -> s.housingPolicy += d / 100;
+            case MANUFACTURING -> s.manufacturingPolicy += d;
+            case AI -> s.aiInvest *= 1 + d / 100;
+            case FARM -> s.farmPolicy += d;
+            case ENERGY_PRODUCTION -> s.energyPolicy += d;
+            case TOURISM -> s.tourismPolicy += d;
+        }
     }
 
     /** Oil and gas, the 10-year, stocks, the dollar and consumer sentiment. */
@@ -353,16 +410,16 @@ public final class EconomyEngine {
     /** Resolute Desk's sectors, driven by the model. */
     private void sectors(EconomyState s, DeterministicRandomManager rng) {
         double mortgage = s.tenYear + p.mortgageSpread;
-        s.housing += p.housingAdjust * (p.housing - p.housingMortgage * (mortgage - p.mortgageNormal) + p.housingGap * s.outputGap + s.housingPolicy - s.housing)
+        s.housing += p.housingAdjust * ((p.housing - p.housingMortgage * (mortgage - p.mortgageNormal) + p.housingGap * s.outputGap) * (1 + s.housingPolicy) - s.housing)
                 + 0.01 * noise(rng, "economy.sectors");
         s.housing = Math.max(0.3, s.housing);
         s.housingSmooth += (s.housing - s.housingSmooth) / 52;
         s.manufacturing += 0.08 * (50 + p.manufacturingGap * s.outputGap - p.manufacturingTariff * (s.tariff - p.tariff) - p.manufacturingDollar * (s.dollar - 100)
-                - s.manufacturing) + 0.4 * noise(rng, "economy.sectors");
+                + s.manufacturingPolicy - s.manufacturing) + 0.4 * noise(rng, "economy.sectors");
         s.aiInvest *= 1 + p.aiGrowth + p.aiNoise * rng.gaussian("economy.sectors");
-        s.farm += 0.03 * (100 - p.farmTariff * Math.max(0, s.tariff - p.tariff) - s.farm) + 0.5 * noise(rng, "economy.sectors");
-        s.energyIndex += 0.03 * (100 + p.energyOil * (s.oil - s.oilBase) - s.energyIndex) + 0.3 * noise(rng, "economy.sectors");
-        s.tourism += 0.05 * (100 + p.tourismGap * s.outputGap - p.tourismDollar * (s.dollar - 100) - s.tourism) + 0.4 * noise(rng, "economy.sectors");
+        s.farm += 0.03 * (100 - p.farmTariff * Math.max(0, s.tariff - p.tariff) + s.farmPolicy - s.farm) + 0.5 * noise(rng, "economy.sectors");
+        s.energyIndex += 0.03 * (100 + p.energyOil * (s.oil - s.oilBase) + s.energyPolicy - s.energyIndex) + 0.3 * noise(rng, "economy.sectors");
+        s.tourism += 0.05 * (100 + p.tourismGap * s.outputGap - p.tourismDollar * (s.dollar - 100) + s.tourismPolicy - s.tourism) + 0.4 * noise(rng, "economy.sectors");
     }
 
     /** Noise for the sectors, off when the economy is quiet. */
@@ -399,9 +456,14 @@ public final class EconomyEngine {
      */
     private double fiscal(EconomyState s, BudgetState b) {
         double f = 0;
+        java.util.Map<String, Law> laws = new java.util.HashMap<>();
+        for (Law l : s.laws) laws.put(l.id, l);
         for (Program pr : b.programs) {
             double fresh = pr.pctGdp(s.week) - pr.adapted;
-            if (fresh != 0) f += multiplier(pr.cls, s) * pr.draw * fresh;
+            double push = fresh == 0 ? 0 : multiplier(pr.cls, s) * pr.draw * fresh;
+            f += push;
+            Law l = laws.get(pr.id);
+            if (l != null) l.gapCredit += p.gapAdjust * (push - l.gapCredit);
         }
         return f;
     }
@@ -508,6 +570,85 @@ public final class EconomyEngine {
     }
 
     // =========================================================================================
+    //  The budget office: scores
+    // =========================================================================================
+
+    private EconomyEngine quiet;
+
+    private EconomyEngine quiet() {
+        if (quiet == null) quiet = p.quiet ? this : new EconomyEngine(p.quiet());
+        return quiet;
+    }
+
+    /**
+     * Scores policy steps: the economy run forward ten years from today with them and without them, on copies, with
+     * noise and random shocks off and the Fed meeting eight times a year. {@code low} and {@code high} are the same steps
+     * at the two ends of their range (their luck at -1 and +1).
+     */
+    public Score.Range score(EconomyState s, BudgetState b, java.util.List<Effect.PolicyStep> low, java.util.List<Effect.PolicyStep> central,
+                             java.util.List<Effect.PolicyStep> high) {
+        EconomyEngine q = quiet();
+        Run base = q.run(s, b, java.util.List.of());
+        return new Score.Range(q.run(s, b, central).minus(base), q.run(s, b, low).minus(base), q.run(s, b, high).minus(base));
+    }
+
+    /** One scoring run's readings. */
+    private static final class Run {
+        final double[] growth = new double[3], u = new double[3], jobs = new double[3], inflation = new double[3], output = new double[3];
+        final double[] prices = new double[Part.COUNT], sectors = new double[6];
+        double deficit, direct, cost, debt, tenYear;
+
+        Score minus(Run base) {
+            double[] g = new double[3], un = new double[3], j = new double[3], in = new double[3], o = new double[3];
+            for (int i = 0; i < 3; i++) {
+                g[i] = growth[i] - base.growth[i]; un[i] = u[i] - base.u[i]; j[i] = jobs[i] - base.jobs[i];
+                in[i] = inflation[i] - base.inflation[i]; o[i] = output[i] - base.output[i];
+            }
+            double[] pr = new double[Part.COUNT], se = new double[6];
+            for (int i = 0; i < Part.COUNT; i++) pr[i] = prices[i] - base.prices[i];
+            for (int i = 0; i < 6; i++) se[i] = i == 0 || i == 2 ? (sectors[i] / base.sectors[i] - 1) * 100 : sectors[i] - base.sectors[i];
+            return new Score(g, un, j, in, o, deficit - base.deficit, direct - base.direct, cost - base.cost, debt - base.debt, tenYear - base.tenYear, pr, se);
+        }
+    }
+
+    private Run run(EconomyState from, BudgetState fromBudget, java.util.List<Effect.PolicyStep> steps) {
+        EconomyState s = EconomyState.fromJson(from.toJson());
+        BudgetState b = BudgetState.fromJson(fromBudget.toJson());
+        DeterministicRandomManager rng = new DeterministicRandomManager(1);
+        java.util.Set<String> own = new java.util.HashSet<>();
+        for (Effect.PolicyStep x : steps) { enact(s, b, x); own.add(x.id()); }
+        java.util.List<Program> money = new java.util.ArrayList<>();
+        for (Program pr : b.programs) if (own.contains(pr.id)) money.add(pr);
+        double y0 = s.logY[s.ring], c0 = s.cpiLog;
+        double[] p0 = new double[Part.COUNT];
+        for (int i = 0; i < Part.COUNT; i++) p0[i] = s.prices[i][s.ring];
+        Run r = new Run();
+        int k = 0;
+        for (int w = 1; w <= 520; w++) {
+            week(s, b, MarketContext.calm(), rng);
+            if (w % 4 == 0) { jobsReport(s, rng); inflationReport(s, rng); }
+            if ((w * 8) / 52 != ((w - 1) * 8) / 52) fedMeeting(s, b);
+            double nominal = p.nominalGdp * Math.exp(s.logY[s.ring] - y0 + s.cpiLog - c0);
+            r.deficit += b.deficit / 520;
+            r.cost += b.deficit / 100 * nominal / 52;
+            for (Program pr : money) r.direct += pr.pctGdp(s.week) / 100 * nominal / 52;
+            if (k < 3 && w == 52 * Score.YEARS[k]) {
+                r.growth[k] = s.growth; r.u[k] = s.unemployment; r.inflation[k] = s.inflation; r.output[k] = (s.logY[s.ring] - y0) * 100;
+                r.jobs[k] = p.labourForce / 1000 * Math.exp(s.population) * (s.participation / p.participation) * (1 - s.unemployment / 100);
+                k++;
+            }
+            if (w == 260) {
+                for (int i = 0; i < Part.COUNT; i++) r.prices[i] = (s.prices[i][s.ring] - p0[i]) * 100;
+                r.sectors[0] = s.housing; r.sectors[1] = s.manufacturing; r.sectors[2] = s.aiInvest; r.sectors[3] = s.farm;
+                r.sectors[4] = s.energyIndex; r.sectors[5] = s.tourism;
+                r.tenYear = s.tenYear;
+            }
+        }
+        r.debt = b.debt;
+        return r;
+    }
+
+    // =========================================================================================
     //  Reading the economy
     // =========================================================================================
 
@@ -520,7 +661,7 @@ public final class EconomyEngine {
     /** Gas at the ordinary oil price and today's prices: what people measure the pump against. */
     public double normalGas(EconomyState s) { return gasTarget(s, p.oilBase); }
 
-    private double gasTarget(EconomyState s, double oil) { return p.gasIntercept * s.priceLevel / p.priceLevel + p.gasPerOilDollar * oil; }
+    private double gasTarget(EconomyState s, double oil) { return p.gasIntercept * s.priceLevel / p.priceLevel + p.gasPerOilDollar * oil + s.gasPolicy; }
 
     /** Consumer sentiment as Resolute Desk computes it: jobs, prices and gas against what people expect, growth and the stock market. */
     double sentimentOf(EconomyState s) {

@@ -16,6 +16,7 @@ import game.mandate.core.opening.HundredDaysState;
 import game.mandate.core.news.News;
 import game.mandate.core.politics.PoliticsState;
 import game.mandate.core.presidency.PresidentState;
+import game.mandate.core.policy.PolicyTableState;
 import game.mandate.core.time.Phase;
 import game.mandate.core.time.SimulationClock;
 
@@ -48,6 +49,8 @@ public final class WorldState {
     HundredDaysState hundredDays;
     /** The president's week, health and watch plan; null before the inauguration. */
     PresidentState president;
+    /** Resolute Desk's policy table: where each policy stands and every move since the inauguration. */
+    PolicyTableState policyTable;
     /** The weighed news The Capital Ledger is made from (the last 400 stories). */
     final List<News> news = new ArrayList<>();
     /** The era's stories that have already run (indexes into the ambient table). */
@@ -78,6 +81,7 @@ public final class WorldState {
     public ElectionState election() { return election; }
     public HundredDaysState hundredDays() { return hundredDays; }
     public PresidentState president() { return president; }
+    public PolicyTableState policyTable() { return policyTable; }
     public List<News> news() { return Collections.unmodifiableList(news); }
     public Set<Integer> ambientUsed() { return Collections.unmodifiableSet(ambientUsed); }
     public EventScheduler scheduler() { return scheduler; }
@@ -97,6 +101,7 @@ public final class WorldState {
         m.put("diplomacy", diplomacy.toJson()); m.put("military", military.toJson()); m.put("election", election.toJson());
         m.put("hundredDays", hundredDays == null ? null : hundredDays.toJson());
         m.put("president", president == null ? null : president.toJson());
+        m.put("policyTable", policyTable == null ? null : policyTable.toJson());
         List<Object> ns = new ArrayList<>();
         for (News n : news) ns.add(n.toJson());
         m.put("news", ns);
@@ -124,6 +129,7 @@ public final class WorldState {
         w.election = ElectionState.fromJson(Json.object(m.get("election")), candidates);
         w.hundredDays = m.get("hundredDays") == null ? null : HundredDaysState.fromJson(Json.object(m.get("hundredDays")));
         w.president = m.get("president") == null ? null : PresidentState.fromJson(Json.object(m.get("president")));
+        w.policyTable = m.get("policyTable") == null ? null : PolicyTableState.fromJson(Json.object(m.get("policyTable")));
         if (m.get("news") != null) for (Object o : Json.array(m.get("news"))) w.news.add(News.fromJson(Json.object(o)));
         if (m.get("ambientUsed") != null) for (Object o : Json.array(m.get("ambientUsed"))) w.ambientUsed.add(Json.integer(o));
         w.scheduler = EventScheduler.fromJson(Json.object(m.get("scheduler")));

@@ -70,7 +70,7 @@ class EconomyModelTest {
         return new double[]{peak, trough, last};
     }
 
-    static void within(String what, double v, double lo, double hi) {
+    public static void within(String what, double v, double lo, double hi) {
         System.out.printf("%-58s %8.3f  [%s, %s]%n", what, v, lo, hi);
         assertTrue(v >= lo && v <= hi, what + " = " + v + ", expected " + lo + " to " + hi);
     }

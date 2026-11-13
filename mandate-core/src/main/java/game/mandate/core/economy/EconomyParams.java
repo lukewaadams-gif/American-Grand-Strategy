@@ -15,7 +15,8 @@ public final class EconomyParams {
     double gapAdjust, gapNoise, rateSensitivity, mortgageSensitivity, mortgageNormal, tariffDemand, dollarDemand, sentimentDemand,
             fiscalAdaptWeeks, multiplierSlump, multiplierFloor, multiplierBoom;
     // jobs
-    double okun, unemploymentAdjust, unemploymentNoise, labourForce;
+    double okun, unemploymentAdjust, unemploymentNoise, labourForce, nominalGdp;
+    int moneyLagWeeks;
     // prices
     double inflationTarget, cpiWedge, phillipsSlope, partAdjust, partNoise, expectAdjust, energyGasShare,
             tariffGoods, tariffFood, tariffOther, tariffAbsorbPerWeek, tariffTfp, dollarGoods, shelterHousing, shelterMortgage,
@@ -67,7 +68,7 @@ public final class EconomyParams {
         p.multiplierSlump = t.d("economy.multiplierSlump"); p.multiplierFloor = t.d("economy.multiplierFloor"); p.multiplierBoom = t.d("economy.multiplierBoom");
 
         p.okun = t.d("economy.okun"); p.unemploymentAdjust = t.d("economy.unemploymentAdjust"); p.unemploymentNoise = t.d("economy.unemploymentNoise");
-        p.labourForce = t.d("economy.labourForce");
+        p.labourForce = t.d("economy.labourForce"); p.nominalGdp = t.d("economy.nominalGdp"); p.moneyLagWeeks = t.i("economy.moneyLagWeeks");
 
         p.inflationTarget = t.d("economy.inflationTarget"); p.cpiWedge = t.d("economy.cpiWedge"); p.phillipsSlope = t.d("economy.phillipsSlope");
         p.gapLagWeeks = t.i("economy.gapLagWeeks"); p.partAdjust = t.d("economy.partAdjust"); p.partNoise = t.d("economy.partNoise");
@@ -153,4 +154,6 @@ public final class EconomyParams {
     public double startUnemployment() { return startUnemployment; }
     public double startFedRate() { return startFedRate; }
     public double tariff() { return tariff; }
+    /** Nominal GDP in 2029, $ billions. */
+    public double nominalGdp() { return nominalGdp; }
 }

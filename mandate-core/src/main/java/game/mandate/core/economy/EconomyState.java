@@ -48,6 +48,11 @@ public final class EconomyState {
     final List<Push> pushes = new ArrayList<>();
     // sectors
     double housing, housingSmooth, housingPolicy, manufacturing, aiInvest, farm, energyIndex, tourism;
+    // what laws add: to gas ($), to the sectors' targets, and to the price parts' levels this week (%)
+    double gasPolicy, manufacturingPolicy, farmPolicy, energyPolicy, tourismPolicy;
+    final double[] partPush = new double[Part.COUNT];
+    /** The policy steps in force, in the order they passed. */
+    final List<Law> laws = new ArrayList<>();
     /** Read from a save made before the structural model: {@link EconomyEngine#upgrade} rebuilds what it lacks. */
     transient boolean legacy;
 
@@ -109,6 +114,8 @@ public final class EconomyState {
     public double farmIncome() { return farm; }
     public double energyProduction() { return energyIndex; }
     public double tourism() { return tourism; }
+    /** The policy steps in force, in the order they passed. */
+    public List<Law> laws() { return java.util.Collections.unmodifiableList(laws); }
     /** The demand that fiscal policy adds to the gap's target this week, points of GDP. */
     public double fiscalPush() { return fiscal; }
 
@@ -144,6 +151,10 @@ public final class EconomyState {
         for (Push p : pushes) ps.add(nums(p.gapPerWeek, p.inflation, p.weeksLeft));
         m.put("pushes", ps);
         m.put("sectors", nums(housing, housingSmooth, housingPolicy, manufacturing, aiInvest, farm, energyIndex, tourism));
+        m.put("policy", nums(gasPolicy, manufacturingPolicy, farmPolicy, energyPolicy, tourismPolicy));
+        List<Object> ls = new ArrayList<>();
+        for (Law l : laws) ls.add(l.toJson());
+        m.put("laws", ls);
         return m;
     }
 
@@ -180,6 +191,11 @@ public final class EconomyState {
         v = read(m.get("sectors"));
         s.housing = v[0]; s.housingSmooth = v[1]; s.housingPolicy = v[2]; s.manufacturing = v[3]; s.aiInvest = v[4]; s.farm = v[5];
         s.energyIndex = v[6]; s.tourism = v[7];
+        if (m.containsKey("policy")) {
+            v = read(m.get("policy"));
+            s.gasPolicy = v[0]; s.manufacturingPolicy = v[1]; s.farmPolicy = v[2]; s.energyPolicy = v[3]; s.tourismPolicy = v[4];
+            for (Object o : Json.array(m.get("laws"))) s.laws.add(Law.fromJson(Json.object(o)));
+        }
         return s;
     }
 

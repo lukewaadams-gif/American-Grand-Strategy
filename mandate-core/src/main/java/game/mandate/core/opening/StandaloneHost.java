@@ -133,6 +133,7 @@ final class StandaloneHost implements Host {
             case Effect.Deficit x -> economyEngine.apply(economy, budget, x);
             case Effect.FedPressure x -> economyEngine.apply(economy, budget, x);
             case Effect.OilRelease x -> economyEngine.apply(economy, budget, x);
+            case Effect.PolicyStep x -> economyEngine.apply(economy, budget, x);
             case Effect.Tension x -> diplomacyEngine.apply(diplomacy, x);
             case Effect.Deterrence x -> diplomacyEngine.apply(diplomacy, x);
             case Effect.WarEnded x -> diplomacyEngine.apply(diplomacy, x);

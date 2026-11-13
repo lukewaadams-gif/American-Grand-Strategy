@@ -45,6 +45,21 @@ public final class ParityCheck {
                     + " chest " + p.map(x -> game.mandate.core.data.Fmt.format("%.6f", x.warChest())).orElse("-")
                     + " news " + g.news().size() + " unemployment " + game.mandate.core.data.Fmt.format("%.6f", g.state().economy().unemployment()));
         }
+        // the budget office's scores, on a governing economy
+        GameSetup setup = new GameSetup(4, Party.DEMOCRAT, "d_reyes", "r_harlan", Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD,
+                GameSetup.Length.FULL_TERM, false, null);
+        GameEngine g = new GameEngine(setup);
+        int guard = 0;
+        while (!g.over() && g.president().map(x -> x.week() < 20).orElse(true) && guard++ < 600) AutoPilot.playTurn(g);
+        long s0 = System.currentTimeMillis();
+        for (String[] q : new String[][]{{"min_wage", "1"}, {"zoning", "2"}, {"corp_rate", "1"}, {"child_credit", "1"}}) {
+            var r = g.scorePolicy(q[0], Integer.parseInt(q[1]));
+            System.out.println("score " + q[0] + " jobs " + game.mandate.core.data.Fmt.format("%.4f", r.central().jobs()[2])
+                    + " output " + game.mandate.core.data.Fmt.format("%.4f", r.central().output()[2])
+                    + " range " + game.mandate.core.data.Fmt.format("%.4f", r.min(x -> x.output()[2])) + " " + game.mandate.core.data.Fmt.format("%.4f", r.max(x -> x.output()[2]))
+                    + " cost " + game.mandate.core.data.Fmt.format("%.2f", r.central().direct()));
+        }
+        System.out.println("scoring ms " + (System.currentTimeMillis() - s0));
         System.out.println("ms " + (System.currentTimeMillis() - t0));
     }
 }

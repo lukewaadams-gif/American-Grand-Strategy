@@ -1,0 +1,135 @@
+# What one step up of each policy does to the economy (docs/ECONOMY_MODEL.md, "The policy table and the scores").
+# A step down does the opposite. Resolute Desk's own table (rd/policies.tsv) gives each policy's levels, evidence
+# rating, lag and its other outcomes (uninsured, poverty, crime, overdoses, border crossings, emissions, test scores);
+# this table replaces its direct effects on growth, jobs, prices and gas with the channels the model works through.
+#
+# cost         $ billions a year at full effect, + adds to the deficit. "-" is Resolute Desk's figure; a list gives
+#              each step's own cost from the lowest level up (0->1, 1->2, ...), where one figure would be far off.
+# class        what kind of money it is, for its multiplier: purchases, infrastructure, grants, transfers, retirees,
+#              tax_middle, tax_high, corporate, none
+# phase        the share of the full effect in years 1 to 5 (the money by budget year; the other channels ramp
+#              smoothly between them)
+# lag          weeks before the channels start; "-" is Resolute Desk's. The money starts after a quarter (or the lag, if
+#              shorter): appropriations and tax years do not wait for a policy's effects
+# immigration  net immigration, millions a year
+# participation  the labour-force participation rate, points
+# nairu        the natural rate of unemployment, points
+# tfp_level    productivity's level, %
+# tfp_growth   productivity's growth, points a year
+# capital      the user cost of capital, %
+# prices       price parts' levels by the end of the phase-in, %: shelter food energy medical goods services
+# oil          oil's base price, $ a barrel
+# gas          gas, $ a gallon, on top of oil
+# sectors      housing (% of starts), manufacturing (index points), ai (% of investment), farm, energy, tourism (index points)
+# Policies not listed keep only their cost (as federal purchases, if any) and Resolute Desk's other outcomes.
+id	class	cost	phase	lag	immigration	participation	nairu	tfp_level	tfp_growth	capital	prices	oil	gas	sectors	basis
+top_rate	tax_high	-	1 1 1 1 1	-	-	-0.03	-	-	-	1.0	-	-	-	-	Revenue after avoidance, with an elasticity of taxable income near 0.25 (the estimates in the literature run from 0.1 to 0.4); some pass-through business income is taxed at the top rate
+corp_rate	corporate	-85 -100 -85 -90	1 1 1 1 1	26	-	-	-	-	-	6.0	-	-	-	-	The Joint Committee on Taxation's and CBO's estimates of rate changes (about $100 billion a year for 21% to 28%); a higher rate raises the user cost of capital and lowers investment
+cap_gains	tax_high	-	1 1 1 1 1	-	-	-	-	-	-	1.5	-	-	-	-	Revenue net of the lock-in that higher rates cause (realizations fall as the rate rises); a modest rise in the cost of equity
+estate_tax	tax_high	-	1 1 1 1 1	-	-	-	-	-	-	0.3	-	-	-	-	Revenue from the largest estates; small effects on saving
+wealth_tax	tax_high	-	0.5 1 1 1 1	-	-	-	-	-	-	2.0	-	-	-	-	Revenue estimates for a 2-3% tax on fortunes over $50 million range widely because of valuation and avoidance; contested evidence
+payroll_cap	tax_high	-	1 1 1 1 1	-	-	-0.03	-	-	-	-	-	-	-	-	Applying the Social Security tax to earnings above the cap (the Trustees' and CBO's estimates); a small labour-supply response among high earners
+child_credit	transfers	-	1 1 1 1 1	-	-	-0.05	-	-	-	-	-	-	-	-	The 2021 expansion's cost; families spent much of it; studies differ on whether it reduced parents' work (from none to about 1.5 million parents)
+eitc	transfers	-	1 1 1 1 1	-	-	0.05	-	-	-	-	-	-	-	-	The EITC draws single mothers into work (the 1990s expansions); strong evidence
+mid_rates	tax_middle	-	1 1 1 1 1	-	-	0.03	-	-	-	-	-	-	-	-	Cutting the middle brackets: CBO's multipliers for lower and middle incomes; a small rise in hours worked
+tips_tax	tax_middle	-	1 1 1 1 1	-	-	0.02	-	-	-	-	-	-	-	-	Exempting tips and overtime (Treasury and JCT estimates); most of the money goes to middle incomes; some income is relabelled
+irs	tax_high	-	0.4 0.8 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Enforcement collects several dollars for each dollar spent (CBO), mostly from high earners
+caps	purchases	-	0.5 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Caps cut discretionary spending; CBO's multipliers for federal purchases
+carried	tax_high	-	1 1 1 1 1	-	-	-	-	-	-	0.1	-	-	-	-	Taxing carried interest as wages (JCT); small
+ss_benefits	retirees	-	1 1 1 1 1	-	-	-0.02	-	-	-	-	-	-	-	-	Benefits for retirees, mostly spent; a slightly earlier retirement for some
+ret_age	retirees	-	0.2 0.4 0.6 0.8 1	-	-	0.2	-	-	-	-	-	-	-	-	A later full retirement age keeps older workers in the labour force (CBO's long-term analyses); benefits fall
+snap	transfers	-	1 1 1 1 1	-	-	-0.01	-	-	-	-	-	-	-	-	Food aid is spent at once: one of the highest multipliers in CBO's range
+work_reqs	transfers	-	0.5 1 1 1 1	-	-	0.03	-	-	-	-	-	-	-	-	Requirements cut caseloads; evidence on work gains is mixed (Arkansas's Medicaid rules found none)
+cash_aid	transfers	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Cash aid to poor families, spent quickly
+unemp_ins	transfers	-	1 1 1 1 1	-	-	-	0.05	-	-	-	-	-	-	-	More generous benefits lengthen job searches a little (CBO), and support spending in downturns
+disability	transfers	-	1 1 1 1 1	-	-	-0.03	-	-	-	-	-	-	-	-	Disability benefits; some recipients would otherwise work (studies of denied applicants)
+ssi	transfers	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Income support for the elderly poor, spent at once
+wic	transfers	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Food aid for mothers and babies
+school_meals	transfers	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Free school meals free up families' food budgets
+basic_income	transfers	-	0.5 1 1 1 1	-	-	-0.3	-	-	-	-	-	-	-	-	Guaranteed-income studies (the 2024 OpenResearch trial among them) find modest falls in work; weak evidence at national scale
+min_wage	none	0 0 3 6	0.3 0.6 0.9 1 1	-	-	-	0.75	-	-	-	food=0.3 services=0.4	-	-	-	CBO's 2019 study of a $15 minimum: about 1.3 million fewer jobs (a range from none to 3.7 million) and about a million people out of poverty; restaurant and retail prices rise
+unions	none	-	0.2 0.5 0.8 1 1	52	-	-	0.05	-	-	-	services=0.2	-	-	-	Union wage premiums raise labour costs; effects on employment are small in most studies
+overtime	none	-	1 1 1 1 1	-	-	-	0.02	-	-	-	-	-	-	-	A higher overtime threshold raises pay for some salaried workers; small effects on hiring
+paid_leave	transfers	-	0.5 1 1 1 1	-	-	0.1	-	-	-	-	-	-	-	-	Paid leave keeps new mothers attached to work (California's program)
+jobs_program	purchases	50 350	0.5 1 1 1 1	-	-	-	-0.1	-	-	-	-	-	-	-	Direct public hiring; a national guarantee would cost several hundred billion dollars a year (the Levy Institute's estimates)
+training	purchases	-	0.5 1 1 1 1	-	-	-	-0.03	-	-	-	-	-	-	-	Job training: results vary widely between programs
+apprentice	purchases	-	0.3 0.6 1 1 1	52	-	-	-0.02	0.02	-	-	-	-	-	-	Apprenticeships raise earnings in the trades; weak evidence at scale
+noncompete	none	-	0.3 0.6 1 1 1	52	-	-	-	0.1	-	-	-	-	-	-	Banning noncompetes raises job mobility and wages (the FTC's review of the studies)
+gig	none	-	0.5 1 1 1 1	-	-	-	0.05	-	-	-	services=0.2	-	-	-	Employee status raises costs for platforms; prices of rides and deliveries rise; contested
+safety	none	-	1 1 1 1 1	-	-	-	-	-0.02	-	-	-	-	-	-	Compliance costs, against fewer injuries
+medicare	transfers	900 60 3000	0.5 1 1 1 1	-	-	-0.1	-	-	-	-	medical=-0.3	-	-	-	Medicare from 60 lets some people retire earlier; Medicare for everyone would cost about $3 trillion a year before new taxes (Urban Institute and RAND estimates); Medicare pays lower rates than private insurers
+medicaid	transfers	-	0.5 1 1 1 1	-	-	-0.02	-	-	-	-	-	-	-	-	Medicaid's expansions covered millions; small effects on work (the Oregon experiment)
+aca_aid	transfers	-	1 1 1 1 1	-	-	-0.01	-	-	-	-	-	-	-	-	Subsidies for coverage bought on the exchanges (CBO)
+drug_prices	none	-	0.3 0.6 1 1 1	-	-	-	-	-	-0.003	-	medical=-0.5	-	-	-	Negotiated prices save Medicare money and lower drug prices; CBO expects slightly fewer new drugs over decades
+insulin	transfers	-	1 1 1 1 1	-	-	-	-	-	-	-	medical=-0.05	-	-	-	A cap on what patients pay for insulin
+drug_imports	none	-	0.3 0.7 1 1 1	-	-	-	-	-	-	-	medical=-0.2	-	-	-	Importing drugs from Canada and elsewhere; weak evidence of savings at scale
+public_option	transfers	-	0.3 0.7 1 1 1	-	-	-0.02	-	-	-	-	medical=-0.6	-	-	-	A public plan paying near Medicare's rates lowers premiums; how much is contested
+hsa	tax_middle	-	1 1 1 1 1	-	-	-	-	-	-	-	medical=0.05	-	-	-	Tax breaks for health savings accounts, mostly used by higher earners
+dental	transfers	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Dental and hearing care in Medicare (CBO's estimate for the 2021 plan)
+nih	purchases	-	1 1 1 1 1	-	-	-	-	-	0.01	-	-	-	-	-	Public medical research raises private innovation, with long lags (patent studies)
+public_health	purchases	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Public health spending
+treatment	purchases	-	0.5 1 1 1 1	-	-	0.02	-	-	-	-	-	-	-	-	The opioid crisis cut participation in hard-hit counties; treatment brings some people back to work
+zoning	grants	-	0.05 0.2 0.45 0.75 1	26	-	-	-	-	-	-	shelter=-1.8	-	-	housing=5	Upzoning raised building and held down rents where it happened (Minneapolis, Auckland); a federal incentive reaches some cities, not all; moderate evidence
+vouchers	transfers	-	1 1 1 1 1	-	-	-	-	-	-	-	shelter=0.2	-	-	-	Vouchers raise what renters can pay; with supply short, part of it goes to rents
+mortgage_ded	tax_high	-	1 1 1 1 1	-	-	-	-	-	-	-	shelter=0.1	-	-	housing=0.5	The deduction mostly helps higher earners buy bigger homes; it is capitalized into prices
+lihtc	grants	-	0.2 0.5 0.8 1 1	52	-	-	-	-	-	-	shelter=-0.2	-	-	housing=1.5	The low-income housing credit finances about 100,000 units a year; some would have been built anyway
+first_home	transfers	-	1 1 1 1 1	-	-	-	-	-	-	-	shelter=0.2	-	-	housing=1	Down-payment help raises demand faster than supply; weak evidence
+rent_caps	none	-	1 1 1 1 1	-	-	-	-	-	-	-	shelter=-0.4	-	-	housing=-3	Caps lower rents on covered units and discourage building (San Francisco's rent control)
+homeless	purchases	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Homelessness programs
+highways	infrastructure	-	0.2 0.6 1 1 1	-	-	-	-	0.05	-	-	-	-	-	manufacturing=0.3	Public capital raises private productivity, with returns well below the 1980s estimates (the literature since Aschauer)
+transit	infrastructure	-	0.2 0.5 0.8 1 1	-	-	-	-	0.02	-	-	-	-	-	-	Transit capital; returns depend on where it is built
+fast_rail	infrastructure	-	0.1 0.3 0.6 1 1	-	-	-	-	0.01	-	-	-	-	-	-	High-speed rail: long lags and uncertain returns
+fuel_economy	none	-	0.2 0.4 0.6 0.8 1	52	-	-	-	-	-	-	goods=0.2	-0.5	-	-	Stricter standards raise new-car prices and lower oil demand
+ev_chargers	infrastructure	-	0.3 0.6 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Chargers on the highways
+lead_pipes	infrastructure	-	0.3 0.6 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Replacing lead service lines
+drilling	none	-	0.1 0.3 0.6 0.9 1	26	-	-	-	-	-	-	-	-1.5	-	energy=3	More federal leasing adds supply over years; oil is priced worldwide, so the effect on prices is small (EIA analyses)
+clean_credits	corporate	-	0.3 0.6 0.9 1 1	26	-	-	-	-	-	-	energy=-0.3	-	-	manufacturing=0.5 energy=1	The 2022 credits drew factory investment and cheaper clean power; their cost depends on take-up
+carbon_price	none	-	1 1 1 1 1	-	-	-	-	-0.05	-	-	energy=3	-	0.22	-	A $25 a ton price adds about 22 cents a gallon; with the money paid back to households, demand barely changes; strong evidence on emissions
+power_plants	none	-	0.2 0.4 0.6 0.8 1	104	-	-	-	-0.02	-	-	energy=1	-	-	-	Stricter limits raise power costs a little
+nuclear	corporate	-	0.1 0.2 0.4 0.7 1	-	-	-	-	-	-	-	energy=-0.2	-	-	energy=1	New plants take years; once running they lower power costs
+lng	none	-	0.2 0.5 0.8 1 1	-	-	-	-	-	-	-	energy=0.5	-	-	energy=2	More exports raise production and, a little, domestic gas prices (the Energy Department's 2024 study)
+pipelines	none	-	0.3 0.6 1 1 1	-	-	-	-	-	-	-	-	-0.5	-	energy=1	Faster permits for pipelines
+grid	infrastructure	-	0.1 0.3 0.6 0.9 1	-	-	-	-	0.02	-	-	energy=-0.5	-	-	-	Transmission lines bring cheaper power to where it is used
+clean_water	none	-	1 1 1 1 1	-	-	-	-	-0.01	-	-	-	-	-	-	Compliance costs, against cleaner water
+public_lands	none	-	0.3 0.6 1 1 1	-	-	-	-	-	-	-	-	0.2	-	energy=-0.5	Closing land to drilling and mining; small effects on supply
+ev_rules	none	-	0.2 0.4 0.6 0.8 1	52	-	-	-	-	-	-	goods=0.3	-1.0	-	-	Electric-car rules raise new-car prices at first and lower oil demand over time
+methane	none	-	1 1 1 1 1	-	-	-	-	-	-	-	energy=0.1	-	-	-	A fee on leaks from oil and gas operations
+border	purchases	-	0.5 1 1 1 1	-	-0.05	-	-	-	-	-	-	-	-	-	More agents and barriers reduce unlawful crossings somewhat
+asylum	none	-	1 1 1 1 1	-	-0.15	-	-	-	-	-	-	-	-	-	Tighter asylum rules lower arrivals at the border
+deport	purchases	-	0.5 1 1 1 1	-	-0.5	-	-	-	-	-	food=1.0 services=0.3	-	-	housing=-4	Removals shrink the labour force, above all in farming and construction (studies of Secure Communities); contested
+dreamers	none	-	1 1 1 1 1	-	-	0.03	-	0.03	-	-	-	-	-	-	Legal status lets Dreamers move to better jobs and invest in skills
+legal_imm	none	-	0.5 1 1 1 1	26	0.5	-	-	-	-	-	-	-	-	-	Half again as many green cards; CBO's analyses: a larger labour force and economy, small effects on wages
+skilled_visas	none	-	0.5 1 1 1 1	26	0.1	-	-	-	0.01	-	-	-	-	ai=1	Skilled immigrants patent at high rates (studies of the H-1B lottery)
+guest_workers	none	-	0.5 1 1 1 1	-	0.1	-	-	-	-	-	food=-0.4	-	-	farm=2	More farm guest workers hold down food prices
+e_verify	none	-	0.5 1 1 1 1	52	-0.1	-	0.02	-	-	-	food=0.3	-	-	-	Mandatory checks deter some unauthorized work; farms and construction feel it; weak evidence
+refugees	none	-	1 1 1 1 1	-	0.03	-	-	-	-	-	-	-	-	-	Refugee admissions
+legalization	none	-10	0.5 1 1 1 1	-	-	0.05	-	0.1	-	-	-	-	-	-	CBO's 2013 analysis of the Senate bill: legal status raises wages and productivity and, on net, revenue
+data_centers	none	-	1 1 1 1 1	-	-	-	-	-	-	-	energy=-0.2	-	-	-	Making data centers pay for their own power keeps others' bills down
+title_i	grants	-	1 1 1 1 1	-	-	-	-	-	0.005	-	-	-	-	-	School spending raises earnings decades later (school-finance studies); long lags
+pre_k	grants	-	0.3 0.6 1 1 1	52	-	0.1	-	-	0.005	-	-	-	-	-	Pre-K lets parents work (Washington DC's universal program) and helps children's later earnings
+child_care	transfers	-	0.5 1 1 1 1	-	-	0.15	-	-	-	-	-	-	-	-	Cheaper child care draws mothers into work (Quebec's program)
+pell	transfers	-	1 1 1 1 1	-	-	-	-	-	0.003	-	-	-	-	-	Grants raise college completion for low-income students
+free_college	grants	-	0.5 1 1 1 1	-	-	-	-	-	0.003	-	-	-	-	-	Free tuition raises enrollment; much of the money goes to students who would enroll anyway
+student_debt	transfers	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Relief frees up borrowers' budgets; spent slowly
+school_choice	grants	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Vouchers and tax credits for private schools; contested effects on learning
+teacher_pay	grants	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Teacher pay
+research_univ	purchases	-	1 1 1 1 1	-	-	-	-	-	0.01	-	-	-	-	-	University research raises productivity with long lags
+ai_safety	none	-	1 1 1 1 1	-	-	-	-	-	-0.005	-	-	-	-	ai=-3	Required testing slows some deployments; weak evidence either way
+ai_preempt	none	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	ai=2	One federal rule instead of fifty state rules
+chips	corporate	-	0.2 0.5 0.8 1 1	52	-	-	-	0.02	-	-	-	-	-	manufacturing=1	Chip-plant subsidies under the 2022 law drew large investments; years to build
+antitrust	none	-	0.3 0.6 1 1 1	52	-	-	-	-	-	-	goods=-0.2 services=-0.2	-	-	ai=-1	Tougher enforcement lowers markups; contested effects on innovation
+broadband	infrastructure	-	0.2 0.5 0.8 1 1	52	-	-	-	0.02	-	-	-	-	-	-	Rural broadband
+bank_rules	none	-	0.5 1 1 1 1	-	-	-	-	-0.02	-	0.5	-	-	-	-	Higher capital requirements raise the cost of credit a little and make crises rarer (the Basel studies)
+cfpb	none	-	1 1 1 1 1	-	-	-	-	-	-	-	services=-0.1	-	-	-	Limits on bank fees
+space	purchases	-	1 1 1 1 1	-	-	-	-	-	0.002	-	-	-	-	-	NASA's budget
+defense	purchases	-	0.5 1 1 1 1	-	-	-	-	-	-	-	-	-	-	manufacturing=0.5	Defense purchases; CBO's multipliers for federal purchases
+foreign_aid	none	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Aid is mostly spent abroad, so it adds little to demand at home
+veterans	transfers	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Veterans' care
+buy_american	none	-	0.5 1 1 1 1	-	-	-	-	-	-	-	goods=0.3	-	-	manufacturing=0.5	Stricter domestic-content rules raise what the government pays and shift some work home
+export_controls	none	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	manufacturing=-0.3 ai=-1	Stricter controls cost chip makers sales abroad
+missile_def	purchases	-	0.5 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	Missile defense
+nukes	purchases	-	0.5 1 1 1 1	-	-	-	-	-	-	-	-	-	-	-	The nuclear arsenal
+trade_aid	transfers	-	1 1 1 1 1	-	-	-	-0.01	-	-	-	-	-	-	-	Trade adjustment assistance: retraining and income support
+de_minimis	none	-	1 1 1 1 1	-	-	-	-	-	-	-	goods=-0.3	-	-	-	Duty-free small parcels hold down prices for cheap imported goods
+farm_aid	transfers	-	1 1 1 1 1	-	-	-	-	-	-	-	-	-	-	farm=3	Farm subsidies, mostly to larger farms
+munitions	purchases	-	0.3 0.6 1 1 1	52	-	-	-	-	-	-	-	-	-	manufacturing=0.5	Shipbuilding and munitions plants

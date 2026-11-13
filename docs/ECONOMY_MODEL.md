@@ -380,6 +380,34 @@ The minimum wage and zoning targets need the policy table (step 3) and are teste
 - **The news** (`Releases`, Resolute Desk's headlines and weights): routine releases run in the paper's Economy section. A shock, a Fed move, job losses, a shrinking economy or inflation over 4% are Washington news and can lead the paper. Resolute Desk's era stories that depend on the stock market (its 13-week change) now run too.
 - **The record:** each week's reading now keeps the economy's detail (core inflation and the six price parts, the sectors, sentiment, stocks, the dollar, oil, mortgages, payrolls, the gap, potential growth, revenue, outlays, interest and debt) for the briefing book's charts. A full term's save is about 560 KB.
 
+## Step 3 as built: the policy table and the scores (13 November 2026)
+
+- **The table** is a new domain, `policy` (`PolicyCatalog`, `PolicyTableState`, `PolicyTableEngine`). It holds all 146 of Resolute Desk's policies at their 2029 levels, with their routes (bill, order, rule, budget), evidence, lags, politics and other outcomes. Every move is recorded with its route, its law and its luck. The table reaches the economy only through a `PolicyStep` effect routed by the game engine, as the architecture requires.
+- **The scores** (`data/policy_scores.tsv`): 110 policies have an economic score, with a one-line basis each. Eleven more (police money, immigration courts and the like) carry only their cost, counted as federal purchases. The last 25 (civil rights, abortion, voting rules and the like) cost nothing and keep only Resolute Desk's other outcomes.
+  - Money is classed for its multiplier.
+  - Phase-ins are by year.
+  - The other channels are: immigration, participation, the natural rate, productivity's level and growth, the cost of capital, the six price parts, oil, gas, and the sectors (housing, manufacturing, AI, farms, energy, tourism).
+  - Where Resolute Desk's flat cost per step is far off for a large move, the table gives each step's own cost: Medicare from 60 (about $60 billion a year) or for everyone (about $3 trillion before new taxes), a jobs guarantee, the corporate rate by bracket.
+  - Resolute Desk's own effects on growth, jobs, prices and gas are replaced by these channels. Its other outcomes (uninsured, poverty, crime, overdoses, border crossings, emissions, test scores) are kept, phase in after its lags, and are tracked from the moves.
+- **Ranges and luck:** each step draws its luck when it becomes law: clamp(N(0, 0.5), -1, 1). Every channel except its cost is scaled by 1 + spread x luck (spread 25%, 50%, 80% or 100% by evidence), and so is its money's multiplier.
+- **Timing:** a law's money starts after a quarter (or its lag, if shorter); its other channels start after its lag and ramp in by year. Where the table's phase-in already models a slow build (zoning, drilling, chips, fuel-economy rules), its lag is shorter than Resolute Desk's, so the two do not stack.
+- **The budget office** (`EconomyEngine.score`): a score runs today's economy forward ten years with the steps and without them, on copies, with noise and shocks off and the Fed meeting eight times a year, at luck -1, 0 and +1. A score holds:
+  - growth, unemployment, jobs, inflation and output at 1, 3 and 10 years;
+  - the policy's own ten-year cost, as CBO scores it, and the change in the deficit with interest and the economy's response;
+  - the debt after ten years;
+  - the 10-year yield;
+  - the price parts and the sectors at five years.
+  A score takes about 4 ms on the JVM and 37 ms in the browser, and the two builds give the same numbers. Scores are kept for the day.
+- **Credit:** each law in force keeps what it has contributed so far: to demand (its money's push, through the gap), to potential output (participation, the natural rate, productivity, immigration), to prices and to unemployment. Its money is the program with the same id.
+
+| Target | Measured |
+|---|---|
+| A $15 minimum wage (one step, to about 45% of the typical wage): employment 0–3.7 million lower, central about 1.3 million; about a million people out of poverty | 1.36 million lower after ten years (none to 2.7 million); 1.0 million out of poverty |
+| Zoning and permitting reform (both steps): housing starts up 5–15% over five years; rent inflation down 0.5–1.5 points a year by years 3 to 5 | Starts up 10%; shelter inflation 0.4–1.1 points lower in years 3–5 |
+| The corporate rate from 21% to 28%: about $100 billion a year; output lower through investment | $1.23 trillion over ten years ($1.6 trillion with the interest saved); output 0.23% lower after ten years |
+| The same law scores higher in a slump | The child credit adds 0.27% to output after a year in a slump, 0.15% at full employment |
+| The public's reaction (Resolute Desk's rule) | Two steps of the minimum wage by law: +4.8 points |
+
 ## What changes elsewhere
 
 - **The economy engine is rewritten.** Its interface stays: the weekly step, the Fed's meetings, the jobs and inflation reports, gas and the deficit. So the hundred days, the governing week and the campaign keep working.

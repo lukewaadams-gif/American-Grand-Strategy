@@ -32,6 +32,10 @@ import game.mandate.core.diplomacy.HotSpot;
 import game.mandate.core.economy.BudgetState;
 import game.mandate.core.economy.EconomyEngine;
 import game.mandate.core.economy.EconomyParams;
+import game.mandate.core.policy.PolicyTableState;
+import game.mandate.core.policy.PolicyTableEngine;
+import game.mandate.core.policy.PolicyCatalog;
+import game.mandate.core.economy.Score;
 import game.mandate.core.economy.Part;
 import game.mandate.core.economy.Releases;
 import game.mandate.core.economy.StateEconomy;
@@ -86,6 +90,7 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -112,6 +117,10 @@ public final class GameEngine implements WorldView {
 
     private final EconomyEngine economyEngine;
     private final StateEconomy stateEconomy = StateEconomy.shared();
+    private final PolicyTableEngine policyTableEngine;
+    /** Scores already run today, by policy and steps: the budget office's work does not change within a week. */
+    private final Map<String, Score.Range> scoreMemo = new HashMap<>();
+    private LocalDate scoreMemoDate;
     private final PoliticsEngine politicsEngine;
     private final CongressEngine congressEngine;
     private final ExecutiveEngine executiveEngine;
@@ -144,6 +153,7 @@ public final class GameEngine implements WorldView {
         this.eventDefinitions = EventCatalog.standard();
         this.rng = new DeterministicRandomManager(setup.seed());
         this.economyEngine = new EconomyEngine(EconomyParams.from(tuning));
+        this.policyTableEngine = new PolicyTableEngine(PolicyCatalog.shared(), economyEngine.params().nominalGdp());
         this.politicsEngine = new PoliticsEngine(PoliticsParams.from(tuning));
         this.congressEngine = new CongressEngine(tuning);
         this.executiveEngine = new ExecutiveEngine(tuning, CabinetPool.load());
@@ -177,6 +187,7 @@ public final class GameEngine implements WorldView {
         w.election = electionEngine.newElection(mine, theirs, setup.difficulty().opponentResources(), rng);
         w.economy = economyEngine.newEconomy();
         w.budget = economyEngine.newBudget();
+        w.policyTable = policyTableEngine.newTable();
         w.politics = politicsEngine.newPolitics(candidates, 0);
         politicsEngine.setLeader(w.politics, mine.party(), mine.id());
         politicsEngine.setLeader(w.politics, theirs.party(), theirs.id());
@@ -225,6 +236,7 @@ public final class GameEngine implements WorldView {
      */
     private void upgradeOldSnapshot() {
         economyEngine.upgrade(w.economy, w.budget);
+        if (w.policyTable == null) w.policyTable = policyTableEngine.newTable();
         if (w.president != null || (w.phase != Phase.FIRST_100_DAYS && w.phase != Phase.GOVERNING) || !w.politics.governing()) return;
         politicsEngine.upgradeApproval(w.politics, approvalStart(), opinionInputs());
         w.president = presidentEngine.newPresident(player().candidate().id());
@@ -294,6 +306,7 @@ public final class GameEngine implements WorldView {
             case Effect.Deficit x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
             case Effect.FedPressure x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
             case Effect.OilRelease x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
+            case Effect.PolicyStep x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
             case Effect.CampaignSwing x -> owner = electionEngine.apply(w.election, x) ? "election" : "none";
             case Effect.Cash x -> owner = electionEngine.apply(w.election, x) ? "election" : "none";
             case Effect.Tension x -> owner = diplomacyEngine.apply(w.diplomacy, x) ? "diplomacy" : "none";
@@ -1114,6 +1127,41 @@ public final class GameEngine implements WorldView {
     public List<Command> history() { return List.copyOf(history); }
     public Congress congress() { return w.congress.congress(); }
     public Optional<EconomyState> economy() { return w.politics.governing() ? Optional.of(w.economy) : Optional.empty(); }
+
+    // ---- the policy table ------------------------------------------------------------------------------------------
+
+    public PolicyCatalog policies() { return policyTableEngine.catalog(); }
+
+    public PolicyTableState policyTable() { return w.policyTable; }
+
+    /**
+     * The budget office's score of moving a policy {@code steps} levels from where it stands: the central estimate and
+     * the two ends of its range, run on today's economy (and kept for the rest of the day).
+     */
+    public Score.Range scorePolicy(String id, int steps) {
+        if (!date().equals(scoreMemoDate)) { scoreMemo.clear(); scoreMemoDate = date(); }
+        String key = id + "|" + steps;
+        Score.Range r = scoreMemo.get(key);
+        if (r == null) {
+            List<List<Effect.PolicyStep>> s = policyTableEngine.scoring(w.policyTable, id, steps);
+            r = economyEngine.score(w.economy, w.budget, s.get(0), s.get(1), s.get(2));
+            scoreMemo.put(key, r);
+        }
+        return r;
+    }
+
+    /** What a move would do to Resolute Desk's other outcomes (uninsured, poverty, crime...) at full effect. */
+    public Map<String, Double> policyOutcomesOf(String id, int steps) { return policyTableEngine.outcomesOf(id, steps); }
+
+    /** What the moves so far have done to Resolute Desk's other outcomes. */
+    public Map<String, Double> policyOutcomes() { return policyTableEngine.outcomes(w.policyTable, date()); }
+
+    /** Moves a policy, as a law (or, later, an order, a rule or the budget) does, and routes what it does. */
+    void enactPolicy(String id, int steps, PolicyCatalog.Route route, String law, String cause) {
+        PolicyTableEngine.Moved m = policyTableEngine.move(w.policyTable, id, steps, route, law, date(), rng);
+        int decision = w.ledger.decide(date(), cause);
+        dispatchAll(decision, cause, m.effects());
+    }
 
     /** The economy state by state: unemployment and gas in each. */
     public StateEconomy stateEconomy() { return stateEconomy; }

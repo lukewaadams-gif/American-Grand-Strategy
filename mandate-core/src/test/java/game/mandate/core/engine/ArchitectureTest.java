@@ -34,7 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ArchitectureTest {
     static final List<Class<?>> DOMAIN_STATES = List.of(EconomyState.class, BudgetState.class, PoliticsState.class, PartyState.class,
             CongressState.class, PolicyState.class, GovernmentState.class, DiplomacyState.class, MilitaryState.class, OperationState.class,
-            ElectionState.class, CampaignSide.class, WorldState.class, PresidentState.class);
+            ElectionState.class, CampaignSide.class, WorldState.class, PresidentState.class,
+            game.mandate.core.policy.PolicyTableState.class);
 
     /** Domain states expose readers only. Writes go through their owning engine (same package) or a transition. */
     @Test
@@ -51,7 +52,7 @@ class ArchitectureTest {
         assertTrue(bad.isEmpty(), "public mutators on domain state: " + bad);
     }
 
-    static final Set<String> DOMAINS = Set.of("economy", "politics", "congress", "executive", "diplomacy", "military", "campaign", "presidency");
+    static final Set<String> DOMAINS = Set.of("economy", "politics", "congress", "executive", "diplomacy", "military", "campaign", "presidency", "policy");
 
     /** No domain imports another domain's state or engine: cross-system effects must be transitions routed by the game engine. */
     @Test

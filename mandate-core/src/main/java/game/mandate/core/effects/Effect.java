@@ -35,6 +35,17 @@ public sealed interface Effect {
         }
     }
 
+    /**
+     * One step of a policy taking effect in the economy (the policy table): its money as a program of this kind
+     * ({@code pctGdp} a year at full effect, + adds to the deficit), how it phases in by year, the weeks before it
+     * starts, the law's luck for its multiplier, and its other channels at full effect (already scaled by its luck),
+     * in the order of {@link game.mandate.core.economy.Channel}.
+     */
+    record PolicyStep(String id, String label, game.mandate.core.economy.FiscalClass fiscalClass, double pctGdp, double[] phase, int lagWeeks,
+                      double draw, double[] channels) implements Effect {
+        public String describe() { return "Policy: " + label; }
+    }
+
     /** Campaign-season shift of the national margin toward the player's party (negative = away). */
     record CampaignSwing(double points) implements Effect {
         public String describe() { return signed("National polls (you)", points); }

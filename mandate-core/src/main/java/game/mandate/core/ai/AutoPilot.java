@@ -81,6 +81,7 @@ public final class AutoPilot {
                 case Effect.Tension t -> t.hotSpot() == HotSpot.TAIWAN_STRAIT ? -t.delta() / 8 : -t.delta() / 15;
                 case Effect.EconomyShock s -> s.growthPoints() - s.inflationPoints();
                 case Effect.Deficit d -> -d.pctGdp() * 3;
+                case Effect.PolicyStep p -> -p.pctGdp() * 3;
                 case Effect.Salience s -> 0;
                 case Effect.CoalitionApproval c -> c.points() * 0.34;
                 case Effect.Goodwill gw -> gw.delta() / 10;
