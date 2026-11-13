@@ -57,6 +57,9 @@ import game.mandate.core.executive.GovernmentState;
 import game.mandate.core.executive.Post;
 import game.mandate.core.game.GameSetup;
 import game.mandate.core.hill.HillEngine;
+import game.mandate.core.terms.TermsEngine;
+import game.mandate.core.terms.TermsOrder;
+import game.mandate.core.terms.TermsState;
 import game.mandate.core.hill.HillOrder;
 import game.mandate.core.hill.HillState;
 import game.mandate.core.westwing.WestWingData;
@@ -138,6 +141,7 @@ public final class GameEngine implements WorldView {
     private final PresidentEngine presidentEngine;
     private final HillEngine hillEngine;
     private final WestWingEngine westWingEngine;
+    private final TermsEngine termsEngine;
     private final AmbientNews ambient;
 
     private final double premiumPerMiddleEast, middleEastPivot, premiumPerRung, stressPerRung, stressWar;
@@ -172,6 +176,7 @@ public final class GameEngine implements WorldView {
         this.presidentEngine = new PresidentEngine(states);
         this.hillEngine = new HillEngine(bills, PolicyCatalog.shared());
         this.westWingEngine = new WestWingEngine(new WestWingData());
+        this.termsEngine = new TermsEngine();
         this.ambient = new AmbientNews();
         premiumPerMiddleEast = tuning.d("markets.premium.middleEast");
         middleEastPivot = tuning.d("markets.premium.middleEastPivot");
@@ -250,6 +255,7 @@ public final class GameEngine implements WorldView {
         if (w.policyTable == null) w.policyTable = policyTableEngine.newTable();
         if (w.hill == null && w.president != null && (w.phase == Phase.FIRST_100_DAYS || w.phase == Phase.GOVERNING)) w.hill = seatHill();
         if (w.westWing == null && w.president != null && w.phase == Phase.GOVERNING) seatWestWing();
+        if (w.terms == null && w.president != null) w.terms = termsEngine.newTerms();
         if (w.president != null || (w.phase != Phase.FIRST_100_DAYS && w.phase != Phase.GOVERNING) || !w.politics.governing()) return;
         politicsEngine.upgradeApproval(w.politics, approvalStart(), opinionInputs());
         w.president = presidentEngine.newPresident(player().candidate().id());
@@ -293,6 +299,7 @@ public final class GameEngine implements WorldView {
             case Command.Presidency c -> presidencyOrder(c.order());
             case Command.Hill c -> hillOrder(c.order());
             case Command.WestWing c -> westWingOrder(c.order());
+            case Command.Terms c -> termsOrder(c.order());
         }
         history.add(command);
         w.commandsApplied++;
@@ -604,13 +611,29 @@ public final class GameEngine implements WorldView {
                 log("You lost the presidency.");
                 finish();
             }
-        } else {
+        } else if (w.president == null || w.terms == null) {
             log(winner == player().party() ? "You are re-elected." : "You are defeated for re-election.");
             finish();
+        } else {
+            // the presidency goes on: four more years, or the lame-duck weeks to the handoff
+            presidentEngine.clearCampaign(w.president);
+            w.phase = Phase.GOVERNING;
+            w.clock.set(date().with(TemporalAdjusters.next(DayOfWeek.MONDAY)));
+            w.clock.setMode(Granularity.WEEKLY);
+            if (winner == player().party()) {
+                log("You are re-elected. Four more years: choose what your second term is about, and name the people to serve in it.");
+                termsEngine.reelected(w.terms, termsContext());
+            } else {
+                Candidate c = opponent().candidate();
+                termsEngine.leave(w.terms, c.name(), c.party(), calendar.termEnd(1), "lost");
+                log("You are defeated for re-election. " + c.name() + " takes the oath on January 20, " + calendar.termEnd(1).getYear()
+                        + "; until then you are still the president.");
+            }
         }
     }
 
     private void finish() {
+        if (w.terms != null && w.terms.ending() == null) termsEngine.leave(w.terms, null, null, date(), "served");
         w.legacy = Legacy.score(this);
         log(w.legacy.headline());
         w.phase = Phase.EPILOGUE;
@@ -673,6 +696,7 @@ public final class GameEngine implements WorldView {
         w.president = presidentEngine.newPresident(player().candidate().id());
         presidentEngine.firstWeek(w.president, weekContext());
         w.hill = seatHill();
+        w.terms = termsEngine.newTerms();
         log("The first hundred days begin. Your flagship: the " + host.flagship().name() + ".");
     }
 
@@ -817,6 +841,8 @@ public final class GameEngine implements WorldView {
         hillWeek();
         if (w.phase != Phase.GOVERNING) return;       // removed from office
         westWingWeek();
+        termsWeek();
+        if (w.phase != Phase.GOVERNING) return;
 
         economyEngine.step(w.economy, w.budget, 1.0 / EconomyEngine.WEEKS_PER_MONTH, marketContext(), rng);
         EconomyEngine.Shock shock = economyEngine.lastShock(w.economy);
@@ -838,7 +864,7 @@ public final class GameEngine implements WorldView {
         }
 
         politicsEngine.step(w.politics, 1.0, opinionInputs(), rng);
-        for (String line : politicsEngine.partyWeek(w.politics, midtermSeason(), w.president == null ? 0 : w.president.week(), rng))
+        for (String line : politicsEngine.partyWeek(w.politics, midtermSeason(), termWeek(), rng))
             news(new News(date(), News.Kind.INFO, line, null, 1.0, null));
 
         boolean newMonth = to.getMonthValue() != from.getMonthValue();
@@ -853,8 +879,15 @@ public final class GameEngine implements WorldView {
         if (newMonth) executiveEngine.newTurn(w.government);    // the old governing actions keep their monthly attention until Congress and the West Wing replace them
         afterWeek();
 
-        if (!w.midtermsHeld && !date().isBefore(calendar.midterms())) holdMidterms();
-        if (!date().isBefore(calendar.reelectionStart())) beginReelection();
+        if (!w.midtermsHeld && !date().isBefore(calendar.midterms(term()))) holdMidterms();
+        if (w.terms != null && w.terms.leaving() && !date().isBefore(w.terms.handoff())) { handoff(); return; }
+        if (secondTermPending()) {
+            LocalDate oath = calendar.inauguration(2);
+            if (!date().isBefore(oath)) secondInauguration();
+            else if (!date().isBefore(oath.minusDays(7))) termsEngine.askInaugural(w.terms, termsContext());
+        }
+        if (term() == 1 && w.election.result2032() == null && (w.terms == null || TermsEngine.running(w.terms)) && !date().isBefore(calendar.reelectionStart()))
+            beginReelection();
     }
 
     // ---- the president's week (Resolute Desk) ---------------------------------------------------------------------
@@ -895,7 +928,7 @@ public final class GameEngine implements WorldView {
             case "kia" -> war().map(o -> (double) o.usKilled()).orElse(0.0);
             case "sent" -> e.sentiment();
             case "uchg" -> w.indicators.size() > 26 ? e.unemployment() - w.indicators.get(w.indicators.size() - 27).unemployment() : 0;
-            case "tw" -> w.president == null ? 0 : w.president.week();
+            case "tw" -> termWeek();
             case "dem" -> player().party() == Party.DEMOCRAT ? 1 : 0;
             case "elect" -> date().getYear() % 4 == 0 ? 1 : 0;
             case "midterm" -> date().getYear() % 4 == 2 ? 1 : 0;
@@ -953,7 +986,7 @@ public final class GameEngine implements WorldView {
 
     /** The next election Congress faces: the midterms, then 2032. */
     private LocalDate nextCongressElection() {
-        return w.midtermsHeld ? calendar.election2032() : calendar.midterms();
+        return w.midtermsHeld ? calendar.presidentialElection(term()) : calendar.midterms(term());
     }
 
     /** What the Hill reads from the rest of the game this week. */
@@ -961,7 +994,7 @@ public final class GameEngine implements WorldView {
 
     private HillEngine.Context hillContext(LocalDate electionDay) {
         Candidate p = player().candidate();
-        ElectionResult r = w.election.result2028();
+        ElectionResult r = w.election.result2032() != null ? w.election.result2032() : w.election.result2028();
         double national = r == null ? 0 : r.popularMargin();
         Map<String, Double> lean = new TreeMap<>();
         for (UsState u : states.all())
@@ -972,13 +1005,192 @@ public final class GameEngine implements WorldView {
         double nominalTn = economyEngine.params().nominalGdp() / 1000 * Math.pow(1.045, Math.max(0, years));
         var party = w.politics.party(player().party());
         int opp = switch (w.politics.opposition()) { case COOPERATE -> 0; case SELECTIVE -> 1; case OBSTRUCT -> 2; };
-        return new HillEngine.Context(date(), ps == null ? 0 : ps.week(), player().party(), approval(), rdScale(p.charisma()), 60, staff(WestWingData.S_LEG),
+        return new HillEngine.Context(date(), termWeek(), player().party(), approval(), rdScale(p.charisma()), 60, staff(WestWingData.S_LEG),
                 ps == null ? 0 : ps.hillHours(), ps == null ? List.of() : ps.lastVisited(), ps == null ? Map.of() : ps.midtermEffort(), ps == null ? 0 : ps.warChest(),
                 politicsEngine.params().rdPolarization(), congress().house(Party.DEMOCRAT), congress().senate(Party.DEMOCRAT), e.growth(), e.unemployment(),
                 politicsEngine.params().rdURef(), economyEngine.deficit(e, w.budget), w.budget.debt(), nominalTn, lean, electionDay, w.politics.scandal(),
                 w.politics.honeymoon(), staff(WestWingData.S_POL), staff(WestWingData.S_COUNSEL),
                 w.westWing == null ? 0 : WestWingEngine.impeachmentPressure(w.westWing), w.westWing == null ? null : WestWingEngine.worstScandal(w.westWing),
-                party.wingMood(0), party.wingMood(1), opp);
+                party.wingMood(0), party.wingMood(1), opp, lameDuck());
+    }
+
+    // ---- terms of office (Resolute Desk's Terms and Reelection) ----------------------------------------------------
+
+    /** The term being served: 1, or 2 after a re-election's inauguration. */
+    public int term() { return w.terms == null ? 1 : w.terms.term(); }
+
+    /** Weeks into the current term (Resolute Desk's {@code tw}). */
+    public int termWeek() { return w.president == null ? 0 : w.president.week() - (w.terms == null ? 0 : w.terms.termStartWeek()); }
+
+    /** How much of a lame duck the president is, 0 to 1. */
+    public double lameDuck() {
+        int t = term();
+        return TermsEngine.lameDuck(w.terms, date(), calendar.inauguration(t), calendar.midterms(t), calendar.termEnd(t), w.midtermsHeld);
+    }
+
+    public Optional<TermsState> terms() { return Optional.ofNullable(w.terms); }
+    public TermsEngine termsEngine() { return termsEngine; }
+
+    /** Re-elected and not yet sworn in again. */
+    private boolean secondTermPending() {
+        return w.terms != null && term() == 1 && !w.terms.leaving() && w.election.result2032() != null
+                && w.election.result2032().winner() == player().party();
+    }
+
+    /** What the terms of office read from the rest of the game this week. */
+    public TermsEngine.Context termsContext() {
+        Candidate p = player().candidate();
+        ElectionResult r = w.election.result2032() != null ? w.election.result2032() : w.election.result2028();
+        double national = r == null ? 0 : r.popularMargin();
+        Map<String, Double> lean = new TreeMap<>(), weight = new TreeMap<>();
+        Map<String, Integer> ev = new TreeMap<>();
+        for (UsState u : states.all()) {
+            lean.put(u.code(), (r == null ? u.baselineMargin() : r.stateMargins().getOrDefault(u.code(), u.baselineMargin())) - national);
+            ev.put(u.code(), u.electoralVotes());
+            weight.put(u.code(), u.voteWeight());
+        }
+        java.util.Set<String> used = new java.util.TreeSet<>();
+        used.add(p.id());
+        used.add(opponent().candidate().id());
+        used.add(Candidate.CUSTOM_ID);
+        List<Candidate> own = new ArrayList<>(), other = new ArrayList<>();
+        for (Candidate c : setup.realRoster() ? candidates.all() : candidates.fictional(Party.DEMOCRAT).isEmpty() ? candidates.all() : fictionalCast()) {
+            if (used.contains(c.id())) continue;
+            (c.party() == p.party() ? own : other).add(c);
+        }
+        PresidentState ps = w.president;
+        EconomyState e = w.economy;
+        int diff = switch (setup.difficulty()) { case STORY -> 0; case STANDARD -> 1; case HARD -> 2; };
+        WestWingState ww = w.westWing;
+        return new TermsEngine.Context(date(), p.party(), p.name(), approval(), politicsEngine.params().rdPolarization(), e.growth(), e.unemployment(),
+                politicsEngine.params().rdURef(), w.politics.scandal(), w.military.operationActive() && approval() < 45, diff,
+                ps == null ? 0 : ps.warChest(), ps == null ? Map.of() : ps.midtermEffort(), lean, ev, weight, own, other,
+                ww == null ? null : ww.vicePresident(), ww == null ? 55 : ww.vpSkill(0), ww == null ? 55 : (ww.vpSkill(0) + ww.vpSkill(2)) / 2,
+                ww == null ? 60 : ww.vpLoyalty(), p.homeState(), calendar.presidentialElection(term()), term(), setup.seed());
+    }
+
+    private List<Candidate> fictionalCast() {
+        List<Candidate> l = new ArrayList<>(candidates.fictional(Party.DEMOCRAT));
+        l.addAll(candidates.fictional(Party.REPUBLICAN));
+        return l;
+    }
+
+    private void termsWeek() {
+        if (w.terms == null) return;
+        int stage = w.terms.runStage();
+        TermsEngine.Outcome o = termsEngine.week(w.terms, termsContext(), rng);
+        termsOutcome("Terms of office", o, null);
+        if (w.terms.runStage() == TermsState.RUN_STEPPED_ASIDE && stage != TermsState.RUN_STEPPED_ASIDE && w.hill != null) hillEngine.steppedAside(w.hill, player().party());
+        if (o.electionHeld()) successionElection();
+    }
+
+    private void termsOrder(TermsOrder o) {
+        if (w.terms == null || w.phase != Phase.GOVERNING) throw new IllegalCommandException("Only in office");
+        int stage = w.terms.runStage();
+        TermsEngine.Outcome out;
+        try {
+            out = termsEngine.apply(w.terms, termsContext(), o, rng);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalCommandException(e.getMessage());
+        }
+        termsOutcome("Your term", out, switch (o) {
+            case TermsOrder.Answer x -> "A decision about your term";
+            case TermsOrder.Endorse x -> "An endorsement for the nomination";
+        });
+        if (w.terms.runStage() == TermsState.RUN_STEPPED_ASIDE && stage != TermsState.RUN_STEPPED_ASIDE && w.hill != null) hillEngine.steppedAside(w.hill, player().party());
+    }
+
+    private void termsOutcome(String cause, TermsEngine.Outcome o, String what) {
+        int decision = -1;
+        if (what != null) {
+            decision = w.ledger.decide(date(), cause);
+            w.ledger.record(decision, date(), cause, "terms", what);
+        }
+        for (Effect e : o.effects()) {
+            if (decision < 0) decision = w.ledger.decide(date(), cause);
+            dispatch(decision, cause, e);
+        }
+        for (News n : o.news()) news(n);
+        for (String line : o.log()) log(line);
+    }
+
+    /** Election Day without the president on the ballot: the nominee's race decides who comes next, and Congress with it. */
+    private void successionElection() {
+        TermsState.Race r = w.terms.race();
+        if (w.hill != null)
+            hillOutcome("Election " + r.year(), hillEngine.holdElection(w.hill, hillContext(r.electionDay()), termsEngine.margin(w.terms), hillLeaders(), rng), null);
+        if (w.president != null) presidentEngine.clearCampaign(w.president);
+        TermsState.Contender next = r.won() ? r.nomineeContender() : r.opponent();
+        String ending = term() >= 2 ? "served" : w.terms.runStage() == TermsState.RUN_DENIED ? "denied" : "retired";
+        termsEngine.leave(w.terms, next.name(), next.party(), calendar.termEnd(term()), ending);
+        log((r.won() ? next.name() + " will succeed you, keeping the White House in your party's hands." : next.name() + " will succeed you, and the White House changes parties.")
+                + " You hand over the office at noon on January 20, " + calendar.termEnd(term()).getYear() + ".");
+    }
+
+    /** Noon on January 20, 2033: the oath again, departures, a renewed mandate and a short honeymoon. */
+    private void secondInauguration() {
+        Map<String, Double> base = new TreeMap<>();
+        base.put("laws", (double) (w.hill == null ? w.policy.laws().size() : w.hill.enacted().size()));
+        base.put("court", (double) (w.westWing == null ? 0 : w.westWing.justicesAppointed()));
+        base.put("deficit", economyEngine.deficit(w.economy, w.budget));
+        base.put("wars", (double) w.military.wars().size() + (w.military.operationActive() ? 1 : 0));
+        TermsEngine.Outcome o = termsEngine.secondInauguration(w.terms, termsContext(), w.president.week(), base, rng);
+        termsOutcome("The second inauguration", o, null);
+        w.midtermsHeld = false;
+        politicsEngine.secondTerm(w.politics);
+        ElectionResult r = w.election.result2032();
+        if (w.hill != null && r != null) hillEngine.reelected(w.hill, r.marginFor(player().party()));
+        if (w.westWing != null) {
+            WestWingEngine.Outcome wo = WestWingEngine.Outcome.empty();
+            List<String> gone = westWingEngine.secondTerm(w.westWing, westWingContext(), wo, rng);
+            westWingOutcome("The second term", wo, null);
+            termsEngine.departures(w.terms, gone);
+        }
+        log("Inauguration Day, " + calendar.inauguration(2).getYear() + ". " + player().candidate().name() + " takes the oath for a second term with " + congress()
+                + ". Approval " + Math.round(approval()) + "%.");
+    }
+
+    /** The legacy goals of a second term, each with whether it was met (judged now). */
+    public List<Map.Entry<String, Boolean>> legacyGoals() {
+        List<Map.Entry<String, Boolean>> out = new ArrayList<>();
+        if (w.terms == null || w.terms.goals().isEmpty()) return out;
+        Map<String, Double> b = w.terms.goalBase();
+        double laws = w.hill == null ? w.policy.laws().size() : w.hill.enacted().size();
+        double justices = w.westWing == null ? 0 : w.westWing.justicesAppointed();
+        double wars = w.military.wars().size() + (w.military.operationActive() ? 1 : 0);
+        TermsState.Race r = w.terms.race();
+        var in = new TermsEngine.GoalInputs(laws - b.getOrDefault("laws", laws), justices - b.getOrDefault("court", justices),
+                economyEngine.deficit(w.economy, w.budget) - b.getOrDefault("deficit", 0.0), wars - b.getOrDefault("wars", wars),
+                w.economy.unemployment(), w.economy.inflation(), approval(), w.terms.midtermHouse(), r != null && r.done() && r.won());
+        for (String goal : w.terms.goals()) out.add(Map.entry(TermsEngine.goalLabel(goal), TermsEngine.goalMet(goal, in)));
+        return out;
+    }
+
+    /** Every war fought, in order. */
+    public List<TheaterOutcome> wars() { return w.military.wars(); }
+
+    /** Crises that went the president's way and crises that did not (Resolute Desk's {@code okCount} and {@code failCount}). */
+    public int[] crisisRecord() { return new int[]{0, 0}; }
+
+    /** The world as the president leaves it: relations with treaty allies (0-100), agreements reached, trips abroad. */
+    public double[] worldRecord() { return new double[]{50 + (w.diplomacy.deterrence() - 50) * 0.3, 0, 0}; }
+
+    /** What a law counts for in the verdict's "vision and agenda" (Resolute Desk's {@code big}): its reach, cost and appeal. */
+    public double lawWeight(String id) {
+        if (!bills.has(id)) return 3;
+        Bill b = bills.get(id);
+        return 3 + Math.max(0, b.publicAppeal()) * 0.8 + Math.min(4, Math.abs(b.annualCostBn()) * 0.004);
+    }
+
+    /** Approval on each issue, Resolute Desk's way. */
+    public Map<Issue, Double> issueApproval() { return w.politics.issueApproval(); }
+
+    /** Noon on January 20: the office changes hands, and the presidency's verdict is written. */
+    private void handoff() {
+        w.clock.set(w.terms.handoff());
+        log("At noon on January 20, " + w.terms.handoff().getYear() + ", " + (w.terms.successor() == null ? "your successor" : w.terms.successor())
+                + " takes the oath of office. Thank you for your service.");
+        finish();
     }
 
     // ---- the West Wing and the press (Resolute Desk's executive) --------------------------------------------------
@@ -1022,7 +1234,7 @@ public final class GameEngine implements WorldView {
         app.putAll(w.politics.issueApproval());
         PresidentState ps = w.president;
         EconomyState e = w.economy;
-        return new WestWingEngine.Context(date(), setup.seed(), ps == null ? 0 : ps.week(), player().party(), p.name(), approval(), app, sal,
+        return new WestWingEngine.Context(date(), setup.seed(), termWeek(), player().party(), p.name(), approval(), app, sal,
                 ps == null ? 80 : ps.stamina(), ps == null ? 25 : ps.stress(), skills, senate, congress().houseMajority(), congress().senateMajority(player().party()),
                 politicsEngine.params().rdPolarization(), shutdown, e.unemployment(), e.inflation(), midtermSeason(), ownBill, ownBillId, ownPublic,
                 ps == null ? 0 : ps.cabinetMeetings(), this::newsVariable, setup.realRoster(), picks, w.politics.groupApproval());
@@ -1177,6 +1389,7 @@ public final class GameEngine implements WorldView {
         for (News n : o.news()) news(n);
         if ("removed".equals(w.hill.impeachment()) && w.phase == Phase.GOVERNING) {
             log("The Senate convicts. The president is removed from office.");
+            if (w.terms != null) termsEngine.removed(w.terms);
             finish();
         }
     }
@@ -1212,7 +1425,10 @@ public final class GameEngine implements WorldView {
 
     /** The hundred days before the midterms: campaign stops for the party's candidates. */
     public boolean midtermSeason() {
-        return !w.midtermsHeld && !date().isBefore(calendar.midterms().minusDays(100)) && date().isBefore(calendar.midterms());
+        LocalDate mid = calendar.midterms(term());
+        if (!w.midtermsHeld && !date().isBefore(mid.minusDays(100)) && date().isBefore(mid)) return true;
+        TermsState.Race r = w.terms == null ? null : w.terms.race();
+        return r != null && !r.done() && !date().isBefore(r.electionDay().minusDays(100)) && date().isBefore(r.electionDay());
     }
 
     /** What the approval model needs at the inauguration (Resolute Desk's {@code Approval.init}). */
@@ -1246,14 +1462,16 @@ public final class GameEngine implements WorldView {
     private void holdMidterms() {
         w.midtermsHeld = true;
         int before = congress().house(player().party()), senBefore = congress().senate(player().party());
-        int year = calendar.midterms().getYear();
+        int year = calendar.midterms(term()).getYear();
         if (w.hill != null) {
-            hillOutcome("Midterms " + year, hillEngine.holdElection(w.hill, hillContext(calendar.midterms()), null, hillLeaders(), rng), null);
+            hillOutcome("Midterms " + year, hillEngine.holdElection(w.hill, hillContext(calendar.midterms(term())), null, hillLeaders(), rng), null);
+            if (w.president != null) presidentEngine.clearCampaign(w.president);
         } else {
             Effect.CongressElected result = electionEngine.midterm(w.election, player().party(), approval(), w.economy.growth(), congress(), year, rng);
             int decision = w.ledger.decide(date(), "Midterms " + year);
             dispatch(decision, "Midterms", result);
         }
+        if (w.terms != null) termsEngine.noteMidterms(w.terms, congress().house(player().party()) >= 218);
         log(Fmt.format("Midterms: your party %+d House seats, %+d Senate seats. %s.",
                 congress().house(player().party()) - before, congress().senate(player().party()) - senBefore, congress()));
     }

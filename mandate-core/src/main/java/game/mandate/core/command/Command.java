@@ -64,4 +64,6 @@ public sealed interface Command {
     record Hill(game.mandate.core.hill.HillOrder order) implements Command {}
     /** The West Wing and the Press Briefing Room (Resolute Desk's executive and press). */
     record WestWing(game.mandate.core.westwing.WestWingOrder order) implements Command {}
+    /** Terms of office: whether to run again, the second term's theme and inaugural, an endorsement in the succession. */
+    record Terms(game.mandate.core.terms.TermsOrder order) implements Command {}
 }

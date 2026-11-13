@@ -425,6 +425,7 @@ public final class HillState {
     public boolean shutdown() { return shutdown; }
     public double blame() { return blame; }
     public int shutdownWeeks() { return shutdownWeeks; }
+    public int shutdowns() { return shutdowns; }
     public double debtLimit() { return debtLimit; }
     public int xWeek() { return xWeek; }
     public List<Pending> pending() { return Collections.unmodifiableList(pending); }

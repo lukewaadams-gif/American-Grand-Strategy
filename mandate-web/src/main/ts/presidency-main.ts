@@ -172,11 +172,29 @@ function watchWeek(): void {
 
 /** The preview covers the presidency in office; the day-100 report, the campaign of 2032 and the rest come later. */
 function beyondPreview(v: PresidencyView): void {
+  if (v.over) { showVerdict(); return; }
   host.open(h('div', { class: 'dialog-card' },
     h('div', { class: 'eyebrow' }, dateLong(v.date)),
     h('h2', { class: 'dialog-title' }, 'Beyond this preview'),
     h('p', null, 'The game has moved past the part of the presidency this preview shows. The day-100 report, the transition office and the rest of the presidency arrive in its later milestones.'),
     h('div', { class: 'dialog-foot' }, h('button', { class: 'btn primary', type: 'button', onclick: () => { host.close(); restart(); } }, 'Start again from the save'))), 'Beyond this preview');
+}
+
+/** The end: one verdict on the whole presidency (Resolute Desk's legacy screen). */
+function showVerdict(): void {
+  const vd = engine.verdict();
+  const measures = vd.measures ?? [];
+  host.open(h('div', { class: 'dialog-card verdict' },
+    h('div', { class: 'eyebrow' }, dateLong(vd.date)),
+    h('h2', { class: 'dialog-title' }, 'The verdict of history'),
+    h('p', { class: 'verdict-grade' }, (vd.grade ?? '') + (vd.score !== undefined ? ` · ${vd.score} of 1,000` : '')),
+    vd.rank ? h('p', { class: 'verdict-rank' }, vd.rank) : null,
+    measures.length ? h('dl', { class: 'ww-stats verdict-measures' }, ...measures.flatMap(m => [h('dt', null, m.name),
+      h('dd', null, h('span', { class: 'hill-meter ' + (m.score >= 60 ? 'good' : m.score >= 40 ? 'mid' : 'bad'), role: 'meter', 'aria-valuemin': '0', 'aria-valuemax': '100',
+        'aria-valuenow': String(m.score), 'aria-label': m.name }, h('span', { style: `width:${Math.max(2, m.score)}%` }), h('span', { class: 'hill-meter-value' }, String(m.score))))])) : null,
+    h('ul', { class: 'hill-list' }, ...(vd.lines ?? []).map(l => h('li', null, l))),
+    (vd.record ?? []).length ? h('details', null, h('summary', null, 'Your record'), h('ul', { class: 'hill-list small' }, ...(vd.record ?? []).map(l => h('li', null, l)))) : null,
+    h('div', { class: 'dialog-foot' }, h('button', { class: 'btn primary', type: 'button', onclick: () => { host.close(); restart(); } }, 'Start again from the save'))), 'The verdict of history');
 }
 
 function save(): void {
@@ -242,13 +260,15 @@ function westWing(tab?: 'Staff' | 'Cabinet' | 'Orders and rules'): void {
 }
 
 /** The Press Briefing Room: the press, speeches, posts and the party. */
-function openPress(): void {
+function openPress(first?: 'The press' | 'Speeches' | 'Social media' | 'Your party' | 'Your term'): void {
   host.open(pressRoom({
     view: () => engine.press(),
     order: o => west(o),
     decide: () => { if (engine.decisions().length) { host.close(); openDecisions(); } },
     back: () => host.close(),
-  }), 'The Press Briefing Room', render);
+    terms: () => engine.terms(),
+    termsOrder: o => command({ type: 'Terms', order: o }),
+  }, first), 'The Press Briefing Room', render);
 }
 
 function openCabinet(): void {

@@ -123,8 +123,9 @@ class RequiredBehaviourTest {
             playUntil(healthy, g -> !g.date().isBefore(java.time.LocalDate.of(2031, 10, 1)));
             playUntil(recession, g -> !g.date().isBefore(java.time.LocalDate.of(2031, 10, 1)));
             recession.dispatch(0, "Test: recession", new Effect.EconomyShock(-9.0, -0.5, 6));
-            playUntil(healthy, GameEngine::over);
-            playUntil(recession, GameEngine::over);
+            // to the 2032 result (a re-elected president now serves on; the comparison is on election night)
+            playUntil(healthy, g -> g.over() || g.result2032().isPresent());
+            playUntil(recession, g -> g.over() || g.result2032().isPresent());
             if (healthy.result2032().isEmpty() || recession.result2032().isEmpty()) continue;
             Party p = healthy.player().party();
             marginHealthy += healthy.result2032().get().marginFor(p);

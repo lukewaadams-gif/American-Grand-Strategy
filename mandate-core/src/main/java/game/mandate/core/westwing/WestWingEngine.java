@@ -49,7 +49,7 @@ public final class WestWingEngine {
 
     /** What a step or an order did: transitions for the router, and news. */
     public record Outcome(List<Effect> effects, List<News> news) {
-        static Outcome empty() { return new Outcome(new ArrayList<>(), new ArrayList<>()); }
+        public static Outcome empty() { return new Outcome(new ArrayList<>(), new ArrayList<>()); }
     }
 
     final WestWingData data;
@@ -262,7 +262,37 @@ public final class WestWingEngine {
             default -> "Veteran of two administrations";
         };
         out.get(1).background = "Campaign veteran";
+        secondTermPool(s, out);
         return out;
+    }
+
+    /** Second-term hires: the best people have served already, and the ones left owe the president less. */
+    static void secondTermPool(WestWingState s, List<Person> out) {
+        if (s.term < 2) return;
+        for (Person p : out) { p.skill = Math.max(30, p.skill - 6); p.loyalty = Math.max(20, p.loyalty - 8); }
+    }
+
+    /**
+     * The start of a second term (Resolute Desk's {@code Terms.startTerm}): a few secretaries move on, their deputies
+     * acting until successors are confirmed. Returns the posts that changed hands.
+     */
+    public List<String> secondTerm(WestWingState s, Context c, Outcome out, DeterministicRandomManager rng) {
+        s.term = 2;
+        List<String> gone = new ArrayList<>();
+        for (int k = 0; k < WestWingState.NPOST && gone.size() < 4; k++) {
+            Person p = s.post[k];
+            if (p == null || rng.uniform("ww.term") > 0.22) continue;
+            remove(s, p);
+            s.departures++;
+            gone.add(POST_TITLE[k]);
+            out.news().add(news(c, News.Kind.INFO, p.name + " steps down as " + POST_TITLE[k].toLowerCase() + " at the end of the term", null, 1.0, "Executive"));
+            s.record.add(c.date() + ": " + POST_TITLE[k].toLowerCase() + " " + p.name + " left at the end of the term");
+        }
+        info(s, c, "info", "Four More Years", "You took the oath again today. " + (gone.isEmpty() ? "Your cabinet stays on. "
+                : gone.size() + (gone.size() == 1 ? " member" : " members") + " of your cabinet are leaving; their deputies are acting until you name successors. ")
+                + "Second terms are hard: the honeymoon is short, the other party smells a lame duck, and history is watching.");
+        if (s.delegPeople) fill(s, c, out);
+        return gone;
     }
 
     /** Three nominees for a post: the expert, the loyalist, and a bipartisan pick (or, with the real roster, a known politician). */
@@ -289,6 +319,7 @@ public final class WestWingEngine {
             if (other) p.background = c.president() == Party.DEMOCRAT ? "A Republican former governor" : "A Democratic former governor";
             out.add(p);
         }
+        secondTermPool(s, big == null ? out : out.subList(0, 2));
         return out;
     }
 

@@ -108,7 +108,7 @@ function topBar(v: PresidencyView, hd: OvalHandlers): HTMLElement {
       stat('Unemployment', pct(v.unemployment)),
       stat('Inflation', pct(v.inflation), null, (v.inflation ?? 0) > 4 ? 'warn' : ''),
       stat('Gas', v.gas === null ? '—' : '$' + v.gas.toFixed(2)),
-      stat('Term 1', term, v.termWeek > 0 ? { text: `of ${v.termWeeks}`, tone: 'flat' } : null)),
+      stat('Term ' + (v.term ?? 1), term, v.termWeek > 0 ? { text: `of ${v.termWeeks}`, tone: 'flat' } : null)),
     h('div', { class: 'ov-actions' },
       hd.watching
         ? h('button', { class: 'btn toggle on', type: 'button', onclick: () => hd.watch(), title: 'Watch speed: click to change' }, 'Speed: ' + hd.watching)

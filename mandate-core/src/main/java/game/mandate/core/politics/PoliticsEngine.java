@@ -209,6 +209,9 @@ public final class PoliticsEngine {
     public record ApprovalStart(double personal, double difficulty, double popularMargin, Map<String, Double> stateLean, Map<String, Double> stateWeight,
                                 double commandStart) {}
 
+    /** A second term (Resolute Desk's {@code Terms.startTerm}): a short honeymoon of its own. */
+    public void secondTerm(PoliticsState s) { s.honeymoon += 2; }
+
     /** Starts approval at its target, with the honeymoon the mandate earns (Resolute Desk's {@code Approval.init}). */
     public void beginApproval(PoliticsState s, ApprovalStart a, OpinionInputs in) {
         stateEconomy(s, in);

@@ -312,6 +312,8 @@ public final class WestWingState {
     // trouble
     final List<Scandal> scandals = new ArrayList<>();
     int defiance, pardons, nextPardon = 8, departures, failures, leaks, lastCabinet = -10;
+    /** The term being served: in a second term the people on offer are less seasoned and less loyal. */
+    int term = 1;
     // the vice president
     String vpName;
     final double[] vpSkill = new double[4];   // charisma, establishment ties, discipline, fundraising
@@ -360,6 +362,7 @@ public final class WestWingState {
     public int defiance() { return defiance; }
     public int pardons() { return pardons; }
     public int departures() { return departures; }
+    public int term() { return term; }
     public int failures() { return failures; }
     public int leaks() { return leaks; }
     public int lastCabinet() { return lastCabinet; }
@@ -441,6 +444,7 @@ public final class WestWingState {
         for (Scandal s : scandals) sc.add(s.toJson());
         m.put("scandals", sc);
         m.put("trouble", List.of(defiance, pardons, nextPardon, departures, failures, leaks, lastCabinet));
+        m.put("term", term);
         m.put("vpName", vpName); m.put("vpSkill", nums(vpSkill)); m.put("vp", List.of(vpMission, vpUntil, vpMissions)); m.put("vpArg", vpArg); m.put("vpLoyalty", vpLoyalty);
         m.put("deleg", List.of(delegPeople, delegPardons));
         List<Object> ds = new ArrayList<>();
@@ -482,6 +486,7 @@ public final class WestWingState {
         for (Object o : Json.array(m.get("scandals"))) s.scandals.add(Scandal.fromJson(Json.object(o)));
         List<Object> t = Json.array(m.get("trouble"));
         s.defiance = Json.integer(t.get(0)); s.pardons = Json.integer(t.get(1)); s.nextPardon = Json.integer(t.get(2)); s.departures = Json.integer(t.get(3));
+        s.term = m.get("term") == null ? 1 : Json.integer(m.get("term"));
         s.failures = Json.integer(t.get(4)); s.leaks = Json.integer(t.get(5)); s.lastCabinet = Json.integer(t.get(6));
         s.vpName = (String) m.get("vpName");
         double[] vs = read(m.get("vpSkill"));

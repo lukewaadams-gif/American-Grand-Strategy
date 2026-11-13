@@ -52,3 +52,18 @@ Choices made while building overnight that we had not discussed. Each was made i
 4. **The groups do not yet feed the 2032 campaign;** the second term (milestone 9) will carry them into the electorate.
 5. **The Residence's plans fill this week's weekend or mornings on the calendar,** replacing whatever was there; the calendar stays the place to fine-tune it.
 6. **A milestone 3 fix:** the country room's issue table overflowed a phone's width; both tables now fit.
+
+## Milestone 9: the second term
+
+1. **The milestone came before the world (milestone 8),** while the world's specification was being written; nothing in it waits on the world, and the verdict's crisis and international measures read the world's record once milestone 8 fills it (until then they sit at Resolute Desk's no-crisis baseline).
+2. **The president can step aside, or be denied renomination,** as in Resolute Desk: fifty weeks before 2032 the desk asks, a weak president draws a primary challenger, and the party's nominee then runs on Resolute Desk's successor model instead of the 2032 campaign headquarters. A question left on the desk takes the staff's advice (Resolute Desk's: run unless approval is below 36%).
+3. **A challenger who wins the primaries is the nominee** (Resolute Desk names a different successor, which reads oddly).
+4. **The race to succeed the president is decided on Resolute Desk's model** (national margin, states' leans, regional and state swings), not a second Battleground 2028 headquarters: the president campaigns from the White House, as decided. The leans are the latest presidential election's state margins.
+5. **The voter groups do not feed the vote,** as in Resolute Desk, where elections read national approval and the states (milestone 7's note 4 is settled this way).
+6. **The rivals for the nomination** are the vice president and two of the party's figures from the candidate cast (fictional by default); the primaries' model is new (Resolute Desk has none for an open race): appeal, the vice president's tie to the president, momentum and an endorsement, with a state's own mood.
+7. **The second term's legacy goals come from a theme** chosen on the desk (four themes, three goals each), so the choice is a single question; the verdict counts each goal.
+8. **The second inaugural address** is a question in the week before the oath, with three tones (unity, unfinished business, history's judgment), each with modest effects on relations, the wings and the record.
+9. **The lame-duck decline** is new (Resolute Desk has only the end-of-term week rule): it weakens the president's pull on bills, more after the second term's midterms, fully once a successor is chosen.
+10. **The verdict replaces the old legacy score** for any game with a presidency; a game lost in 2028 keeps the campaign's score. The historians' ranking is the C-SPAN 2021 survey Resolute Desk uses, real presidents as a reference table only.
+11. **The weeks between Election Day and the handoff** start on the Monday after the election and end on January 20 itself.
+12. **The 2032 re-election campaign still pauses the presidency's weekly systems** (Congress, the West Wing, the economy) for its fifteen weeks, as before this milestone; running them alongside the campaign is left for the final audits.

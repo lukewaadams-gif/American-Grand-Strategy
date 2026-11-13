@@ -12,6 +12,7 @@ import game.mandate.core.events.EventScheduler;
 import game.mandate.core.executive.GovernmentState;
 import game.mandate.core.hill.HillState;
 import game.mandate.core.westwing.WestWingState;
+import game.mandate.core.terms.TermsState;
 import game.mandate.core.game.Legacy;
 import game.mandate.core.military.MilitaryState;
 import game.mandate.core.opening.HundredDaysState;
@@ -57,6 +58,8 @@ public final class WorldState {
     HillState hill;
     /** The staff, the cabinet, orders, the courts, scandals, the press and the developing stories; null before day 100. */
     WestWingState westWing;
+    /** Terms of office: running again, the succession, the second term and the lame-duck weeks; null before the inauguration. */
+    TermsState terms;
     /** The weighed news The Capital Ledger is made from (the last 400 stories). */
     final List<News> news = new ArrayList<>();
     /** The era's stories that have already run (indexes into the ambient table). */
@@ -90,6 +93,7 @@ public final class WorldState {
     public PolicyTableState policyTable() { return policyTable; }
     public HillState hill() { return hill; }
     public WestWingState westWing() { return westWing; }
+    public TermsState terms() { return terms; }
     public List<News> news() { return Collections.unmodifiableList(news); }
     public Set<Integer> ambientUsed() { return Collections.unmodifiableSet(ambientUsed); }
     public EventScheduler scheduler() { return scheduler; }
@@ -112,6 +116,7 @@ public final class WorldState {
         m.put("policyTable", policyTable == null ? null : policyTable.toJson());
         m.put("hill", hill == null ? null : hill.toJson());
         m.put("westWing", westWing == null ? null : westWing.toJson());
+        m.put("terms", terms == null ? null : terms.toJson());
         List<Object> ns = new ArrayList<>();
         for (News n : news) ns.add(n.toJson());
         m.put("news", ns);
@@ -142,6 +147,7 @@ public final class WorldState {
         w.policyTable = m.get("policyTable") == null ? null : PolicyTableState.fromJson(Json.object(m.get("policyTable")));
         w.hill = m.get("hill") == null ? null : HillState.fromJson(Json.object(m.get("hill")));
         w.westWing = m.get("westWing") == null ? null : WestWingState.fromJson(Json.object(m.get("westWing")));
+        w.terms = m.get("terms") == null ? null : TermsState.fromJson(Json.object(m.get("terms")));
         if (m.get("news") != null) for (Object o : Json.array(m.get("news"))) w.news.add(News.fromJson(Json.object(o)));
         if (m.get("ambientUsed") != null) for (Object o : Json.array(m.get("ambientUsed"))) w.ambientUsed.add(Json.integer(o));
         w.scheduler = EventScheduler.fromJson(Json.object(m.get("scheduler")));

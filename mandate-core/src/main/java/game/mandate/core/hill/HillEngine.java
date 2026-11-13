@@ -91,7 +91,18 @@ public final class HillEngine {
                           int houseDem, int senateDem, double growth, double unemployment, double unemploymentRef, double deficitPct, double debtPct,
                           double nominalGdpTn, Map<String, Double> stateLean, LocalDate electionDay, double scandal, double honeymoon,
                           double politicalQuality, double counselQuality, double scandalPressure, String scandalTitle, double wingBase, double wingOther,
-                          int opposition) {
+                          int opposition, double lameDuck) {
+        /** Without the lame-duck factor (a first-term president). */
+        public Context(LocalDate date, int termWeek, Party president, double approval, double charisma, double establishment, double staffQuality,
+                       double hillHours, List<String> visited, Map<String, Double> campaign, double warChest, double polarization,
+                       int houseDem, int senateDem, double growth, double unemployment, double unemploymentRef, double deficitPct, double debtPct,
+                       double nominalGdpTn, Map<String, Double> stateLean, LocalDate electionDay, double scandal, double honeymoon,
+                       double politicalQuality, double counselQuality, double scandalPressure, String scandalTitle, double wingBase, double wingOther,
+                       int opposition) {
+            this(date, termWeek, president, approval, charisma, establishment, staffQuality, hillHours, visited, campaign, warChest, polarization, houseDem, senateDem,
+                    growth, unemployment, unemploymentRef, deficitPct, debtPct, nominalGdpTn, stateLean, electionDay, scandal, honeymoon, politicalQuality, counselQuality,
+                    scandalPressure, scandalTitle, wingBase, wingOther, opposition, 0);
+        }
         /** The context as it was, before the West Wing: staff of middling quality, no executive scandal, the wings content. */
         public Context(LocalDate date, int termWeek, Party president, double approval, double charisma, double establishment, double staffQuality,
                        double hillHours, List<String> visited, Map<String, Double> campaign, double warChest, double polarization,
@@ -710,6 +721,7 @@ public final class HillEngine {
             l += bl.loyalty * (b.ours && mine ? 0.4 + 2.4 * a : 0.5 + 1.3 * a);
         } else l -= 0.9 * c.polarization() * (bip ? 0.7 : 1);
         if (b.ours && !mine) l -= midtermSeason(c) || c.termWeek() > 170 ? 0.65 : 0.35;
+        if (b.ours) l -= c.lameDuck() * (mine ? 0.25 : 0.6);            // members look past a lame duck
         if (b.ours || mine) l += (bl.rel - 50) / 35;
         if (b.ours) l += pull(s, c, bl);
         l += mine ? (c.approval() - 45) / 18 : (c.approval() - 50) / 30;
@@ -722,9 +734,20 @@ public final class HillEngine {
         return 1.6 * l + 1.2 * b.sweet[bi];
     }
 
+    /** Re-elected (Resolute Desk's {@code Relations.elected}): the mandate is renewed by the new margin. */
+    public void reelected(HillState s, double popularMargin) {
+        s.mandate = s.mandate0 = clamp(2 + 0.55 * popularMargin, 0.5, 15);
+    }
+
+    /** The president will not run again (Resolute Desk's {@code Relations.setback}): the party cools and the mandate is spent. */
+    public void steppedAside(HillState s, Party president) {
+        for (Bloc b : s.blocs) if (b.party == president) b.rel = Math.max(0, b.rel - 5);
+        s.mandate = 0;
+    }
+
     /** The mandate's and the honeymoon's pull on the president's bills (Resolute Desk's {@code Relations.pull}). */
     double pull(HillState s, Context c, Bloc bl) {
-        double m = s.mandate / 15, h = c.honeymoon();
+        double m = s.mandate / 15 * (1 - 0.6 * c.lameDuck()), h = c.honeymoon();
         if (bl.party == c.president()) return 0.9 * m + 0.25 * h;
         return bl.moderate ? 0.7 * m + 0.35 * h : 0.2 * m + 0.1 * h;
     }
@@ -1358,7 +1381,7 @@ public final class HillEngine {
         Context next = new Context(c.date(), c.termWeek(), c.president(), c.approval(), c.charisma(), c.establishment(), c.staffQuality(), c.hillHours(), c.visited(),
                 c.campaign(), c.warChest(), c.polarization(), houseD, senateD, c.growth(), c.unemployment(), c.unemploymentRef(), c.deficitPct(), c.debtPct(),
                 c.nominalGdpTn(), c.stateLean(), c.electionDay(), c.scandal(), c.honeymoon(), c.politicalQuality(), c.counselQuality(), c.scandalPressure(), c.scandalTitle(),
-                c.wingBase(), c.wingOther(), c.opposition());
+                c.wingBase(), c.wingOther(), c.opposition(), c.lameDuck());
         s.congressNumber++;
         s.seatedWeek = s.week;
         seatBlocs(s, next, rng);

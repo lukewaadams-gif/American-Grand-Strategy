@@ -75,6 +75,9 @@ public final class PresidentEngine {
     public static boolean evening(int slot) { return slot % 3 == 2; }
 
     /** Why an activity cannot go in a slot, or null if it can. */
+    /** After an election: the campaign stops counted toward it are spent. */
+    public void clearCampaign(PresidentState s) { s.midtermEffort.clear(); }
+
     public String refusal(int slot, Activity a, boolean midtermSeason) {
         if (slot < 0 || slot >= SLOTS) return "No such slot";
         return switch (a) {
@@ -83,7 +86,7 @@ public final class PresidentEngine {
             case HILL -> weekend(slot) ? "Congress is away at the weekend" : null;
             case WORK_LATE -> evening(slot) ? null : "Working late is for evenings";
             case CABINET -> weekend(slot) || evening(slot) ? "The cabinet meets on weekday mornings and afternoons" : null;
-            case CAMPAIGN -> midtermSeason ? null : "Campaign stops are for the hundred days before the midterms";
+            case CAMPAIGN -> midtermSeason ? null : "Campaign stops are for the hundred days before an election";
             case ABROAD -> "Trips abroad arrive with the world (presidency milestone 7)";
             default -> null;
         };

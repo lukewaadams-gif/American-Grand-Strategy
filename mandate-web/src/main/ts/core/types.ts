@@ -119,6 +119,10 @@ export interface PresidencyView {
   approval: number | null; approvalChange: number | null;
   unemployment?: number | null; inflation?: number | null; growth?: number | null; gas: number | null;
   termWeek: number; termWeeks: number;
+  /** The term being served, how much of a lame duck the president is (0-100), and whether the presidency is over. */
+  term?: number; lameDuck?: number; over?: boolean;
+  /** After an election that chose who comes next: the successor and the day of the handoff. */
+  successor?: string; handoff?: string;
   pendingDecisions: number; congress: string;
   /** The length of the turn the End button plays: 'week', 'war' (an operational turn), 'transition', or null when there is none. */
   turnUnit: 'week' | 'war' | 'transition' | null;
@@ -333,6 +337,24 @@ export interface WestWingView {
   probes?: { subject: string; status: string; chamber: string }[]; impeachment?: string;
   record?: { date: string; what: string }[];
 }
+/** Terms of office (milestone 9): the term, the run question, the race to succeed the president, the legacy goals. */
+export interface TermsContender { index?: number; name: string; party: string; home: string; role: string; share: number; delegates: number;
+  charisma: number; debate: number; endorsed?: boolean; nominee?: boolean }
+export interface TermsView {
+  open: boolean; term?: number; termWeek?: number; lameDuck?: number; running?: string; challenger?: string; challengerShare?: number;
+  leaving?: boolean; successor?: string; handoff?: string; theme?: string; goals?: { label: string; met: boolean }[];
+  race?: { year: number; electionDay: string; rivals: TermsContender[]; canEndorse: boolean; nominee: TermsContender | null; opponent: TermsContender | null;
+    split: number; contests: number; national?: number; forecast?: number; done: boolean; won?: boolean; ev?: number[]; popular?: number[];
+    primaries: string[]; season: boolean };
+  record?: string[];
+}
+
+/** The verdict on a finished presidency: the historians' ten measures, the total, the rank and the record. */
+export interface VerdictView {
+  over: boolean; score?: number; grade?: string; rank?: string | null; measures?: { name: string; score: number }[]; lines?: string[];
+  president: string; date: string; terms: number; record?: string[]; summary: string;
+}
+
 export interface PressView {
   date: string; open: boolean; reason?: string;
   outlets?: { index: number; name: string; audience: number; interviews: boolean; tone: number; label: string }[];

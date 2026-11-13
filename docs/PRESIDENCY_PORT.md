@@ -87,7 +87,7 @@ Each milestone goes to the preview.
 6. **The executive, the press and storylines** (built, for review), with the Senate's confirmations (an opposition Senate blocks nominees). On screen: the West Wing and the Press Briefing Room.
 7. **The Residence and the country's groups** (built, for review). Approval by group from the 96-cell electorate.
 8. **The world.** On screen: the presidency's Situation Room.
-9. **The second term.**
+9. **The second term** (built, for review).
    - The lame-duck weeks after a 2032 loss.
    - After a win: the second transition and inauguration, then the second term to January 2037, with the 2034 midterms run on milestone 5's model.
    - The pressures: lame-duck decline, turnover, legacy and the succession.
@@ -368,6 +368,36 @@ The full design, the calibration targets and what each step built are in `ECONOM
   - the White House physician's advice;
   - the term's stamina and stress;
   - this week away from the desk: a family weekend, a weekend at Camp David, exercise every morning, or a week of rest, each put straight on the calendar.
+
+## The second term (milestone 9)
+
+The terms of office are a domain of their own (`terms/TermsEngine`, after Resolute Desk's `Terms` and `Reelection`).
+- **Another four years?** Fifty weeks before the 2032 election the desk asks whether the president will run.
+  - Below 42% approval a primary challenger may enter (Resolute Desk's odds). A state votes every other week from February to June, and if the challenger holds a majority of the vote at the end, the party denies the nomination and the challenger runs instead.
+  - Stepping aside costs the president's party in Congress five points of warmth and the rest of the mandate, and starts the race to succeed the president. There is then no 2032 re-election campaign.
+- **The race to succeed the president**, after two terms or after stepping aside or being denied:
+  - the rivals are the vice president and two of the party's figures (fictional by default);
+  - from January to June a state votes every other week, by each rival's appeal, the vice president's tie to the president, momentum and an endorsement;
+  - the president may endorse once (it angers the other wing), and close contests split the party;
+  - the other party picks its strongest figure in June; the conventions come in the summer and three debates in the fall;
+  - election night uses Resolute Desk's national margin for a race the president is not in: approval counts for 0.6 instead of 0.85, "time for a change" after two terms, unpopular wars, scandal, the party's money and the president's campaign stops in the last hundred days, then state, regional and national swings across the 538 electoral votes. Congress is elected the same day on the nominee's coattails.
+- **After a 2032 win** the weeks go on:
+  - the desk asks what the second term is about; four themes, each setting three legacy goals;
+  - in the week before January 20, 2033, it asks for the tone of the second inaugural address;
+  - at the oath: up to four secretaries leave (22% each, Resolute Desk's rule), their deputies acting; a short honeymoon of its own; the Hill's mandate renewed by the 2032 margin;
+  - from then on, second-term hires are less seasoned and less loyal.
+- **The second term** runs weekly to January 20, 2037, with the 2034 midterms race by race on milestone 5's model. Campaign stops on the calendar count in the hundred days before the midterms and before a successor's election.
+- **The lame-duck decline:** 0.1 to 0.35 through the second term's first two years, 0.4 to 0.9 after its midterms, and 1 once a successor is elected (0.5 after stepping aside). Members of Congress look past the president: the pull on their votes fades, and so does the mandate's.
+- **After a 2032 loss, or once a successor is chosen,** the weeks to the handoff are played: pardons, last orders and rules, the lame-duck session of Congress.
+- **The verdict** (Resolute Desk's `Legacy`): one verdict on the whole presidency, across every term served.
+  - The historians' ten measures, 0 to 100 each, are public persuasion, crisis leadership, economic management, moral authority, international relations, administrative skills, relations with Congress, vision and agenda, equal justice, and performance within the times.
+  - The record behind them: approval, the economy from the oath to the handoff, scandals, impeachment and pardons, the Court, the staff, the laws and vetoes, the wars, and the legacy goals (6 points each in vision and agenda when met, minus 3 when missed).
+  - The total out of 1,000 places the president among the 44 in the C-SPAN 2021 historians' survey.
+- **On screen:**
+  - the top bar shows the term;
+  - the Press Briefing Room's new "Your term" tab shows the lame-duck meter, the legacy goals and the race to succeed you, with its candidates, primaries, endorsement, the general election's polls and the electoral votes they point to;
+  - the questions come on the desk;
+  - at the handoff, "The verdict of history" shows the measures, the rank and the record.
 
 ## Quality bar
 

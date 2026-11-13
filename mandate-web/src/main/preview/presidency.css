@@ -592,3 +592,12 @@
   .ctry-bar { width: calc(var(--s) * 44px); margin-right: 4px; }
   .ctry-issues .pill { display: block; margin: 2px 0 0; width: max-content; max-width: 100%; }
 }
+
+/* ---- terms of office and the verdict (milestone 9) ---------------------------------------------------------------- */
+.ww-goal { display: inline-block; min-width: 6.5em; padding: 1px 6px; border-radius: 4px; font-size: calc(var(--s) * 12px); text-align: center; border: 1px solid var(--line, #3a4352); }
+.ww-goal.good { color: var(--good); border-color: var(--good); }
+.ww-goal.mid { color: var(--muted); }
+.verdict { max-width: 720px; }
+.verdict-grade { font-size: calc(var(--s) * 20px); font-weight: 600; margin: 4px 0; }
+.verdict-rank { color: var(--muted); margin: 0 0 12px; }
+.verdict-measures { margin: 12px 0; }

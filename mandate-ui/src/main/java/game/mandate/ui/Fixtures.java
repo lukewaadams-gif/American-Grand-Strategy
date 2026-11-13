@@ -29,7 +29,7 @@ public final class Fixtures {
 
     static GameEngine until(GameEngine g, Predicate<GameEngine> stop) {
         int guard = 0;
-        while (!g.over() && !stop.test(g) && guard++ < 400) AutoPilot.playTurn(g);
+        while (!g.over() && !stop.test(g) && guard++ < 1200) AutoPilot.playTurn(g);
         return g;
     }
 

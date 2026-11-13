@@ -5396,6 +5396,7 @@
           "f": [false, false]
         }],
       "trouble": [0, 1, 25, 1, 0, 0, 15],
+      "term": 1,
       "vpName": "Mary Ashby",
       "vpSkill": [74.0, 50.0, 62.0, 71.0],
       "vp": [0, -1, 0],
@@ -5418,6 +5419,29 @@
         }],
       "storyCool": {},
       "record": ["2029-04-30: the West Wing is staffed", "2029-06-04: Justice Marisol Ortega left the Supreme Court", "2029-06-18: granted a pardon", "2029-08-06: scandal: White House counsel Lauren Underwood under fire", "2029-08-06: a developing story: the ai layoffs", "2029-08-13: the Senate confirmed Linda Draper to the Supreme Court, 52-48", "2029-08-27: hired Claire Talbot as white house counsel"]
+    },
+    "terms": {
+      "term": 1,
+      "termStartWeek": 0,
+      "runStage": 0,
+      "challenger": null,
+      "chal": [0.0, 0.0],
+      "primariesHeld": 0,
+      "leaving": false,
+      "handoff": null,
+      "successor": null,
+      "successorParty": null,
+      "ending": null,
+      "theme": -1,
+      "goals": [],
+      "goalBase": {},
+      "inaugural": -1,
+      "midtermHouse": null,
+      "departures": [],
+      "race": null,
+      "questions": [],
+      "record": [],
+      "nextId": 1
     },
     "news": [{
         "date": "2029-01-25",

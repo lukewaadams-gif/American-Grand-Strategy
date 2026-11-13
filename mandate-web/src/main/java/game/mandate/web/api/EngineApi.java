@@ -75,6 +75,8 @@ public final class EngineApi {
                 case "westwing" -> WestWingViews.room(need());
                 case "westwingOptions" -> WestWingViews.options(need(), (String) req.get("kind"), Json.integer(req.get("index")));
                 case "press" -> WestWingViews.press(need());
+                case "terms" -> TermsViews.view(need());
+                case "verdict" -> TermsViews.verdict(need());
                 case "residence" -> PresidencyViews.residence(need());
                 default -> throw new IllegalArgumentException("No view called " + req.get("name"));
             };
@@ -190,12 +192,17 @@ public final class EngineApi {
             v.put("growth", n2(e.growth()));
         });
         v.put("gas", n2(g.gas()));
-        LocalDate inaug = g.calendar().inauguration();
+        LocalDate inaug = g.calendar().inauguration(g.term());
         long week = g.date().isBefore(inaug) ? 0 : ChronoUnit.WEEKS.between(inaug, g.date()) + 1;
-        v.put("termWeek", week);
-        v.put("termWeeks", ChronoUnit.WEEKS.between(inaug, inaug.plusYears(4)));
+        v.put("term", g.term());
+        long weeks = ChronoUnit.WEEKS.between(inaug, inaug.plusYears(4));
+        v.put("termWeek", Math.min(week, weeks));
+        v.put("termWeeks", weeks);
+        v.put("lameDuck", Math.round(g.lameDuck() * 100));
+        v.put("over", g.over());
+        g.terms().ifPresent(t -> { if (t.leaving()) { v.put("successor", t.successor()); v.put("handoff", t.handoff().toString()); } });
         v.put("pendingDecisions", g.pendingEvents().size() + (g.phase() == Phase.FIRST_100_DAYS ? g.hundredDays().map(h -> h.pending().size()).orElse(0) : 0)
-                + HillViews.count(g) + WestWingViews.decisions(g).size());
+                + HillViews.count(g) + WestWingViews.decisions(g).size() + TermsViews.count(g));
         v.put("congress", g.congress().toString());
         // how long the End button's turn is: a week in office (an operational turn in a war), none in the other phases
         v.put("turnUnit", g.operationsActive() ? "war" : switch (g.phase()) {
@@ -210,8 +217,14 @@ public final class EngineApi {
         g.nextFedMeeting().ifPresent(d -> upcoming.add(Map.of("date", d.toString(), "what", "The Fed meets")));
         LocalDate day100 = inaug.plusDays(99);
         if (!today.isAfter(day100)) upcoming.add(Map.of("date", day100.toString(), "what", "Day 100"));
-        if (!today.isAfter(cal.midterms())) upcoming.add(Map.of("date", cal.midterms().toString(), "what", "The midterm elections"));
-        if (!today.isAfter(cal.election2032())) upcoming.add(Map.of("date", cal.election2032().toString(), "what", "Election Day 2032"));
+        int term = g.term();
+        if (!today.isAfter(cal.midterms(term))) upcoming.add(Map.of("date", cal.midterms(term).toString(), "what", "The midterm elections"));
+        if (!today.isAfter(cal.presidentialElection(term))) upcoming.add(Map.of("date", cal.presidentialElection(term).toString(), "what", "Election Day " + cal.presidentialElection(term).getYear()));
+        g.terms().ifPresent(t -> {
+            if (t.leaving() && !today.isAfter(t.handoff())) upcoming.add(Map.of("date", t.handoff().toString(), "what", "The handoff to " + t.successor()));
+            else if (term == 1 && g.result2032().map(r -> r.winner() == g.player().party()).orElse(false) && !today.isAfter(cal.inauguration(2)))
+                upcoming.add(Map.of("date", cal.inauguration(2).toString(), "what", "The second inauguration"));
+        });
         v.put("upcoming", upcoming);
         List<Object> bills = new ArrayList<>();
         var hd = g.hundredDays();
@@ -570,6 +583,7 @@ public final class EngineApi {
         });
         out.addAll(HillViews.decisions(g));
         out.addAll(WestWingViews.decisions(g));
+        out.addAll(TermsViews.decisions(g));
         boolean campaign = g.phase() == Phase.GENERAL_CAMPAIGN_2028 || g.phase() == Phase.REELECTION_CAMPAIGN_2032;
         if (campaign && g.debateThisWeek().isPresent() && g.election().pendingPosture() == null) {
             var theirs = game.mandate.core.campaign.DebatePosture.tendencyOf(g.opponent().candidate());
