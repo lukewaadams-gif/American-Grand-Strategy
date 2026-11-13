@@ -172,6 +172,48 @@ public sealed interface Effect {
         public String describe() { return signed("Scandal", points); }
     }
 
+    // ---- the West Wing and the press (Resolute Desk) ------------------------------------------------------------------
+
+    /** Standing on an issue (Resolute Desk's {@code issueAdj}), clamped to plus or minus 1.5; it fades 3% a week. */
+    record IssueStanding(Issue issue, double delta) implements Effect {
+        public String describe() { return signed("Standing on " + issue.label().toLowerCase(), delta); }
+    }
+
+    /** The party's running record, left or right (Resolute Desk's {@code HomeFront.act}): the wings judge it. */
+    record PartyRecord(double econ, double cult, double weight) implements Effect {
+        public String describe() { return "The record " + (econ + cult < 0 ? "leans left" : econ + cult > 0 ? "leans right" : "holds the center"); }
+    }
+
+    /** Relations with Congress's blocs: the president's party's ({@code own}) or the other party's. */
+    record BlocRelations(boolean own, double delta) implements Effect {
+        public String describe() { return signed(own ? "Relations with your party in Congress" : "Relations with the other party in Congress", delta); }
+    }
+
+    /** The president's stamina and stress. */
+    record PresidentStrain(double stamina, double stress) implements Effect {
+        public String describe() { return (stamina != 0 ? signed("Stamina", stamina) : "") + (stamina != 0 && stress != 0 ? ", " : "") + (stress != 0 ? signed("Stress", stress) : ""); }
+    }
+
+    /** An executive order or agency rule moves one policy a step ({@code revert}: it is undone, quietly). */
+    record PolicyByOrder(String policy, int steps, boolean rule, String label, boolean revert) implements Effect {
+        public String describe() { return (revert ? "Undone: " : "") + label; }
+    }
+
+    /** The average tariff on imports, points. */
+    record Tariff(double points) implements Effect {
+        public String describe() { return signed("Tariffs", points); }
+    }
+
+    /** Money raised for the party, $ millions. */
+    record PartyFunds(double millions) implements Effect {
+        public String describe() { return signed("Party funds ($M)", millions); }
+    }
+
+    /** Approval in one voter group (Resolute Desk's {@code groupBump}), by group code; the groups' model comes with milestone 7. */
+    record GroupStanding(String group, double points) implements Effect {
+        public String describe() { return signed("Standing with " + group, points); }
+    }
+
     private static String signed(String label, double v) { return label + " " + fmt(v); }
 
     private static String fmt(double v) {
