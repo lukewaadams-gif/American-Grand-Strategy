@@ -7,7 +7,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const axeSrc = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 const OUT = process.argv[2] || 'preview-checks';
-const BASE = process.argv[3] || 'http://127.0.0.1:8766/index.html';
+const BASE = process.argv[3] || 'http://127.0.0.1:8766/campaign.html';
 fs.mkdirSync(OUT, { recursive: true });
 let failures = 0;
 (async () => {

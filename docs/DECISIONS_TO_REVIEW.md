@@ -91,3 +91,11 @@ Choices made while building overnight that we had not discussed. Each was made i
 10. **The world opens on day 100,** with the West Wing. During the first hundred days the hundred days' own crisis is the foreign-policy story.
 11. **Real leaders only with the real-person roster:** the stand-ins in `countries.tsv` by default, the names in `real_names.tsv` when the roster is on.
 12. **The map** is Natural Earth's 1:110m countries from world-atlas, in the same Robinson projection and frame as Resolute Desk's map, so its label points fit.
+
+## Milestone 10: the rest
+
+1. **The transition office covers the White House staff and the agenda.** The Senate-confirmed cabinet stays with the first hundred days' own nominations (State, Treasury, Defense) and the West Wing's on day 100. Resolute Desk's transition also covers the cabinet, but here two systems would compete.
+2. **The transition is one turn, with a pool of twenty-four hours** rather than six weeks of eight hours. Background checks report at once; names do not leak. The grade keeps Resolute Desk's formula, minus the leaks and with the chief of staff's bonus for naming one at all.
+3. **The front page of the preview is now the whole game.** The campaign-only preview moves to `campaign.html`; `presidency.html` stays.
+4. **New games run the full length** (the campaign and on for as long as the president serves). The 100-day game length remains in the engine and the terminal game.
+5. **Sound is synthesized** (a filtered-noise room tone, a clock, a chime). No sound files. It is off until a click turns it on, as browsers require.

@@ -36,7 +36,8 @@ class ArchitectureTest {
             CongressState.class, PolicyState.class, GovernmentState.class, DiplomacyState.class, MilitaryState.class, OperationState.class,
             ElectionState.class, CampaignSide.class, WorldState.class, PresidentState.class,
             game.mandate.core.policy.PolicyTableState.class, game.mandate.core.hill.HillState.class, game.mandate.core.westwing.WestWingState.class,
-            game.mandate.core.terms.TermsState.class, game.mandate.core.foreign.ForeignState.class);
+            game.mandate.core.terms.TermsState.class, game.mandate.core.foreign.ForeignState.class,
+            game.mandate.core.westwing.TransitionState.class);
 
     /** Domain states expose readers only. Writes go through their owning engine (same package) or a transition. */
     @Test

@@ -372,6 +372,17 @@ export interface ForeignCountryView {
   objectives: { id: string; name: string; why: string; steps: number; step: number; status: string; next?: string; reason?: string; odds?: string; ready?: boolean }[];
 }
 
+/** The transition office (milestone 10): the agenda and the White House staff, between the election and the oath. */
+export interface TransitionProspect { id: string; name: string; profile: string; kind: string; skill: number; loyalty: number; interviewed: boolean;
+  trait: string | null; traitDesc: string | null; checked: boolean; baggage: string | null; canInterview: boolean; canCheck: boolean; canAnnounce: boolean }
+export interface TransitionView {
+  phase: string; date: string; open: boolean; inauguration: string; president: string; party: string; ev?: number; evOpp?: number; popular?: number; congress: string;
+  bills: { id: string; name: string; issue: string; cost: number; appeal: number; needs60: boolean; pledged: boolean; chosen: number }[];
+  agenda: string[]; broken: number; hours?: number; hoursMax?: number;
+  jobs?: { role: number; title: string; does: string; pick: string | null; prospects: TransitionProspect[] }[];
+  score?: number; grade?: string; news?: string[];
+}
+
 /** Terms of office (milestone 9): the term, the run question, the race to succeed the president, the legacy goals. */
 export interface TermsContender { index?: number; name: string; party: string; home: string; role: string; share: number; delegates: number;
   charisma: number; debate: number; endorsed?: boolean; nominee?: boolean }

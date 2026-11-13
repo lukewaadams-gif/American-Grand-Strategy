@@ -54,6 +54,8 @@ public final class EngineApi {
         if (op == null) throw new IllegalArgumentException("A request needs an op");
         return switch (op) {
             case "load" -> { g = SaveManager.load((String) req.get("text")); yield ok(); }
+            case "options" -> TransitionViews.options(Boolean.TRUE.equals(req.get("realRoster")));
+            case "newGame" -> { g = TransitionViews.newGame(req); yield ok(); }
             case "save" -> ok("text", SaveManager.save(need(), req.get("ui") == null ? null : Json.object(req.get("ui"))));
             case "command" -> {
                 GameEngine game = need();
@@ -79,6 +81,7 @@ public final class EngineApi {
                 case "sitroom" -> ForeignViews.room(need());
                 case "foreignCountry" -> ForeignViews.country(need(), (String) req.get("country"));
                 case "verdict" -> TermsViews.verdict(need());
+                case "transition" -> TransitionViews.view(need());
                 case "residence" -> PresidencyViews.residence(need());
                 default -> throw new IllegalArgumentException("No view called " + req.get("name"));
             };

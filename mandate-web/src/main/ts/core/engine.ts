@@ -1,6 +1,7 @@
 // The engine: the Java simulation compiled to JavaScript (target/preview/engine/engine.js), behind one call that
 // takes and returns JSON. Everything the interface shows comes from its view models; everything it does is a command.
-import type { CabinetView, HillView, WestWingView, WwPerson, PressView, ResidenceView, TermsView, VerdictView, SitRoomView, ForeignCountryView, CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView, ScoreView } from './types.js';
+import type { CabinetView, HillView, WestWingView, WwPerson, PressView, ResidenceView, TermsView, VerdictView, SitRoomView, ForeignCountryView, TransitionView, CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView, ScoreView } from './types.js';
+import type { NewGame, StartOptions } from '../start.js';
 
 interface EngineModule { call(request: string): string; }
 let mod: EngineModule | null = null;
@@ -56,6 +57,10 @@ export const engine = {
   sitRoom(): SitRoomView { return request<SitRoomView>({ op: 'view', name: 'sitroom' }); },
   foreignCountry(country: string): ForeignCountryView { return request<ForeignCountryView>({ op: 'view', name: 'foreignCountry', country }); },
   verdict(): VerdictView { return request<VerdictView>({ op: 'view', name: 'verdict' }); },
+  transition(): TransitionView { return request<TransitionView>({ op: 'view', name: 'transition' }); },
+  /** What a new game can be: the candidates, scenarios and difficulties. */
+  options(realRoster: boolean): StartOptions { return request<StartOptions>({ op: 'options', realRoster }); },
+  newGame(g: NewGame): void { request({ op: 'newGame', ...g }); },
   residence(): ResidenceView { return request<ResidenceView>({ op: 'view', name: 'residence' }); },
   /** The budget office's score of moving a policy some steps from where it stands. */
   score(policy: string, steps: number): ScoreView { return request<ScoreView>({ op: 'view', name: 'score', policy, steps }); },

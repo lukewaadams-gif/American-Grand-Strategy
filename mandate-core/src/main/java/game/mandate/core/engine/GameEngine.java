@@ -68,6 +68,8 @@ import game.mandate.core.hill.HillOrder;
 import game.mandate.core.hill.HillState;
 import game.mandate.core.westwing.WestWingData;
 import game.mandate.core.westwing.WestWingEngine;
+import game.mandate.core.westwing.TransitionOffice;
+import game.mandate.core.westwing.TransitionState;
 import game.mandate.core.westwing.WestWingOrder;
 import game.mandate.core.westwing.WestWingState;
 import game.mandate.core.game.Legacy;
@@ -147,6 +149,7 @@ public final class GameEngine implements WorldView {
     private final WestWingEngine westWingEngine;
     private final TermsEngine termsEngine;
     private final ForeignEngine foreignEngine;
+    private final TransitionOffice transitionOffice;
     private final AmbientNews ambient;
 
     private final double premiumPerMiddleEast, middleEastPivot, premiumPerRung, stressPerRung, stressWar;
@@ -183,6 +186,7 @@ public final class GameEngine implements WorldView {
         this.westWingEngine = new WestWingEngine(new WestWingData());
         this.termsEngine = new TermsEngine();
         this.foreignEngine = new ForeignEngine(new ForeignData());
+        this.transitionOffice = new TransitionOffice(westWingEngine);
         this.ambient = new AmbientNews();
         premiumPerMiddleEast = tuning.d("markets.premium.middleEast");
         middleEastPivot = tuning.d("markets.premium.middleEastPivot");
@@ -615,8 +619,9 @@ public final class GameEngine implements WorldView {
         politicsEngine.setRole(w.politics, loserId, Role.DEFEATED);
         if (first) {
             if (winner == player().party()) {
-                log("You won. " + congress() + ". Choose your agenda.");
+                log("You won. " + congress() + ". Choose your agenda and your White House staff.");
                 w.phase = Phase.TRANSITION;
+                w.transition = transitionOffice.begin(player().party(), setup.seed(), date());
                 w.clock.set(calendar.inauguration().minusWeeks(calendar.transitionWeeks()));
             } else {
                 log("You lost the presidency.");
@@ -695,6 +700,11 @@ public final class GameEngine implements WorldView {
         dispatch(decision, "Inauguration", new Effect.PresidentInaugurated(player().candidate().id(), player().party(), myEv));
         politicsEngine.setInitialTerms(w.politics, unifiedGovernment());
         politicsEngine.beginApproval(w.politics, approvalStart(), opinionInputs());
+        if (w.transition != null && !w.transition.done()) {
+            double grade = transitionOffice.finish(w.transition);
+            politicsEngine.transitionGrade(w.politics, grade);
+            log("The transition closes with a grade of " + TransitionOffice.grade(grade) + " (" + Math.round(grade) + ").");
+        }
         // Each campaign promise left off the agenda costs the president's base wing (the wings exist once there is a president).
         for (String promised : brokenPromises())
             dispatch(decision, "Broken promise " + promised, new Effect.WingMood(0, electionEngine.brokenPledgeMood()));
@@ -1043,6 +1053,18 @@ public final class GameEngine implements WorldView {
         return m;
     }
 
+    private void transitionStep(WestWingOrder.TransitionStep x) {
+        if (w.transition == null || w.phase != Phase.TRANSITION) throw new IllegalCommandException("The transition office is open between the election and the oath");
+        try {
+            log(transitionOffice.act(w.transition, x.prospect(), x.action()));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalCommandException(e.getMessage());
+        }
+    }
+
+    public Optional<TransitionState> transition() { return Optional.ofNullable(w.transition); }
+    public TransitionOffice transitionOffice() { return transitionOffice; }
+
     /** Day 100: the Situation Room opens on Resolute Desk's 2029 world. */
     private void seatForeign() {
         java.util.Map<String, String> real = new TreeMap<>();
@@ -1325,6 +1347,11 @@ public final class GameEngine implements WorldView {
             first.put(k, new String[]{seat.name(), String.valueOf(kind)});
         }
         w.westWing = westWingEngine.seat(westWingContext(), first, rng);
+        if (w.transition != null) {
+            WestWingEngine.Outcome o = WestWingEngine.Outcome.empty();
+            transitionOffice.seat(w.westWing, w.transition, date(), o);
+            westWingOutcome("The transition's staff", o, null);
+        }
         politicsEngine.beginRdParty(w.politics);
     }
 
@@ -1378,6 +1405,7 @@ public final class GameEngine implements WorldView {
     }
 
     private void westWingOrder(WestWingOrder o) {
+        if (o instanceof WestWingOrder.TransitionStep x) { transitionStep(x); return; }
         if (w.westWing == null || w.phase != Phase.GOVERNING) throw new IllegalCommandException("The West Wing is yours once the hundred days are over");
         WestWingEngine.Outcome out;
         try {
@@ -1408,6 +1436,7 @@ public final class GameEngine implements WorldView {
             case WestWingOrder.Post x -> "A post";
             case WestWingOrder.Poll x -> "A poll";
             case WestWingOrder.Answer x -> "An answer";
+            case WestWingOrder.TransitionStep x -> "The transition: " + x.action();
         };
     }
 

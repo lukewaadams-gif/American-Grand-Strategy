@@ -209,6 +209,9 @@ public final class PoliticsEngine {
     public record ApprovalStart(double personal, double difficulty, double popularMargin, Map<String, Double> stateLean, Map<String, Double> stateWeight,
                                 double commandStart) {}
 
+    /** The transition's grade colours the honeymoon (Resolute Desk's {@code Transitions.finish}: a tenth of a point a point from 60). */
+    public void transitionGrade(PoliticsState s, double score) { s.honeymoon = Math.max(0, s.honeymoon + (score - 60) / 10); }
+
     /** A second term (Resolute Desk's {@code Terms.startTerm}): a short honeymoon of its own. */
     public void secondTerm(PoliticsState s) { s.honeymoon += 2; }
 

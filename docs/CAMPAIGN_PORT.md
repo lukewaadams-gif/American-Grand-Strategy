@@ -84,7 +84,7 @@ The campaign screen follows Battleground 2028's headquarters layout, in the war-
 
 **The Ad Studio** is a dialog: make an ad, test it with a focus group, and put it on the air.
 
-`mandate-web/src/test/browser/preview.js` checks all of this in Chromium (see its README). The preview also ships `saves/daily.json` (25 October 2028), for the final stretch: `index.html?save=saves/daily.json`.
+`mandate-web/src/test/browser/preview.js` checks all of this in Chromium (see its README). The preview also ships `saves/daily.json` (25 October 2028), for the final stretch: `campaign.html?save=saves/daily.json` (the campaign-only page; the preview's front page is now the whole game).
 
 ## The older interfaces
 

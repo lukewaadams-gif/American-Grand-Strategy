@@ -92,7 +92,7 @@ Each milestone goes to the preview.
    - After a win: the second transition and inauguration, then the second term to January 2037, with the 2034 midterms run on milestone 5's model.
    - The pressures: lame-duck decline, turnover, legacy and the succession.
    - The campaign for a successor in 2036, and one verdict on the whole presidency.
-10. **The rest.** The transition office, sound (Web Audio), the audits and the final preview.
+10. **The rest** (built, for review). The transition office, sound (Web Audio), the audits and the final preview.
 
 ## The Oval Office (milestone 2)
 
@@ -450,6 +450,35 @@ The terms of office are a domain of their own (`terms/TermsEngine`, after Resolu
   - the Press Briefing Room's new "Your term" tab shows the lame-duck meter, the legacy goals and the race to succeed you, with its candidates, primaries, endorsement, the general election's polls and the electoral votes they point to;
   - the questions come on the desk;
   - at the handoff, "The verdict of history" shows the measures, the rank and the record.
+
+## The whole game, the transition office and sound (milestone 10)
+
+- **One game in one page.** The preview's front page (`index.html`, `play-main.ts`) starts a new campaign, opens a saved game or begins at one of the game's moments. It then shows the screen for where the game stands, all in one save:
+  - the war room through the 2028 campaign and election night;
+  - the transition office;
+  - the Oval Office through the first hundred days and every week after;
+  - the war room again for the 2032 campaign;
+  - the second term, or the lame-duck weeks;
+  - the verdict of history.
+
+  The campaign and the presidency are now screens that mount and unmount (`campaign/app.ts`, `presidency/app.ts`). Their own previews remain: `campaign.html` and `presidency.html`.
+- **The start screen:**
+  - your party, your candidate and your opponent, from the fictional cast or, with "Use real people", the real-person roster (which also seats real foreign leaders and the real Court);
+  - the country's mood and how hard your opponent's campaign is;
+  - a saved file, or five moments to start from: the campaign, the first hundred days, governing, just re-elected, and the race to succeed you.
+- **The transition office** (Resolute Desk's `transition`, for the White House staff), between the 2028 election and the oath:
+  - the agenda: one to three priorities, the first the flagship of the hundred days, with the campaign's promises marked;
+  - shortlists of three to five prospects for each of the nine staff jobs: always an expert and a loyalist, then a politician, an outsider or a crossover pick;
+  - the team's first read of ability and loyalty is rough (within about ten points). An interview (one hour) shows the truth and their character; a background check (two hours) finds what the papers would. The team has twenty-four hours;
+  - the oath closes the transition with Resolute Desk's grade (how many jobs you filled yourself, how strong and how checked the picks were, five more for naming a chief of staff). A tenth of a point of honeymoon for each point above 60, less below;
+  - on day 100 the staff you chose take their jobs, their morale set by the grade. A problem nobody checked comes out in the papers.
+- **Sound:** a quiet room tone and a clock, made with Web Audio, plus a soft chime when a week ends. Off by default; the Oval Office's menu and the transition's menu turn it on, and the choice is remembered on the device.
+- **Audits:** every screen of the game is checked in the browser:
+  - axe-core WCAG 2.1 AA;
+  - 12-pixel text;
+  - no sideways scroll;
+  - three palettes, 125% text and reduced motion;
+  - phone and desktop widths.
 
 ## Quality bar
 

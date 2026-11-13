@@ -10,7 +10,7 @@ const out = path.join(root, 'target/preview');
 const copy = (from, to) => fs.cpSync(path.join(root, from), path.join(out, to), { recursive: true });
 copy('src/main/preview', '.');
 copy('src/main/webapp/fonts', 'fonts');
-for (const need of ['engine/engine.js', 'app/main.js', 'app/presidency-main.js', 'saves/campaign.json', 'saves/presidency.json'])
+for (const need of ['engine/engine.js', 'app/main.js', 'app/presidency-main.js', 'app/play-main.js', 'saves/campaign.json', 'saves/presidency.json'])
   if (!fs.existsSync(path.join(out, need))) console.warn('missing ' + need + (need.startsWith('engine') ? ' (run mvn -pl mandate-web package)' : ''));
 // The build's identity: the engine and the sample saves must come from the same build (a save from a newer engine can
 // break an older one), so the pages fetch version.json past the cache and ask for both by it.

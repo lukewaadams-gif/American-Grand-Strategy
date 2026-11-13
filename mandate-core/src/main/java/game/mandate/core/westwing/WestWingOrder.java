@@ -34,6 +34,8 @@ public sealed interface WestWingOrder {
     record Post(String issue, int tone) implements WestWingOrder {}
     record Poll(String issue) implements WestWingOrder {}
     record Answer(String decision, int option) implements WestWingOrder {}
+    /** The transition office: "interview", "check" or "announce" a prospect for a White House job. */
+    record TransitionStep(String prospect, String action) implements WestWingOrder {}
 
     static Map<String, Object> toJson(WestWingOrder o) {
         Map<String, Object> m = new LinkedHashMap<>();
@@ -57,6 +59,7 @@ public sealed interface WestWingOrder {
             case Post x -> { m.put("issue", x.issue()); m.put("tone", x.tone()); }
             case Poll x -> m.put("issue", x.issue());
             case Answer x -> { m.put("decision", x.decision()); m.put("option", x.option()); }
+            case TransitionStep x -> { m.put("prospect", x.prospect()); m.put("action", x.action()); }
         }
         return m;
     }
@@ -81,6 +84,7 @@ public sealed interface WestWingOrder {
             case "Post" -> new Post((String) m.get("issue"), Json.integer(m.get("tone")));
             case "Poll" -> new Poll((String) m.get("issue"));
             case "Answer" -> new Answer((String) m.get("decision"), Json.integer(m.get("option")));
+            case "TransitionStep" -> new TransitionStep((String) m.get("prospect"), (String) m.get("action"));
             default -> throw new IllegalArgumentException("Unknown West Wing order " + m.get("type"));
         };
     }

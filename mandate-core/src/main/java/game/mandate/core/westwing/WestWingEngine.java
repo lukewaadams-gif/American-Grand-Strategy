@@ -592,6 +592,7 @@ public final class WestWingEngine {
     public Outcome apply(WestWingState s, Context c, WestWingOrder o, DeterministicRandomManager rng) {
         Outcome out = Outcome.empty();
         switch (o) {
+            case WestWingOrder.TransitionStep x -> throw new IllegalArgumentException("The transition office is closed");
             case WestWingOrder.Hire x -> { role(x.role()); option(x.option()); hire(s, c, x.role(), x.option(), out); }
             case WestWingOrder.Fire x -> {
                 Person p = s.person(x.person());
