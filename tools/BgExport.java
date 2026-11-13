@@ -75,7 +75,10 @@ public final class BgExport {
         Files.createDirectories(out);
         int rows = x.writeCells(out.resolve("electorate_cells.csv"), commit);
         int cands = x.writeCandidates(out.resolve("candidates_bg.csv"), commit);
+        int markets = x.writeMarkets(out.resolve("media_markets.csv"), commit);
+        int cstates = x.writeCampaignStates(out.resolve("campaign_states.csv"), commit);
         System.out.printf(Locale.ROOT, "electorate_cells.csv: %d rows%ncandidates_bg.csv: %d candidates%n", rows, cands);
+        System.out.printf(Locale.ROOT, "media_markets.csv: %d markets%ncampaign_states.csv: %d states%n", markets, cstates);
         System.out.printf(Locale.ROOT, "BG calibration check, 2024 composition: national two-party D %.4f%n", x.calib2024());
     }
 
@@ -124,6 +127,83 @@ public final class BgExport {
                 t += w;
             }
         return d / t;
+    }
+
+    // ---------------------------------------------------------------------------------------------- the campaign
+
+    /** BG's TV markets after Elect.markets(): 103 real DMAs plus a 'Rest of <state>' market wherever coverage is short. */
+    private int writeMarkets(Path file, String commit) throws Exception {
+        String[] name = (String[]) staticField(elect, "marketName");
+        double[] hh = (double[]) staticField(elect, "marketHH");
+        double[][] share = (double[][]) staticField(elect, "dmaShare");
+        int[][] in = (int[][]) staticField(elect, "marketStates");
+        Object[] states = (Object[]) staticField(main, "STATES");
+        try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+            w.println("# market,name,households_thousands,states");
+            w.println("# Battleground 2028's broadcast TV markets (Elect.marketName, marketHH, dmaShare), exported by tools/BgExport.java");
+            w.println("# from BG commit " + commit + " after Elect.init(). Do not edit by hand: re-run the tool.");
+            w.println("# households_thousands: TV households in the market. states: space-separated CODE:share pairs, where share is the");
+            w.println("# fraction of that STATE's TV households the market reaches (BG's dmaShare[m][s]); a buy's cost is split across");
+            w.println("# its states in proportion to these shares and its rating points reach each state in proportion to them.");
+            w.println("# Content CSVs cannot quote, so a comma in a market name is dropped (BG's \"Washington, DC\" is \"Washington DC\").");
+            for (int m = 0; m < name.length; m++) {
+                StringBuilder b = new StringBuilder();
+                for (int s : in[m]) b.append(b.length() == 0 ? "" : " ").append((String) instanceField(states[s], "ab")).append(':').append(fmt(share[m][s], 6));
+                w.println(String.join(",", Integer.toString(m), safe(name[m].replace(", ", " ")), fmt(hh[m], 1), b.toString()));
+            }
+        }
+        return name.length;
+    }
+
+    /**
+     * What BG's campaign reads about each state: income (event and staff costs), urban and rural shares (door-knocking
+     * density, rally crowds), Hispanic share (Spanish-language TV), map position (travel), TV households, eligible
+     * adults, donor hubs, and how much each of BG's 30 voter groups counts for in the state.
+     */
+    private int writeCampaignStates(Path file, String commit) throws Exception {
+        Object[] states = (Object[]) staticField(main, "STATES");
+        double[] tvhh = (double[]) staticField(main, "STATE_TVHH");
+        double[][] cvap = (double[][]) staticField(elect, "cvap"), turnB = (double[][]) staticField(elect, "turnB");
+        double[][] baseL = (double[][]) staticField(elect, "baseL"), elast = (double[][]) staticField(elect, "elast");
+        String hubs = (String) staticField(Class.forName(MAIN + "$Week", true, loader), "DONOR_HUBS");
+        String[] group = (String[]) staticField(main, "GROUP");
+        Class<?> vote = Class.forName(MAIN + "$Vote", true, loader);
+        Method member = vote.getDeclaredMethod("member", int.class, int.class, int.class);
+        member.setAccessible(true);
+        try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+            StringBuilder head = new StringBuilder("# code,income,urban,rural,hispanic,map_x,map_y,tv_households_thousands,adults,donor_hub");
+            for (int g = 0; g < group.length; g++) head.append(",g").append(g);
+            w.println(head);
+            w.println("# Battleground 2028's per-state campaign inputs (STATES, STATE_TVHH, Week.DONOR_HUBS, Elect), exported by");
+            w.println("# tools/BgExport.java from BG commit " + commit + " after Elect.init(). Do not edit by hand: re-run the tool.");
+            w.println("# income: median household income (dollars); urban, rural, hispanic: percent; map_x, map_y: BG's map position");
+            w.println("# (its travel rule calls two states more than 220 of these units apart a long flight); adults: eligible voters");
+            w.println("# (sum of Elect.cvap); donor_hub: 1 where BG's fundraisers raise full value.");
+            w.println("# g0..g29: the weight of each of BG's voter groups in the state's swing, sum(w p(1-p) e member) / sum(w p(1-p) e)");
+            w.println("# over the state's cells (w = eligible x base turnout, p = 2024 Democratic share, e = elasticity), so that a");
+            w.println("# group-image term of x logit moves the state as a uniform x * weight would. Groups, in order:");
+            w.println("# " + String.join(" | ", group));
+            for (int s = 0; s < states.length; s++) {
+                String code = (String) instanceField(states[s], "ab");
+                double adults = 0;
+                for (double v : cvap[s]) adults += v;
+                StringBuilder b = new StringBuilder(String.join(",", code, fmt((double) instanceField(states[s], "income"), 0),
+                        fmt((double) instanceField(states[s], "urban"), 2), fmt((double) instanceField(states[s], "rural"), 2),
+                        fmt((double) instanceField(states[s], "hisp"), 2), fmt((double) instanceField(states[s], "cx"), 1),
+                        fmt((double) instanceField(states[s], "cy"), 1), fmt(tvhh[s], 1), fmt(adults, 0),
+                        hubs.contains(code) ? "1" : "0"));
+                double den = 0;
+                double[] num = new double[group.length];
+                for (int c = 0; c < cvap[s].length; c++) {
+                    double p = 1 / (1 + Math.exp(-baseL[s][c])), wt = cvap[s][c] * turnB[s][c] * p * (1 - p) * elast[s][c];
+                    den += wt;
+                    for (int g = 0; g < group.length; g++) num[g] += wt * (double) member.invoke(null, g, s, c);
+                }
+                for (int g = 0; g < group.length; g++) b.append(',').append(fmt(den > 0 ? num[g] / den : 0, 4));
+                w.println(b);
+            }
+        }
+        return states.length;
     }
 
     // ---------------------------------------------------------------------------------------------- candidates

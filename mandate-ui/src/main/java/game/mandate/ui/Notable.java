@@ -57,6 +57,7 @@ public final class Notable {
             case Command.Pledge p -> "the promise";
             case Command.SetCampaignOrders o -> "the change of orders";
             case Command.PlanCampaign p -> "this week's plan";
+            case Command.Campaign o -> "the campaign order";
             case Command.ChooseDebatePosture p -> "the debate approach";
             case Command.SetAgenda a -> "the agenda";
             case Command.ResolveEvent e -> "the event answer";

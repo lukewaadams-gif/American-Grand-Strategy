@@ -26,12 +26,18 @@ public final class EventScheduler {
 
     /** Rolls every eligible event for this turn. Returns what fired. */
     public List<PendingEvent> roll(List<EventDefinition> catalog, Phase phase, WorldView world, DeterministicRandomManager rng) {
+        return roll(catalog, phase, world, rng, 1.0);
+    }
+
+    /** As above, for a turn that is a fraction of the usual length (a day of the campaign's final stretch): per-turn odds scale down. */
+    public List<PendingEvent> roll(List<EventDefinition> catalog, Phase phase, WorldView world, DeterministicRandomManager rng, double turnShare) {
         List<PendingEvent> out = new ArrayList<>();
         for (EventDefinition d : catalog) {
             if (!d.phases().contains(phase)) continue;
             if (!d.repeatable() && fired.contains(d.id())) continue;
             if (pending.stream().anyMatch(p -> p.definition().id().equals(d.id()))) continue;
             double chance = d.chancePerTurn().applyAsDouble(world);
+            if (turnShare < 1 && chance > 0) chance = 1 - Math.pow(1 - Math.min(1, chance), turnShare);
             if (chance > 0 && rng.chance("events." + d.id(), chance)) out.add(queue(d));
         }
         return out;

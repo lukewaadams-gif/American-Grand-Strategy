@@ -219,7 +219,6 @@ public final class CampaignHQ {
         }).tip("Replaces the staff's plan for this week only; run the week to carry it out");
         Btn reset = Btn.quiet("Reset to the staff's plan", e -> { app.uiState.remove("hq.draft"); app.refresh(); });
         c.with(Layouts.wrap(t.u(2), t.u(1), commit, reset));
-        if (g.election().pendingPlan() != null) c.with(new Widgets.Tag("A HAND-BUILT PLAN IS SET FOR THIS WEEK", t.good));
         return c;
     }
 

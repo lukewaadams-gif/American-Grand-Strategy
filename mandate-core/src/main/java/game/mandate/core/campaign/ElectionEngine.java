@@ -46,10 +46,16 @@ public final class ElectionEngine {
     public ElectionCalculator calculator() { return calculator; }
     public ElectorateModel model() { return model; }
 
+    public CampaignEngine campaigns() { return campaigns; }
+    public CampaignGeography geography() { return campaigns.geography(); }
+
+    /** A new general election in mid-July: both nominees open with Battleground 2028's summer position (money, list, offices). */
     public ElectionState newElection(Candidate mine, Candidate theirs, double opponentResources, DeterministicRandomManager rng) {
         ElectionState e = new ElectionState();
-        e.player = new CampaignSide(mine.party(), mine, p.startCash());
-        e.opponent = new CampaignSide(theirs.party(), theirs, p.startCash() * opponentResources);
+        e.player = new CampaignSide(mine.party(), mine, 0, geography());
+        e.opponent = new CampaignSide(theirs.party(), theirs, 0, geography());
+        campaigns.openCampaign(e.player, 1.0);
+        campaigns.openCampaign(e.opponent, opponentResources);
         e.systematicMiss = rng.gaussian("polls.miss") * p.pollMissSd();
         return e;
     }
@@ -68,18 +74,21 @@ public final class ElectionEngine {
 
     // ---- campaigning --------------------------------------------------------------------------
 
-    public void setPendingPlan(ElectionState e, CampaignWeekPlan plan) { e.pendingPlan = plan; }
     public void setPendingPosture(ElectionState e, DebatePosture posture) { e.pendingPosture = posture; }
 
     /**
-     * One campaign week: both plans execute, the campaign swing fades, and a debate (if any) is fought.
+     * One campaign turn (a week, or a day in the final stretch): both campaigns carry out their standing orders, the
+     * campaign swing fades, and a debate (if any) is fought.
+     * @param news lines for the player (rallies, shows, gaffes, ads pulled)
      * @return the debate's swing toward the player, if a debate was held
      */
-    public Optional<Double> campaignWeek(ElectionState e, CampaignWeekPlan mine, CampaignWeekPlan theirs, Map<game.mandate.core.campaign.Issue, Double> salience,
-                                         Optional<DebatePosture> opponentPosture, DeterministicRandomManager rng) {
-        campaigns.execute(e.player, mine, salience);
-        campaigns.execute(e.opponent, theirs, salience);
-        e.campaignSwingForPlayer *= p.campaignSwingDecay();
+    public Optional<Double> campaignTurn(ElectionState e, CampaignEngine.Turn t, double opponentResources, Optional<DebatePosture> opponentPosture,
+                                         DeterministicRandomManager rng, List<String> news) {
+        List<String> theirs = new ArrayList<>();
+        campaigns.execute(e.player, e.opponent, t, 1.0, true, rng, news);
+        campaigns.execute(e.opponent, e.player, t, opponentResources, false, rng, theirs);
+        for (String line : theirs) if (line.startsWith("GAFFE")) news.add(line);
+        e.campaignSwingForPlayer *= Math.pow(p.campaignSwingDecay(), t.fraction());
         Optional<Double> result = Optional.empty();
         if (opponentPosture.isPresent()) {
             DebatePosture theirs2 = opponentPosture.get();
@@ -90,9 +99,94 @@ public final class ElectionEngine {
             e.campaignSwingForPlayer += forPlayer;
             result = Optional.of(forPlayer);
         }
-        e.pendingPlan = null;
         e.pendingPosture = null;
         return result;
+    }
+
+    // ---- orders: the player's commands and the planners' plans --------------------------------------------------------
+
+    /**
+     * Copies a planner's orders into a campaign, area by area (the schedule; the air war; the field), with the message. The
+     * opponent's headquarters tier follows its planner; the player's is the player's own choice.
+     */
+    public void applyPlan(ElectionState e, boolean player, CampaignOrders plan, boolean schedule, boolean ads, boolean field) {
+        CampaignSide side = player ? e.player : e.opponent;
+        side.orders.copyFrom(plan, schedule, ads, field);
+        side.orders.message = plan.message;
+        if (!player) side.orders.hq = plan.hq;
+    }
+
+    /** Changes the player's standing orders: the edit runs on a copy, so an edit that fails part-way changes nothing. */
+    public void editOrders(ElectionState e, java.util.function.Consumer<CampaignOrders> edit) {
+        CampaignOrders o = e.player.orders.copy();
+        edit.accept(o);
+        e.player.orders.copyFrom(o, true, true, true);
+        e.player.orders.message = o.message;
+        e.player.orders.hq = o.hq;
+    }
+
+    public void setStaff(ElectionState e, ElectionState.StaffArea area, boolean on) { e.staff.put(area, on); }
+
+    /** Ad Studio: produce an ad (it joins the library, $0.12M). */
+    public void produceAd(ElectionState e, int tone, Issue issue, int group, AirWar.Messenger messenger, Map<Issue, Double> salience,
+                          java.time.LocalDate date, DeterministicRandomManager rng) {
+        if (tone < 0 || tone > 2) throw new IllegalArgumentException("Tone must be 0, 1 or 2");
+        if (group < -1 || group >= CampaignGeography.NG) throw new IllegalArgumentException("Unknown voter group " + group);
+        campaigns.produceAd(e.player, tone, issue, group, messenger, salience, date, rng);
+    }
+
+    /** Ad Studio: show an ad to a focus group ($0.045M). */
+    public void testAd(ElectionState e, int index, DeterministicRandomManager rng) {
+        if (index < 0 || index >= e.player.ads.size()) throw new IllegalArgumentException("No ad " + index);
+        campaigns.testAd(e.player, index, rng);
+    }
+
+    /** Ad Studio: put an ad on the air (-1 takes it off). */
+    public void airAd(ElectionState e, int index) {
+        if (index < -1 || index >= e.player.ads.size()) throw new IllegalArgumentException("No ad " + index);
+        e.player.airing = index;
+    }
+
+    /**
+     * A hand-built week from the original campaign screen (rallies, fundraisers, ad and field money, a message), turned into
+     * Battleground 2028 orders for this week: the rallies on weekday afternoons, the fundraisers on those evenings in the
+     * nearest donor hub, the ad money as digital in each state, the field money as organisers (and offices to hold them).
+     */
+    public void applyHandPlan(ElectionState e, CampaignWeekPlan plan) {
+        CampaignGeography geo = geography();
+        editOrders(e, o -> {
+            o.clearSchedule(0);
+            int[] afternoons = {1, 7, 13}, evenings = {2, 8, 14};
+            int last = e.player.location;
+            for (int i = 0; i < plan.rallyStates().size() && i < afternoons.length; i++) {
+                int st = geo.index(plan.rallyStates().get(i));
+                o.slot(afternoons[i], Activity.RALLY, st, 0);
+                last = st;
+            }
+            for (int i = 0; i < plan.fundraisers() && i < evenings.length; i++) o.slot(evenings[i], Activity.FUNDRAISER, nearestHub(geo, last), 0);
+            o.slot(18, Activity.REST, -1, 0);
+            o.clearDigital();
+            plan.adSpend().forEach((code, m) -> o.digital(geo.index(code), m));
+            plan.fieldSpend().forEach((code, m) -> {
+                int st = geo.index(code);
+                int hires = (int) Math.floor(m / (CampaignEngine.organizerHireCost() + campaigns.organizerWeek(st) * 4));
+                double after = e.player.organizers[st] + hires;
+                int offices = (int) Math.max(0, Math.ceil(after / 7.0) - e.player.offices[st]);
+                o.field(st, offices, hires);
+            });
+            o.message(plan.message());
+        });
+    }
+
+    static int nearestHub(CampaignGeography geo, int from) {
+        int best = from;
+        double bd = Double.MAX_VALUE;
+        for (int s = 0; s < geo.size(); s++) {
+            if (!geo.state(s).donorHub()) continue;
+            double d = geo.distance(from, s);
+            if (d < bd) { bd = d; best = s; }
+        }
+        return best;
     }
 
     /** National swing versus 2024, D minus R, in points. */
@@ -117,7 +211,7 @@ public final class ElectionEngine {
             environment = env.scenarioEnvironment();
         }
         double quality = p.qualityWeight() * (d.quality() - r.quality()) - p.extremityWeight() * (d.extremity() - r.extremity());
-        return new Parts(environment, quality, campaigns.momentumSwing(e.side(Party.DEMOCRAT), e.side(Party.REPUBLICAN)),
+        return new Parts(environment, quality, campaigns.momentumSwing(e.side(Party.DEMOCRAT), e.side(Party.REPUBLICAN), env.salience()),
                 e.campaignSwingForPlayer * e.player.party().sign());
     }
 
@@ -414,8 +508,11 @@ public final class ElectionEngine {
 
     /** The re-election campaign: a fresh challenger, the incumbent's war chest, a new hidden polling miss. */
     public void beginReelection(ElectionState e, Candidate challenger, double capital, double opponentResources, DeterministicRandomManager rng) {
-        e.player = new CampaignSide(e.player.party(), e.player.candidate(), p.reelectionBase() + capital * p.reelectionPerCapital());
-        e.opponent = new CampaignSide(challenger.party(), challenger, p.challengerCash() * opponentResources);
+        e.player = new CampaignSide(e.player.party(), e.player.candidate(), 0, geography());
+        e.opponent = new CampaignSide(challenger.party(), challenger, 0, geography());
+        // Battleground 2028's opening position, with the incumbent's war chest set against the challenger's as before
+        campaigns.openCampaign(e.player, (p.reelectionBase() + capital * p.reelectionPerCapital()) / p.challengerCash());
+        campaigns.openCampaign(e.opponent, opponentResources);
         e.campaignSwingForPlayer = 0;
         e.systematicMiss = rng.gaussian("polls.miss") * p.pollMissSd();
     }

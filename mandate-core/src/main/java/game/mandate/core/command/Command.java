@@ -17,11 +17,14 @@ import java.util.List;
  */
 public sealed interface Command {
 
-    /** Campaign: this week's schedule, spending and message. */
+    /** Campaign: a hand-built week from the original campaign screen (rallies, fundraisers, ad and field money, message). */
     record PlanCampaign(CampaignWeekPlan plan) implements Command {}
 
     /** Campaign: standing orders (strategy, spending rate, message) the staff turns into each week's plan. */
     record SetCampaignOrders(CampaignStrategy.Orders orders) implements Command {}
+
+    /** Campaign: one change to the candidate's schedule, the air war, the ground game, the staff or the Ad Studio. */
+    record Campaign(game.mandate.core.campaign.CampaignOrder order) implements Command {}
 
     /** Campaign: promise to pass a bill. Promises become the agenda's first priorities; breaking one costs the base. */
     record Pledge(String billId) implements Command {}

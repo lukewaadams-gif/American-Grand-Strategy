@@ -54,7 +54,10 @@ public final class Fixtures {
         m.put("transition", SaveManager.save(won(GameSetup.Length.HUNDRED_DAYS, g -> g.phase() == Phase.TRANSITION)));
         m.put("week1", SaveManager.save(won(GameSetup.Length.HUNDRED_DAYS, g -> g.phase() == Phase.FIRST_100_DAYS)));
         m.put("crisis", SaveManager.save(won(GameSetup.Length.HUNDRED_DAYS, g -> g.phase() == Phase.FIRST_100_DAYS
-                && g.hundredDays().get().crisis() == CrisisOutcome.ACTIVE && !g.hundredDays().get().pending().isEmpty())));
+                && g.hundredDays().get().crisis() == CrisisOutcome.ACTIVE && !g.hundredDays().get().pending().isEmpty()
+                && g.hundredDays().get().attention() >= 1 && g.hundredDays().get().stage() != game.mandate.core.opening.Types.BillStage.NOT_DRAFTED
+                && g.hundredDays().get().stage() != game.mandate.core.opening.Types.BillStage.LAW
+                && g.hundredDays().get().stage() != game.mandate.core.opening.Types.BillStage.DEAD)));
         m.put("report", SaveManager.save(won(GameSetup.Length.HUNDRED_DAYS, g -> g.dayHundredReport().isPresent())));
         for (long seed = 1; seed < 200; seed++) {
             GameEngine g = until(new GameEngine(setup(seed, GameSetup.Length.HUNDRED_DAYS)), x -> x.phase() != Phase.GENERAL_CAMPAIGN_2028);

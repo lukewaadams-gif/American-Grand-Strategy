@@ -175,6 +175,7 @@ public final class GameEngine implements WorldView {
         electionEngine.markBaseline(w.election, environment());
         electionEngine.recordPoll(w.election, environment(), date(), calendar.election2028().getYear(), pollSeed());
         log("The general election begins: " + mine.name() + " (" + mine.party().code() + ") vs " + theirs.name() + " (" + theirs.party().code() + ").");
+        planCampaignTurn();
     }
 
     /** Fails fast on a broken tuning file: every scenario and every legacy rule must be readable at start-up. */
@@ -209,8 +210,13 @@ public final class GameEngine implements WorldView {
     public void apply(Command command) {
         pollMemo = null;
         switch (command) {
-            case Command.PlanCampaign c -> { requireCampaign(); electionEngine.setPendingPlan(w.election, c.plan()); }
-            case Command.SetCampaignOrders c -> { requireCampaign(); electionEngine.setOrders(w.election, true, c.orders(), ""); }
+            case Command.PlanCampaign c -> { requireCampaign(); electionEngine.applyHandPlan(w.election, c.plan()); }
+            case Command.SetCampaignOrders c -> {
+                requireCampaign();
+                electionEngine.setOrders(w.election, true, c.orders(), "");
+                planPlayer(true);
+            }
+            case Command.Campaign c -> { requireCampaign(); campaignOrder(c.order()); }
             case Command.Pledge c -> pledge(c.billId());
             case Command.ChooseDebatePosture c -> {
                 requireCampaign();
@@ -293,29 +299,182 @@ public final class GameEngine implements WorldView {
     private void campaignWeek() {
         if (debateThisWeek().isPresent() && w.election.pendingPosture() == null)
             throw new IllegalCommandException("Choose a debate approach first");
-        // The opponent reads the same polls the player sees and adapts its standing orders; its reasoning is shown.
-        CampaignAi.Adaptation a = setup.difficulty().adaptive() ? CampaignAi.adapt(this, w.election.opponent())
-                : new CampaignAi.Adaptation(game.mandate.core.campaign.CampaignStrategy.Orders.DEFAULT, "It runs the same campaign every week: rallies and money in the closest states.");
-        if (!a.orders().equals(w.election.opponentOrders()) || w.election.opponentReasoning().isEmpty())
-            log("Your opponent's campaign: " + a.orders().describe() + ". " + a.reasoning());
-        electionEngine.setOrders(w.election, false, a.orders(), a.reasoning());
-        CampaignWeekPlan mine = w.election.pendingPlan() != null ? w.election.pendingPlan()
-                : CampaignAi.plan(this, w.election.player(), 1.0, w.election.playerOrders());
-        CampaignWeekPlan theirs = CampaignAi.plan(this, w.election.opponent(), setup.difficulty().opponentResources(), w.election.opponentOrders());
         DebatePosture myPosture = w.election.pendingPosture();
         Optional<DebatePosture> theirPosture = debateThisWeek().map(d -> CampaignAi.debatePosture(w.election.opponent().candidate(), w.election.player().candidate(), rng));
-        pollMemo = null; // the plans are about to change the race
-        electionEngine.campaignWeek(w.election, mine, theirs, w.politics.salience(), theirPosture, rng).ifPresent(forPlayer ->
+        game.mandate.core.campaign.CampaignEngine.Turn turn = campaignTurn();
+        pollMemo = null; // the turn is about to change the race
+        List<String> news = new ArrayList<>();
+        electionEngine.campaignTurn(w.election, turn, setup.difficulty().opponentResources(), theirPosture, rng, news).ifPresent(forPlayer ->
                 log("Debate: you chose \"" + myPosture.label() + "\", your opponent \"" + theirPosture.get().label() + "\". "
                         + (forPlayer > 0.3 ? "You won the night" : forPlayer < -0.3 ? "Your opponent won the night" : "A draw")
                         + Fmt.format(" (%+.1f).", forPlayer)));
+        for (String line : news) log(line);
         rollEvents();
         w.clock.advance();
-        LocalDate electionDay = w.phase == Phase.GENERAL_CAMPAIGN_2028 ? calendar.election2028() : calendar.election2032();
+        LocalDate electionDay = electionDay();
+        if (w.clock.mode() == Granularity.WEEKLY && !date().isBefore(dailyStart(electionDay))) {
+            w.clock.setMode(Granularity.DAILY);
+            log("Two weeks to go. From now on every day counts: each turn is one day until Election Day.");
+        }
         electionEngine.recordPoll(w.election, environment(), date().isAfter(electionDay) ? electionDay : date(), electionDay.getYear(), pollSeed());
         if (!date().isBefore(electionDay)) {
             w.clock.set(electionDay);
+            w.clock.setMode(Granularity.WEEKLY);
             holdPresidentialElection();
+        } else {
+            planCampaignTurn();
+        }
+    }
+
+    /** The final stretch runs a day at a time from the Monday two weeks before Election Day (BG DAILY_START). */
+    static LocalDate dailyStart(LocalDate electionDay) {
+        return game.mandate.core.campaign.CampaignEngine.Turn.monday(electionDay).minusWeeks(2);
+    }
+
+    /** Election Day of the campaign in progress. */
+    public LocalDate electionDay() { return w.phase == Phase.REELECTION_CAMPAIGN_2032 ? calendar.election2032() : calendar.election2028(); }
+
+    /** In the final stretch, the day of the week (0 Monday .. 6 Sunday); in weekly turns, -1. */
+    public int campaignDay() { return w.clock.mode() == Granularity.DAILY ? w.clock.date().getDayOfWeek().getValue() - 1 : -1; }
+
+    /** What the campaign engine needs for the coming turn: dates, salience and the public polls. */
+    public game.mandate.core.campaign.CampaignEngine.Turn campaignTurn() {
+        return new game.mandate.core.campaign.CampaignEngine.Turn(date(), electionDay(), campaignDay(), w.politics.salience(), statePolls(), nationalPoll());
+    }
+
+    public game.mandate.core.campaign.CampaignEngine campaignEngine() { return electionEngine.campaigns(); }
+
+    /** The campaign's debates (the calendar's, for the campaign in progress). */
+    public List<LocalDate> campaignDebates() {
+        return w.phase == Phase.GENERAL_CAMPAIGN_2028 ? calendar.debates2028() : w.phase == Phase.REELECTION_CAMPAIGN_2032 ? calendar.debates2032() : List.of();
+    }
+
+    /** The planners draw from the game's random streams (their own names), so replays reproduce their plans. */
+    public DeterministicRandomManager rngForPlanning() { return rng; }
+
+    /**
+     * The start of a campaign turn: the opponent reads the polls and sets its brief (its reasoning is shown); at the start of
+     * each week both campaigns' staffs rebuild their orders (the player's only in the areas the player has handed them).
+     */
+    private void planCampaignTurn() {
+        if (w.phase != Phase.GENERAL_CAMPAIGN_2028 && w.phase != Phase.REELECTION_CAMPAIGN_2032) return;
+        CampaignAi.Adaptation a = setup.difficulty().adaptive() ? CampaignAi.adapt(this, w.election.opponent())
+                : new CampaignAi.Adaptation(game.mandate.core.campaign.CampaignStrategy.Orders.DEFAULT, "It runs the same campaign every week: rallies and money in the closest states.");
+        boolean changed = !a.orders().equals(w.election.opponentOrders()) || w.election.opponentReasoning().isEmpty();
+        electionEngine.setOrders(w.election, false, a.orders(), a.reasoning());
+        if (campaignDay() > 0) return;
+        electionEngine.applyPlan(w.election, false, CampaignAi.planOrders(this, w.election.opponent(), a.orders(), true, true, true), true, true, true);
+        String where = CampaignAi.describePlan(this, w.election.opponent());
+        electionEngine.setOrders(w.election, false, a.orders(), a.reasoning() + (where.isEmpty() ? "" : " " + where));
+        if (changed) log("Your opponent's campaign: " + a.orders().describe() + ". " + a.reasoning());
+        planPlayer(false);
+        pollMemo = null;
+    }
+
+    /** The player's staff plans the areas handed to it; the message follows the brief (a new brief replans at once). */
+    private void planPlayer(boolean briefChanged) {
+        var e = w.election;
+        boolean sch = e.staffRuns(game.mandate.core.campaign.ElectionState.StaffArea.SCHEDULE);
+        boolean ads = e.staffRuns(game.mandate.core.campaign.ElectionState.StaffArea.ADS);
+        boolean fld = e.staffRuns(game.mandate.core.campaign.ElectionState.StaffArea.FIELD);
+        if (!sch && !ads && !fld && !briefChanged) return;
+        electionEngine.applyPlan(e, true, CampaignAi.planOrders(this, e.player(), e.playerOrders(), sch, ads, fld), sch, ads, fld);
+    }
+
+    /** The player's campaign orders (Command.Campaign). */
+    private void campaignOrder(game.mandate.core.campaign.CampaignOrder order) {
+        var geo = campaignEngine().geography();
+        var e = w.election;
+        java.util.function.Function<String, Integer> state = code -> {
+            if (code == null || !geo.contains(code)) throw new IllegalCommandException("Unknown state " + code);
+            return geo.index(code);
+        };
+        switch (order) {
+            case game.mandate.core.campaign.CampaignOrder.Slot o -> {
+                int from = campaignDay() < 0 ? 0 : campaignDay() * 3;
+                if (o.slot() < from || o.slot() >= game.mandate.core.campaign.CampaignOrders.SLOTS)
+                    throw new IllegalCommandException(o.slot() < from && o.slot() >= 0 ? "That day is over" : "No slot " + o.slot());
+                int st = o.activity().local() ? state.apply(o.state() == null ? player().location() : o.state()) : -1;
+                int choices = o.activity().parameterChoices();
+                if (choices > 0 && (o.param() < 0 || o.param() >= choices)) throw new IllegalCommandException("No choice " + o.param() + " for " + o.activity().label());
+                electionEngine.editOrders(e, x -> x.slot(o.slot(), o.activity(), st, o.param()));
+            }
+            case game.mandate.core.campaign.CampaignOrder.FillSchedule o -> {
+                var current = player().orders();
+                var plan = CampaignAi.planOrders(this, player(), e.playerOrders(), true, false, false);
+                int from = campaignDay() < 0 ? 0 : campaignDay() * 3;
+                electionEngine.editOrders(e, x -> {
+                    for (int i = from; i < game.mandate.core.campaign.CampaignOrders.SLOTS; i++)
+                        if (current.activity(i) == game.mandate.core.campaign.Activity.NONE) x.slot(i, plan.activity(i), plan.location(i), plan.parameter(i));
+                });
+            }
+            case game.mandate.core.campaign.CampaignOrder.ClearSchedule o -> {
+                int from = campaignDay() < 0 ? 0 : campaignDay() * 3;
+                electionEngine.editOrders(e, x -> x.clearSchedule(from));
+            }
+            case game.mandate.core.campaign.CampaignOrder.Staff o -> electionEngine.setStaff(e, o.area(), o.on());
+            case game.mandate.core.campaign.CampaignOrder.Airtime o -> {
+                if (o.market() < 0 || o.market() >= geo.marketCount()) throw new IllegalCommandException("Unknown TV market " + o.market());
+                if (o.grps() < 0 || o.grps() > 2000) throw new IllegalCommandException("A market takes 0 to 2,000 rating points a week");
+                electionEngine.editOrders(e, x -> x.tv(o.market(), o.grps(), o.tone()));
+            }
+            case game.mandate.core.campaign.CampaignOrder.NationalTv o -> {
+                if (o.grps() < 0 || o.grps() > 400) throw new IllegalCommandException("National TV takes 0 to 400 rating points a week");
+                electionEngine.editOrders(e, x -> x.national(o.network(), o.grps()));
+            }
+            case game.mandate.core.campaign.CampaignOrder.Digital o -> {
+                int st = state.apply(o.state());
+                if (o.perWeek() < 0 || o.perWeek() > 5) throw new IllegalCommandException("Digital spending runs from $0 to $5M a week in a state");
+                electionEngine.editOrders(e, x -> x.digital(st, o.perWeek()));
+            }
+            case game.mandate.core.campaign.CampaignOrder.DigitalMix o -> {
+                if (o.shares().size() != game.mandate.core.campaign.AirWar.Platform.values().length || o.shares().stream().anyMatch(v -> v < 0)
+                        || o.shares().stream().mapToDouble(Double::doubleValue).sum() <= 0)
+                    throw new IllegalCommandException("The digital mix needs a non-negative share for each of the six platforms");
+                double[] mix = o.shares().stream().mapToDouble(Double::doubleValue).toArray();
+                electionEngine.editOrders(e, x -> x.digitalMix(mix));
+            }
+            case game.mandate.core.campaign.CampaignOrder.PlatformMessage o -> electionEngine.editOrders(e, x -> x.digitalMessage(o.platform(), o.message()));
+            case game.mandate.core.campaign.CampaignOrder.Field o -> {
+                int st = state.apply(o.state());
+                if (player().offices(o.state()) + o.offices() < 0 || player().organizers(o.state()) + o.organizers() < 0)
+                    throw new IllegalCommandException("Cannot close more offices or lay off more organisers than you have");
+                electionEngine.editOrders(e, x -> x.field(st, o.offices(), o.organizers()));
+            }
+            case game.mandate.core.campaign.CampaignOrder.Transfer o -> {
+                int st = state.apply(o.state());
+                if (o.perWeek() < 0 || o.perWeek() > 5) throw new IllegalCommandException("Transfers run from $0 to $5M a week to a state party");
+                electionEngine.editOrders(e, x -> x.transfer(st, o.perWeek()));
+            }
+            case game.mandate.core.campaign.CampaignOrder.RedBox o -> {
+                int st = state.apply(o.state());
+                electionEngine.editOrders(e, x -> x.redBox(st, o.on()));
+            }
+            case game.mandate.core.campaign.CampaignOrder.Headquarters o -> {
+                if (o.tier() < 0 || o.tier() > 2) throw new IllegalCommandException("Headquarters tiers are 0, 1 and 2");
+                electionEngine.editOrders(e, x -> x.hq(o.tier()));
+            }
+            case game.mandate.core.campaign.CampaignOrder.Message o -> {
+                var brief = e.playerOrders();
+                electionEngine.setOrders(e, true, new game.mandate.core.campaign.CampaignStrategy.Orders(brief.strategy(), brief.rate(), o.issue()), "");
+                electionEngine.editOrders(e, x -> x.message(o.issue() != null ? o.issue() : CampaignAi.bestMessage(this, player())));
+            }
+            case game.mandate.core.campaign.CampaignOrder.PullAds o -> electionEngine.editOrders(e, x -> {
+                if (o.tv()) x.clearAirtime();
+                if (o.digital()) x.clearDigital();
+            });
+            case game.mandate.core.campaign.CampaignOrder.ProduceAd o -> {
+                try { electionEngine.produceAd(e, o.tone(), o.issue(), o.group(), o.messenger(), w.politics.salience(), date(), rng); }
+                catch (IllegalArgumentException x) { throw new IllegalCommandException(x.getMessage()); }
+            }
+            case game.mandate.core.campaign.CampaignOrder.TestAd o -> {
+                try { electionEngine.testAd(e, o.index(), rng); }
+                catch (IllegalArgumentException x) { throw new IllegalCommandException(x.getMessage()); }
+            }
+            case game.mandate.core.campaign.CampaignOrder.AirAd o -> {
+                try { electionEngine.airAd(e, o.index()); }
+                catch (IllegalArgumentException x) { throw new IllegalCommandException(x.getMessage()); }
+            }
         }
     }
 
@@ -576,6 +735,7 @@ public final class GameEngine implements WorldView {
         electionEngine.markBaseline(w.election, environment());
         electionEngine.recordPoll(w.election, environment(), date(), calendar.election2032().getYear(), pollSeed());
         log("The re-election campaign begins against " + challenger.name() + ".");
+        planCampaignTurn();
     }
 
     // ---- operational military turns -----------------------------------------------------------
@@ -673,7 +833,8 @@ public final class GameEngine implements WorldView {
     // =========================================================================================
 
     private void rollEvents() {
-        for (PendingEvent p : w.scheduler.roll(eventDefinitions, w.phase, this, rng)) log("EVENT: " + p.definition().title());
+        double turnShare = w.clock.mode() == Granularity.DAILY ? 1.0 / 7 : 1.0;
+        for (PendingEvent p : w.scheduler.roll(eventDefinitions, w.phase, this, rng, turnShare)) log("EVENT: " + p.definition().title());
     }
 
     void queueEvent(EventDefinition d) {
@@ -715,7 +876,8 @@ public final class GameEngine implements WorldView {
         int unfinished = (int) w.government.agenda().stream().filter(a -> !w.policy.inForce(a)).count();
         boolean fell = war().map(o -> o.status() == TheaterOutcome.TaiwanStatus.FALLEN).orElse(false);
         return new ElectoralEnvironment(tuning.d("scenario." + setup.scenario().name() + ".environment"), incumbent,
-                w.politics.governing() ? approval() : 50, w.economy.growth(), w.economy.inflation(), w.economy.unemployment(), fell, unfinished);
+                w.politics.governing() ? approval() : 50, w.economy.growth(), w.economy.inflation(), w.economy.unemployment(), fell, unfinished,
+                w.politics.salience());
     }
 
     // =========================================================================================
@@ -751,7 +913,8 @@ public final class GameEngine implements WorldView {
     public Optional<LocalDate> debateThisWeek() {
         List<LocalDate> list = w.phase == Phase.GENERAL_CAMPAIGN_2028 ? calendar.debates2028() : w.phase == Phase.REELECTION_CAMPAIGN_2032 ? calendar.debates2032() : List.of();
         LocalDate d0 = date();
-        return list.stream().filter(d -> !d.isBefore(d0) && d.isBefore(d0.plusWeeks(1))).findFirst();
+        LocalDate end = w.clock.mode() == Granularity.DAILY ? d0.plusDays(1) : d0.plusWeeks(1);
+        return list.stream().filter(d -> !d.isBefore(d0) && d.isBefore(end)).findFirst();
     }
 
     public GameSetup setup() { return setup; }

@@ -13,9 +13,13 @@ public final class ElectionState {
     /** What a midterm did, from the president's side. */
     public record Midterm(int year, double marginForPresident, int houseChange, int senateChange) {}
 
+    /** The parts of the player's campaign the staff can run (BG Staff.AREA: schedule, ads, field). */
+    public enum StaffArea { SCHEDULE, ADS, FIELD }
+
     CampaignSide player, opponent;
-    CampaignWeekPlan pendingPlan;
     DebatePosture pendingPosture;
+    /** Which parts of the player's campaign the staff runs, rebuilding the orders at the start of each week. */
+    final java.util.EnumMap<StaffArea, Boolean> staff = new java.util.EnumMap<>(StaffArea.class);
     double campaignSwingForPlayer;
     double systematicMiss;
     ElectionResult result2028, result2032;
@@ -31,12 +35,12 @@ public final class ElectionState {
     /** The race as it stood at the last poll, so the next poll can say what moved. */
     ElectionEngine.Snapshot lastSnapshot;
 
-    ElectionState() {}
+    ElectionState() { for (StaffArea a : StaffArea.values()) staff.put(a, true); }
 
     public CampaignSide player() { return player; }
     public CampaignSide opponent() { return opponent; }
     public CampaignSide side(game.mandate.core.state.Party p) { return player.party() == p ? player : opponent; }
-    public CampaignWeekPlan pendingPlan() { return pendingPlan; }
+    public boolean staffRuns(StaffArea a) { return staff.get(a); }
     public DebatePosture pendingPosture() { return pendingPosture; }
     public double campaignSwingForPlayer() { return campaignSwingForPlayer; }
     public double systematicMiss() { return systematicMiss; }
@@ -53,7 +57,9 @@ public final class ElectionState {
     public Map<String, Object> toJson() {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("player", player.toJson()); m.put("opponent", opponent.toJson());
-        m.put("pendingPlan", pendingPlan == null ? null : planJson(pendingPlan));
+        Map<String, Object> st = new LinkedHashMap<>();
+        staff.forEach((k, v) -> st.put(k.name(), v));
+        m.put("staff", st);
         m.put("pendingPosture", pendingPosture == null ? null : pendingPosture.name());
         m.put("campaignSwing", campaignSwingForPlayer); m.put("systematicMiss", systematicMiss);
         m.put("result2028", result2028 == null ? null : result2028.toJson());
@@ -74,9 +80,10 @@ public final class ElectionState {
 
     public static ElectionState fromJson(Map<String, Object> m, CandidateCatalog catalog) {
         ElectionState e = new ElectionState();
-        e.player = CampaignSide.fromJson(Json.object(m.get("player")), catalog);
-        e.opponent = CampaignSide.fromJson(Json.object(m.get("opponent")), catalog);
-        e.pendingPlan = m.get("pendingPlan") == null ? null : planFromJson(Json.object(m.get("pendingPlan")));
+        CampaignGeography geo = CampaignGeography.load();
+        e.player = CampaignSide.fromJson(Json.object(m.get("player")), catalog, geo);
+        e.opponent = CampaignSide.fromJson(Json.object(m.get("opponent")), catalog, geo);
+        if (m.get("staff") != null) Json.object(m.get("staff")).forEach((k, v) -> e.staff.put(StaffArea.valueOf(k), (Boolean) v));
         e.pendingPosture = m.get("pendingPosture") == null ? null : DebatePosture.valueOf((String) m.get("pendingPosture"));
         e.campaignSwingForPlayer = Json.num(m.get("campaignSwing")); e.systematicMiss = Json.num(m.get("systematicMiss"));
         e.result2028 = m.get("result2028") == null ? null : ElectionResult.fromJson(Json.object(m.get("result2028")));

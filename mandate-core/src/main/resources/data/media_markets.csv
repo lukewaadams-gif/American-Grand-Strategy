@@ -1,0 +1,155 @@
+# market,name,households_thousands,states
+# Battleground 2028's broadcast TV markets (Elect.marketName, marketHH, dmaShare), exported by tools/BgExport.java
+# from BG commit b678c752db24a711b78b821af603302b26beeeba after Elect.init(). Do not edit by hand: re-run the tool.
+# households_thousands: TV households in the market. states: space-separated CODE:share pairs, where share is the
+# fraction of that STATE's TV households the market reaches (BG's dmaShare[m][s]); a buy's cost is split across
+# its states in proportion to these shares and its rating points reach each state in proportion to them.
+# Content CSVs cannot quote, so a comma in a market name is dropped (BG's "Washington, DC" is "Washington DC").
+0,New York,7452.0,CT:0.157437 NJ:0.532286 NY:0.705979
+1,Los Angeles,5764.0,CA:0.423824
+2,Chicago,3473.0,IL:0.623722 IN:0.157268
+3,Dallas-Ft. Worth,3137.0,TX:0.293178
+4,Philadelphia,3036.0,DE:0.531300 NJ:0.234206 PA:0.385338
+5,Houston,2743.0,TX:0.256355
+6,Atlanta,2646.0,AL:0.079380 GA:0.621810
+7,Washington DC,2571.0,DC:1.000000 MD:0.371974 VA:0.373964 WV:0.178542
+8,Boston (Manchester NH),2534.0,MA:0.709520 NH:0.915557 VT:0.187704
+9,San Francisco Bay Area,2507.0,CA:0.184338
+10,Phoenix,2130.0,AZ:0.747368
+11,Seattle-Tacoma,2049.0,WA:0.683000
+12,Tampa-St. Petersburg,2027.0,FL:0.230341
+13,Detroit,1879.0,MI:0.469750
+14,Minneapolis-St. Paul,1837.0,MN:0.702852 WI:0.089976
+15,Denver,1817.0,CO:0.726800 NE:0.069885 WY:0.227125
+16,Orlando-Daytona Beach,1758.0,FL:0.199773
+17,Miami-Ft. Lauderdale,1712.0,FL:0.194545
+18,Cleveland-Akron,1497.0,OH:0.311875
+19,Sacramento-Stockton,1494.0,CA:0.109853
+20,Charlotte,1333.0,NC:0.247557 SC:0.142778
+21,Raleigh-Durham,1317.0,NC:0.313571
+22,Portland OR,1296.0,OR:0.648000 WA:0.064800
+23,St. Louis,1227.0,IL:0.050082 MO:0.392640
+24,Indianapolis,1149.0,IN:0.433585
+25,Nashville,1138.0,KY:0.031611 TN:0.386107
+26,Pittsburgh,1132.0,OH:0.007075 PA:0.195923 WV:0.110056
+27,Salt Lake City,1128.0,ID:0.125333 NV:0.047000 UT:0.840873 WY:0.235000
+28,Baltimore,1110.0,MD:0.472340
+29,San Diego,1092.0,CA:0.080294
+30,San Antonio,1036.0,TX:0.096822
+31,Columbus OH,1001.0,OH:0.208542
+32,Kansas City,996.0,KS:0.329113 MO:0.247008
+33,Hartford-New Haven,978.0,CT:0.688732
+34,Austin,953.0,TX:0.089065
+35,Cincinnati,934.0,IN:0.017623 KY:0.103778 OH:0.145938
+36,Greenville-Spartanburg-Asheville,917.0,GA:0.006878 NC:0.080783 SC:0.267873
+37,Milwaukee,908.0,WI:0.370612
+38,West Palm Beach,862.0,FL:0.097955
+39,Las Vegas,847.0,NV:0.705833
+40,Jacksonville,757.0,FL:0.074840 GA:0.024603
+41,Harrisburg-Lancaster-York,752.0,PA:0.144615
+42,Grand Rapids-Kalamazoo,734.0,MI:0.183500
+43,Norfolk-Portsmouth,716.0,NC:0.017048 VA:0.195273
+44,Birmingham,711.0,AL:0.355500
+45,Greensboro-Winston-Salem,707.0,NC:0.156550 VA:0.014997
+46,Oklahoma City,702.0,OK:0.452903
+47,Albuquerque-Santa Fe,698.0,CO:0.029702 NM:0.756867
+48,Louisville,683.0,IN:0.038660 KY:0.322528
+49,New Orleans,621.0,LA:0.348876
+50,Memphis,614.0,AR:0.076750 MS:0.138288 TN:0.131571
+51,Providence-New Bedford,608.0,MA:0.099491 RI:0.796190
+52,Ft. Myers-Naples,601.0,FL:0.068295
+53,Buffalo,588.0,NY:0.077368
+54,Fresno-Visalia,586.0,CA:0.043088
+55,Richmond-Petersburg,582.0,VA:0.176364
+56,Mobile-Pensacola,568.0,AL:0.156200 FL:0.029045
+57,Little Rock,546.0,AR:0.455000
+58,Wilkes-Barre-Scranton,545.0,PA:0.104808
+59,Knoxville,541.0,TN:0.193214
+60,Tulsa,525.0,OK:0.338710
+61,Albany-Schenectady,524.0,MA:0.009527 NY:0.065500
+62,Lexington,506.0,KY:0.281111
+63,Dayton,488.0,OH:0.101667
+64,Tucson,482.0,AZ:0.169123
+65,Spokane,469.0,ID:0.227986 WA:0.101617
+66,Des Moines-Ames,435.0,IA:0.334615
+67,Green Bay-Appleton,444.0,MI:0.008880 WI:0.166727
+68,Honolulu,431.0,HI:0.917021
+69,Roanoke-Lynchburg,445.0,VA:0.130803 WV:0.018542
+70,Wichita-Hutchinson,428.0,KS:0.372174
+71,Flint-Saginaw-Bay City,427.0,MI:0.106750
+72,Omaha,433.0,IA:0.099923 NE:0.388590
+73,Charleston-Huntington WV,418.0,KY:0.046444 OH:0.008708 WV:0.406389
+74,Columbia SC,416.0,SC:0.202536
+75,Madison,412.0,WI:0.168163
+76,Portland-Auburn ME,409.0,ME:0.620552 NH:0.084443
+77,Toledo,406.0,MI:0.015225 OH:0.071896
+78,Huntsville-Decatur,404.0,AL:0.181800 TN:0.014429
+79,Chattanooga,382.0,AL:0.009550 GA:0.028650 TN:0.088679
+80,Savannah,370.0,GA:0.069375 SC:0.045035
+81,Charleston SC,358.0,SC:0.174297
+82,Jackson MS,330.0,MS:0.297297
+83,Reno,309.0,CA:0.003408 NV:0.218875
+84,Boise,330.0,ID:0.435417 OR:0.009706
+85,Cedar Rapids-Waterloo-Dubuque,335.0,IA:0.257692
+86,Davenport-Rock Island-Moline,297.0,IL:0.030306 IA:0.114231
+87,Burlington-Plattsburgh,300.0,NY:0.017763 VT:0.611111
+88,Myrtle Beach-Florence,300.0,NC:0.014286 SC:0.116847
+89,Greenville-New Bern,300.0,NC:0.071429
+90,Youngstown,260.0,OH:0.048750 PA:0.005000
+91,Lansing,255.0,MI:0.063750
+92,Traverse City-Cadillac,250.0,MI:0.062500
+93,Augusta-Aiken,260.0,GA:0.039000 SC:0.050634
+94,Macon,235.0,GA:0.058750
+95,Johnstown-Altoona-State College,270.0,PA:0.051923
+96,Wilmington NC,210.0,NC:0.050000
+97,Erie,150.0,PA:0.028846
+98,Bangor,135.0,ME:0.232759
+99,Anchorage,160.0,AK:0.615385
+100,Sioux Falls,270.0,IA:0.020769 MN:0.011739 SD:0.600000
+101,Fargo-Grand Forks,245.0,MN:0.031957 ND:0.519697
+102,Montana markets,420.0,MT:0.933333
+103,Rest of Alabama,435.1,AL:0.217570
+104,Rest of Alaska,100.0,AK:0.384615
+105,Rest of Arizona,238.0,AZ:0.083509
+106,Rest of Arkansas,561.9,AR:0.468250
+107,Rest of California,2110.6,CA:0.155195
+108,Rest of Colorado,572.2,CO:0.243498
+109,Rest of Connecticut,218.4,CT:0.153831
+110,Rest of Delaware,187.5,DE:0.468700
+111,Rest of Florida,925.8,FL:0.105206
+112,Rest of Georgia,603.7,GA:0.150935
+113,Rest of Hawaii,39.0,HI:0.082979
+114,Rest of Idaho,152.1,ID:0.211264
+115,Rest of Illinois,1449.9,IL:0.295890
+116,Rest of Indiana,935.1,IN:0.352864
+117,Rest of Iowa,224.6,IA:0.172769
+118,Rest of Kansas,343.5,KS:0.298713
+119,Rest of Kentucky,386.2,KY:0.214528
+120,Rest of Louisiana,1159.0,LA:0.651124
+121,Rest of Maine,85.1,ME:0.146690
+122,Rest of Maryland,365.9,MD:0.155685
+123,Rest of Massachusetts,499.0,MA:0.181462
+124,Rest of Michigan,358.6,MI:0.089645
+125,Rest of Minnesota,582.9,MN:0.253452
+126,Rest of Mississippi,626.5,MS:0.564414
+127,Rest of Missouri,900.9,MO:0.360352
+128,Rest of Nebraska,422.4,NE:0.541526
+129,Rest of New Jersey,817.3,NJ:0.233509
+130,Rest of New Mexico,201.8,NM:0.243133
+131,Rest of New York,1013.8,NY:0.133389
+132,Rest of North Dakota,158.5,ND:0.480303
+133,Rest of Ohio,458.6,OH:0.095550
+134,Rest of Oklahoma,323.0,OK:0.208387
+135,Rest of Oregon,581.9,OR:0.342294
+136,Rest of Pennsylvania,434.4,PA:0.083546
+137,Rest of Rhode Island,85.6,RI:0.203810
+138,Rest of South Dakota,144.0,SD:0.400000
+139,Rest of Tennessee,520.8,TN:0.186000
+140,Rest of Texas,2831.0,TX:0.264579
+141,Rest of Utah,175.0,UT:0.159127
+142,Rest of Vermont,54.3,VT:0.201185
+143,Rest of Virginia,358.4,VA:0.108600
+144,Rest of Washington,451.7,WA:0.150583
+145,Rest of West Virginia,206.3,WV:0.286472
+146,Rest of Wisconsin,501.1,WI:0.204522
+147,Rest of Wyoming,129.1,WY:0.537875

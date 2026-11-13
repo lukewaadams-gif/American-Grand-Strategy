@@ -161,6 +161,50 @@ public final class CellElectorateModel implements ElectorateModel {
                 groups(SEX_LABELS, xd, xt, tv));
     }
 
+    /**
+     * How much each age group counts in a state's swing: sum(w p(1-p) e) per age group over the state's cells, normalised.
+     * A campaign term that differs by age (BG's digital persuasion) moves the state as its age-weighted average would.
+     */
+    public double[] ageSwingWeights(String code) {
+        int s = cells.indexOf(code), na = cells.ageLabels.size();
+        double[] out = new double[na];
+        double t = 0;
+        for (int c = 0; c < weight[s].length; c++) {
+            double p = logistic(logit0[s][c]), v = weight[s][c] * p * (1 - p) * cells.elasticity[s][c];
+            out[cells.age[c]] += v;
+            t += v;
+        }
+        for (int a = 0; a < na; a++) out[a] = t > 0 ? out[a] / t : 1.0 / na;
+        return out;
+    }
+
+    /**
+     * The change in a state's margin, D minus R in points, from the two campaigns' turnout operations, as Battleground
+     * 2028 models them (Vote.turnout): each side's enthusiasm scales its leaners' base turnout, then each side's
+     * get-out-the-vote lift brings out a share of the cell's non-voters in proportion to that side's support there.
+     * Evaluated at the state's baseline preferences, so it is a margin shift that can be added to the campaign's local shift.
+     *
+     * @param liftD the Democratic GOTV lift (BG's gotvSat of the GOTV stock, 0..0.12)
+     * @param enD   the Democratic campaign's enthusiasm (0.5 = neutral)
+     */
+    public double turnoutShift(String code, double liftD, double liftR, double enD, double enR) {
+        int s = cells.indexOf(code);
+        double dv0 = 0, tv0 = 0, dv = 0, tv = 0;
+        for (int c = 0; c < weight[s].length; c++) {
+            double p = logistic(logit0[s][c]), eligible = composition == Composition.Y2024 ? cells.cvap2024[s][c] : cells.cvap2028[s][c];
+            double base = cells.turnout[s][c];
+            if (eligible <= 0 || base <= 0) continue;
+            double w0 = eligible * Math.max(0.05, Math.min(0.97, base));
+            double turn = base * (1 + 0.16 * (enD - 0.5) * 2 * p + 0.16 * (enR - 0.5) * 2 * (1 - p));
+            turn += liftD * p * (1 - turn);
+            turn += liftR * (1 - p) * (1 - turn);
+            double w = eligible * Math.max(0.05, Math.min(0.97, turn));
+            dv0 += w0 * p; tv0 += w0;
+            dv += w * p; tv += w;
+        }
+        return marginOf(dv, tv) - marginOf(dv0, tv0);
+    }
+
     public List<String> stateCodes() { return cells.codes; }
 
     /** BG's bloc names, by bloc index. */
