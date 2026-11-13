@@ -1,0 +1,9 @@
+# Off-map hubs (spec A.13): id,name,lat,lon,ship_days,air_hours,x_km,y_km,entry_zone
+# Ships from a hub reach its map edge after ship_days and then sail on to their zone; entry_zone is where they muster.
+hub_hawaii,Hawaii,17.0,161.5,4.5,5,4270,-169,GUAM
+hub_alaska,Alaska,47.5,160.0,99.0,4,2930,3198,GUAM
+hub_us_west_coast,US West Coast,24.0,161.5,10.5,11,4055,637,GUAM
+hub_diego_garcia,Diego Garcia,-6.0,88.5,3.5,4,-3754,-3041,SCS_C
+hub_europe_middle_east,Europe / Middle East,6.0,88.5,14.0,14,-3638,-1644,SCS_C
+hub_southern_australia,Southern Australia,-15.5,118.0,3.0,3,-348,-4357,PS_C
+hub_us_east_coast_via_suez,US East Coast (via Suez),6.5,88.5,24.0,16,-3631,-1586,SCS_C

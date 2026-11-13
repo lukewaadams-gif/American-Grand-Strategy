@@ -1,0 +1,18 @@
+# Landing beaches (spec A.8): id,name,sector,lat,lon,quality,x_km,y_km,zone,region
+# region: the PRC planner's lists (north, centre, south); blank for beaches outside them.
+beach_tamsui_bali,Tamsui-Bali,New Taipei,25.20,121.36,0.80,36,167,TS_N,north
+beach_fulong,Fulong,New Taipei,25.04,121.97,0.60,98,149,NE,
+beach_guanyin_zhuwei,Guanyin-Zhuwei,Taoyuan,25.07,121.06,1.00,6,152,TS_N,north
+beach_hsinchu_nanliao,Hsinchu (Nanliao),Hsinchu,24.85,120.88,0.90,-12,128,TS_N,north
+beach_houlong,Houlong,Miaoli,24.63,120.74,0.70,-26,103,TS_N,centre
+beach_dajia_qingshui,Dajia-Qingshui,Taichung,24.33,120.50,1.00,-51,70,TS_C,centre
+beach_lukang_fangyuan,Lukang-Fangyuan,Changhua,23.98,120.27,0.90,-74,31,TS_C,centre
+beach_mailiao,Mailiao,Yunlin,23.76,120.14,0.80,-88,7,TS_C,
+beach_budai,Budai,Chiayi,23.38,120.10,0.80,-92,-35,PENGHU,south
+beach_qigu_anping,Qigu-Anping,Tainan,23.10,120.04,1.00,-98,-66,TS_S,south
+beach_linyuan,Linyuan,Kaohsiung,22.48,120.37,1.00,-65,-136,BASHI,south
+beach_fangliao,Fangliao,Pingtung,22.36,120.56,0.70,-45,-149,BASHI,
+beach_toucheng,Toucheng,Yilan,24.87,121.87,0.60,88,130,NE,
+beach_penghu_beaches,Penghu beaches,Penghu,23.55,119.70,0.80,-133,-16,TS_S,
+beach_kinmen_beaches,Kinmen beaches,Kinmen,24.45,118.42,0.90,-261,86,TS_C,
+beach_matsu_beaches,Matsu beaches,Matsu,26.17,119.98,0.70,-102,275,TS_N,

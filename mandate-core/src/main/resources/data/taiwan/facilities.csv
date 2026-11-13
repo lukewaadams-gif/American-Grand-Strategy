@@ -1,0 +1,24 @@
+# Ports and airfields on Taiwan (spec A.9): id,name,sector,port,kt_per_day,lat,lon,x_km,y_km,sea_place
+# sea_place: the place in the transit matrix a ship sails to for this port (blank for airfields).
+f_port_of_keelung,Port of Keelung,Keelung,true,20,25.15,121.74,74,161,b_port_of_keelung
+f_taipei_port,Taipei Port,New Taipei,true,15,25.16,121.38,38,162,b_taipei_port
+f_port_of_taichung,Port of Taichung,Taichung,true,25,24.27,120.50,-51,63,b_port_of_taichung
+f_mailiao_port,Mailiao Port,Yunlin,true,8,23.79,120.19,-82,10,beach_mailiao
+f_budai_port,Budai Port,Chiayi,true,4,23.38,120.14,-88,-35,beach_budai
+f_anping_port,Anping Port,Tainan,true,10,23.00,120.15,-87,-78,b_anping_port
+f_port_of_kaohsiung,Port of Kaohsiung,Kaohsiung,true,30,22.61,120.28,-74,-121,b_port_of_kaohsiung
+f_port_of_hualien,Port of Hualien,Hualien,true,8,23.98,121.63,64,31,b_port_of_hualien
+f_suao_port,Su'ao Port,Yilan,true,6,24.59,121.87,88,99,b_suao_naval_base
+f_magong_port,Magong Port,Penghu,true,4,23.56,119.57,-146,-15,beach_penghu_beaches
+f_taoyuan_intl_airport,Taoyuan Intl Airport,Taoyuan,false,6,25.08,121.23,23,153,
+f_songshan_airport,Songshan Airport,Taipei,false,3,25.07,121.55,55,152,
+f_hsinchu_ab,Hsinchu AB,Hsinchu,false,3,24.82,120.94,-6,125,
+f_ching_chuan_kang_ab,Ching Chuan Kang AB,Taichung,false,4,24.26,120.62,-39,62,
+f_chiayi_ab,Chiayi AB,Chiayi,false,3,23.46,120.39,-62,-27,
+f_tainan_ab,Tainan AB,Tainan,false,3,22.95,120.21,-81,-83,
+f_kaohsiung_intl_airport,Kaohsiung Intl Airport,Kaohsiung,false,4,22.58,120.35,-67,-124,
+f_pingtung_ab,Pingtung AB,Pingtung,false,2,22.70,120.48,-53,-111,
+f_hualien_ab,Hualien AB,Hualien,false,3,24.02,121.62,63,36,
+f_chihhang_ab,Chihhang AB,Taitung,false,2,22.79,121.18,18,-101,
+f_makung_ab,Makung AB,Penghu,false,2,23.57,119.63,-140,-14,
+f_hengchun_airport,Hengchun Airport,Hengchun,false,1,22.04,120.73,-28,-185,

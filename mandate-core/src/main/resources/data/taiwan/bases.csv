@@ -1,0 +1,135 @@
+# Bases (spec A.12): id,name,country,region,lat,lon,flags,runways,parking,shelters,underground,x_km,y_km,zone,sector
+# flags: air naval army missile port civil c2 energy, joined with '+'. zone: the sea zone a port opens on (nearest by distance
+# minus radius). sector: the Taiwan sector a Taiwanese base stands in (blank elsewhere). Names are places, not units.
+b_kadena_ab,Kadena AB,JPN,Okinawa,26.356,127.768,air,2,140,15,0,674,312,OKINAWA,
+b_mcas_futenma,MCAS Futenma,JPN,Okinawa,26.274,127.756,air,1,60,0,0,674,303,OKINAWA,
+b_naha_ab,Naha AB,JPN,Okinawa,26.196,127.646,air+civil,2,90,0,0,663,294,OKINAWA,
+b_white_beach,White Beach,JPN,Okinawa,26.300,127.910,naval+port,0,0,0,0,689,306,OKINAWA,
+b_camp_hansen,Camp Hansen,JPN,Okinawa,26.460,127.910,army+missile,0,0,0,0,688,324,OKINAWA,
+b_shimojishima_airport,Shimojishima Airport,JPN,Sakishima,24.827,125.145,air+civil,1,30,0,0,418,131,MIYAKO,
+b_miyako_garrison,Miyako Garrison,JPN,Sakishima,24.780,125.300,army+missile,0,0,0,0,434,127,MIYAKO,
+b_ishigaki_garrison,Ishigaki Garrison,JPN,Sakishima,24.400,124.200,army+missile,0,0,0,0,324,82,YONAGUNI,
+b_yonaguni_garrison,Yonaguni Garrison,JPN,Sakishima,24.467,122.980,army,0,0,0,0,200,87,EAST,
+b_amami_garrison,Amami Garrison,JPN,Amami,28.380,129.490,army+missile,0,0,0,0,831,547,PS_N,
+b_nyutabaru_ab,Nyutabaru AB,JPN,Kyushu,32.083,131.451,air,1,60,0,0,987,972,SOJ,
+b_tsuiki_ab,Tsuiki AB,JPN,Kyushu,33.685,131.040,air,1,60,0,0,933,1148,SOJ,
+b_kanoya_ab,Kanoya AB,JPN,Kyushu,31.367,130.838,air,1,40,0,0,936,888,PS_N,
+b_sasebo_naval_base,Sasebo Naval Base,JPN,Kyushu,33.160,129.720,naval+port,0,0,0,0,815,1080,SOJ,
+b_camp_kengun_kumamoto,Camp Kengun (Kumamoto),JPN,Kyushu,32.790,130.730,army+missile,0,0,0,0,912,1046,SOJ,
+b_fukuoka_airport,Fukuoka Airport,JPN,Kyushu,33.585,130.450,air+civil,1,60,0,0,879,1132,SOJ,
+b_kagoshima_airport,Kagoshima Airport,JPN,Kyushu,31.803,130.719,air+civil,1,40,0,0,921,936,SOJ,
+b_mcas_iwakuni,MCAS Iwakuni,JPN,Honshu,34.144,132.236,air,1,160,0,0,1038,1208,SOJ,
+b_kure_naval_base,Kure Naval Base,JPN,Honshu,34.240,132.550,naval+port,0,0,0,0,1066,1221,SOJ,
+b_kansai_airport,Kansai Airport,JPN,Honshu,34.434,135.232,air+civil,2,80,0,0,1310,1269,SOJ,
+b_komatsu_ab,Komatsu AB,JPN,Honshu,36.394,136.407,air,1,70,0,0,1386,1500,SOJ,
+b_yokota_ab,Yokota AB,JPN,Honshu,35.748,139.348,air,1,80,0,0,1661,1465,SOJ,
+b_naf_atsugi,NAF Atsugi,JPN,Honshu,35.454,139.450,air,1,60,0,0,1676,1434,SOJ,
+b_yokosuka_naval_base,Yokosuka Naval Base,JPN,Honshu,35.290,139.670,naval+port,0,0,0,0,1699,1418,SOJ,
+b_hyakuri_ab,Hyakuri AB,JPN,Honshu,36.181,140.415,air,1,60,0,0,1748,1528,SOJ,
+b_misawa_ab,Misawa AB,JPN,Honshu,40.703,141.368,air,1,120,20,0,1732,2044,SOJ,
+b_chitose_ab,Chitose AB,JPN,Hokkaido,42.794,141.666,air,2,80,0,0,1706,2280,SOJ,
+b_osan_ab,Osan AB,KOR,Korea,37.090,127.030,air,1,90,30,0,539,1502,SOJ,
+b_kunsan_ab,Kunsan AB,KOR,Korea,35.904,126.616,air,1,80,40,0,509,1369,YELLOW,
+b_camp_humphreys,Camp Humphreys,KOR,Korea,36.968,127.031,army,0,0,0,0,540,1489,SOJ,
+b_cheongju_ab,Cheongju AB,KOR,Korea,36.717,127.499,air,1,60,20,0,584,1463,SOJ,
+b_jinhae_naval_base,Jinhae Naval Base,KOR,Korea,35.140,128.660,naval+port,0,0,0,0,701,1294,SOJ,
+b_andersen_afb,Andersen AFB,USA,Guam,13.584,144.930,air,2,150,0,0,2592,-934,GUAM,
+b_naval_base_guam,Naval Base Guam,USA,Guam,13.440,144.660,naval+port,0,0,0,0,2565,-954,GUAM,
+b_tinian_north_field,Tinian North Field,USA,Marianas,15.070,145.630,air,1,40,0,0,2645,-754,GUAM,
+b_saipan_airport,Saipan Airport,USA,Marianas,15.119,145.729,air+civil,1,30,0,0,2655,-747,GUAM,
+b_palau_airai,Palau (Airai),PLW,Palau,7.367,134.544,air+civil,1,20,0,0,1513,-1760,GUAM,
+b_basa_ab,Basa AB,PHL,Luzon,14.987,120.493,air,1,50,0,0,-55,-969,WLUZON,
+b_clark_airport,Clark Airport,PHL,Luzon,15.186,120.560,air+civil,2,80,0,0,-47,-947,WLUZON,
+b_subic_bay,Subic Bay,PHL,Luzon,14.800,120.270,naval+port,0,0,0,0,-79,-989,WLUZON,
+b_laoag,Laoag,PHL,N. Luzon,18.178,120.532,air+missile,1,20,0,0,-50,-614,WLUZON,
+b_lal_lo_airport,Lal-lo Airport,PHL,N. Luzon,18.122,121.745,air,1,20,0,0,79,-620,LUZON,
+b_camilo_osias_naval_base,Camilo Osias Naval Base,PHL,N. Luzon,18.490,122.150,naval+army+missile,0,0,0,0,121,-579,LUZON,
+b_camp_melchor_dela_cruz,Camp Melchor dela Cruz,PHL,N. Luzon,16.950,121.800,army,0,0,0,0,85,-750,WLUZON,
+b_basco_batanes,Basco (Batanes),PHL,Batanes,20.451,121.980,air+army+missile,1,6,0,0,102,-361,LUZON,
+b_antonio_bautista_ab,Antonio Bautista AB,PHL,Palawan,9.742,118.759,air,1,30,0,0,-248,-1550,SCS_C,
+b_mactan_ab_cebu,Mactan AB (Cebu),PHL,Visayas,10.307,123.979,air+civil,1,40,0,0,329,-1486,WLUZON,
+b_raaf_darwin,RAAF Darwin,AUS,N. Territory,-12.415,130.877,air,1,80,0,0,1147,-3996,GUAM,
+b_raaf_tindal,RAAF Tindal,AUS,N. Territory,-14.521,132.378,air,1,60,0,0,1320,-4225,GUAM,
+b_raaf_scherger,RAAF Scherger,AUS,Cape York,-12.624,142.087,air,1,40,0,0,2448,-3947,GUAM,
+b_darwin_naval_base,Darwin Naval Base,AUS,N. Territory,-12.470,130.850,naval+port,0,0,0,0,1144,-4002,GUAM,
+b_hsinchu_ab,Hsinchu AB,TWN,Hsinchu,24.818,120.939,air,1,60,40,0,-6,124,TS_N,Hsinchu
+b_ching_chuan_kang_ab,Ching Chuan Kang AB,TWN,Taichung,24.264,120.621,air,1,80,50,0,-38,63,TS_C,Taichung
+b_chiayi_ab,Chiayi AB,TWN,Chiayi,23.462,120.393,air,1,80,45,0,-62,-26,PENGHU,Chiayi
+b_tainan_ab,Tainan AB,TWN,Tainan,22.950,120.206,air,1,60,40,0,-81,-83,TS_S,Tainan
+b_pingtung_ab,Pingtung AB,TWN,Pingtung,22.700,120.480,air,1,40,20,0,-53,-111,TS_S,Pingtung
+b_hualien_ab_chiashan,Hualien AB (Chiashan),TWN,Hualien,24.023,121.618,air,1,60,20,200,63,36,EAST,Hualien
+b_chihhang_ab_taitung,Chihhang AB (Taitung),TWN,Taitung,22.793,121.182,air,1,50,20,80,19,-101,EAST,Taitung
+b_taoyuan_intl_airport,Taoyuan Intl Airport,TWN,Taoyuan,25.077,121.233,air+civil,2,120,0,0,23,153,TS_N,Taoyuan
+b_taipei_songshan,Taipei Songshan,TWN,Taipei,25.069,121.552,air+civil+c2,1,40,0,0,56,152,NE,Taipei
+b_kaohsiung_intl_airport,Kaohsiung Intl Airport,TWN,Kaohsiung,22.577,120.350,air+civil,1,40,0,0,-67,-125,TS_S,Kaohsiung
+b_makung_ab_penghu,Makung AB (Penghu),TWN,Penghu,23.568,119.628,air+army,1,30,10,0,-140,-14,TS_S,Penghu
+b_kinmen_defense_command,Kinmen Defense Command,TWN,Kinmen,24.432,118.360,air+army,1,6,0,0,-267,84,TS_C,Kinmen
+b_matsu_defense_command,Matsu Defense Command,TWN,Matsu,26.160,119.958,army,0,0,0,0,-104,274,TS_N,Matsu
+b_pratas_island,Pratas Island,TWN,Pratas,20.705,116.725,army,0,0,0,0,-445,-327,SCS_N,
+b_zuoying_naval_base,Zuoying Naval Base,TWN,Kaohsiung,22.700,120.270,naval+port,0,0,0,0,-75,-111,TS_S,Kaohsiung
+b_suao_naval_base,Su'ao Naval Base,TWN,Yilan,24.590,121.870,naval+port,0,0,0,0,88,99,EAST,Yilan
+b_port_of_keelung,Port of Keelung,TWN,Keelung,25.150,121.740,naval+port,0,0,0,0,74,161,NE,Keelung
+b_port_of_kaohsiung,Port of Kaohsiung,TWN,Kaohsiung,22.610,120.280,port+energy,0,0,0,0,-74,-121,TS_S,Kaohsiung
+b_port_of_taichung,Port of Taichung,TWN,Taichung,24.270,120.500,port+energy,0,0,0,0,-51,63,TS_C,Taichung
+b_taipei_port,Taipei Port,TWN,New Taipei,25.160,121.380,port,0,0,0,0,38,162,TS_N,New Taipei
+b_port_of_hualien,Port of Hualien,TWN,Hualien,23.980,121.630,port,0,0,0,0,64,31,EAST,Hualien
+b_anping_port,Anping Port,TWN,Tainan,23.000,120.150,port,0,0,0,0,-87,-78,TS_S,Tainan
+b_taipei_government_district,Taipei government district,TWN,Taipei,25.040,121.512,c2,0,0,0,0,52,149,NE,Taipei
+b_taipei_military_command_centre,Taipei military command centre,TWN,Taipei,25.080,121.560,c2,0,0,0,0,56,154,NE,Taipei
+b_yongan_lng_terminal,Yong'an LNG terminal,TWN,Kaohsiung,22.820,120.200,energy,0,0,0,0,-82,-98,TS_S,Kaohsiung
+b_taichung_power_lng,Taichung Power & LNG,TWN,Taichung,24.215,120.480,energy,0,0,0,0,-53,57,TS_C,Taichung
+b_longtian_ab,Longtian AB,CHN,Fujian,25.610,119.470,air,1,60,40,0,-153,213,TS_N,
+b_fuzhou_changle,Fuzhou Changle,CHN,Fujian,25.935,119.663,air+civil,1,80,0,0,-134,249,TS_N,
+b_huian_ab,Hui'an AB,CHN,Fujian,25.040,118.840,air,1,50,30,0,-218,151,TS_C,
+b_jinjiang_ab,Jinjiang AB,CHN,Fujian,24.800,118.590,air,1,60,30,0,-243,124,TS_C,
+b_xiamen_gaoqi,Xiamen Gaoqi,CHN,Fujian,24.544,118.128,air+civil,1,60,0,0,-290,97,TS_C,
+b_zhangzhou_ab,Zhangzhou AB,CHN,Fujian,24.560,117.660,air,1,50,30,0,-338,100,TS_C,
+b_shantou_waisha_ab,Shantou Waisha AB,CHN,Guangdong,23.430,116.760,air,1,50,30,0,-433,-24,SCS_N,
+b_jieyang_ab,Jieyang AB,CHN,Guangdong,23.550,116.500,air,1,50,30,0,-459,-9,SCS_N,
+b_wuyishan_ab,Wuyishan AB,CHN,Fujian,27.700,118.000,air,1,50,30,0,-296,448,TS_N,
+b_shuimen_ab,Shuimen AB,CHN,Fujian,26.950,120.070,air,1,40,20,0,-92,362,TS_N,
+b_luqiao_ab,Luqiao AB,CHN,Zhejiang,28.560,121.430,air,1,50,30,0,42,540,ECS_S,
+b_ningbo_zhuangqiao_ab,Ningbo Zhuangqiao AB,CHN,Zhejiang,29.930,121.570,air,1,50,30,0,55,693,ECS_N,
+b_daishan_ab,Daishan AB,CHN,Zhejiang,30.290,122.150,air,1,40,20,0,111,733,ECS_N,
+b_shanghai_dachang,Shanghai Dachang,CHN,Shanghai,31.300,121.390,air,1,50,20,0,37,845,ECS_N,
+b_wuhu_ab,Wuhu AB,CHN,Anhui,31.390,118.410,air,1,50,40,0,-247,858,YELLOW,
+b_anqing_ab,Anqing AB,CHN,Anhui,30.580,117.050,air,1,50,40,0,-379,771,YELLOW,
+b_zhangshu_ab,Zhangshu AB,CHN,Jiangxi,28.020,115.550,air,1,50,40,0,-535,491,TS_N,
+b_nanchang_ab,Nanchang AB,CHN,Jiangxi,28.620,115.900,air,1,50,40,0,-498,557,TS_N,
+b_leiyang_ab,Leiyang AB,CHN,Hunan,26.590,112.860,air,1,50,40,0,-809,345,SCS_N,
+b_huizhou_ab,Huizhou AB,CHN,Guangdong,23.050,114.600,air,1,50,30,0,-655,-58,SCS_N,
+b_suixi_ab,Suixi AB,CHN,Guangdong,21.400,110.200,air,1,50,30,0,-1117,-215,SCS_N,
+b_lingshui_ab,Lingshui AB,CHN,Hainan,18.500,110.030,air,1,50,30,0,-1157,-537,SCS_C,
+b_ledong_ab,Ledong AB,CHN,Hainan,18.480,109.170,air,1,40,30,0,-1248,-532,SCS_C,
+b_woody_island,Woody Island,CHN,Paracels,16.833,112.340,air+army,1,24,0,0,-923,-738,SCS_C,
+b_fiery_cross_reef,Fiery Cross Reef,CHN,Spratlys,9.550,112.890,air+army,1,24,0,0,-898,-1553,SCS_C,
+b_subi_reef,Subi Reef,CHN,Spratlys,10.920,114.080,air+army,1,24,0,0,-762,-1406,SCS_C,
+b_mischief_reef,Mischief Reef,CHN,Spratlys,9.910,115.530,air+army,1,24,0,0,-605,-1524,SCS_C,
+b_qingdao_naval_base,Qingdao Naval Base,CHN,Shandong,36.070,120.380,naval+port,0,0,0,0,-56,1376,YELLOW,
+b_zhoushan_naval_base,Zhoushan Naval Base,CHN,Zhejiang,29.950,122.100,naval+port,0,0,0,0,106,695,ECS_N,
+b_fuzhou_luoyuan_bay,Fuzhou (Luoyuan Bay),CHN,Fujian,26.440,119.630,naval+port,0,0,0,0,-136,305,TS_N,
+b_pingtan,Pingtan,CHN,Fujian,25.500,119.790,naval+missile+port,0,0,0,0,-121,201,TS_N,
+b_xiamen_naval_base,Xiamen Naval Base,CHN,Fujian,24.450,118.080,naval+port,0,0,0,0,-296,86,TS_C,
+b_quanzhou_port,Quanzhou Port,CHN,Fujian,24.850,118.700,port,0,0,0,0,-232,130,TS_C,
+b_dongshan_island,Dongshan Island,CHN,Fujian,23.700,117.450,naval+port,0,0,0,0,-361,5,TS_S,
+b_shantou_port,Shantou Port,CHN,Guangdong,23.350,116.700,naval+port,0,0,0,0,-439,-32,SCS_N,
+b_zhanjiang_naval_base,Zhanjiang Naval Base,CHN,Guangdong,21.200,110.400,naval+port,0,0,0,0,-1098,-238,SCS_N,
+b_yulin_naval_base_sanya,Yulin Naval Base (Sanya),CHN,Hainan,18.220,109.690,naval+port,0,0,0,0,-1195,-565,SCS_C,
+b_yongan_missile_base,Yong'an missile base,CHN,Fujian,25.970,117.370,missile,0,0,0,0,-363,257,TS_N,
+b_meizhou_missile_base,Meizhou missile base,CHN,Guangdong,24.290,116.120,missile,0,0,0,0,-495,74,SCS_N,
+b_ganzhou_missile_base,Ganzhou missile base,CHN,Jiangxi,25.830,114.930,missile,0,0,0,0,-607,250,SCS_N,
+b_shangrao_missile_base,Shangrao missile base,CHN,Jiangxi,28.450,117.940,missile,0,0,0,0,-299,532,TS_N,
+b_jinhua_missile_base,Jinhua missile base,CHN,Zhejiang,29.080,119.650,missile,0,0,0,0,-131,599,ECS_S,
+b_shaoguan_missile_base,Shaoguan missile base,CHN,Guangdong,24.810,113.600,missile,0,0,0,0,-747,143,SCS_N,
+b_xinyang_missile_base,Xinyang missile base,CHN,Henan,32.130,114.070,missile,0,0,0,0,-655,955,YELLOW,
+b_huaihua_missile_base,Huaihua missile base,CHN,Hunan,27.550,110.000,missile,0,0,0,0,-1084,472,SCS_N,
+b_laiwu_missile_base,Laiwu missile base,CHN,Shandong,36.210,117.670,missile,0,0,0,0,-301,1395,YELLOW,
+b_puning_missile_base,Puning missile base,CHN,Guangdong,23.300,116.160,missile,0,0,0,0,-494,-36,SCS_N,
+b_eastern_theatre_headquarters_nanjing,Eastern Theatre headquarters (Nanjing),CHN,Jiangsu,32.060,118.790,c2,0,0,0,0,-209,931,YELLOW,
+b_southern_theatre_headquarters_guangzhou,Southern Theatre headquarters (Guangzhou),CHN,Guangdong,23.130,113.260,c2,0,0,0,0,-791,-42,SCS_N,
+b_fujian_coastal_radar_net,Fujian coastal radar net,CHN,Fujian,24.950,119.200,c2,0,0,0,0,-181,140,TS_C,
+b_vladivostok,Vladivostok,RUS,Primorye,43.110,131.880,naval+port,0,0,0,0,899,2202,SOJ,
+b_port_blair,Port Blair,IND,Andaman,11.670,92.730,air+naval,1,30,0,0,-3089,-1075,SCS_C,
+b_cam_ranh_bay,Cam Ranh Bay,VNM,Vietnam,11.970,109.220,air+naval,1,30,0,0,-1290,-1259,SCS_C,
+b_changi_naval_base,Changi Naval Base,SGP,Singapore,1.320,104.010,air+naval,1,40,0,0,-1936,-2407,SCS_C,
+b_sinpo,Sinpo,PRK,N. Korea,40.030,128.180,naval,0,0,0,0,619,1835,SOJ,

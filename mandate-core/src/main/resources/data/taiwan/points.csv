@@ -1,0 +1,13 @@
+# Reference points the rules measure from (source line references in the spec): id,name,lat,lon,x_km,y_km,use
+taiwan,Centre of Taiwan,23.7,121.0,0.0,0.0,Taiwan's centre: blockade zone -exclusion zone -US shore radar
+taiwan_air,Taiwan airspace centre,23.7,120.6,-40.7,0.1,areas within 260 km are Taiwan airspace
+taiwan_cap,Taiwan CAP point,23.7,120.8,-20.4,0.0,CAP over Taiwan defends within 330 km
+sakishima,Sakishima radars,24.6,124.5,353.8,104.5,US shore radar -280 km
+okinawa,Okinawa radars,26.3,127.8,677.8,305.9,US shore radar -320 km
+batanes,Batanes radars,20.4,121.9,93.9,-366.7,US shore radar with Philippine access -250 km
+fujian,Fujian coast,25.0,119.2,-181.4,145.7,PRC radar 330 km; OTH radar origin; the PRC rearm threat point
+guangdong,Eastern Guangdong coast,23.3,116.7,-439.1,-37.9,PRC radar 330 km
+zhejiang,Zhejiang coast,29.5,122.5,145.4,645.8,PRC radar 330 km
+hainan,Hainan,18.3,109.6,-1204.3,-555.6,PRC radar 300 km; OTH radar origin
+spratly,Spratly radars,9.6,113.0,-885.8,-1547.6,PRC island radars -420 km
+xiamen,Opposite Taiwan,24.5,118.5,-253.0,91.2,the US mainland-target weighting point (900 km)
