@@ -68,4 +68,6 @@ public sealed interface Command {
     record Terms(game.mandate.core.terms.TermsOrder order) implements Command {}
     /** The Situation Room: calls, summits, trade, operations, covert action, statecraft, alliances and wars. */
     record Foreign(game.mandate.core.foreign.ForeignOrder order) implements Command {}
+    /** The Strait of Hormuz crisis: escorts, mine clearing, strikes, envoys, oil, Israel, the message, an invasion. */
+    record Hormuz(game.mandate.core.hormuz.HormuzOrder order) implements Command {}
 }

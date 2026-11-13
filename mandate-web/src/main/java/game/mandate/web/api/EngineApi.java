@@ -80,6 +80,7 @@ public final class EngineApi {
                 case "terms" -> TermsViews.view(need());
                 case "sitroom" -> ForeignViews.room(need());
                 case "foreignCountry" -> ForeignViews.country(need(), (String) req.get("country"));
+                case "hormuz" -> HormuzViews.room(need());
                 case "verdict" -> TermsViews.verdict(need());
                 case "transition" -> TransitionViews.view(need());
                 case "residence" -> PresidencyViews.residence(need());
@@ -210,7 +211,8 @@ public final class EngineApi {
                 + HillViews.count(g) + WestWingViews.decisions(g).size() + TermsViews.count(g) + ForeignViews.count(g));
         v.put("congress", g.congress().toString());
         // how long the End button's turn is: a week in office (an operational turn in a war), none in the other phases
-        v.put("turnUnit", g.operationsActive() ? "war" : switch (g.phase()) {
+        v.put("hormuz", HormuzViews.summary(g));
+        v.put("turnUnit", g.operationsActive() ? "war" : g.hormuzActive() ? "day" : switch (g.phase()) {
             case FIRST_100_DAYS, GOVERNING -> "week";
             case TRANSITION -> "transition";
             default -> null;

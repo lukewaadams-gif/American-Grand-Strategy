@@ -36,6 +36,7 @@ public final class CommandCodec {
             case Command.WestWing x -> m.put("order", game.mandate.core.westwing.WestWingOrder.toJson(x.order()));
             case Command.Terms x -> m.put("order", game.mandate.core.terms.TermsOrder.toJson(x.order()));
             case Command.Foreign x -> m.put("order", game.mandate.core.foreign.ForeignOrder.toJson(x.order()));
+            case Command.Hormuz x -> m.put("order", game.mandate.core.hormuz.HormuzOrder.toJson(x.order()));
             case Command.Pledge x -> m.put("bill", x.billId());
             case Command.SetAgenda x -> m.put("bills", x.billIds());
             case Command.PushBill x -> { m.put("bill", x.billId()); m.put("strategy", x.strategy().name()); m.put("capital", x.capital()); }
@@ -102,6 +103,7 @@ public final class CommandCodec {
             case "WestWing" -> new Command.WestWing(game.mandate.core.westwing.WestWingOrder.fromJson(Json.object(m.get("order"))));
             case "Terms" -> new Command.Terms(game.mandate.core.terms.TermsOrder.fromJson(Json.object(m.get("order"))));
             case "Foreign" -> new Command.Foreign(game.mandate.core.foreign.ForeignOrder.fromJson(Json.object(m.get("order"))));
+            case "Hormuz" -> new Command.Hormuz(game.mandate.core.hormuz.HormuzOrder.fromJson(Json.object(m.get("order"))));
             case "Pledge" -> new Command.Pledge((String) m.get("bill"));
             case "SetAgenda" -> new Command.SetAgenda(Json.array(m.get("bills")).stream().map(o -> (String) o).toList());
             case "PushBill" -> new Command.PushBill((String) m.get("bill"), LegislativeStrategy.valueOf((String) m.get("strategy")), Json.num(m.get("capital")));

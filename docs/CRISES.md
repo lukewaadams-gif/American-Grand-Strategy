@@ -2,6 +2,10 @@
 
 Two in-depth crises, built on the presidency's Situation Room (milestone 8). Both are in the presidency, and both are standalone scenarios. Asked and answered on 13 November 2026.
 
+**Status:**
+- **The Strait of Hormuz is built:** its design and numbers are in `HORMUZ.md`; what is not yet built is in `DECISIONS_TO_REVIEW.md`.
+- **Island Chain** is specified from its source and comes next.
+
 ## Island Chain in the game
 
 Island Chain is the Taiwan Strait wargame in `/home/user/src/IslandChain` (one 12,450-line Java file). It is ported, not copied: this version is less detailed than Island Chain, but keeps what makes a crisis deep to manage.

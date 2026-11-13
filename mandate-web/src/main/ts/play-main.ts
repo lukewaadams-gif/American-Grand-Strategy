@@ -61,7 +61,7 @@ function showStart(): void {
     options: real => engine.options(real),
     newGame: g => { try { engine.newGame(g); route(); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); } },
     loadFile: text => { try { engine.load(text); route(); } catch (e) { toast('That file is not a saved game: ' + String(e)); } },
-    quick: async save => { try { engine.load(await buildFile(save)); route(); } catch (e) { toast(String(e)); } },
+    quick: async (save, then) => { try { engine.load(await buildFile(save)); if (then) engine.command(then); route(); } catch (e) { toast(String(e)); } },
   }));
   document.title = 'American Grand Strategy';
 }

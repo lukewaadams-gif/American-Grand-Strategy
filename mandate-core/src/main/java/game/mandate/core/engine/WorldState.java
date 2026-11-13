@@ -15,6 +15,7 @@ import game.mandate.core.westwing.WestWingState;
 import game.mandate.core.terms.TermsState;
 import game.mandate.core.foreign.ForeignState;
 import game.mandate.core.westwing.TransitionState;
+import game.mandate.core.hormuz.HormuzState;
 import game.mandate.core.game.Legacy;
 import game.mandate.core.military.MilitaryState;
 import game.mandate.core.opening.HundredDaysState;
@@ -66,6 +67,8 @@ public final class WorldState {
     ForeignState foreign;
     /** The transition office (the White House staff's shortlists); from the 2028 election, kept after the oath. */
     TransitionState transition;
+    /** The Strait of Hormuz crisis, while it lasts and after (its record and the fading premium); null if there has been none. */
+    HormuzState hormuz;
     /** The weighed news The Capital Ledger is made from (the last 400 stories). */
     final List<News> news = new ArrayList<>();
     /** The era's stories that have already run (indexes into the ambient table). */
@@ -102,6 +105,7 @@ public final class WorldState {
     public TermsState terms() { return terms; }
     public ForeignState foreign() { return foreign; }
     public TransitionState transition() { return transition; }
+    public HormuzState hormuz() { return hormuz; }
     public List<News> news() { return Collections.unmodifiableList(news); }
     public Set<Integer> ambientUsed() { return Collections.unmodifiableSet(ambientUsed); }
     public EventScheduler scheduler() { return scheduler; }
@@ -127,6 +131,7 @@ public final class WorldState {
         m.put("terms", terms == null ? null : terms.toJson());
         m.put("foreign", foreign == null ? null : foreign.toJson());
         m.put("transition", transition == null ? null : transition.toJson());
+        m.put("hormuz", hormuz == null ? null : hormuz.toJson());
         List<Object> ns = new ArrayList<>();
         for (News n : news) ns.add(n.toJson());
         m.put("news", ns);
@@ -160,6 +165,7 @@ public final class WorldState {
         w.terms = m.get("terms") == null ? null : TermsState.fromJson(Json.object(m.get("terms")));
         w.foreign = m.get("foreign") == null ? null : ForeignState.fromJson(Json.object(m.get("foreign")));
         w.transition = m.get("transition") == null ? null : TransitionState.fromJson(Json.object(m.get("transition")));
+        w.hormuz = m.get("hormuz") == null ? null : HormuzState.fromJson(Json.object(m.get("hormuz")));
         if (m.get("news") != null) for (Object o : Json.array(m.get("news"))) w.news.add(News.fromJson(Json.object(o)));
         if (m.get("ambientUsed") != null) for (Object o : Json.array(m.get("ambientUsed"))) w.ambientUsed.add(Json.integer(o));
         w.scheduler = EventScheduler.fromJson(Json.object(m.get("scheduler")));

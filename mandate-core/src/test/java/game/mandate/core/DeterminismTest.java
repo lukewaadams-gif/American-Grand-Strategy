@@ -19,7 +19,7 @@ class DeterminismTest {
     static GameEngine playOut(long seed) {
         GameEngine g = new GameEngine(setup(seed));
         int guard = 0;
-        while (!g.over() && guard++ < 500) AutoPilot.playTurn(g);
+        while (!g.over() && guard++ < 1200) AutoPilot.playTurn(g);
         assertTrue(g.over(), "game should finish");
         return g;
     }

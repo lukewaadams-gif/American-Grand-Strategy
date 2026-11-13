@@ -59,6 +59,9 @@ import game.mandate.core.game.GameSetup;
 import game.mandate.core.hill.HillEngine;
 import game.mandate.core.terms.TermsEngine;
 import game.mandate.core.foreign.ForeignData;
+import game.mandate.core.hormuz.HormuzEngine;
+import game.mandate.core.hormuz.HormuzOrder;
+import game.mandate.core.hormuz.HormuzState;
 import game.mandate.core.foreign.ForeignEngine;
 import game.mandate.core.foreign.ForeignOrder;
 import game.mandate.core.foreign.ForeignState;
@@ -149,6 +152,7 @@ public final class GameEngine implements WorldView {
     private final WestWingEngine westWingEngine;
     private final TermsEngine termsEngine;
     private final ForeignEngine foreignEngine;
+    private final HormuzEngine hormuzEngine = new HormuzEngine();
     private final TransitionOffice transitionOffice;
     private final AmbientNews ambient;
 
@@ -312,6 +316,7 @@ public final class GameEngine implements WorldView {
             case Command.WestWing c -> westWingOrder(c.order());
             case Command.Terms c -> termsOrder(c.order());
             case Command.Foreign c -> foreignOrder(c.order());
+            case Command.Hormuz c -> hormuzOrder(c.order());
         }
         history.add(command);
         w.commandsApplied++;
@@ -411,6 +416,7 @@ public final class GameEngine implements WorldView {
     private void endTurn() {
         if (w.scheduler.hasPending()) throw new IllegalCommandException("Decide the pending events first");
         if (w.military.operationActive()) { operationalTurn(); return; }
+        if (hormuzActive()) { hormuzDay(); return; }
         switch (w.phase) {
             case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> campaignWeek();
             case TRANSITION -> beginTerm();
@@ -912,6 +918,7 @@ public final class GameEngine implements WorldView {
         }
         if (term() == 1 && w.election.result2032() == null && (w.terms == null || TermsEngine.running(w.terms)) && !date().isBefore(calendar.reelectionStart()))
             beginReelection();
+        if (w.phase == Phase.GOVERNING) maybeHormuz();
     }
 
     // ---- the president's week (Resolute Desk) ---------------------------------------------------------------------
@@ -1151,6 +1158,99 @@ public final class GameEngine implements WorldView {
 
     public Optional<ForeignState> foreign() { return Optional.ofNullable(w.foreign); }
     public ForeignEngine foreignEngine() { return foreignEngine; }
+
+    // ---- the Strait of Hormuz crisis (docs/HORMUZ.md) -----------------------------------------------------------------
+
+    public boolean hormuzActive() { return w.hormuz != null && w.hormuz.active(); }
+    public Optional<HormuzState> hormuz() { return Optional.ofNullable(w.hormuz); }
+
+    /** Each week the world's tensions around Iran may start a fight over the strait. */
+    private void maybeHormuz() {
+        if (w.foreign == null || hormuzActive() || w.military.operationActive()) return;
+        if (w.hormuz != null) hormuzEngine.afterWeek(w.hormuz);
+        if (rng.uniform("world.hormuz") < foreignEngine.hormuzChance(w.foreign))
+            startHormuz(0, foreignEngine.hormuzStart(w.foreign, rng), foreignEngine.hormuzCause(w.foreign));
+    }
+
+    private void startHormuz(int preset, int rung, String cause) {
+        w.hormuz = hormuzEngine.newCrisis(date(), rung, cause, preset, rng);
+        foreignEngine.hormuzBegan(w.foreign);
+        w.clock.setMode(Granularity.DAILY);
+        news(new News(date(), News.Kind.WORLD, "CRISIS IN THE STRAIT OF HORMUZ", cause + ". " + HormuzEngine.RUNG_DESC[w.hormuz.rung()], 5, null));
+        log("THE STRAIT OF HORMUZ: " + cause + ". The clock moves to days until the crisis ends.");
+        dispatch(w.ledger.decide(date(), "Hormuz"), "Hormuz", new Effect.Rally(1.5));
+    }
+
+    /** One day of the crisis; every seventh, the economy and opinion take their week. */
+    private void hormuzDay() {
+        hormuzOutcome("The Strait of Hormuz", hormuzEngine.day(w.hormuz, date(), rng), null);
+        w.clock.advance();
+        if (w.hormuz.day() - w.hormuz.lastTick() >= 7 || !w.hormuz.active()) crisisWeek();
+        if (!w.hormuz.active()) {
+            foreignEngine.hormuzEnded(w.foreign, foreignContext(), !"A stalemate".equals(w.hormuz.outcome()), w.hormuz.outcome());
+            if (w.hormuz.invasion() == 3 && w.hormuz.invasionOption() == 0) {
+                ForeignEngine.Outcome occ = ForeignEngine.Outcome.empty();
+                foreignEngine.hormuzOccupation(w.foreign, foreignContext(), occ);
+                foreignOutcome("The occupation of Iran", occ, null);
+            }
+            w.clock.setMode(Granularity.WEEKLY);
+            w.clock.set(date().with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)));
+            log("The Strait of Hormuz crisis is over: " + w.hormuz.outcome() + ". The weeks resume.");
+        }
+    }
+
+    /** The week the crisis has paused: the economy (with the strait's oil premium), the Fed and the reports, and opinion. */
+    private void crisisWeek() {
+        LocalDate to = date(), from = to.minusDays(Math.max(1, w.hormuz.day() - w.hormuz.lastTick()));
+        hormuzEngine.ticked(w.hormuz);
+        economyEngine.step(w.economy, w.budget, 1.0 / EconomyEngine.WEEKS_PER_MONTH, marketContext(), rng);
+        for (int i = 0; i < calendar.fomcMeetings(from, to); i++) news(Releases.fed(from, w.economy, economyEngine.fedMeeting(w.economy, w.budget)));
+        politicsEngine.step(w.politics, 1.0, opinionInputs(), rng);
+        recordIndicators();
+    }
+
+    private void hormuzOutcome(String cause, HormuzEngine.Outcome o, String what) {
+        int decision = -1;
+        if (what != null) {
+            decision = w.ledger.decide(date(), cause);
+            w.ledger.record(decision, date(), cause, "hormuz", what);
+        }
+        for (Effect e : o.effects()) {
+            if (decision < 0) decision = w.ledger.decide(date(), cause);
+            dispatch(decision, cause, e);
+        }
+        for (News n : o.news()) news(n);
+        for (String line : o.log()) log(line);
+        followWorld();
+    }
+
+    private void hormuzOrder(HormuzOrder o) {
+        if (w.phase != Phase.GOVERNING || w.foreign == null) throw new IllegalCommandException("Only in office, once the Situation Room is open");
+        if (o instanceof HormuzOrder.Begin b) {
+            if (hormuzActive() || w.military.operationActive()) throw new IllegalCommandException("A crisis is already under way");
+            startHormuz(Math.max(0, Math.min(2, b.preset())), 2, "the Guards seize a tanker, and Tehran threatens to close the strait");
+            return;
+        }
+        if (!hormuzActive()) throw new IllegalCommandException("There is no crisis in the strait");
+        if (o instanceof HormuzOrder.Playbook) {
+            List<String> done = new ArrayList<>();
+            for (HormuzOrder step : hormuzEngine.playbook(w.hormuz)) {
+                try {
+                    hormuzOutcome("The Strait of Hormuz", hormuzEngine.apply(w.hormuz, date(), step, rng), "Playbook: " + step.getClass().getSimpleName());
+                    done.add(w.hormuz.message());
+                } catch (IllegalArgumentException e) { /* not today */ }
+            }
+            hormuzEngine.note(w.hormuz, done.isEmpty() ? "The National Security Council has nothing new to do today." : "By the playbook: " + String.join(" ", done));
+            return;
+        }
+        HormuzEngine.Outcome out;
+        try {
+            out = hormuzEngine.apply(w.hormuz, date(), o, rng);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalCommandException(e.getMessage());
+        }
+        hormuzOutcome("The Strait of Hormuz", out, o.getClass().getSimpleName());
+    }
 
     // ---- terms of office (Resolute Desk's Terms and Reelection) ----------------------------------------------------
 
@@ -1794,7 +1894,7 @@ public final class GameEngine implements WorldView {
     // =========================================================================================
 
     private MarketContext marketContext() {
-        double premium = Math.max(0, w.diplomacy.tension(HotSpot.MIDDLE_EAST) - middleEastPivot) * premiumPerMiddleEast
+        double premium = Math.max(0, w.diplomacy.tension(HotSpot.MIDDLE_EAST) - middleEastPivot) * premiumPerMiddleEast + (w.hormuz == null ? 0 : w.hormuz.premium())
                 + (w.diplomacy.rung() == null || w.diplomacy.warOver() ? 0 : premiumPerRung * (w.diplomacy.rung().ordinal() + 1));
         double stress = (w.diplomacy.rung() == null || w.diplomacy.warOver() ? 0 : stressPerRung * (w.diplomacy.rung().ordinal() + 1))
                 + (w.military.operationActive() ? stressWar : 0);

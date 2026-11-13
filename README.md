@@ -18,6 +18,8 @@ In the browser, single keys work the screens, since browsers keep Ctrl+1 to 8 fo
 - **?** lists every shortcut and mechanic, and **A** shows or hides the adviser;
 - **Ctrl+Enter** ends the turn and **Ctrl+Z** undoes, as on the desktop.
 
+The preview (`/preview/` on the same site) plays the whole game: the campaign, the transition, both terms and the verdict, with the Strait of Hormuz crisis in daily turns (`docs/HORMUZ.md`). The start screen can also begin that crisis at once.
+
 The browser build is the same simulation compiled to JavaScript (`mandate-web`; see UI_DESIGN.md §17). The same seed plays the same game as on the desktop: 40 of 40 autopilot games matched exactly.
 
 ## Play on the desktop

@@ -31,6 +31,11 @@ public final class AutoPilot {
             g.apply(new Command.EndTurn());
             return;
         }
+        if (g.hormuzActive()) {             // the strait, day by day: the National Security Council's playbook
+            g.apply(new Command.Hormuz(new game.mandate.core.hormuz.HormuzOrder.Playbook()));
+            g.apply(new Command.EndTurn());
+            return;
+        }
         // in office, the chief of staff writes the president's week (Resolute Desk's delegated calendar)
         if ((g.phase() == game.mandate.core.time.Phase.FIRST_100_DAYS || g.phase() == game.mandate.core.time.Phase.GOVERNING)
                 && g.president().map(p -> !p.delegated()).orElse(false))

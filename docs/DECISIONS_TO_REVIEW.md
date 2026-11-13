@@ -99,3 +99,20 @@ Choices made while building overnight that we had not discussed. Each was made i
 3. **The front page of the preview is now the whole game.** The campaign-only preview moves to `campaign.html`; `presidency.html` stays.
 4. **New games run the full length** (the campaign and on for as long as the president serves). The 100-day game length remains in the engine and the terminal game.
 5. **Sound is synthesized** (a filtered-noise room tone, a clock, a chime). No sound files. It is off until a click turns it on, as browsers require.
+
+## The Strait of Hormuz crisis
+
+1. **A deal is the cheapest way out**, as the design's realism implies: Iran wants relief more than a war. Its costs:
+   - sanctions on Iran are eased;
+   - the envoy takes three days between missions;
+   - every strike sets the talks back.
+2. **The ladder runs on two dispositions moving toward targets**, not on random escalation. Iran's own losses at sea, Beijing's pressure and the regime's instability restrain it, so a closure can wind down without a deal once little is left to fight with.
+3. **The intelligence community's estimates** of the coastal sites are what the room shows. Struck launchers partly recover (mobile launchers come out of hiding), and the estimates lag.
+4. **Destroyers are hard to hit**, as the Red Sea campaign of 2023–24 showed: one salvo in twenty aimed at an escort hits. Mines strike minesweepers rarely and kill few.
+5. **The full invasion takes about three months of build-up and two and a half of fighting.** It ends in an occupation on the Situation Room's war-of-choice model. The day-150 stalemate waits while troops are on the move.
+6. **Not yet built:**
+   - Congress's vote on an invasion (the War Powers clock);
+   - National Security Council meetings with options papers;
+   - the standalone start's year (2029–2036) and custom preset. The start screen offers the three presets in September 2029.
+7. **The watch mode and the autopilot follow a playbook:** escorts, minesweepers, the allies, the reserve, the pipelines and reinsurance, then the envoys. They never strike or invade.
+8. **The map is Natural Earth's 1:10m countries,** so the strait's islands show, in an equirectangular projection true at 26.5° N.

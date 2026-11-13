@@ -13,8 +13,15 @@ export interface StartActions {
   options(realRoster: boolean): StartOptions;
   newGame(g: NewGame): void;
   loadFile(text: string): void;
-  quick(save: string): void;
+  /** Opens a save; with a command, gives it first (a crisis begins at once). */
+  quick(save: string, then?: object): void;
 }
+
+/** The in-depth crises, standalone: a governing presidency in September 2029 and the crisis at once (docs/CRISES.md). */
+const CRISES = [
+  { label: 'The Strait of Hormuz', detail: 'The Guards seize a tanker and Tehran threatens to close the strait: day by day, a fifth of the world’s oil.',
+    presets: ['Base case', 'Optimistic', 'Pessimistic'], order: (p: number) => ({ type: 'Hormuz', order: { type: 'Begin', preset: p } }) },
+];
 
 const QUICK = [
   { save: 'saves/campaign.json', label: 'The campaign, week 9', detail: 'Battleground 2028’s headquarters at the height of the race.' },
@@ -75,7 +82,12 @@ export function startScreen(act: StartActions): HTMLElement {
           } })),
         h('h3', { class: 'start-sub' }, 'Or start at a moment'),
         h('ul', { class: 'start-quick' }, ...QUICK.map(q => h('li', null,
-          h('button', { class: 'btn link', type: 'button', onclick: () => act.quick(q.save) }, q.label), h('span', { class: 'muted small' }, ' · ' + q.detail))))));
+          h('button', { class: 'btn link', type: 'button', onclick: () => act.quick(q.save) }, q.label), h('span', { class: 'muted small' }, ' · ' + q.detail)))),
+        h('h3', { class: 'start-sub' }, 'Or face a crisis'),
+        h('ul', { class: 'start-quick start-crises' }, ...CRISES.map(c => h('li', null,
+          h('strong', null, c.label), h('span', { class: 'muted small' }, ' · ' + c.detail),
+          h('span', { class: 'start-presets', role: 'group', 'aria-label': c.label + ': how it starts' }, ...c.presets.map((p, i) =>
+            h('button', { class: 'btn small', type: 'button', onclick: () => act.quick('saves/governing.json', c.order(i)) }, p))))))));
   }
 
   draw();

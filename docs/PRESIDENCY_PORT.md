@@ -480,6 +480,37 @@ The terms of office are a domain of their own (`terms/TermsEngine`, after Resolu
   - three palettes, 125% text and reduced motion;
   - phone and desktop widths.
 
+## The Strait of Hormuz crisis (after milestone 10)
+
+The first in-depth crisis from `CRISES.md`, designed in `HORMUZ.md` (with its numbers as built):
+- **Daily turns** while it lasts: the Oval Office's button reads "Next day" and its week card gives way to the crisis.
+- **The crisis room** (the globe, or the card) shows:
+  - the ladder;
+  - a map of the strait, with Iran's coastal sites as the intelligence community sees them, the minefields, the lanes, the terminals and pipelines, and the escorts;
+  - the oil: what passes, the pipelines, the reserves and what is missing;
+  - Iran's two decision-makers.
+
+  The tools:
+  - escorts and mine countermeasures, with the allies;
+  - strikes on four kinds of target, each confirmed;
+  - envoys through Muscat and Doha;
+  - pressure through Beijing and New Delhi, and the Gulf hosts;
+  - the public message, and Israel;
+  - the Strategic Petroleum Reserve, the IEA, the bypass pipelines and federal reinsurance;
+  - three invasion plans.
+- **It starts from the world's tensions around Iran** (milestone 8), or at once from the start screen ("Or face a crisis": base case, optimistic, pessimistic).
+- **Its costs run through the presidency:**
+  - the oil premium in the structural economy;
+  - Americans killed, in approval and the record;
+  - the allies' relations;
+  - sanctions eased by a deal;
+  - an occupation after a full invasion.
+- **Watch mode** follows the National Security Council's playbook, a replayable order.
+- **Checks:**
+  - `HormuzTest` (8 tests);
+  - a crisis in the parity run;
+  - `src/test/browser/hormuz.js`.
+
 ## Quality bar
 
 These are the same as for the campaign:

@@ -68,6 +68,16 @@ public final class ParityCheck {
                     + " cost " + game.mandate.core.data.Fmt.format("%.2f", r.central().direct()));
         }
         System.out.println("scoring ms " + (System.currentTimeMillis() - s0));
+        // the Strait of Hormuz, the pessimistic case: a strike on the first day, then the playbook to the end
+        GameEngine hz = SaveManager.load(SaveManager.save(g));
+        hz.apply(new game.mandate.core.command.Command.Hormuz(new game.mandate.core.hormuz.HormuzOrder.Begin(2)));
+        hz.apply(new game.mandate.core.command.Command.Hormuz(new game.mandate.core.hormuz.HormuzOrder.Strike("missiles")));
+        for (int d = 0; d < 300 && hz.hormuzActive(); d++) AutoPilot.playTurn(hz);
+        var h = hz.hormuz().orElseThrow();
+        System.out.println("hormuz " + h.outcome() + " days " + h.day() + " peak " + h.peakRung() + " killed " + h.usKilled() + " seized " + h.tankersSeized()
+                + " hit " + h.tankersHit() + " talks " + game.mandate.core.data.Fmt.format("%.4f", h.talks()) + " spr " + game.mandate.core.data.Fmt.format("%.4f", h.sprLeft())
+                + " oil " + game.mandate.core.data.Fmt.format("%.4f", hz.state().economy().oil()) + " approval " + game.mandate.core.data.Fmt.format("%.6f", hz.state().politics().nationalApproval())
+                + " commands " + hz.history().size());
         System.out.println("ms " + (System.currentTimeMillis() - t0));
     }
 }

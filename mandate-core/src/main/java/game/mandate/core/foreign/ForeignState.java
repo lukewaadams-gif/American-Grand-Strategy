@@ -50,6 +50,8 @@ public final class ForeignState {
     /** The President's Daily Brief: "priority|text" items, rebuilt every week. */
     final List<String> brief = new ArrayList<>();
     int nextId = 1;
+    /** How hot things run with Iran (strikes on its sites, a war, maximum sanctions): a fight over the Strait of Hormuz grows likelier. */
+    double iranHeat;
     /** What the last thing done from the Situation Room came to. */
     String message;
 
@@ -125,6 +127,7 @@ public final class ForeignState {
     public List<String> brief() { return Collections.unmodifiableList(brief); }
     public String message() { return message; }
     public double warBudget() { return warBudget; }
+    public double iranHeat() { return iranHeat; }
     public int totalVisits() { int v = 0; for (int x : visits) v += x; return v; }
 
     public Question question(String id) {
@@ -281,7 +284,7 @@ public final class ForeignState {
         m.put("w", List.of(week, callsThisWeek, callWeek, twStage, uaStage, defcon, kia, ops, covert, exposed, crises, deals, okCount, failCount,
                 summitCountry, summitWeek, summitRound, summitAsk, art5Week, pressWeek, drillWeek, objectivesYear, done, nextId));
         m.put("x", List.of(tariffAdd, twt, deter, ukr, ruGain, talks, gaza, iran, redsea, proxy, nk, terror, cyber, migr, cartel, nato, pacific, allySpend,
-                refugees, summitMood, summitLeverage, warBudget));
+                refugees, summitMood, summitLeverage, warBudget, iranHeat));
         m.put("posture", ints(posture)); m.put("cool", ints(cool)); m.put("opCool", ints(opCool)); m.put("cvCool", ints(cvCool));
         m.put("taiwanWar", taiwanWar);
         List<Object> os = new ArrayList<>();
@@ -323,7 +326,7 @@ public final class ForeignState {
         s.talks = Json.num(x.get(k++)); s.gaza = Json.num(x.get(k++)); s.iran = Json.num(x.get(k++)); s.redsea = Json.num(x.get(k++)); s.proxy = Json.num(x.get(k++));
         s.nk = Json.num(x.get(k++)); s.terror = Json.num(x.get(k++)); s.cyber = Json.num(x.get(k++)); s.migr = Json.num(x.get(k++)); s.cartel = Json.num(x.get(k++));
         s.nato = Json.num(x.get(k++)); s.pacific = Json.num(x.get(k++)); s.allySpend = Json.num(x.get(k++)); s.refugees = Json.num(x.get(k++));
-        s.summitMood = Json.num(x.get(k++)); s.summitLeverage = Json.num(x.get(k++)); s.warBudget = Json.num(x.get(k));
+        s.summitMood = Json.num(x.get(k++)); s.summitLeverage = Json.num(x.get(k++)); s.warBudget = Json.num(x.get(k++)); s.iranHeat = x.size() > k ? Json.num(x.get(k)) : 0;
         read(Json.array(m.get("posture")), s.posture); read(Json.array(m.get("cool")), s.cool); read(Json.array(m.get("opCool")), s.opCool); read(Json.array(m.get("cvCool")), s.cvCool);
         s.taiwanWar = (Boolean) m.get("taiwanWar");
         for (Object o : Json.array(m.get("objectives"))) s.objectives.add(Objective.fromJson(Json.object(o)));

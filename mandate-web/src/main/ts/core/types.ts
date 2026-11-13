@@ -125,7 +125,9 @@ export interface PresidencyView {
   successor?: string; handoff?: string;
   pendingDecisions: number; congress: string;
   /** The length of the turn the End button plays: 'week', 'war' (an operational turn), 'transition', or null when there is none. */
-  turnUnit: 'week' | 'war' | 'transition' | null;
+  turnUnit: 'week' | 'war' | 'day' | 'transition' | null;
+  /** The Strait of Hormuz crisis, while it lasts. */
+  hormuz?: { day: number; rung: number; rungName: string; flow: number; normal: number; premium: number; killed: number; settled: boolean } | null;
   upcoming: { date: string; what: string }[];
   bills: PresidencyBill[];
   news: NewsItem[];
@@ -407,4 +409,22 @@ export interface PressView {
   relations?: number; presserIn?: number; interviewIn?: number; addressIn?: number; busy?: boolean; postsLeft?: number; followers?: number; tones?: string[];
   lastPoll?: string | null; pressers?: number; interviews?: number; speeches?: number; sotu?: string;
   wings?: { name: string; mood: number }[]; record?: string; opposition?: string; oppLeaders?: string[]; issues?: { id: string; label: string }[];
+}
+
+// ---- the Strait of Hormuz crisis (docs/HORMUZ.md) ------------------------------------------------------------------------
+export interface HormuzSite { id: string; name: string; kind: 'missiles' | 'boats' | 'drones' | 'mines'; lon: number; lat: number; seen: number; struck: number }
+export interface HormuzField { id: string; name: string; lon: number; lat: number; known: boolean; mines: number | null }
+export interface HormuzView {
+  date: string; open: boolean; reason?: string;
+  active: boolean; day: number; started: string; cause: string; outcome: string | null; message: string | null;
+  rungs: { name: string; desc: string }[]; rung: number; peakRung: number;
+  iran: { tehran: number; guards: number; stability: number; read: string };
+  sites: HormuzSite[]; fields: HormuzField[];
+  oil: { normal: number; flow: number; bypass: number; bypassTarget: number; spr: number; sprLeft: number; sprStart: number; iea: number; shortfall: number;
+    premium: number; insurance: number; reinsured: boolean; bypassAsked: boolean; price: number | null; gas: number | null };
+  us: { escorts: number; sweepers: number; allies: number; hostsConsent: boolean; israelRestrained: boolean; gulfCalm: number; talks: number; pressure: number;
+    settled: boolean; envoyIn: number; pressIn: number };
+  toll: { killed: number; shipsHit: number; seized: number; tankersHit: number; strikes: number };
+  invasion: { stage: number; option: number; days: number; progress: number; plans: { label: string; detail: string }[] };
+  log: string[];
 }

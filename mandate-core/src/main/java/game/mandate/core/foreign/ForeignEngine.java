@@ -125,6 +125,7 @@ public final class ForeignEngine {
         Outcome out = Outcome.empty();
         for (Question q : new ArrayList<>(s.questions)) if (s.week >= q.due) answer(s, c, q, q.recommended, out, rng);
         statecraftWeek(s, c, out, rng);
+        s.iranHeat = s.iranHeat * 0.97 + (s.sanction[data.index("IR")] >= 3 ? 0.25 : 0);
         if (c.date().getYear() != s.objectivesYear) refreshObjectives(s, c);
         drift(s, c, out, rng);
         theaters(s, c, out, rng);
@@ -435,6 +436,8 @@ public final class ForeignEngine {
 
     void crisisDecision(ForeignState s, Context c, Question q, int k, Outcome out, DeterministicRandomManager rng) {
         Crisis cr = data.crises().get(q.a);
+        if (cr.id().equals("me_iran") && (k == 0 || k == 2)) s.iranHeat += 30;
+        if (cr.id().equals("me_proxy") && k == 1) s.iranHeat += 20;
         CrisisOption opt = cr.options().get(k);
         boolean ok = rng.uniform("world.crisis") < p(c, opt.kind(), opt.odds());
         if (ok) s.okCount++; else s.failCount++;
@@ -732,6 +735,7 @@ public final class ForeignEngine {
     public String order(ForeignState s, Context c, int i, Outcome out, DeterministicRandomManager rng) {
         ForeignData.Operation op = data.operations().get(i);
         if (s.opCool[i] > 0) throw new IllegalArgumentException("The forces are resetting.");
+        if (i == 0) s.iranHeat += 30;
         if (!condSafe(s, c, op.cond(), null)) throw new IllegalArgumentException("There is no target for that now.");
         boolean ok = rng.uniform("world.operation") < operationOdds(c, i);
         s.ops++; s.opCool[i] = 8;
@@ -1214,6 +1218,7 @@ public final class ForeignEngine {
         String no = cannotWar(s, i, kind);
         if (no != null) throw new IllegalArgumentException(no);
         Country k = data.country(i);
+        if (k.id().equals("IR")) s.iranHeat += 60;
         War x = new War();
         x.id = "choice:" + k.id() + ":" + kind + ":" + s.week; x.kind = kind; x.enemy = i;
         x.name = warName(k.name(), kind);
@@ -1687,6 +1692,54 @@ public final class ForeignEngine {
         double me = 0.35 * s.redsea + 0.25 * s.iran + 0.2 * s.gaza + 0.2 * s.proxy;
         double ee = s.uaStage == 2 ? 50 + (50 - s.ukr) * 0.5 + 10 : s.uaStage == 1 ? 40 : 25;
         return new double[]{s.taiwanWar ? 95 : s.twt, me, clamp(ee, 0, 100)};
+    }
+
+    /** The weekly chance a fight over the Strait of Hormuz begins, from Iran's program, its proxies and the heat. */
+    public double hormuzChance(ForeignState s) {
+        double tension = (s.iran + s.proxy + s.redsea) / 3;
+        return Math.min(0.25, 0.0004 * Math.max(0, tension - 40) * (1 + s.iranHeat / 20) + 0.004 * s.iranHeat / 30);
+    }
+
+    /** The rung a Hormuz crisis opens on, and why: strikes lead to attacks, sanctions to seizures. */
+    public int hormuzStart(ForeignState s, DeterministicRandomManager rng) {
+        return s.iranHeat >= 30 ? 4 : s.sanction[data.index("IR")] >= 3 ? 2 : rng.uniform("world.hormuz") < 0.5 ? 2 : 1;
+    }
+
+    public String hormuzCause(ForeignState s) {
+        return s.iranHeat >= 30 ? "Iran retaliates for the strikes on its nuclear program" : s.sanction[data.index("IR")] >= 3
+                ? "Iran answers the sanctions at sea" : "a seizure at sea spirals";
+    }
+
+    /**
+     * The Hormuz crisis's full invasion has taken Tehran: the government falls and the occupation begins, on the wars of
+     * choice's model (milestone 8), with its years of costs, insurgents and the choice of when to hand over.
+     */
+    public void hormuzOccupation(ForeignState s, Context c, Outcome out) {
+        int i = data.index("IR");
+        Country k = data.country(i);
+        War x = new War();
+        x.id = "hormuz:IR:" + s.week; x.kind = WK_INVASION; x.enemy = i;
+        x.name = warName(k.name(), WK_INVASION);
+        x.need = need(i, WK_INVASION); x.troops = x.need;
+        x.drift = pace(i, WK_INVASION);
+        x.lethal = WK_LETHAL[WK_INVASION]; x.cost = WK_COST[WK_INVASION];
+        x.authorized = authorized(s, i);
+        x.stakes = 0.9; x.legit = 40;
+        x.support = clamp(40 + (c.approval() - 50) * 0.2, 8, 85);
+        x.front = 100; x.stage = WS_FIGHTING; x.started = s.week; x.strategy = 1;
+        s.wars.add(x);
+        s.rel[i] = -100; s.ties[i] = 0; s.sanction[i] = 3;
+        s.record.add(stamp(c) + "the invasion of Iran from the strait took Tehran");
+        victory(s, c, x, out);
+        warSpend(s, out);
+    }
+
+    /** A Hormuz crisis has begun (the heat is spent) or ended (a crisis faced, gone well or not). */
+    public void hormuzBegan(ForeignState s) { s.iranHeat = 0; s.crises++; }
+    public void hormuzEnded(ForeignState s, Context c, boolean ok, String how) {
+        if (ok) s.okCount++; else s.failCount++;
+        if ("A settlement".equals(how)) s.sanction[data.index("IR")] = Math.min(s.sanction[data.index("IR")], 1);
+        s.record.add(stamp(c) + "the Strait of Hormuz crisis ended: " + how.toLowerCase(Locale.ROOT) + ("A settlement".equals(how) ? " (sanctions on Iran eased)" : ""));
     }
 
     /** Mean relations with the treaty allies (the verdict's international measure). */
