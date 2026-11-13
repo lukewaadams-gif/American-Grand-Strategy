@@ -4,10 +4,30 @@ import type { CabinetView, CampaignView, CountryView, Decision, EconomyView, New
 
 interface EngineModule { call(request: string): string; }
 let mod: EngineModule | null = null;
+/** The site's build (version.json), so the engine and the saves always come from the same one; empty if there is none. */
+let build = '';
 
-/** Loads the engine module once. */
+/** A URL for this build's copy of a file, so a browser's cached copy from an earlier build is never used with this one. */
+function versioned(url: string): string { return build ? url + (url.includes('?') ? '&' : '?') + 'v=' + build : url; }
+
+/**
+ * Loads the engine module once. It asks the server which build it has (past the browser's cache) and loads that
+ * build's engine: an engine kept from an earlier visit cannot read a newer build's saves.
+ */
 export async function start(url = new URL('../../engine/engine.js', import.meta.url).href): Promise<void> {
-  if (!mod) mod = (await import(url)) as EngineModule;
+  if (mod) return;
+  try {
+    const r = await fetch(new URL('../../version.json', import.meta.url).href, { cache: 'no-cache' });
+    if (r.ok) build = ((await r.json()) as { build?: string }).build ?? '';
+  } catch { /* a build without version.json: load as before */ }
+  mod = (await import(versioned(url))) as EngineModule;
+}
+
+/** A file of this build (a sample save), fetched past any stale copy in the browser's cache. */
+export async function buildFile(path: string): Promise<string> {
+  const r = await fetch(versioned(path), { cache: 'no-cache' });
+  if (!r.ok) throw new Error(`Could not load ${path} (${r.status})`);
+  return r.text();
 }
 
 export class Refused extends Error {}

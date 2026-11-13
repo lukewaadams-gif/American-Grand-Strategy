@@ -2,7 +2,7 @@
 // days (or ?save=, for example saves/governing.json) and plays week by week: the calendar on the desk, The Capital
 // Ledger after every week, watch mode, and the decisions that come up. The rooms behind the doors arrive in the
 // presidency's later milestones; until then each says which milestone brings it.
-import { engine, Refused, start } from './core/engine.js';
+import { buildFile, engine, Refused, start } from './core/engine.js';
 import type { Decision, PresidencyView } from './core/types.js';
 import { h, reducedMotion } from './core/dom.js';
 import { day } from './core/format.js';
@@ -338,9 +338,13 @@ async function boot(): Promise<void> {
   if (params.get('motion') === 'reduce') document.documentElement.dataset['motion'] = 'reduce';
   if (params.get('size')) document.documentElement.style.setProperty('--s', params.get('size')!);
   await start();
-  saveText = await (await fetch(params.get('save') ?? 'saves/presidency.json')).text();
+  saveText = await buildFile(params.get('save') ?? 'saves/presidency.json');
   engine.load(saveText);
   render();
   requestAnimationFrame(frame);
 }
-boot().catch(e => { root.replaceChildren(h('p', { class: 'boot-error', role: 'alert' }, 'The game could not start: ' + String(e))); console.error(e); });
+boot().catch(e => {
+  root.replaceChildren(h('p', { class: 'boot-error', role: 'alert' }, 'The game could not start: ' + String(e)
+    + '. Reloading the page past the cache (Ctrl+Shift+R, or Cmd+Shift+R on a Mac) fetches the latest version.'));
+  console.error(e);
+});
