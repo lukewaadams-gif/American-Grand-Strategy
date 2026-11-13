@@ -246,12 +246,13 @@ final class Courts {
         s.nomineeJ = null;
         s.scotusVoteAt = -1;
         if (yes > 50 || (yes == 50 && c.holdsSenate())) {
+            j.name = j.name.replace("Judge ", "");
             s.justices.add(j);
             s.justicesAppointed++;
-            out.news().add(news(c, News.Kind.GOOD, "The Senate confirms " + j.name.replace("Judge ", "") + " to the Supreme Court, " + yes + "-" + (100 - yes), null, 4, null));
+            out.news().add(news(c, News.Kind.GOOD, "The Senate confirms " + j.name + " to the Supreme Court, " + yes + "-" + (100 - yes), null, 4, null));
             out.effects().add(new Effect.Performance(0.8));
             out.effects().add(new Effect.BlocRelations(true, 3));
-            s.record.add(c.date() + ": the Senate confirmed " + j.name.replace("Judge ", "") + " to the Supreme Court, " + yes + "-" + (100 - yes));
+            s.record.add(c.date() + ": the Senate confirmed " + j.name + " to the Supreme Court, " + yes + "-" + (100 - yes));
         } else {
             s.scotusRejected++;
             out.news().add(news(c, News.Kind.BAD, "The Senate rejects " + j.name + " for the Supreme Court, " + yes + "-" + (100 - yes), null, 4, null));

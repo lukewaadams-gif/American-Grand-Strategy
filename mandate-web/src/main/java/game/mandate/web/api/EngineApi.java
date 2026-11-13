@@ -72,6 +72,9 @@ public final class EngineApi {
                 case "score" -> PolicyViews.policyScore(need(), (String) req.get("policy"), Json.integer(req.get("steps")));
                 case "billScore" -> PolicyViews.billScore(need(), (String) req.get("bill"));
                 case "hill" -> HillViews.room(need());
+                case "westwing" -> WestWingViews.room(need());
+                case "westwingOptions" -> WestWingViews.options(need(), (String) req.get("kind"), Json.integer(req.get("index")));
+                case "press" -> WestWingViews.press(need());
                 default -> throw new IllegalArgumentException("No view called " + req.get("name"));
             };
             default -> throw new IllegalArgumentException("No op called " + op);
@@ -191,7 +194,7 @@ public final class EngineApi {
         v.put("termWeek", week);
         v.put("termWeeks", ChronoUnit.WEEKS.between(inaug, inaug.plusYears(4)));
         v.put("pendingDecisions", g.pendingEvents().size() + (g.phase() == Phase.FIRST_100_DAYS ? g.hundredDays().map(h -> h.pending().size()).orElse(0) : 0)
-                + HillViews.count(g));
+                + HillViews.count(g) + WestWingViews.decisions(g).size());
         v.put("congress", g.congress().toString());
         // how long the End button's turn is: a week in office (an operational turn in a war), none in the other phases
         v.put("turnUnit", g.operationsActive() ? "war" : switch (g.phase()) {
@@ -565,6 +568,7 @@ public final class EngineApi {
             }
         });
         out.addAll(HillViews.decisions(g));
+        out.addAll(WestWingViews.decisions(g));
         boolean campaign = g.phase() == Phase.GENERAL_CAMPAIGN_2028 || g.phase() == Phase.REELECTION_CAMPAIGN_2032;
         if (campaign && g.debateThisWeek().isPresent() && g.election().pendingPosture() == null) {
             var theirs = game.mandate.core.campaign.DebatePosture.tendencyOf(g.opponent().candidate());

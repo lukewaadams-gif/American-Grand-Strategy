@@ -84,7 +84,7 @@ Each milestone goes to the preview.
    - the briefing book's economy.
 4. **The economy and the policy table** (built, for review). A new structural model, with Resolute Desk's sectors on top. Every policy level is scored, with ranges, and the effects are credited to the laws behind them. On screen: the briefing book's sectors and laws, and the Cabinet Room. The design and what was built are in `ECONOMY_MODEL.md`.
 5. **Congress and the budget** (built, for review). Bills move the policy table. Each Congress is seated after its election with its own leaders, blocs and members, so the game can face several. The 2030 midterms are race by race, and the president can campaign in them from the calendar. Divided government brings investigations, impeachment, shutdown and debt-limit fights; blocked nominees come with the nominations themselves, in milestone 6. On screen: the Roosevelt Room.
-6. **The executive, the press and storylines,** with the Senate's confirmations (an opposition Senate blocks nominees). On screen: the West Wing and the Press Briefing Room.
+6. **The executive, the press and storylines** (built, for review), with the Senate's confirmations (an opposition Senate blocks nominees). On screen: the West Wing and the Press Briefing Room.
 7. **The Residence and the country's groups.** Approval by group from the 96-cell electorate.
 8. **The world.** On screen: the presidency's Situation Room.
 9. **The second term.**
@@ -304,6 +304,53 @@ The full design, the calibration targets and what each step built are in `ECONOM
 - **Elections:** the Senate races with their polls, the House by state.
 - **Favours and probes.**
 - **The desk:** bills to sign, stopgaps, shutdowns, the debt limit, subpoenas and members' requests come as decision cards with the staff's answer marked.
+
+## The executive, the press and storylines (milestone 6)
+
+**The engine** is a new domain, `westwing`: Resolute Desk's executive, from day 100. The full specification it was built from is Resolute Desk Version 2's executive, press and stories packages.
+- **The staff:** nine jobs, each held by a person with skill, loyalty, morale and a trait. Each job sharpens its own part of the game:
+  - the chief of staff takes strain off the president and keeps leaks down;
+  - the press secretary shortens scandals;
+  - the counsel lowers legal risk and handles investigations;
+  - the domestic policy, communications and political staff sharpen policy time, remarks and fundraising;
+  - the legislative director brings hours on the Hill and makes deals stick.
+  Morale moves with approval and stress. People resign, leak, and get caught in ethics stories. Hiring is from three people, firing has a cost, and the chief of staff can be handed the people.
+- **The cabinet:** twenty-one departments, each with a secretary, readiness and a workforce.
+  - Nominations go to a Senate vote by bloc. An opposition Senate sits on a weak nominee for up to twenty weeks; a rejection costs the president.
+  - Readiness follows the secretary and cabinet meetings. A department below about 66 botches rollouts of orders, rules and laws; a botched law keeps three-quarters of its strength.
+  - The Treasury, Defense and State secretaries now set markets', the military's and diplomacy's competence.
+- **Orders, rules and emergencies:** Resolute Desk's forty-nine library actions; an order of the president's own (issue, side, reach, legal basis); and an order or rule moving one policy a step, from the Cabinet Room (at 60% and 85% of a law's strength). How they work:
+  - Rules wait out a comment period.
+  - Each draws the public's and the Hill's reaction.
+  - The risky ones are sued.
+  - A Congress the president's party holds neither chamber of can overturn rules and end emergencies.
+- **The courts:** lawsuits go through the district court, the court of appeals and the Supreme Court. At each ruling the president can appeal, rewrite, let it go or slow-walk (defiance is impeachable).
+  - The lower courts' balance shifts as judges are confirmed.
+  - The Supreme Court has vacancies by age, a shortlist, and a confirmation vote (stalled in an election year by an opposition Senate).
+  - The Court is fictional by default; the real 2025 Court comes with the real-person roster.
+- **The vice president:** missions to tour the swing states, lead a task force, work the Senate, raise money or go abroad.
+- **Scandals and pardons:** leaks, ethics stories, the president's past, botched rollouts and defiance. Each scandal is answered (release, deny, a resignation, a review), grows or fades, and may bring a special counsel. Pardon requests come every couple of months.
+  - The impeachable ones push the Hill's impeachment, and Congress's investigations take up the worst of them.
+- **The press:** eighteen outlets with their tone; press relations; press conferences and interviews, three questions each, scored by the president's skills against the outlet; addresses and the State of the Union (an opening, three passages, a close); posts; polls.
+- **The party and the opposition:** each wing judges how close the record sits to it. The opposition picks a strategy every quarter (cooperate, pick its fights, obstruct), which moves relations on the Hill and the midterms.
+- **Developing stories:** Resolute Desk's fourteen storylines for 2029-33. Each starts when its conditions hold, gathers heat, and grows or fades by stage, with a response at each stage whose odds depend on who carries it out. One that outgrows its last stage takes over the presidency.
+
+**On screen:**
+- **The West Wing** has six tabs:
+  - **Staff:** nine cards, hiring from three, and handing people and pardons to the staff;
+  - **Cabinet:** each department's secretary, readiness and workforce, with nominations and the Senate's count;
+  - **Vice president**;
+  - **Orders and rules:** the library, an order of your own, and what you've done, with rescinding;
+  - **The courts:** the Supreme Court and its shortlist, the lower courts and the cases;
+  - **Oversight:** scandals, Congress's investigations, impeachment pressure and the record.
+  The Cabinet Room is down the hall; its policies can now be moved by an order or a rule.
+- **The Press Briefing Room** has four tabs:
+  - **The press:** press conferences, interviews, polls and how the outlets cover you;
+  - **Speeches:** an address, and the State of the Union;
+  - **Social media**;
+  - **Your party:** the wings and the opposition.
+- **The desk:** questions from scandals, leaks, courts, Congress's resolutions, pardons, press conferences, speeches and stories come as decision cards, with the staff's answer marked. Left past their week, the staff's answer is taken.
+- **The Capital Ledger** gains Resolute Desk's "Developing stories" panel.
 
 ## Quality bar
 

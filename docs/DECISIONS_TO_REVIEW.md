@@ -16,3 +16,30 @@ Choices made while building overnight that we had not discussed. Each was made i
 10. **The budget request is not a decision card;** it is shaped and sent in the Roosevelt Room and goes as drafted when its deadline passes.
 11. **A policy step can only be drafted as a bill if the policy can change by law or by the budget;** order- and rule-only policies wait for the West Wing.
 12. **Blocked nominees move to milestone 6,** where nominations are made: an opposition Senate's confirmations need the West Wing's nominees to exist first.
+
+## Milestone 6: the executive, the press and storylines
+
+1. **Real people only with the real-person roster** (your instruction). By default the Supreme Court is nine fictional justices with the real Court's parties, ages and ideologies, and cabinet picks are fictional; with the roster on, the real 2025 Court sits and real politicians from the roster appear among cabinet picks.
+2. **The West Wing is staffed on day 100 with each job's expert** (Resolute Desk without its transition office, which comes with milestone 10), keeping the three posts the hundred days filled; a post the hundred days left empty has an acting official.
+3. **Resolute Desk's bugs, fixed:**
+   - a ruling for the president lifts an earlier block;
+   - a denied appeal to the Supreme Court counts as a win only if the action stands;
+   - the counsel's lower legal risk counts once, not twice;
+   - emergencies apply their own effects and can be sued;
+   - "rollout trouble" is shown;
+   - a second impeachment inquiry can start after an acquittal;
+   - a rejected justice is not offered again;
+   - ending an emergency needs both chambers against the president;
+   - rules count in the party's record when they take effect.
+4. **A milestone 5 fix:** the Hill squared the legislative director's quality where Resolute Desk uses it directly; relations with Congress now drift as Resolute Desk's do.
+5. **Investigations and impeachment stay on the Hill** (milestone 5) and read the executive's pressure (defiance and the impeachable scandals) and its worst scandal, rather than running twice.
+6. **Effects on voter groups are recorded but not applied yet:** the groups' model comes with milestone 7.
+7. **The library's economics on this game's model:**
+   - growth becomes productivity, unemployment the natural rate, inflation goods and services prices;
+   - oil is oil, the deficit a program, tariffs the average tariff.
+8. **Questions from the West Wing default after their week** to the staff's answer (Resolute Desk's inbox waited forever); a press conference or speech left alone is finished by the staff at once.
+9. **The Republicans' populist wing is named "Populists"**, as elsewhere in the game.
+10. **The State of the Union is in the week holding February 4** each year; the first year's joint session falls inside the hundred days.
+11. **Stories that read the home front** (protests, overdoses, the crime index, cyber attacks, the grid) wait for those measures, which come with milestones 7 and 8.
+12. **The vice president is a fictional running mate** made for the ticket, with ratings drawn when the West Wing is staffed.
+13. **The housing test now averages several games:** zoning's housing effect phases in over five years, so a single game's two-year comparison was too noisy to judge.

@@ -176,6 +176,7 @@ export interface PaperView {
   stories: PaperStory[]; brief: PaperStory[];
   features: { head: string; body: string }[];
   numbers: { label: string; value: string }[];
+  developing?: { name: string; stage: number; stages: number; heat: number; trend: string; active: boolean }[];
 }
 export interface PaperStory { section: string | null; head: string; body: string | null; kind: string; }
 
@@ -289,4 +290,44 @@ export interface HillView {
   probes?: { subject: string; status: string; chamber: string; severity: number; impeachable: boolean; contempt: boolean; subpoena: boolean }[];
   impeachment?: { status: string; houseYes: number; senateYes: number };
   record?: { date: string; what: string }[];
+}
+
+// ---- the West Wing and the Press Briefing Room -----------------------------------------------------------------------
+
+export interface WwPerson {
+  id: string; name: string; background: string; party: PartyCode; trait: string; traitDesc: string; traitRisky: boolean;
+  skill: number; loyalty: number; morale: number; weeks: number; quality: number; vote?: string;
+  voteIn?: number; expected?: number; chance?: number;
+}
+export interface WwPost { post: number; name: string; short: string; title: string; person: WwPerson | null; readiness: number; workforce: number; nominee?: WwPerson; }
+export interface WwLibraryItem {
+  id: string; kind: number; name: string; desc: string; issue: string; lean: PartyCode | null; support: number; legal: number;
+  department: string; readiness: number; needs: string | null; refusal: string | null;
+}
+export interface WwAction { id: string; name: string; kind: string; status: string; statusKey: number; standing: boolean; inCourt: boolean; failed: boolean; issued: string; finalIn?: number; }
+export interface WwCourts {
+  justices: { name: string; age: number; party: PartyCode; lean: string }[]; vacancies: number;
+  nominee?: { name: string; voteIn: number; expected: number; chance: number }; shortlist?: { name: string; age: number; what: string }[];
+  district: number; circuit: number; districtVacancies: number; circuitVacancies: number; judges: number; strategy: number; strategies: string[]; strategyDesc: string[];
+  cases: { title: string; action: string; stage: string; blocked: boolean; done: boolean; won: boolean; note: string; rulingIn?: number; votes?: string }[];
+}
+export interface WestWingView {
+  date: string; open: boolean; reason?: string; president?: PartyCode;
+  staff?: { role: number; title: string; does: string; person: WwPerson | null }[]; mood?: number;
+  delegatedPeople?: boolean; delegatedPardons?: boolean; leaks?: number; departures?: number; failures?: number;
+  posts?: WwPost[]; workforce?: number;
+  vp?: { name: string; skills: number[]; mission: number; missionName: string; issue: string | null; weeksLeft: number | null; loyalty: number;
+    missions: { id: number; name: string; desc: string; weeks: number }[] };
+  library?: WwLibraryItem[]; commentWeeks?: number; emergencyDeclared?: boolean; actions?: WwAction[];
+  courts?: WwCourts;
+  scandals?: { title: string; severity: number; stage: string; impeachable: boolean; over: boolean }[]; pressure?: number; pardons?: number; defiance?: number;
+  probes?: { subject: string; status: string; chamber: string }[]; impeachment?: string;
+  record?: { date: string; what: string }[];
+}
+export interface PressView {
+  date: string; open: boolean; reason?: string;
+  outlets?: { index: number; name: string; audience: number; interviews: boolean; tone: number; label: string }[];
+  relations?: number; presserIn?: number; interviewIn?: number; addressIn?: number; busy?: boolean; postsLeft?: number; followers?: number; tones?: string[];
+  lastPoll?: string | null; pressers?: number; interviews?: number; speeches?: number; sotu?: string;
+  wings?: { name: string; mood: number }[]; record?: string; opposition?: string; oppLeaders?: string[]; issues?: { id: string; label: string }[];
 }

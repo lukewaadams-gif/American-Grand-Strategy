@@ -45,7 +45,9 @@ public final class ParityCheck {
                     + " chest " + p.map(x -> game.mandate.core.data.Fmt.format("%.6f", x.warChest())).orElse("-")
                     + " news " + g.news().size() + " unemployment " + game.mandate.core.data.Fmt.format("%.6f", g.state().economy().unemployment())
                     + " congress " + g.congress() + " hill " + g.hill().map(h -> h.laws() + "/" + h.vetoes() + "/" + h.probes().size() + "/" + h.record().size()
-                    + "/" + h.houseDemocrats().values().stream().mapToInt(Integer::intValue).sum()).orElse("-"));
+                    + "/" + h.houseDemocrats().values().stream().mapToInt(Integer::intValue).sum()).orElse("-")
+                    + " westwing " + g.westWing().map(x -> x.departures() + "/" + x.leaks() + "/" + x.scandals().size() + "/" + x.justices().size() + "/" + x.storylines().size()
+                    + "/" + x.record().size() + "/" + game.mandate.core.data.Fmt.format("%.4f", x.pressRelations())).orElse("-"));
         }
         // the budget office's scores, on a governing economy
         GameSetup setup = new GameSetup(4, Party.DEMOCRAT, "d_reyes", "r_harlan", Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD,

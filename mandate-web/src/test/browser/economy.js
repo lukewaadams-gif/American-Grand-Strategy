@@ -78,7 +78,7 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
     await page.waitForTimeout(150);
     // the West Wing and the Cabinet Room
     await page.click('.ov-spot-westwing');
-    await page.waitForSelector('.ww-doors');
+    await page.waitForSelector('.ww');
     await check(page, `${tag} West Wing`);
     await page.click('text=The Cabinet Room: the policy table');
     await page.waitForSelector('.room.cab');

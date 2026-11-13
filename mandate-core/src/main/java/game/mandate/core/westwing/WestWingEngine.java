@@ -633,6 +633,15 @@ public final class WestWingEngine {
         return d == null ? 0 : d.recommended;
     }
 
+    /** The Court's nominee's expected votes, their spread, and the chance of confirmation. */
+    public double[] scotusCount(WestWingState s, Context c) { return courts.count(s, c); }
+
+    /** The shortlist for an open seat on the Court. */
+    public List<WestWingState.Justice> shortlist(WestWingState s, Context c) { return courts.shortlist(s, c); }
+
+    /** Why a library action cannot be taken now, or null. */
+    public String refusal(WestWingState s, Context c, ActionDef d) { return actions.refusal(s, c, d); }
+
     /** The pressure the executive puts toward impeachment: defying the courts and the impeachable scandals. */
     public static double impeachmentPressure(WestWingState s) {
         double pr = 3 * s.defiance;
@@ -685,7 +694,7 @@ public final class WestWingEngine {
     }
 
     /** The adviser label with the person's name, as Resolute Desk shows it ("Chief of staff Jane Doe"). */
-    String adviserName(WestWingState s, String label) {
+    public String adviserName(WestWingState s, String label) {
         int who = adviser(label);
         Person p = who < 0 ? null : who >= 100 ? s.post[who - 100] : s.staff[who];
         return p == null ? label : (label.equals("Counsel") ? "White House counsel" : label) + " " + p.name;

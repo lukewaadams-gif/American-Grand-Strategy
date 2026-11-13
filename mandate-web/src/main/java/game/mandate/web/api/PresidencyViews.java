@@ -450,6 +450,29 @@ final class PresidencyViews {
         }
         if (p != null) nums.add(Map.of("label", "Your stamina", "value", String.valueOf(Math.round(p.stamina()))));
         m.put("numbers", nums);
+        // Developing stories (Resolute Desk's side panel): the stories under way, and the last few that ended
+        List<Object> dev = new ArrayList<>();
+        g.westWing().ifPresent(ww -> {
+            var data = g.westWingEngine().data();
+            List<game.mandate.core.westwing.WestWingState.Storyline> ls = ww.storylines();
+            for (var sl : ls) if (sl.status() == game.mandate.core.westwing.WestWingState.Storyline.ACTIVE) {
+                var d = data.story(sl.def());
+                if (d == null) continue;
+                dev.add(Map.of("name", d.name(), "stage", sl.stage() + 1, "stages", d.stages().size(), "heat", Math.round(sl.heat()),
+                        "trend", sl.heat() >= 60 ? "Growing" : sl.heat() >= 45 ? "Holding" : "Cooling", "active", true));
+            }
+            int shown = 0;
+            for (int k = ls.size() - 1; k >= 0 && shown < 4; k--) {
+                var el = ls.get(k);
+                if (el.status() == game.mandate.core.westwing.WestWingState.Storyline.ACTIVE) continue;
+                var d = data.story(el.def());
+                if (d == null) continue;
+                dev.add(Map.of("name", d.name(), "stage", el.stage() + 1, "stages", d.stages().size(), "heat", Math.round(el.heat()),
+                        "trend", el.status() == game.mandate.core.westwing.WestWingState.Storyline.RUNAWAY ? "Took over the presidency" : "Faded", "active", false));
+                shown++;
+            }
+        });
+        m.put("developing", dev);
         return m;
     }
 

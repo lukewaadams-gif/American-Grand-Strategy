@@ -14,6 +14,8 @@ export interface CabinetActions {
   billScore(bill: string): ScoreView;
   /** Drafts a bill for a policy step ({@code pol:<policy>:<from>:<to>}) in the Roosevelt Room. */
   draft?(source: string): void;
+  /** Signs an executive order or proposes an agency rule moving a policy one step. */
+  policyAction?(policy: string, to: number, rule: boolean): void;
   back(): void;
 }
 
@@ -45,8 +47,15 @@ function detail(p: PolicyEntry, act: CabinetActions): HTMLElement {
     act.draft && (p.routes.includes('a law') || p.routes.includes('the budget')) ? h('div', { class: 'cab-buttons' },
       up ? h('button', { class: 'btn small', type: 'button', onclick: () => act.draft!(`pol:${p.id}:${p.level}:${p.level + 1}`) }, 'Draft a bill: a step up') : null,
       down ? h('button', { class: 'btn small', type: 'button', onclick: () => act.draft!(`pol:${p.id}:${p.level}:${p.level - 1}`) }, 'Draft a bill: a step down') : null) : null,
+    act.policyAction && (p.routes.includes('an executive order') || p.routes.includes('an agency rule')) ? h('div', { class: 'cab-buttons' },
+      ...(p.routes.includes('an executive order') ? [
+        up ? h('button', { class: 'btn small', type: 'button', onclick: () => act.policyAction!(p.id, p.level + 1, false) }, 'Sign an order: a step up') : null,
+        down ? h('button', { class: 'btn small', type: 'button', onclick: () => act.policyAction!(p.id, p.level - 1, false) }, 'Sign an order: a step down') : null] : []),
+      ...(p.routes.includes('an agency rule') ? [
+        up ? h('button', { class: 'btn small', type: 'button', onclick: () => act.policyAction!(p.id, p.level + 1, true) }, 'Propose a rule: a step up') : null,
+        down ? h('button', { class: 'btn small', type: 'button', onclick: () => act.policyAction!(p.id, p.level - 1, true) }, 'Propose a rule: a step down') : null] : [])) : null,
     h('dl', { class: 'cab-facts' },
-      h('dt', null, 'How it can change'), h('dd', null, (p.routes.length ? 'By ' + p.routes.join(', ') : 'Only by a law') + '. In this milestone laws move it from the Hill; orders and rules arrive with the West Wing, and the budget with Congress.'),
+      h('dt', null, 'How it can change'), h('dd', null, (p.routes.length ? 'By ' + p.routes.join(', ') : 'Only by a law') + '. An order works at once at 60% of a law’s strength and a successor can undo it; a rule waits out its comment period and works at 85%. Both can be taken to court.'),
       h('dt', null, 'A step costs'), h('dd', null, [p.costUp !== null ? `up: ${stepCost(p.costUp)}` : null, p.costDown !== null ? `down: ${stepCost(p.costDown)}` : null]
         .filter(Boolean).join('; ') || '—'),
       h('dt', null, 'The public'), h('dd', null, `${Math.round(p.support)}% support a step up. ${lean}.${p.signature ? ' A signature issue: moving it draws a bigger reaction.' : ''}`),

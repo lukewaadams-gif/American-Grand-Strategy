@@ -31,6 +31,11 @@ export function capitalLedger(p: PaperView, v: PresidencyView, back: () => void)
   const numbers = h('aside', { class: 'lg-side', 'aria-labelledby': 'lg-numbers-title' },
     h('h3', { class: 'lg-side-title', id: 'lg-numbers-title' }, 'By the numbers'),
     h('dl', { class: 'lg-numbers' }, ...p.numbers.flatMap(n => [h('dt', null, n.label), h('dd', null, n.value)])),
+    p.developing && p.developing.length ? h('h3', { class: 'lg-side-title', id: 'lg-dev-title' }, 'Developing stories') : null,
+    p.developing && p.developing.length ? h('ul', { class: 'lg-dev', 'aria-labelledby': 'lg-dev-title' }, ...p.developing.map(d => h('li', { class: d.active ? '' : 'past' },
+      h('span', { class: 'lg-dev-name' }, d.name),
+      h('span', { class: 'lg-dev-stage' }, d.active ? `Stage ${d.stage} of ${d.stages} · ${d.trend}` : d.trend),
+      d.active ? h('span', { class: 'lg-dev-heat ' + (d.heat >= 60 ? 'hot' : d.heat >= 45 ? 'warm' : 'cool'), 'aria-hidden': 'true' }, h('span', { style: `width:${d.heat}%` })) : null))) : null,
     h('button', { class: 'btn primary lg-back', type: 'button', onclick: back }, 'To the Oval Office'),
     h('p', { class: 'lg-hint' }, 'Enter or Escape'));
   return h('div', { class: 'lg' }, page, numbers);
