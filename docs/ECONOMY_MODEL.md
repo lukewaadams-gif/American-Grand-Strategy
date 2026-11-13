@@ -369,6 +369,17 @@ The minimum wage and zoning targets need the policy table (step 3) and are teste
 
 **Saves:** a save from before the model loads with its gap, jobs, inflation, Fed rate, oil and 10-year, and the economy is rebuilt around them; an old policy deficit becomes a program the economy has already adjusted to. The browser and Java builds agree on every seed and on six full terms.
 
+## Step 2 as built: the states and the releases (13 November 2026)
+
+- **The states** (`StateEconomy`, data `data/rd/state_economy.tsv`, Resolute Desk's tables): each state's unemployment is the nation's, scaled by its usual difference and moved by the industries it leans on (manufacturing, farming, energy, tech, tourism); its gas price is the nation's plus its own difference. Both now feed approval in each state as Resolute Desk's do: a point of unemployment above the nation's costs 0.07 in the state's logit, and a dollar of dearer gas 0.10. This was missing from milestone 3's port, which had no state figures.
+- **The releases**, on their real days:
+  - the jobs report on the first Friday, with the jobs added (labour-force growth less the change in unemployment; about 55,000 a month in steady state at CBO's immigration);
+  - consumer prices on the second Wednesday, with food, shelter and medical care;
+  - **GDP**, new: the first estimate on the last Thursday of January, April, July and October, at an annual rate;
+  - the Fed's decisions, as a quarter-point range.
+- **The news** (`Releases`, Resolute Desk's headlines and weights): routine releases run in the paper's Economy section. A shock, a Fed move, job losses, a shrinking economy or inflation over 4% are Washington news and can lead the paper. Resolute Desk's era stories that depend on the stock market (its 13-week change) now run too.
+- **The record:** each week's reading now keeps the economy's detail (core inflation and the six price parts, the sectors, sentiment, stocks, the dollar, oil, mortgages, payrolls, the gap, potential growth, revenue, outlays, interest and debt) for the briefing book's charts. A full term's save is about 560 KB.
+
 ## What changes elsewhere
 
 - **The economy engine is rewritten.** Its interface stays: the weekly step, the Fed's meetings, the jobs and inflation reports, gas and the deficit. So the hundred days, the governing week and the campaign keep working.

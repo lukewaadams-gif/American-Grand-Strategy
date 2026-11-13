@@ -43,6 +43,8 @@ public final class EconomyState {
     // shocks
     double demand, financial, financialPrev, supply, gapPrev;
     int calm;
+    /** The surprise of the last week stepped, for the news that follows it within the same turn; not saved. */
+    transient EconomyEngine.Shock lastShock;
     final List<Push> pushes = new ArrayList<>();
     // sectors
     double housing, housingSmooth, housingPolicy, manufacturing, aiInvest, farm, energyIndex, tourism;

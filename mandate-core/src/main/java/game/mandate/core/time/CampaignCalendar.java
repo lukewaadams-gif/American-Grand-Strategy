@@ -58,6 +58,22 @@ public record CampaignCalendar(LocalDate campaignStart, LocalDate election2028, 
     }
 
     /** Number of monthly releases (jobs or CPI) dated in [from, to). */
+    /** The first estimate of last quarter's GDP: the last Thursday of January, April, July and October. */
+    public static LocalDate gdpReport(int year, Month month) {
+        return LocalDate.of(year, month, 1).with(TemporalAdjusters.lastInMonth(DayOfWeek.THURSDAY));
+    }
+
+    /** How many GDP reports fall in [from, to). */
+    public static int gdpReleases(LocalDate from, LocalDate to) {
+        int n = 0;
+        for (LocalDate m = from.withDayOfMonth(1); m.isBefore(to); m = m.plusMonths(1)) {
+            if (m.getMonthValue() % 3 != 1) continue;
+            LocalDate r = gdpReport(m.getYear(), m.getMonth());
+            if (!r.isBefore(from) && r.isBefore(to)) n++;
+        }
+        return n;
+    }
+
     public static int releases(LocalDate from, LocalDate to, boolean jobs) {
         int n = 0;
         for (LocalDate m = from.withDayOfMonth(1); m.isBefore(to); m = m.plusMonths(1)) {

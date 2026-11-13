@@ -32,6 +32,9 @@ import game.mandate.core.diplomacy.HotSpot;
 import game.mandate.core.economy.BudgetState;
 import game.mandate.core.economy.EconomyEngine;
 import game.mandate.core.economy.EconomyParams;
+import game.mandate.core.economy.Part;
+import game.mandate.core.economy.Releases;
+import game.mandate.core.economy.StateEconomy;
 import game.mandate.core.economy.EconomyState;
 import game.mandate.core.economy.MarketContext;
 import game.mandate.core.effects.Effect;
@@ -108,6 +111,7 @@ public final class GameEngine implements WorldView {
     private final DeterministicRandomManager rng;
 
     private final EconomyEngine economyEngine;
+    private final StateEconomy stateEconomy = StateEconomy.shared();
     private final PoliticsEngine politicsEngine;
     private final CongressEngine congressEngine;
     private final ExecutiveEngine executiveEngine;
@@ -611,8 +615,13 @@ public final class GameEngine implements WorldView {
 
     private void recordIndicators() {
         EconomyState e = w.economy;
+        BudgetState b = w.budget;
+        double[] v = {e.core(), e.part(Part.SHELTER), e.part(Part.FOOD), e.part(Part.ENERGY), e.part(Part.MEDICAL), e.part(Part.GOODS), e.part(Part.SERVICES),
+                e.housing(), e.manufacturing(), e.aiInvestment(), e.farmIncome(), e.energyProduction(), e.tourism(), e.sentiment(), e.stocks(), e.dollar(), e.oil(),
+                e.mortgageRate(economyEngine.params()), e.payrolls(), e.outputGap(), e.potentialGrowth(), b.revenue(), b.outlays(), b.interest(), b.debt()};
+        for (int i = 0; i < v.length; i++) v[i] = Math.round(v[i] * 100) / 100.0;
         w.indicators.add(new IndicatorPoint(date(), approval(), e.unemployment(), e.inflation(), e.growth(), economyEngine.gas(e), e.tenYear(), e.fedRate(),
-                economyEngine.deficit(e, w.budget), w.diplomacy.deterrence()));
+                economyEngine.deficit(e, w.budget), w.diplomacy.deterrence(), v));
     }
 
     /** The Monday the first week of the hundred days starts. */
@@ -741,12 +750,23 @@ public final class GameEngine implements WorldView {
         presidentWeek();
 
         economyEngine.step(w.economy, w.budget, 1.0 / EconomyEngine.WEEKS_PER_MONTH, marketContext(), rng);
-        for (int i = 0; i < calendar.fomcMeetings(from, to); i++) {
-            double change = economyEngine.fedMeeting(w.economy, w.budget);
-            if (change != 0) log(Fmt.format("The Fed %s rates to %.2f%%.", change > 0 ? "raises" : "cuts", w.economy.fedRate()));
+        EconomyEngine.Shock shock = economyEngine.lastShock(w.economy);
+        if (shock != null) news(Releases.shock(from, shock));
+        for (int i = 0; i < calendar.fomcMeetings(from, to); i++) news(Releases.fed(from, w.economy, economyEngine.fedMeeting(w.economy, w.budget)));
+        for (int i = 0; i < CampaignCalendar.releases(from, to, true); i++) {
+            politicsEngine.onRelease(w.politics, economyEngine.jobsReport(w.economy, rng));
+            LocalDate released = CampaignCalendar.jobsReport(from.getYear(), from.getMonth());
+            if (released.isBefore(from)) released = CampaignCalendar.jobsReport(to.getYear(), to.getMonth());
+            news(Releases.jobs(from, released, w.economy));
         }
-        for (int i = 0; i < CampaignCalendar.releases(from, to, true); i++) politicsEngine.onRelease(w.politics, economyEngine.jobsReport(w.economy, rng));
-        for (int i = 0; i < CampaignCalendar.releases(from, to, false); i++) politicsEngine.onRelease(w.politics, economyEngine.inflationReport(w.economy, rng));
+        for (int i = 0; i < CampaignCalendar.releases(from, to, false); i++) {
+            politicsEngine.onRelease(w.politics, economyEngine.inflationReport(w.economy, rng));
+            news(Releases.prices(from, w.economy));
+        }
+        for (int i = 0; i < CampaignCalendar.gdpReleases(from, to); i++) {
+            economyEngine.gdpReport(w.economy, rng);
+            news(Releases.gdp(from, w.economy));
+        }
 
         politicsEngine.step(w.politics, 1.0, opinionInputs(), rng);
 
@@ -802,14 +822,17 @@ public final class GameEngine implements WorldView {
             case "ai" -> 1;
             case "wars" -> w.military.operationActive() ? 1 : 0;
             case "kia" -> war().map(o -> (double) o.usKilled()).orElse(0.0);
-            case "sent" -> politicsEngine.sentiment(w.politics, opinionInputs());
+            case "sent" -> e.sentiment();
             case "uchg" -> w.indicators.size() > 26 ? e.unemployment() - w.indicators.get(w.indicators.size() - 27).unemployment() : 0;
             case "tw" -> w.president == null ? 0 : w.president.week();
             case "dem" -> player().party() == Party.DEMOCRAT ? 1 : 0;
             case "elect" -> date().getYear() % 4 == 0 ? 1 : 0;
             case "midterm" -> date().getYear() % 4 == 2 ? 1 : 0;
             case "mortgage" -> e.mortgageRate(economyEngine.params());
-            case "mkt" -> 0;
+            case "mkt" -> {   // the stock market's change over thirteen weeks, %
+                double then = w.indicators.size() > 13 ? w.indicators.get(w.indicators.size() - 14).detail("stocks") : Double.NaN;
+                yield Double.isNaN(then) || then <= 0 ? 0 : (e.stocks() / then - 1) * 100;
+            }
             default -> Double.NaN;
         };
     }
@@ -1027,7 +1050,7 @@ public final class GameEngine implements WorldView {
     private OpinionInputs opinionInputs() {
         EconomyState e = w.economy;
         return new OpinionInputs(economyEngine.gas(e), economyEngine.normalGas(e), e.inflation(), e.unemployment(), e.mortgageRate(economyEngine.params()),
-                e.sentiment(), e.growth());
+                e.sentiment(), e.growth(), stateEconomy.approvalTerms(e));
     }
 
     private ElectoralEnvironment environment() {
@@ -1091,6 +1114,9 @@ public final class GameEngine implements WorldView {
     public List<Command> history() { return List.copyOf(history); }
     public Congress congress() { return w.congress.congress(); }
     public Optional<EconomyState> economy() { return w.politics.governing() ? Optional.of(w.economy) : Optional.empty(); }
+
+    /** The economy state by state: unemployment and gas in each. */
+    public StateEconomy stateEconomy() { return stateEconomy; }
     public double approval() { return politicsEngine.approval(w.politics); }
     public double capital() { return w.politics.capital(); }
     public int attention() { return w.government.attention(); }

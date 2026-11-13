@@ -18,6 +18,9 @@ public final class EconomyEngine {
     public static final double WEEKS_PER_MONTH = 4.345;
     private static final int RING = EconomyState.RING;
 
+    /** The business cycle's surprises. */
+    public enum Shock { RECESSION, FINANCIAL, OIL, BOOM }
+
     private final EconomyParams p;
 
     public EconomyEngine(EconomyParams p) { this.p = p; }
@@ -425,22 +428,27 @@ public final class EconomyEngine {
         s.financial *= p.financialDecay;
         s.supply *= p.supplyDecay;
         double x = rng.uniform("economy.recession"), size = rng.uniform("economy.recession");
+        s.lastShock = null;
         if (s.calm > 0) { s.calm--; return; }
         double r = p.shockRecession, f = r + p.shockFinancial, o = f + p.shockOil, bm = o + p.shockBoom;
         if (x < r) {
             s.demand += p.recessionDemand * (0.75 + 0.5 * size);
             s.pushes.add(new EconomyState.Push(p.recessionPush * (0.75 + 0.5 * size) / p.pushWeeks, -0.3, p.pushWeeks));
             s.calm = p.calmRecession;
+            s.lastShock = Shock.RECESSION;
         } else if (x < f) {
             s.financial += p.financialDemand * (0.75 + 0.5 * size);
             s.calm = p.calmFinancial;
+            s.lastShock = Shock.FINANCIAL;
         } else if (x < o) {
             s.oilDev += s.oil * (0.25 + 0.2 * size);
             s.oilBase *= 1.08;
             s.calm = p.calmOil;
+            s.lastShock = Shock.OIL;
         } else if (x < bm) {
             s.demand += p.boomDemand * (0.5 + size);
             s.calm = p.calmBoom;
+            s.lastShock = Shock.BOOM;
         }
     }
 
@@ -481,6 +489,16 @@ public final class EconomyEngine {
         s.uAtLastJobs = s.unemployment;
         return s.reportedUnemployment - was;
     }
+
+    /** The quarterly GDP report: the first estimate of output's growth over the last thirteen weeks, at an annual rate. */
+    public double gdpReport(EconomyState s, DeterministicRandomManager rng) {
+        double q = (s.logY[s.ring] - s.logY[(s.ring - 13 + RING) % RING]) * 400;
+        s.reportedGrowth = Math.round((q + p.releaseNoise * 10 * rng.gaussian("economy.release")) * 10) / 10.0;
+        return s.reportedGrowth;
+    }
+
+    /** The surprise of the last week stepped, if any (for the news; not saved). */
+    public Shock lastShock(EconomyState s) { return s.lastShock; }
 
     /** Monthly inflation report: returns the change from the previous report. */
     public double inflationReport(EconomyState s, DeterministicRandomManager rng) {

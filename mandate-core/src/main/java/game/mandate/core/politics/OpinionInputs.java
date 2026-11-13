@@ -5,4 +5,10 @@ package game.mandate.core.politics;
  * it never computes macroeconomics itself.
  */
 public record OpinionInputs(double gas, double referenceGas, double inflation, double unemployment, double mortgage,
-                            double confidence, double growth) {}
+                            double confidence, double growth, java.util.Map<String, Double> stateEconomy) {
+
+    /** Without the states' own economies. */
+    public OpinionInputs(double gas, double referenceGas, double inflation, double unemployment, double mortgage, double confidence, double growth) {
+        this(gas, referenceGas, inflation, unemployment, mortgage, confidence, growth, java.util.Map.of());
+    }
+}

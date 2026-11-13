@@ -51,6 +51,8 @@ public final class PoliticsState {
     final Map<Issue, Double> issueAdj = new EnumMap<>(Issue.class), command = new EnumMap<>(Issue.class), issueApproval = new EnumMap<>(Issue.class);
     /** Each state's lean toward the president's party (points), its weight, the president's standing there (fading) and approval there. */
     final Map<String, Double> stateLean = new TreeMap<>(), stateWeight = new TreeMap<>(), stateBump = new TreeMap<>(), stateApproval = new TreeMap<>();
+    /** What each state's own economy adds to the president's standing there (logit points), from the latest week. */
+    final Map<String, Double> stateEconomy = new TreeMap<>();
     double stateOffset;
 
     PoliticsState() {}
@@ -108,6 +110,7 @@ public final class PoliticsState {
         rd.put("issueAdj", issues(issueAdj)); rd.put("command", issues(command)); rd.put("issueApproval", issues(issueApproval));
         rd.put("stateLean", new LinkedHashMap<String, Object>(stateLean)); rd.put("stateWeight", new LinkedHashMap<String, Object>(stateWeight));
         rd.put("stateBump", new LinkedHashMap<String, Object>(stateBump)); rd.put("stateApproval", new LinkedHashMap<String, Object>(stateApproval));
+        rd.put("stateEconomy", new LinkedHashMap<String, Object>(stateEconomy));
         m.put("rd", rd);
         return m;
     }
@@ -144,6 +147,7 @@ public final class PoliticsState {
             Json.object(rd.get("stateWeight")).forEach((k, v) -> s.stateWeight.put(k, Json.num(v)));
             Json.object(rd.get("stateBump")).forEach((k, v) -> s.stateBump.put(k, Json.num(v)));
             Json.object(rd.get("stateApproval")).forEach((k, v) -> s.stateApproval.put(k, Json.num(v)));
+            if (rd.containsKey("stateEconomy")) Json.object(rd.get("stateEconomy")).forEach((k, v) -> s.stateEconomy.put(k, Json.num(v)));
         }
         return s;
     }

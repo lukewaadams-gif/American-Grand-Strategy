@@ -142,6 +142,7 @@ public final class PoliticsEngine {
 
     /** Starts approval at its target, with the honeymoon the mandate earns (Resolute Desk's {@code Approval.init}). */
     public void beginApproval(PoliticsState s, ApprovalStart a, OpinionInputs in) {
+        stateEconomy(s, in);
         s.personal = a.personal();
         s.difficulty = a.difficulty();
         s.mandate = clamp(2 + 0.55 * a.popularMargin(), 0.5, 15);
@@ -160,6 +161,7 @@ public final class PoliticsEngine {
 
     /** As {@link #beginApproval}, for a game saved before Resolute Desk's approval: it carries on from the coalitions' level. */
     public void upgradeApproval(PoliticsState s, ApprovalStart a, OpinionInputs in) {
+        stateEconomy(s, in);
         double was = 0;
         for (int c = 0; c < 3; c++) was += p.weights()[c] * s.level[c];
         double weeks = s.weeksGoverning;
@@ -172,6 +174,7 @@ public final class PoliticsEngine {
     }
 
     private void approvalWeek(PoliticsState s, OpinionInputs in, DeterministicRandomManager rng) {
+        stateEconomy(s, in);
         s.mood = s.mood * MOOD_FADE + rng.gaussian("approval.mood") * MOOD_STEP;
         double t = target(s, in);
         s.approval = clamp(s.approval + (t - s.approval) * PULL + rng.gaussian("approval") * NOISE, 4, 96);
@@ -291,7 +294,15 @@ public final class PoliticsEngine {
         return a;
     }
 
-    /** Approval in each state: its lean toward the president's party, the president's standing there, and one national offset (Resolute Desk's {@code cells}, by state). */
+    private static void stateEconomy(PoliticsState s, OpinionInputs in) {
+        s.stateEconomy.clear();
+        s.stateEconomy.putAll(in.stateEconomy());
+    }
+
+    /**
+     * Approval in each state: its lean toward the president's party, the president's standing there, its own economy
+     * against the nation's, and one national offset (Resolute Desk's {@code cells}, by state).
+     */
     void states(PoliticsState s) {
         if (s.stateLean.isEmpty()) return;
         double k = 0.8 + 0.6 * p.rdPolarization(), lo = -6, hi = 6, off = s.stateOffset;
@@ -306,7 +317,7 @@ public final class PoliticsEngine {
     }
 
     private double stateLogit(PoliticsState s, String st, double k, double off) {
-        return k * logit(clamp(0.5 + s.stateLean.get(st) / 200, 0.02, 0.98)) + off + 0.06 * s.stateStanding(st);
+        return k * logit(clamp(0.5 + s.stateLean.get(st) / 200, 0.02, 0.98)) + off + 0.06 * s.stateStanding(st) + s.stateEconomy.getOrDefault(st, 0.0);
     }
 
     private double stateSum(PoliticsState s, double k, double off) {

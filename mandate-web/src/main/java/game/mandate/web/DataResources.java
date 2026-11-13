@@ -7,7 +7,7 @@ import org.teavm.classlib.ResourceSupplierContext;
 public final class DataResources implements ResourceSupplier {
     static final String[] FILES = {"bills.csv", "blocs.csv", "cabinet.csv", "cabinet_archetypes.csv", "calendar.properties", "candidates.csv",
             "campaign_states.csv", "candidates_bg.csv", "countries.csv", "electorate_cells.csv", "forces.csv", "media_markets.csv", "munitions.csv",
-            "states.csv", "tuning.properties", "state_centroids.csv", "candidate_ages.csv", "rd/ambient.tsv"};
+            "states.csv", "tuning.properties", "state_centroids.csv", "candidate_ages.csv", "rd/ambient.tsv", "rd/state_economy.tsv"};
 
     @Override public String[] supplyResources(ResourceSupplierContext context) {
         String[] out = new String[FILES.length];
