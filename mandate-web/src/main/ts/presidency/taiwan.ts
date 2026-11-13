@@ -53,7 +53,7 @@ const STRAIT_PLACES: [string, number, number][] = [['CHINA', 118.4, 25.9], ['TAI
 // Taiwan, its outlying islands and the waters around it, from Kinmen to the Yonaguni Gap and the Bashi Channel
 const SP = STRAIT_PROJECTION;
 const sAt = (lon: number, lat: number): [number, number] => [(lon - SP.lon0) * SP.cos * SP.k, (SP.lat1 - lat) * SP.k];
-const SV = (() => { const [x0, y0] = sAt(117.9, 26.55), [x1, y1] = sAt(123.9, 21.2); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; })();
+const SV = (() => { const [x0, y0] = sAt(117.9, 26.55), [x1, y1] = sAt(124.5, 21.2); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; })();
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 const num = (x: number) => Math.round(x).toLocaleString('en-US');
@@ -213,7 +213,6 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
     const map = s('svg', { class: 'sit-map tw-island', viewBox: `${SV.x.toFixed(0)} ${SV.y.toFixed(0)} ${SV.w.toFixed(0)} ${SV.h.toFixed(0)}`, role: 'img',
       'aria-label': `Taiwan by sector: ${held.length ? `the PLA holds ${held.map(x => x.name).join(', ')}` : 'Taiwan holds every sector'}${fought.length ? `; fighting in ${fought.map(x => x.name).join(', ')}` : ''}.` },
       s('rect', { x: String(SV.x), y: String(SV.y), width: String(SV.w), height: String(SV.h), class: 'hz-sea' }),
-      ...v.zones.filter(z => z.near && z.id !== 'TAIWAN').map(z => { const [x, y] = sAt(z.lon, z.lat); return s('text', { x: String(x), y: String(y - 34), class: 'tw-zone-name' }, z.name.replace('Taiwan Strait ', 'Strait ')); }),
       ...TAIWAN_SECTORS.map(g => {
         const sec = v.sectors.find(x => x.name === g.name);
         const p = sec?.prc ?? 0;
@@ -229,6 +228,8 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
         cx /= n.length / 2; cy /= n.length / 2;
         return s('path', { class: 'tw-lodge', d: `M${cx} ${cy - 9}L${cx + 3} ${cy - 3}L${cx + 9} ${cy - 3}L${cx + 4} ${cy + 2}L${cx + 6} ${cy + 9}L${cx} ${cy + 5}L${cx - 6} ${cy + 9}L${cx - 4} ${cy + 2}L${cx - 9} ${cy - 3}L${cx - 3} ${cy - 3}Z` });
       }).filter((x): x is SVGPathElement => x !== null),
+      ...v.zones.filter(z => z.near && z.id !== 'TAIWAN').map(z => { const [x, y] = sAt(z.lon, z.lat); const penghu = z.id === 'PENGHU';   // the channel is narrow: its short name sits over its ships
+        return s('text', { x: String(penghu ? x + 34 : x), y: String(y - 34), class: 'tw-zone-name' }, penghu ? 'Penghu' : z.name.replace('Taiwan Strait ', 'Strait ')); }),
       ...STRAIT_PLACES.map(([n, lo, la]) => { const [x, y] = sAt(lo, la); return s('text', { x: String(x), y: String(y), class: 'hz-place tw-big' }, n); }),
       ...v.zones.filter(z => z.near && z.id !== 'TAIWAN').flatMap(z => {
         const [x, y] = sAt(z.lon, z.lat), out: SVGElement[] = [];
