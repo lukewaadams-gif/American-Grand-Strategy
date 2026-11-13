@@ -11,6 +11,10 @@ export const KIND_COLOUR = {
 export function cost(m) {
     if (m <= 0)
         return 'free';
+    if (m < 0.001)
+        return '$' + Math.round(m * 1e6);
+    if (m < 0.001)
+        return '$' + Math.round(m * 1e6);
     if (m < 0.01)
         return '$' + (m * 1000).toFixed(1).replace(/\.0$/, '') + 'K';
     return m < 1 ? '$' + Math.round(m * 1000) + 'K' : '$' + m.toFixed(1) + 'M';

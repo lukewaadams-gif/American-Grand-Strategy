@@ -20,7 +20,7 @@ export function fieldTab(v, act) {
         title: 'When on, your field director hires, lays off and opens offices every Monday',
         onclick: () => act.order({ type: 'Staff', area: 'FIELD', on: !staffOn }) }, 'Staff runs the field: ', h('strong', null, staffOn ? 'on' : 'off'))), staffOn ? h('p', { class: 'hint-line' }, 'Your field director replans every Monday; turn it off to keep your own orders.') : null);
 }
-function rowsOf(rows) {
+export function rowsOf(rows) {
     return h('dl', { class: 'fig-rows' }, ...rows.flatMap(([k, v]) => [h('dt', null, k), h('dd', null, v)]));
 }
 function doorsChart(series) {
@@ -56,7 +56,7 @@ export function fieldDesk(code, v, act) {
         reach('Get out the vote', x.gotv, 'Builds only in the last six weeks before the vote.'),
     ];
 }
-function stepper(label, value, minus, plus, note, extra) {
+export function stepper(label, value, minus, plus, note, extra) {
     return h('div', { class: 'stepper', role: 'group', 'aria-label': label }, h('button', { class: 'btn small step', type: 'button', 'aria-label': 'Less: ' + label, onclick: minus }, '−'), h('span', { class: 'step-value', 'aria-live': 'polite' }, value), h('button', { class: 'btn small step', type: 'button', 'aria-label': 'More: ' + label, onclick: plus }, '+'), extra ?? null, note ? h('span', { class: 'step-note' }, note) : null);
 }
 function reach(label, frac, title) {
