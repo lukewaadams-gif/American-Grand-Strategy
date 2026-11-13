@@ -162,7 +162,7 @@ function placePicked(v: CampaignView, slot: number, code: string, act: WarRoomAc
 
 function national(v: CampaignView, last: CampaignView['polls'][number] | undefined): HTMLElement[] {
   const face = (side: typeof v.player, mine: boolean) => h('div', { class: 'face ' + side.party.toLowerCase() },
-    portrait(side.id, side.party, 88),
+    portrait(side.id, side.party, 88, true, side.look),
     h('div', { class: 'face-text' },
       h('span', { class: 'face-role' }, mine ? 'You' : 'Your opponent'),
       h('span', { class: 'face-name' }, side.name),

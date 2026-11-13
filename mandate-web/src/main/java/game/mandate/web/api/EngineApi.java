@@ -204,8 +204,12 @@ public final class EngineApi {
         }
         v.put("states", states);
         var me = g.player(); var them = g.opponent();
-        v.put("player", Map.of("name", me.candidate().name(), "id", me.candidate().id(), "party", me.party().code()));
-        v.put("opponent", Map.of("name", them.candidate().name(), "id", them.candidate().id(), "party", them.party().code()));
+        for (var x : List.of(Map.entry("player", me), Map.entry("opponent", them))) {
+            Map<String, Object> p = new LinkedHashMap<>();
+            p.put("name", x.getValue().candidate().name()); p.put("id", x.getValue().candidate().id()); p.put("party", x.getValue().party().code());
+            p.put("look", look(x.getValue().candidate().id()));
+            v.put(x.getKey(), p);
+        }
         boolean won = r.winner() == me.party();
         v.put("won", won);
         v.put("postMortem", g.postMortem());
@@ -228,8 +232,10 @@ public final class EngineApi {
         v.put("date", g.date().toString());
         v.put("dateLabel", Notable.date(g.date()));
         var me = g.player();
-        v.put("president", Map.of("name", me.candidate().name(), "id", me.candidate().id(), "party", me.party().code(),
-                "partyName", me.party() == Party.DEMOCRAT ? "Democrat" : "Republican"));
+        Map<String, Object> pres = new LinkedHashMap<>();
+        pres.put("name", me.candidate().name()); pres.put("id", me.candidate().id()); pres.put("party", me.party().code());
+        pres.put("partyName", me.party() == Party.DEMOCRAT ? "Democrat" : "Republican"); pres.put("look", look(me.candidate().id()));
+        v.put("president", pres);
         v.put("approval", n2(g.approval()));
         var ind = g.indicators();
         v.put("approvalChange", ind.size() >= 2 ? n2(ind.get(ind.size() - 1).approval() - ind.get(ind.size() - 2).approval()) : 0.0);
@@ -652,6 +658,19 @@ public final class EngineApi {
         return out;
     }
 
+    /** The portraits' one source of truth (data/portraits.csv), read once. */
+    static final game.mandate.core.people.Portraits PORTRAITS = game.mandate.core.people.Portraits.load();
+
+    /** How a person is drawn, by their stable id; null draws the neutral placeholder (never someone else's face). */
+    static Map<String, Object> look(String id) {
+        var l = PORTRAITS.look(id).orElse(null);
+        if (l == null) return null;
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("presentation", l.presentation()); m.put("skin", l.skin()); m.put("hair", l.hair()); m.put("hairColour", l.hairColour());
+        m.put("facial", l.facial()); m.put("glasses", l.glasses()); m.put("face", l.face()); m.put("age", l.age());
+        return m;
+    }
+
     static Map<String, Object> decision(String kind, String eyebrow, String title, String body, List<Object> options) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("kind", kind); m.put("eyebrow", eyebrow); m.put("title", title); m.put("body", body); m.put("options", options);
@@ -673,6 +692,7 @@ public final class EngineApi {
         Map<String, Object> m = new LinkedHashMap<>();
         var c = s.candidate();
         m.put("name", c.name()); m.put("id", c.id()); m.put("party", s.party().code());
+        m.put("look", look(c.id()));
         m.put("partyName", s.party() == Party.DEMOCRAT ? "Democrat" : "Republican");
         m.put("home", c.homeState());
         m.put("ratings", Map.of("charisma", c.charisma(), "debate", c.debate(), "fundraising", c.fundraising(), "policy", c.policy(), "discipline", c.discipline()));

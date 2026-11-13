@@ -6,8 +6,9 @@ export interface NewsItem { date: string | null; text: string; headline?: string
 
 export interface Ratings { charisma: number; debate: number; fundraising: number; policy: number; discipline: number; }
 
+import type { Look } from '../art/portrait.js';
 export interface Side {
-  name: string; id: string; party: 'D' | 'R'; partyName: string; home: string; ratings: Ratings; ideology: number;
+  name: string; id: string; party: 'D' | 'R'; partyName: string; home: string; ratings: Ratings; ideology: number; look?: Look | null;
   cash: number; momentum: number;
   orders?: { strategy: string; strategyLabel: string; rate: string; rateLabel: string; message: string };
 }
@@ -117,7 +118,7 @@ export interface PresidencyView {
   phase: string; date: string; dateLabel: string;
   /** A presidential election night the player has not yet watched (its year), or 0: it comes before anything else. */
   electionNight: number;
-  president: { name: string; id: string; party: 'D' | 'R'; partyName: string };
+  president: { name: string; id: string; party: 'D' | 'R'; partyName: string; look?: Look | null };
   approval: number | null; approvalChange: number | null;
   unemployment?: number | null; inflation?: number | null; growth?: number | null; gas: number | null;
   termWeek: number; termWeeks: number;
@@ -439,7 +440,7 @@ export interface ElectionNightView {
   year: number; pending: boolean; electionDay: string;
   result: { dem: number; rep: number; popular: number; winner: 'D' | 'R'; tipping: string };
   states: ElectionNightState[];
-  player: { name: string; id: string; party: 'D' | 'R' }; opponent: { name: string; id: string; party: 'D' | 'R' };
+  player: { name: string; id: string; party: 'D' | 'R'; look?: Look | null }; opponent: { name: string; id: string; party: 'D' | 'R'; look?: Look | null };
   won: boolean; next: 'transition' | 'end' | 'second' | 'lameduck';
   postMortem: string[]; congress: string;
 }

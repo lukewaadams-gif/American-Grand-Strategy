@@ -2,9 +2,10 @@
 // saved game from a file, or a quick start at one of the game's moments. The candidates are the fictional cast unless
 // the real-person roster is turned on.
 import { h } from './core/dom.js';
+import { portrait, type Look } from './art/portrait.js';
 
 export interface StartCandidate { id: string; name: string; home: string; charisma: number; debate: number; fundraising: number; policy: number;
-  discipline: number; ideology: number; real: boolean }
+  discipline: number; ideology: number; real: boolean; look?: Look | null }
 export interface StartOptions { democrats: StartCandidate[]; republicans: StartCandidate[]; scenarios: { id: string; label: string; description: string }[];
   difficulties: { id: string; label: string; description: string }[] }
 export interface NewGame { seed: number; party: 'DEMOCRAT' | 'REPUBLICAN'; player: string; opponent: string; scenario: string; difficulty: string; realRoster: boolean }
@@ -54,6 +55,7 @@ export function startScreen(act: StartActions): HTMLElement {
       h('legend', null, label),
       h('div', { class: 'start-cands' }, ...list.map(c => h('label', { class: 'start-cand' + (c.id === value ? ' on' : '') },
         h('input', { type: 'radio', name: label, value: c.id, checked: c.id === value, onchange: () => { set(c.id); draw(); } }),
+        portrait(c.id, list === o.democrats ? 'D' : 'R', 40, true, c.look),
         h('span', { class: 'start-cand-name' }, c.name + (c.real ? ' (real)' : '')),
         h('span', { class: 'muted small' }, `${c.home} · ${rating(c)}`)))));
     const choose = (label: string, items: { id: string; label: string; description: string }[], value: string, set: (v: string) => void) =>

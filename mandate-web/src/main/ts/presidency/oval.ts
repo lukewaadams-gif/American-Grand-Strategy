@@ -5,7 +5,7 @@
 // Resolute Desk with the objects on it (Q28: documents to sign, folders, the telephone). The flags, the globe and the
 // dust in the sunbeams move; everything else is painted once.
 import { s } from '../core/dom.js';
-import { portrait } from '../art/portrait.js';
+import { portrait, type Look } from '../art/portrait.js';
 import { JavaRandom, Painter, mixHex, mute, shade, type Stop } from './paint.js';
 import { seal, SEAL } from './seal.js';
 import type { Light } from './lighting.js';
@@ -20,7 +20,7 @@ const ROOM_SEAL = { ...SEAL, gold: M('#d4a945', 0.3) };
 /** The parts of the room that move, redrawn each frame. */
 export interface OvalRoom { svg: SVGSVGElement; tick(t: number): void; }
 
-export function paintOval(party: 'D' | 'R', presidentId: string, light: Light): OvalRoom {
+export function paintOval(party: 'D' | 'R', presidentId: string, light: Light, look?: Look | null): OvalRoom {
   const svg = s('svg', { class: 'oval-art', viewBox: '0 56 1600 800', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': 'true', focusable: 'false' });
   const P = new Painter(svg, 'ov');
   const room = s('g'), live = s('g'), lamps = s('g'), top = s('g');
@@ -42,7 +42,7 @@ export function paintOval(party: 'D' | 'R', presidentId: string, light: Light): 
   sideTable(P, room, lamps, light);
   deskBody(P, room);
   // the president, seated behind the desk
-  const bust = portrait(presidentId, party, 60, false);
+  const bust = portrait(presidentId, party, 60, false, look);
   bust.setAttribute('x', '770'); bust.setAttribute('y', '362'); bust.setAttribute('width', '60'); bust.setAttribute('height', '70');
   room.append(bust);
   deskFront(P, room);

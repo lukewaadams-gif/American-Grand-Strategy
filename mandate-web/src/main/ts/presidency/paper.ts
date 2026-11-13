@@ -13,7 +13,7 @@ export function capitalLedger(p: PaperView, v: PresidencyView, back: () => void)
     h('h3', { class: 'lg-head' }, st.head),
     st.body ? h('p', { class: 'lg-text' }, st.body) : null));
   for (const f of p.features) { if (cells.length >= 6) break; cells.push(h('article', { class: 'lg-story feature' }, h('h3', { class: 'lg-head' }, f.head), h('p', { class: 'lg-text' }, f.body))); }
-  const photo = portrait(v.president.id, v.president.party, 168);
+  const photo = portrait(v.president.id, v.president.party, 168, true, v.president.look);
   photo.setAttribute('class', 'portrait lg-photo-img');
   const page = h('div', { class: 'lg-page' },
     h('header', { class: 'lg-mast' },

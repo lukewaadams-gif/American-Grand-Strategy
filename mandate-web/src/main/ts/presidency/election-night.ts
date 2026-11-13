@@ -35,6 +35,7 @@ export function electionNight(act: ElectionNightActions): HTMLElement {
   const p = palette();
   const name = (q: 'D' | 'R') => (q === v.player.party ? v.player.name : v.opponent.name);
   const id = (q: 'D' | 'R') => (q === v.player.party ? v.player.id : v.opponent.id);
+  const lookOf = (q: 'D' | 'R') => (q === v.player.party ? v.player.look : v.opponent.look);
 
   const keep = () => { try { sessionStorage.setItem(key, String(at)); } catch { /* fine */ } };
   const stop = () => { if (timer) { window.clearInterval(timer); timer = 0; } };
@@ -86,7 +87,7 @@ export function electionNight(act: ElectionNightActions): HTMLElement {
     const proj = n.beats.findIndex(b => b.kind === 'projection');
     const winner = n.winner === q && (proj >= 0 ? at >= proj : at >= last);
     return h('div', { class: 'en-side ' + q.toLowerCase() + (winner ? ' won' : '') },
-      portrait(id(q), q, 72),
+      portrait(id(q), q, 72, true, lookOf(q)),
       h('div', { class: 'en-ev', 'aria-label': `${name(q)}: ${votes} electoral votes` }, String(votes)),
       h('div', { class: 'en-who' }, h('span', { class: 'en-name' }, name(q) + (id(q) === v.player.id ? ' (you)' : '')),
         h('span', { class: 'muted small' }, q === 'D' ? 'Democrat' : 'Republican'), h('span', { class: 'muted small' }, `${share.toFixed(1)}% of the vote`)));

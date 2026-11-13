@@ -29,7 +29,7 @@ final class TransitionViews {
             for (game.mandate.core.campaign.Candidate c : cat.forParty(p)) {
                 if (c.id().equals(game.mandate.core.campaign.Candidate.CUSTOM_ID)) continue;
                 Map<String, Object> m = new LinkedHashMap<>();
-                m.put("id", c.id()); m.put("name", c.name()); m.put("home", c.homeState()); m.put("charisma", c.charisma()); m.put("debate", c.debate());
+                m.put("id", c.id()); m.put("name", c.name()); m.put("look", EngineApi.look(c.id())); m.put("home", c.homeState()); m.put("charisma", c.charisma()); m.put("debate", c.debate());
                 m.put("fundraising", c.fundraising()); m.put("policy", c.policy()); m.put("discipline", c.discipline()); m.put("ideology", c.ideology()); m.put("real", c.isReal());
                 l.add(m);
             }

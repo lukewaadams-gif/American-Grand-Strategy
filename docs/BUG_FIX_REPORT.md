@@ -80,3 +80,38 @@ The same path hit the 2032 re-election, in both outcomes.
 - **Root cause:** in both older interfaces, the end-turn label depended only on the phase.
 - **Fix:** it now reads "Run the day" when the clock is daily.
 - **Preview:** it already said "Run the day"; `election.js` checks the label on each of the last days.
+
+## U-01: real men drawn with women's hair and blouses (played; high): fixed
+
+**Reproduction:**
+- **Steps:** start a campaign with "Use real people" on, as or against Jon Ossoff or JD Vance (among others).
+- **What happens:** the candidate's portrait has a bob, shoulder-length or pulled-back hair, and a blouse.
+
+**Root cause:** `art/portrait.ts` defined looks only for the eight fictional candidates. Everyone else got a look derived from a hash of their ID.
+- That hash picked among seven hairstyles, three of them feminine.
+- A feminine hairstyle brought a blouse with it.
+- So about three in seven real men were drawn as women.
+- Nothing tied a portrait to the person it depicted: no presentation, and no features of any kind.
+
+**Fix:** one source of truth.
+- **The data.** `data/portraits.csv` gives each of the 47 candidates (8 fictional, 39 real) a look, keyed by their stable ID. A look has a presentation, skin tone, hair and its colour, facial hair, glasses, face shape and age, taken from each real person's public appearance. Ossoff, for example, is masculine with dark side-parted hair; Vance is masculine with dark hair and a beard.
+- **Validation.** `people.Portraits` refuses an invalid look: a beard or moustache with a feminine presentation, feminine hair with a masculine one, an unknown feature, or two looks for one ID.
+- **Delivery.** The engine's views send each person's look with them: the campaign's two sides, the president (the Oval Office and The Capital Ledger), election night, and the start screen's candidate list.
+- **Drawing.** `art/portrait.ts` now draws only from a look. It no longer derives anything from a hash: only the suit and tie colour still vary by ID, stably. It gained bald and slicked-back hair, long hair, beards, goatees, moustaches and stubble, and face shapes.
+- **No look.** A person with no look is drawn as a neutral placeholder silhouette, never as someone else.
+- **Newcomers.** Fictional newcomers (Milestone 4) get a look made from their own ID and recorded presentation (`Portraits.generated`).
+- **Imagery.** No photographs or outside imagery are used. Every portrait is drawn in vectors in the game's own style, so the art raises no licensing question.
+
+**Regression test:** `PortraitsTest` (5 tests).
+- Every candidate has their own look, whose presentation matches an independent list written in the test from the public record.
+- Ossoff and Vance are masculine, and Vance has a beard.
+- No two real people have identical looks. The test caught Shapiro and DeSantis, and Whitmer and Greene, sharing one; both pairs are now distinct.
+- Invalid looks are refused.
+- A newcomer's look is the same every time, and fits their presentation.
+
+**Manual inspection:** a contact sheet of all 47 portraits plus the placeholder was rendered and checked by eye.
+
+**Remaining:**
+- **Likeness.** The vector style gives correct, consistent and distinguishable likenesses, but not recognisable caricatures. Several real men with short dark hair still look alike. Recognisable caricatures need commissioned illustration, with commercial rights; this is listed in the remaining issues.
+- **Who has portraits.** Only presidential candidates are drawn anywhere in the game. Cabinet members, justices, members of Congress and foreign leaders appear by name only, so they cannot be drawn wrongly. If they are ever drawn, they take a row in `portraits.csv`.
+- **Desktop.** The desktop (Swing) and older browser interfaces draw no portraits.

@@ -248,7 +248,7 @@ function spots(hd: OvalHandlers, v: PresidencyView): HTMLElement {
 
 /** The whole screen. The room is returned too, so its flags, globe and dust can be animated. */
 export function ovalScreen(v: PresidencyView, light: Light, hd: OvalHandlers): { el: HTMLElement; room: OvalRoom } {
-  const room = paintOval(v.president.party, v.president.id, light);
+  const room = paintOval(v.president.party, v.president.id, light, v.president.look);
   const stage = h('div', { class: 'ov-stage' }, room.svg, spots(hd, v));
   const el = h('div', { class: 'ov' },
     topBar(v, hd),

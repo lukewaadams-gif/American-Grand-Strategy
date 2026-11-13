@@ -1,0 +1,60 @@
+# Every person the game draws, by their stable id: how their portrait looks. One source of truth for every screen and
+# both interfaces; a person with no row is drawn as a neutral placeholder, never as someone else.
+# id,presentation,skin,hair,hair_colour,facial,glasses,face,age
+#   presentation: m (masculine: shirt and tie) | f (feminine: blouse); it decides the clothes and which hair is drawn
+#   skin: 1 (lightest) .. 6 (darkest)
+#   hair: short, side-part, receding, close, slicked, swept, bald (m) | bob, shoulder, long, pulled-back (f)
+#   hair_colour: black, dark, brown, light-brown, blond, salt, grey, white, red, none
+#   facial: none, stubble, beard, goatee, moustache (m only)
+#   glasses: 0 or 1; face: oval, round, long, square; age: 0 (young) .. 1 (old)
+# Real people: the public look of each (hair, facial hair, glasses), drawn in the game's restrained style. No
+# photographs or outside imagery: every portrait is drawn in vectors by art/portrait.ts.
+# --- the fictional cast
+d_reyes,f,3,shoulder,dark,none,0,oval,0.4
+d_whitfield,m,1,side-part,grey,none,1,long,0.7
+d_okafor,f,5,close,black,none,0,oval,0.4
+d_lindqvist,m,1,receding,blond,none,0,square,0.5
+r_calloway,m,2,side-part,brown,none,0,square,0.45
+r_marsh,f,2,bob,blond,none,0,oval,0.5
+r_benton,m,2,short,grey,none,0,round,0.8
+r_harlan,f,1,pulled-back,red,none,1,long,0.45
+# --- Battleground 2028's real roster (opt-in in the vertical slice; see docs/DECISIONS_TO_REVIEW.md)
+bg_harris,f,4,shoulder,black,none,0,oval,0.6
+bg_newsom,m,1,slicked,salt,none,0,long,0.55
+bg_buttigieg,m,1,side-part,dark,none,0,oval,0.35
+bg_aoc,f,3,long,dark,none,0,oval,0.3
+bg_shapiro,m,1,short,dark,none,0,long,0.5
+bg_pritzker,m,1,receding,grey,none,1,round,0.6
+bg_whitmer,f,1,shoulder,light-brown,none,0,oval,0.55
+bg_beshear,m,1,short,dark,none,0,oval,0.45
+bg_moore,m,5,bald,none,none,0,square,0.45
+bg_booker,m,5,bald,none,none,0,round,0.55
+bg_khanna,m,3,side-part,black,none,0,oval,0.45
+bg_kelly,m,1,bald,none,moustache,0,square,0.6
+bg_gallego,m,3,short,black,none,0,square,0.4
+bg_murphy,m,1,side-part,brown,none,0,long,0.45
+bg_ossoff,m,1,side-part,dark,none,0,oval,0.3
+bg_warnock,m,5,close,salt,none,0,oval,0.5
+bg_walz,m,1,short,white,none,1,round,0.65
+bg_emanuel,m,1,receding,grey,none,0,long,0.65
+bg_raimondo,f,1,bob,dark,none,0,oval,0.5
+bg_talarico,m,2,side-part,dark,none,0,oval,0.25
+bg_cooper,m,1,short,white,none,0,oval,0.7
+bg_brown,m,1,short,grey,none,0,round,0.75
+bg_klobuchar,f,1,bob,light-brown,none,0,oval,0.6
+bg_cuban,m,1,short,dark,none,0,square,0.6
+bg_smith,m,6,bald,none,goatee,0,round,0.55
+bg_vance,m,1,side-part,dark,beard,0,round,0.4
+bg_rubio,m,2,short,black,none,0,oval,0.5
+bg_trumpjr,m,1,slicked,dark,beard,0,oval,0.45
+bg_desantis,m,1,short,dark,none,0,square,0.45
+bg_youngkin,m,1,side-part,salt,none,0,long,0.55
+bg_haley,f,3,shoulder,dark,none,0,oval,0.5
+bg_cruz,m,2,slicked,dark,beard,0,round,0.55
+bg_hawley,m,1,side-part,brown,none,0,oval,0.4
+bg_kemp,m,1,short,grey,none,0,square,0.6
+bg_sanders,f,1,shoulder,brown,none,0,round,0.45
+bg_ramaswamy,m,3,short,black,none,0,oval,0.3
+bg_carlson,m,1,swept,light-brown,none,0,square,0.55
+bg_greene,f,1,shoulder,blond,none,0,long,0.5
+bg_rfk,m,1,swept,grey,none,0,long,0.75
