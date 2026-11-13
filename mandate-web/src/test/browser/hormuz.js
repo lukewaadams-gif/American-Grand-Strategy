@@ -126,7 +126,7 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
   // 2. the crisis from the start screen
   {
     const page = await open('', 1600, 900);
-    const presets = page.locator('.start-presets button');
+    const presets = page.locator('.start-presets[aria-label^="The Strait of Hormuz"] button');
     if ((await presets.count()) !== 3) fail('three ways to start the crisis');
     await presets.filter({ hasText: 'Pessimistic' }).click();
     await page.waitForSelector('.ov-crisis', { timeout: 30000 }).catch(() => fail('the crisis from the start screen'));
