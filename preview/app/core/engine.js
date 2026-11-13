@@ -45,6 +45,9 @@ export const engine = {
     economy() { return request({ op: 'view', name: 'economy' }); },
     cabinet() { return request({ op: 'view', name: 'cabinet' }); },
     hill() { return request({ op: 'view', name: 'hill' }); },
+    westWing() { return request({ op: 'view', name: 'westwing' }); },
+    westWingOptions(kind, index) { return request({ op: 'view', name: 'westwingOptions', kind, index }); },
+    press() { return request({ op: 'view', name: 'press' }); },
     /** The budget office's score of moving a policy some steps from where it stands. */
     score(policy, steps) { return request({ op: 'view', name: 'score', policy, steps }); },
     /** The budget office's score of one of the game's bills. */

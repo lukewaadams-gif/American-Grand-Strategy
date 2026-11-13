@@ -172,6 +172,7 @@
       "capital": 56.4,
       "goodwill": 0.0,
       "opposition": "SELECTIVE",
+      "rdParty": [0.0, 0.0, 0.0, 0.0, 0.0],
       "recentAddresses": 0.0,
       "weeksGoverning": 0.0,
       "parties": [{
@@ -3092,6 +3093,7 @@
       "warChest": 0.0,
       "hill": 50.0,
       "hillHours": 0.0,
+      "cabinetMeetings": 0,
       "midtermEffort": {},
       "lastWeek": [],
       "lastVisited": [],
@@ -4422,6 +4424,7 @@
       "record": ["2029-01-22: the 121st Congress is seated, House 212-223, Senate 50-50 (Democrats first)"],
       "enacted": []
     },
+    "westWing": null,
     "news": [],
     "ambientUsed": [],
     "scheduler": {
