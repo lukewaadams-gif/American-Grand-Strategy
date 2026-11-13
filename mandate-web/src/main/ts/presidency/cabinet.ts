@@ -12,6 +12,8 @@ import { money, scoreView, signed } from './score.js';
 export interface CabinetActions {
   score(policy: string, steps: number): ScoreView;
   billScore(bill: string): ScoreView;
+  /** Drafts a bill for a policy step ({@code pol:<policy>:<from>:<to>}) in the Roosevelt Room. */
+  draft?(source: string): void;
   back(): void;
 }
 
@@ -40,6 +42,9 @@ function detail(p: PolicyEntry, act: CabinetActions): HTMLElement {
       h('button', { class: 'btn small', type: 'button', disabled: !up, onclick: () => run(1) }, up ? `Score a step up: ${p.levels[p.level + 1]}` : 'At its highest level'),
       h('button', { class: 'btn small', type: 'button', disabled: !down, onclick: () => run(-1) }, down ? `Score a step down: ${p.levels[p.level - 1]}` : 'At its lowest level')),
     out,
+    act.draft && (p.routes.includes('a law') || p.routes.includes('the budget')) ? h('div', { class: 'cab-buttons' },
+      up ? h('button', { class: 'btn small', type: 'button', onclick: () => act.draft!(`pol:${p.id}:${p.level}:${p.level + 1}`) }, 'Draft a bill: a step up') : null,
+      down ? h('button', { class: 'btn small', type: 'button', onclick: () => act.draft!(`pol:${p.id}:${p.level}:${p.level - 1}`) }, 'Draft a bill: a step down') : null) : null,
     h('dl', { class: 'cab-facts' },
       h('dt', null, 'How it can change'), h('dd', null, (p.routes.length ? 'By ' + p.routes.join(', ') : 'Only by a law') + '. In this milestone laws move it from the Hill; orders and rules arrive with the West Wing, and the budget with Congress.'),
       h('dt', null, 'A step costs'), h('dd', null, [p.costUp !== null ? `up: ${stepCost(p.costUp)}` : null, p.costDown !== null ? `down: ${stepCost(p.costDown)}` : null]

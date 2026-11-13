@@ -1,6 +1,6 @@
 // The engine: the Java simulation compiled to JavaScript (target/preview/engine/engine.js), behind one call that
 // takes and returns JSON. Everything the interface shows comes from its view models; everything it does is a command.
-import type { CabinetView, CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView, ScoreView } from './types.js';
+import type { CabinetView, HillView, CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView, ScoreView } from './types.js';
 
 interface EngineModule { call(request: string): string; }
 let mod: EngineModule | null = null;
@@ -48,6 +48,7 @@ export const engine = {
   country(): CountryView { return request<CountryView>({ op: 'view', name: 'country' }); },
   economy(): EconomyView { return request<EconomyView>({ op: 'view', name: 'economy' }); },
   cabinet(): CabinetView { return request<CabinetView>({ op: 'view', name: 'cabinet' }); },
+  hill(): HillView { return request<HillView>({ op: 'view', name: 'hill' }); },
   /** The budget office's score of moving a policy some steps from where it stands. */
   score(policy: string, steps: number): ScoreView { return request<ScoreView>({ op: 'view', name: 'score', policy, steps }); },
   /** The budget office's score of one of the game's bills. */

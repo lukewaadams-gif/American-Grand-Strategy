@@ -20,6 +20,12 @@ import java.util.TreeMap;
 public final class HillState {
     public static final int HOUSE = 0, SENATE = 1;
     public static final String[] CHAMBER = {"House", "Senate"};
+    /** The twelve appropriations bills. */
+    public static final String[] APPROPRIATIONS = {"Agriculture", "Commerce, Justice and Science", "Defense", "Energy and Water", "Financial Services",
+            "Homeland Security", "Interior and Environment", "Labor, Health and Education", "Legislative Branch", "Military Construction and Veterans",
+            "State and Foreign Operations", "Transportation and Housing"};
+    /** An appropriations bill's progress: not started, in committee, passed one chamber, enacted, or running on a stopgap. */
+    public static final String[] APPROPRIATION_STAGE = {"Not started", "In committee", "Passed one chamber", "Enacted", "On a stopgap"};
 
     /** A bloc: a wing of one party in one chamber (Resolute Desk's twelve). */
     public static final class Bloc {
@@ -162,6 +168,8 @@ public final class HillState {
         public int senateYes() { return senYes; }
         public int senateNo() { return senNo; }
         public String note() { return note; }
+        /** Whether a member has made a deal on this bill this week (one a week). */
+        public boolean dealtIn(String member, int week) { return dealt.getOrDefault(member, -1) == week; }
         /** The chamber the bill is in now (the first chamber until it passes there). */
         public int chamberNow() { return stage.ordinal() >= Stage.COMMITTEE2.ordinal() ? 1 - first : first; }
         /** Net cost a year, $ billions: smaller if paid for. */

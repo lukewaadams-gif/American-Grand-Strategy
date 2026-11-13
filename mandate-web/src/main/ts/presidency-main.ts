@@ -19,6 +19,7 @@ import { SPEEDS, watchDialog } from './presidency/watch.js';
 import { briefingBook, countryRoom } from './presidency/rooms.js';
 import { cabinetRoom } from './presidency/cabinet.js';
 import { scoreView } from './presidency/score.js';
+import { rooseveltRoom } from './presidency/roosevelt.js';
 
 const root = document.getElementById('app')!;
 const params = new URLSearchParams(location.search);
@@ -214,8 +215,6 @@ function duskHour(month: number): number {
 // ---- what the room's objects and doors do in this milestone --------------------------------------------------------
 
 const LATER: Record<string, { title: string; body: string; milestone: number; stage: string }> = {
-  phone: { title: 'The telephone', body: 'Call members of Congress for their votes, with favours and promises, and foreign leaders about trade, alliances and crises.', milestone: 5, stage: 'Congress and the budget (calls abroad with milestone 8)' },
-  roosevelt: { title: 'The Roosevelt Room', body: 'Congress: the twelve blocs and their leaders, the whip count, drafting and floor votes, hours on the Hill, the budget, shutdowns and the debt limit.', milestone: 5, stage: 'Congress and the budget' },
   westwing: { title: 'The West Wing', body: 'The staff and the cabinet: skills, morale, confirmations, executive orders and rules, the courts, and the vice president’s missions.', milestone: 6, stage: 'the executive, the press and storylines' },
   press: { title: 'The Press Briefing Room', body: 'Press conferences, interviews, addresses and the State of the Union; the outlets’ tone, the party’s wings and the opposition’s strategy.', milestone: 6, stage: 'the executive, the press and storylines' },
   residence: { title: 'The Residence', body: 'Family, rest and health: where stamina comes back and the president’s private life goes on.', milestone: 7, stage: 'the Residence and the voter groups' },
@@ -240,8 +239,21 @@ function openCabinet(): void {
   host.open(cabinetRoom(engine.cabinet(), {
     score: (policy, steps) => engine.score(policy, steps),
     billScore: bill => engine.billScore(bill),
+    draft: source => { if (hill({ type: 'Draft', source })) { host.close(); openRoosevelt('Bills'); } },
     back: () => host.close(),
   }), 'The Cabinet Room');
+}
+
+const hill = (order: object) => command({ type: 'Hill', order });
+
+/** The Roosevelt Room: Congress. The telephone opens it on the members, whose votes are what calls are for at home. */
+function openRoosevelt(tab?: 'The Hill' | 'Bills' | 'Members'): void {
+  host.open(rooseveltRoom({
+    view: () => engine.hill(),
+    order: o => hill(o),
+    decide: () => { host.close(); openDecisions(); },
+    back: () => host.close(),
+  }, tab), 'The Roosevelt Room', render);
 }
 
 /** A bill's score behind a disclosure, run when it is opened (the budget office takes a moment). */
@@ -280,7 +292,7 @@ function openAgenda(): void {
     v.bills.length ? h('ul', { class: 'ov-dialog-list ov-agenda' }, ...v.bills.map(b => h('li', null,
       h('div', { class: 'ov-agenda-head' }, h('span', null, b.name), h('span', { class: 'pill' }, b.stage)),
       billScoreDisclosure(b.id, b.stage === 'Law')))) : null,
-    h('p', { class: 'muted' }, congressLine(v.congress) + '. The whip count and the floor open in the Roosevelt Room with milestone 5. Every policy and its score is in the Cabinet Room, in the West Wing.'),
+    h('p', { class: 'muted' }, congressLine(v.congress) + '. ' + (v.hundredDays ? 'The first hundred days carry the flagship themselves; the Roosevelt Room opens on day 100.' : 'Bills are drafted, whipped and sent from the Roosevelt Room.') + ' Every policy and its score is in the Cabinet Room, in the West Wing.'),
     hd ? h('section', { class: 'ov-delegate', 'aria-labelledby': 'ov-delegate-title' },
       h('h3', { class: 'ov-delegate-title', id: 'ov-delegate-title' }, `The first hundred days, week ${Math.min(hd.week, hd.weeks)} of ${hd.weeks}: hand it to the staff`),
       h('p', { class: 'muted' }, 'Until Congress and the West Wing open in their rooms, the chief of staff can run the hundred days’ business. The staff is cautious: it trades for votes at half strength and nominates experts.'),
@@ -312,6 +324,13 @@ function openSpot(id: SpotId, v: PresidencyView): void {
       return;
     case 'westwing':
       westWing();
+      return;
+    case 'roosevelt':
+      openRoosevelt();
+      return;
+    case 'phone':
+      if (!v.week) { toast('The telephone is yours at the inauguration.'); return; }
+      openRoosevelt('Members');
       return;
     default:
       soon(id);

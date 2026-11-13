@@ -253,3 +253,40 @@ export interface CabinetView {
   bills: { id: string; name: string; law: boolean; steps: { policy: string; name: string; from: string; to: string; steps: number }[] }[];
   outcomes: { label: string; value: number }[];
 }
+
+// ---- the Roosevelt Room (Congress) ---------------------------------------------------------------------------------
+
+export type PartyCode = 'D' | 'R';
+export interface HillBloc { index: number; name: string; party: PartyCode; chamber: 'House' | 'Senate'; seats: number; relationship: number; moderate: boolean; loyalty: number; hawk: number; leaning: string; }
+export interface HillMember { id: string; name: string; role: string; committee: string | null; state: string | null; party: PartyCode; chamber: 'House' | 'Senate'; bloc: string; relationship: number; price: string | null; owesFavor: boolean; leader: boolean; }
+export interface HillWhip { chamber: 'House' | 'Senate'; expected: number; spread: number; need: number; chance: number; seats: number; blocs: { name: string; party: PartyCode; seats: number; yes: number }[]; }
+export interface HillBill {
+  id: string; source: string; name: string; description: string; ours: boolean; author: PartyCode | null; sponsorParty?: PartyCode | null;
+  stage: string; stageKey: string; chamber: 'House' | 'Senate'; weeksInStage: number; stageWeeks: number;
+  size: number; scope: number; payFor: number; payForLabel: string; reconciliation: boolean; budgetEligible: boolean; firstChamber: number;
+  support: number; cost: number; netCost: number; strength: number;
+  held: boolean; bottled: boolean; wentPublic: boolean; vetoed: boolean; note: string;
+  votes: { houseYes: number; houseNo: number; senateYes: number; senateNo: number };
+  whip?: HillWhip[]; dealtThisWeek?: string[];
+}
+export interface HillDraft { id: string; name: string; issue: string; sponsor: PartyCode | null; cost: number; reconciliation: boolean; agenda: boolean; moving: boolean; summary: string; }
+export interface HillBudget {
+  fiscalYear: number; request: { defense: number; other: number; tax: number; entitlements: number }; requestDeficit: number; requestSent: boolean; requestDueWeeks?: number;
+  appropriations: { name: string; stage: number; label: string }[]; stopgapWeeks: number | null; shutdown: boolean; blame: number; shutdownWeeks: number;
+  debtLimit: number; debtSubject: number; xDateWeeks: number | null; deadline: string; deficit: number;
+}
+export interface HillRace { state: string; name: string; seatClass: number; democrat: string; republican: string; holder: PartyCode; open: boolean; poll: number; result: number | null; }
+export interface HillElections { date: string; label: string; days: number; racesOpen: boolean; national: number; races: HillRace[]; house: { state: string; name: string; seats: number; dem: number }[]; campaignStops: number; warChest: number; }
+export interface HillView {
+  date: string; open: boolean; reason?: string;
+  president?: PartyCode; congress?: string; houseDem?: number; senateDem?: number; houseMajority?: PartyCode; senateMajority?: PartyCode; unified?: boolean;
+  hoursLeft?: number; hoursMax?: number; appointments?: number; mandate?: number; filibusterGone?: boolean; delegated?: boolean; week?: number;
+  laws?: number; vetoes?: number; overrides?: number; promisesKept?: number; promisesBroken?: number;
+  blocs?: HillBloc[]; members?: HillMember[]; bills?: HillBill[]; drafts?: HillDraft[];
+  pending?: { kind: string; label: string; weeksLeft: number }[]; ask?: { member: string; kind: string };
+  budget?: HillBudget; elections?: HillElections;
+  favors?: { member: string; memberId: string; role: string; why: string; promise: boolean; state: string | null; weeksLeft: number | null }[];
+  probes?: { subject: string; status: string; chamber: string; severity: number; impeachable: boolean; contempt: boolean; subpoena: boolean }[];
+  impeachment?: { status: string; houseYes: number; senateYes: number };
+  record?: { date: string; what: string }[];
+}

@@ -42,7 +42,7 @@ public final class EngineApi {
         try {
             out = dispatch(Json.object(Json.parse(request)));
         } catch (IllegalCommandException | IllegalStateException | IllegalArgumentException e) {
-            out = refusal(e.getMessage());
+            out = refusal(e.getMessage() != null ? e.getMessage() : "The game could not do that: " + e);
         } catch (RuntimeException e) {
             out = refusal("The game could not do that: " + e);
         }
@@ -71,6 +71,7 @@ public final class EngineApi {
                 case "cabinet" -> PolicyViews.cabinet(need());
                 case "score" -> PolicyViews.policyScore(need(), (String) req.get("policy"), Json.integer(req.get("steps")));
                 case "billScore" -> PolicyViews.billScore(need(), (String) req.get("bill"));
+                case "hill" -> HillViews.room(need());
                 default -> throw new IllegalArgumentException("No view called " + req.get("name"));
             };
             default -> throw new IllegalArgumentException("No op called " + op);
@@ -189,7 +190,8 @@ public final class EngineApi {
         long week = g.date().isBefore(inaug) ? 0 : ChronoUnit.WEEKS.between(inaug, g.date()) + 1;
         v.put("termWeek", week);
         v.put("termWeeks", ChronoUnit.WEEKS.between(inaug, inaug.plusYears(4)));
-        v.put("pendingDecisions", g.pendingEvents().size() + (g.phase() == Phase.FIRST_100_DAYS ? g.hundredDays().map(h -> h.pending().size()).orElse(0) : 0));
+        v.put("pendingDecisions", g.pendingEvents().size() + (g.phase() == Phase.FIRST_100_DAYS ? g.hundredDays().map(h -> h.pending().size()).orElse(0) : 0)
+                + HillViews.count(g));
         v.put("congress", g.congress().toString());
         // how long the End button's turn is: a week in office (an operational turn in a war), none in the other phases
         v.put("turnUnit", g.operationsActive() ? "war" : switch (g.phase()) {
@@ -558,6 +560,7 @@ public final class EngineApi {
                 out.add(d);
             }
         });
+        out.addAll(HillViews.decisions(g));
         boolean campaign = g.phase() == Phase.GENERAL_CAMPAIGN_2028 || g.phase() == Phase.REELECTION_CAMPAIGN_2032;
         if (campaign && g.debateThisWeek().isPresent() && g.election().pendingPosture() == null) {
             var theirs = game.mandate.core.campaign.DebatePosture.tendencyOf(g.opponent().candidate());

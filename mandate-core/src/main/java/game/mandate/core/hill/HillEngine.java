@@ -61,6 +61,12 @@ public final class HillEngine {
     static final int[] AREA_COMMITTEE = {0, 0, 8, 2, 10, 2, 7, 4, 8, 4, 2, 5};
     static final String[] PRICES = {"a project", "an appointment", "an endorsement", "a change to the bill"};
     static final String[] PAY_FOR = {"BORROW", "REVENUE", "CUTS"};
+    /**
+     * How far a state's districts spread around its lean, points: a delegation's Democratic share is the normal curve at
+     * (lean + swing) over this. 22 reproduces the delegations of the 2020s (California about 44-8, Texas 12-26, New York
+     * 19-7, Ohio 5-10); Resolute Desk sets only the national total.
+     */
+    static final double DISTRICT_SPREAD = 22;
 
     private final BillCatalog catalog;
     private final PolicyCatalog policies;
@@ -150,7 +156,7 @@ public final class HillEngine {
             int total = 0;
             best.clear();
             for (Map.Entry<String, Integer> e : s.houseSeats.entrySet()) {
-                int d = (int) Math.round(e.getValue() * phi((lean.getOrDefault(e.getKey(), 0.0) + extra.getOrDefault(e.getKey(), 0.0) + mid) / 14));
+                int d = (int) Math.round(e.getValue() * phi((lean.getOrDefault(e.getKey(), 0.0) + extra.getOrDefault(e.getKey(), 0.0) + mid) / DISTRICT_SPREAD));
                 best.put(e.getKey(), d);
                 total += d;
             }
@@ -278,7 +284,7 @@ public final class HillEngine {
     /** The index in {@code s.blocs} of a party's bloc in a chamber (0 left, 1 mainstream, 2 moderate for Democrats; 0 right for Republicans). */
     static int blocIndex(HillState s, int ch, Party p, int k) { return ch * 6 + (p == Party.DEMOCRAT ? 0 : 3) + Math.max(0, Math.min(2, k)); }
 
-    Party majority(HillState s, Context c, int ch) {
+    public Party majority(HillState s, Context c, int ch) {
         if (ch == H) return c.houseDem() >= 218 ? Party.DEMOCRAT : Party.REPUBLICAN;
         return c.senateDem() > 50 ? Party.DEMOCRAT : c.senateDem() < 50 ? Party.REPUBLICAN : c.president();
     }
@@ -393,6 +399,7 @@ public final class HillEngine {
             from = Integer.parseInt(t[2]);
             steps = Integer.parseInt(t[3]) - from;
             if (steps == 0 || from + steps < 0 || from + steps > d.top()) throw new IllegalArgumentException("That is not a step the policy can take");
+            if (!d.can(PolicyCatalog.Route.BILL) && !d.can(PolicyCatalog.Route.BUDGET)) throw new IllegalArgumentException("The " + lower(d.name()) + " is changed by order or rule, not by law");
         } else {
             b = catalog.get(source);
             if (lawAlready(s, source)) throw new IllegalArgumentException("The " + b.name() + " is already law");
@@ -466,7 +473,7 @@ public final class HillEngine {
         return new double[]{clamp(e, -1, 1), clamp(cl, -1, 1)};
     }
 
-    double support(HillState.Bill b) {
+    public double support(HillState.Bill b) {
         return b.support - 4 * (b.scope - 0.5) - (b.payFor == 0 && b.cost > 30 ? 2 : 0) + (b.payFor == 1 ? 2 : 0);
     }
 
@@ -529,7 +536,7 @@ public final class HillEngine {
         s.bills.remove(b);
     }
 
-    static int stageWeeks(HillState.Bill b) {
+    public static int stageWeeks(HillState.Bill b) {
         return switch (b.stage) {
             case COMMITTEE, COMMITTEE2 -> b.recon ? 2 : 3;
             case CONFERENCE -> 2;
@@ -988,9 +995,9 @@ public final class HillEngine {
     static int fiscalYear(LocalDate d) { return d.getMonthValue() >= 10 ? d.getYear() + 1 : d.getYear(); }
 
     /** The debt subject to the limit, $ trillions. */
-    static double debtSubject(Context c) { return c.debtPct() / 100 * c.nominalGdpTn() * 1.25; }
+    public static double debtSubject(Context c) { return c.debtPct() / 100 * c.nominalGdpTn() * 1.25; }
 
-    boolean unified(Context c) {
+    public boolean unified(Context c) {
         boolean house = (c.houseDem() >= 218) == (c.president() == Party.DEMOCRAT);
         boolean senate = c.president() == Party.DEMOCRAT ? c.senateDem() >= 50 : c.senateDem() <= 50;
         return house && senate;
@@ -1483,24 +1490,36 @@ public final class HillEngine {
             if (!b.goneP && support(b) > 55) goPublic(s, c, b.id);
         }
         for (Pending p : new ArrayList<>(s.pending)) {
-            switch (p.kind()) {
-                case "desk" -> {
-                    HillState.Bill b = s.bill(p.subject());
-                    if (b == null) break;
-                    boolean sign = b.ours || sponsorParty(b, c) == c.president() || support(b) >= 55;
-                    merge(out, desk(s, c, b.id, sign ? Desk.SIGN : Desk.VETO, rng));
-                }
-                case "budget" -> merge(out, sendBudget(s, c));
-                case "cr" -> merge(out, choose(s, c, "cr", c.approval() >= 50 ? Choice.CLEAN : Choice.ACCEPT, rng));
-                case "shutdown" -> merge(out, choose(s, c, "shutdown", s.blame > 0.55 || s.shutdownWeeks >= 3 ? Choice.DEAL : Choice.HOLD, rng));
-                case "debt" -> merge(out, choose(s, c, "debt", unified(c) ? Choice.CLEAN : Choice.CUTS, rng));
-                case "debt1" -> merge(out, choose(s, c, "debt1", Choice.DEAL, rng));
-                case "subpoena" -> merge(out, choose(s, c, "subpoena", Choice.NEGOTIATE, rng));
-                case "ask" -> merge(out, answer(s, c, !"appointment".equals(s.askKind) || s.appointments > 2));
-                default -> { }
-            }
+            if (!s.pending.contains(p)) continue;     // settled by an earlier answer
+            HillOrder o = recommend(s, c, p);
+            if (o != null) merge(out, apply(s, c, o, rng));
         }
         return out;
+    }
+
+    /**
+     * What the staff would do with a decision the Hill puts to the president (and do, when the Hill is delegated or the
+     * president is watching): sign the president's bills, the president's party's and popular ones, veto the rest; send
+     * the budget; take the safe road at deadlines; grant a member's request unless appointments run short.
+     * @return the order, or null if there is nothing to do
+     */
+    public HillOrder recommend(HillState s, Context c, Pending p) {
+        return switch (p.kind()) {
+            case "desk" -> {
+                HillState.Bill b = s.bill(p.subject());
+                if (b == null) yield null;
+                boolean sign = b.ours || sponsorParty(b, c) == c.president() || support(b) >= 55;
+                yield new HillOrder.Desk(b.id, sign ? Desk.SIGN : Desk.VETO);
+            }
+            case "budget" -> new HillOrder.SendBudget();
+            case "cr" -> new HillOrder.Choose("cr", c.approval() >= 50 ? Choice.CLEAN : Choice.ACCEPT);
+            case "shutdown" -> new HillOrder.Choose("shutdown", s.blame > 0.55 || s.shutdownWeeks >= 3 ? Choice.DEAL : Choice.HOLD);
+            case "debt" -> new HillOrder.Choose("debt", unified(c) ? Choice.CLEAN : Choice.CUTS);
+            case "debt1" -> new HillOrder.Choose("debt1", Choice.DEAL);
+            case "subpoena" -> new HillOrder.Choose("subpoena", Choice.NEGOTIATE);
+            case "ask" -> s.askMember == null ? null : new HillOrder.Answer(!"appointment".equals(s.askKind) || s.appointments > 2);
+            default -> null;
+        };
     }
 
     private Outcome tryDeal(HillState s, Context c, HillState.Bill b, Member m, Deal kind, DeterministicRandomManager rng) {

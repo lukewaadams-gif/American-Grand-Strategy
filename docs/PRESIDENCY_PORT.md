@@ -83,8 +83,8 @@ Each milestone goes to the preview.
    - the country through the windows;
    - the briefing book's economy.
 4. **The economy and the policy table** (built, for review). A new structural model, with Resolute Desk's sectors on top. Every policy level is scored, with ranges, and the effects are credited to the laws behind them. On screen: the briefing book's sectors and laws, and the Cabinet Room. The design and what was built are in `ECONOMY_MODEL.md`.
-5. **Congress and the budget.** Bills move the policy table. Each Congress is seated after its election with its own leaders, blocs and members, so the game can face several. The 2030 midterms are race by race, and the president can campaign in them from the calendar. Divided government brings investigations, impeachment, shutdown and debt-limit fights, and blocked nominees. On screen: the Roosevelt Room.
-6. **The executive, the press and storylines.** On screen: the West Wing and the Press Briefing Room.
+5. **Congress and the budget** (built, for review). Bills move the policy table. Each Congress is seated after its election with its own leaders, blocs and members, so the game can face several. The 2030 midterms are race by race, and the president can campaign in them from the calendar. Divided government brings investigations, impeachment, shutdown and debt-limit fights; blocked nominees come with the nominations themselves, in milestone 6. On screen: the Roosevelt Room.
+6. **The executive, the press and storylines,** with the Senate's confirmations (an opposition Senate blocks nominees). On screen: the West Wing and the Press Briefing Room.
 7. **The Residence and the country's groups.** Approval by group from the 96-cell electorate.
 8. **The world.** On screen: the presidency's Situation Room.
 9. **The second term.**
@@ -278,6 +278,32 @@ The full design, the calibration targets and what each step built are in `ECONOM
 - **The briefing book adds:** prices by part, the industries, the budget, and what each law has done (with the Fed's response as its own line).
 - **The agenda's folders** show each bill's score before it moves.
 - **The Capital Ledger** prints the budget office's verdict when a law passes.
+
+## Congress and the budget (milestone 5)
+
+**The engine** is a new domain, `hill`: Resolute Desk's Congress, beside the old seat-count model (which keeps the totals, the hundred days and the campaign's promises).
+- **Seating.** The 121st Congress is seated at the inauguration from the 2028 result:
+  - the Senate seat by seat (class I and III from the state data, class II filling the rest so the total is right);
+  - the House by state (each delegation split by the state's lean, with a national swing found so the total is right);
+  - Resolute Desk's twelve blocs, the era's four leaders, twelve chairs a chamber from the majority, and swing votes who each want something.
+- **Bills.** The president drafts one of the game's bills or a single policy step (from the Cabinet Room), sets its size, scope, pay-for, reconciliation and first chamber, and sends it (three at a time). It moves stage by stage: committee (a hostile chair can bottle it), the floor (leaders hold a vote they would lose), the other chamber, conference, the desk. Votes are Resolute Desk's bloc model: a spatial vote, party loyalty, the relationship, approval, the cost, public support and the deals made on that bill.
+- **Deals** cost hours on the Hill (from the calendar's Hill meetings): a call, a project, an appointment, an endorsement (a promise to visit), pressure, or a favour called in. Members ask for things; a promise not kept by a visit is broken.
+- **The desk.** Sign, veto or let it become law; Congress can override. Every law moves the policy table and is recorded in the game's laws.
+- **The majority's own bills** move every seven weeks.
+- **The budget.** The request (due in June the first year, February after); twelve appropriations from May to September; at the end of September a stopgap, a stopgap on the other side's terms, or a shutdown, week by week until someone gives; the debt limit with an X-date about five months after it binds, and default as a financial shock.
+- **Divided government.** An opposition chamber opens investigations and sends subpoenas; refusing is contempt; reports carry scandal and, if bad enough, grounds for impeachment; the House votes, the Senate tries. Removal ends the game.
+- **Elections.** A hundred days out, the Senate class that is up gets candidates and polls (campaign stops from the calendar move them). On election day every Senate race is decided and the House is set state by state, with Resolute Desk's national total (222 Democrats at an even vote, 3.8 seats a point); the new Congress is seated with its leaders, blocs and members. 2032's Congress follows the presidential race.
+- **The staff** can run the Hill (whip with the deals each member wants, answer the desk the safe way, send the budget). The autopilot and watch mode use the same rule, which is also the recommended answer on every card.
+- **Pushes** from the old screens and the autopilot go to the Hill after the hundred days: a draft shaped by the strategy, then sent. Executive orders keep their one-step path until the West Wing (milestone 6).
+
+**On screen:** the Roosevelt Room, through its door or the telephone (which opens on the members):
+- **The Hill:** both chambers as bars of their blocs with the majority line, each bloc's relationship and leaning; the week's hours, appointments and mandate; handing the Hill to the staff; ending the filibuster; what is waiting; the record.
+- **Bills:** each bill with the whip count in both chambers (expected yes against what is needed, the chance, by bloc), the draft's controls, working the votes, Congress's own bills, and what can be drafted.
+- **Members:** the leaders (to meet), the chairs and the swing votes, with what each wants.
+- **The budget:** the request's four dials and their effect on the deficit, the twelve spending bills, stopgaps and shutdowns, the debt limit.
+- **Elections:** the Senate races with their polls, the House by state.
+- **Favours and probes.**
+- **The desk:** bills to sign, stopgaps, shutdowns, the debt limit, subpoenas and members' requests come as decision cards with the staff's answer marked.
 
 ## Quality bar
 
