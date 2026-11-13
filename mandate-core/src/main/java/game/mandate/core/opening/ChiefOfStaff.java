@@ -49,20 +49,24 @@ public final class ChiefOfStaff {
     private static void settle(HundredDays t, Set<Domain> delegated) {
         for (Decision d : t.pending()) {
             if (!handles(d.kind(), delegated)) continue;
-            int option = switch (d.kind()) {
-                case CRISIS -> t.escalation() >= 3 ? 0 : 1;
-                case FUNDING -> t.opposition() == OppositionStrategy.OBSTRUCT ? 3 : 0;
-                case SHUTDOWN -> 1;
-                case ECONOMY -> t.challenge() == Types.EconomicChallenge.INFLATION_SURGE ? 0 : 1; // the cautious course: back the Fed, or targeted aid
-                case BILL_FAILED -> 0;
-                case BOTTLED_IN_COMMITTEE -> 1;
-                case FACTION_REVOLT -> t.capital() >= 5 ? 0 : 1;
-                case NOMINEE_REJECTED -> 0;
-                case AFTERMATH -> 1;
-                case LEAK -> 0;
-            };
-            t.decide(d.id(), option);
+            t.decide(d.id(), recommend(t, d));
         }
+    }
+
+    /** The cautious, generic course the staff takes on a decision (also what watch mode takes). */
+    public static int recommend(HundredDays t, Decision d) {
+        return switch (d.kind()) {
+            case CRISIS -> t.escalation() >= 3 ? 0 : 1;
+            case FUNDING -> t.opposition() == OppositionStrategy.OBSTRUCT ? 3 : 0;
+            case SHUTDOWN -> 1;
+            case ECONOMY -> t.challenge() == Types.EconomicChallenge.INFLATION_SURGE ? 0 : 1; // the cautious course: back the Fed, or targeted aid
+            case BILL_FAILED -> 0;
+            case BOTTLED_IN_COMMITTEE -> 1;
+            case FACTION_REVOLT -> t.capital() >= 5 ? 0 : 1;
+            case NOMINEE_REJECTED -> 0;
+            case AFTERMATH -> 1;
+            case LEAK -> 0;
+        };
     }
 
     private static void legislate(HundredDays t) {

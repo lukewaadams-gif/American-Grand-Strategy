@@ -158,6 +158,19 @@ public final class PoliticsEngine {
         states(s);
     }
 
+    /** As {@link #beginApproval}, for a game saved before Resolute Desk's approval: it carries on from the coalitions' level. */
+    public void upgradeApproval(PoliticsState s, ApprovalStart a, OpinionInputs in) {
+        double was = 0;
+        for (int c = 0; c < 3; c++) was += p.weights()[c] * s.level[c];
+        double weeks = s.weeksGoverning;
+        beginApproval(s, a, in);
+        s.honeymoon *= Math.pow(HONEYMOON_FADE, weeks);
+        s.approval = was;
+        issues(s, in);
+        breakdown(s);
+        states(s);
+    }
+
     private void approvalWeek(PoliticsState s, OpinionInputs in, DeterministicRandomManager rng) {
         s.mood = s.mood * MOOD_FADE + rng.gaussian("approval.mood") * MOOD_STEP;
         double t = target(s, in);

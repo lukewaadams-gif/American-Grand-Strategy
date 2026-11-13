@@ -102,7 +102,11 @@ export interface ActivityInfo {
 }
 
 export interface DecisionOption { label: string; detail: string; tag: string | null; tone: Tone | null; command: object; }
-export interface Decision { kind: string; eyebrow: string; title: string; body: string; options: DecisionOption[]; }
+export interface Decision {
+  kind: string; eyebrow: string; title: string; body: string; options: DecisionOption[];
+  /** In office: the option the staff would take, and the kind of stop watch mode makes for it (-1 for none). */
+  recommended?: number; stop?: number;
+}
 
 // ---- the presidency ----------------------------------------------------------------------------------------------
 
@@ -116,9 +120,61 @@ export interface PresidencyView {
   unemployment?: number | null; inflation?: number | null; growth?: number | null; gas: number | null;
   termWeek: number; termWeeks: number;
   pendingDecisions: number; congress: string;
-  /** The length of the turn the End button plays: 'week', 'month', 'transition', or null when there is none. */
-  turnUnit: 'week' | 'month' | 'transition' | null;
+  /** The length of the turn the End button plays: 'week', 'war' (an operational turn), 'transition', or null when there is none. */
+  turnUnit: 'week' | 'war' | 'transition' | null;
   upcoming: { date: string; what: string }[];
   bills: PresidencyBill[];
   news: NewsItem[];
+  /** In office: the president's week and what it reads. */
+  week?: PresidentWeek;
+  activities?: ActivityChoice[];
+  issues?: IssueStanding[];
+  states?: StateStanding[];
+  watch?: WatchPlanView;
+  /** During the first hundred days: the business the chief of staff can run until Congress and the West Wing open. */
+  hundredDays?: { week: number; weeks: number; stage: string | null; domains: { id: string; label: string; detail: string; on: boolean }[] };
 }
+
+export interface WeekSlot {
+  slot: number; day: string; part: string; date: string; activity: string; label: string;
+  arg: string | null; argLabel: string | null; cost: number; flight?: number;
+}
+
+export interface PresidentWeek {
+  slots: WeekSlot[];
+  itinerary: { slot: number; day: string; state: string; name: string; hours: number }[];
+  counts: { policy: number; trips: number; recharge: number };
+  stamina: number; stress: number; sleep: number; health: number; fitness: number; sick: number;
+  projected: number; sleepAhead: number; age: number; location: string; locationName: string;
+  week: number; delegated: boolean; warChest: number; hill: number; hillHours: number;
+  lastWeek: string[]; lastStaminaChange: number; midtermSeason: boolean;
+}
+
+export interface ActivityChoice {
+  id: string; label: string; description: string; stamina: number; stress: number;
+  arg: 'NONE' | 'ISSUE' | 'STATE' | 'COUNTRY';
+  /** Why it cannot go in each of the 21 slots, or null where it can. */
+  refusals: (string | null)[];
+}
+
+export interface IssueStanding { id: string; label: string; approval: number; command: number; standing: number; salience: number; top: boolean; }
+export interface StateStanding { code: string; name: string; ev: number; approval: number; flight: number; standing: number; }
+
+export interface WatchPlanView {
+  preset: number;
+  presets: { label: string; description: string }[];
+  priorities: { label: string; low: string; high: string; description: string; value: number }[];
+  stops: { label: string; on: boolean; available: boolean }[];
+  roadWeeks: number;
+}
+
+/** The Capital Ledger's front page for the week. */
+export interface PaperView {
+  date: string; edition: string;
+  lead: { head: string; body: string; kind: string };
+  photo: string;
+  stories: PaperStory[]; brief: PaperStory[];
+  features: { head: string; body: string }[];
+  numbers: { label: string; value: string }[];
+}
+export interface PaperStory { section: string | null; head: string; body: string | null; kind: string; }

@@ -80,7 +80,7 @@ The first screen of the presidency, for approval from screenshots (Q39). It open
 - **The room:** it darkens by a multiply blend, cool at night and warm at the ends of the day. The lamp, the picture lights and the ceiling's cove light then shine through by a screen blend. The outdoor colours are divided by the room's tint first, so the windows keep their own light.
 
 **The screen** (`presidency/oval-screen.ts`) is Resolute Desk's `Oval` screen.
-- **The top bar:** the seal, the president's name, the date, approval and its change, unemployment, inflation, gas and the week of the term. Stamina and stress show empty until the weekly schedule (milestone 3) gives them values.
+- **The top bar:** the seal, the president's name, the date, approval and its change, unemployment, inflation, gas and the week of the term. Stamina and stress have shown as meters since milestone 3.
 - **The room's twelve hotspots:** the desk's three objects, the desk, the briefing book, today's paper, the windows, the globe and the four doors. Each is a real button laid over the picture, with Resolute Desk's gold label on hover and on focus.
 - **The cards:** "This week" (decisions waiting and what is coming: the Fed, day 100, the midterms, Election Day) and "On the Hill" (the agenda's bills and their stages, and the House and Senate).
 - **The Ledger** runs along the bottom. It has a pause button and stands still under reduced motion.
@@ -89,7 +89,7 @@ The first screen of the presidency, for approval from screenshots (Q39). It open
 - The documents open any waiting decisions.
 - The folders, the briefing book and the paper show the engine's real agenda, economy and news.
 - The other doors and objects say which milestone opens them.
-- The End button plays the engine's current turn: a week in the first hundred days, a month while governing, until milestone 3 makes every turn a week.
+- The End button plays the engine's current turn (a week, since milestone 3).
 
 The engine's `presidency` view adds the turn's length and the dates that are coming.
 
@@ -99,6 +99,117 @@ The engine's `presidency` view adds the turn's length and the dates that are com
 - three weeks and a month of turns;
 - axe audits and the 12 px minimum in three palettes, with reduced motion and 125% text, at 1600, 1280, 1000 and 390 pixels wide;
 - every hotspot at least 24 pixels from 1000 pixels up.
+
+## The president's week, weekly turns and approval (milestone 3)
+
+### The engine
+
+**The president's week** is a new `presidency` domain (`PresidentEngine`, `PresidentState`), ported from Resolute Desk's `sim/Week`, `Schedule`, `Rooms.choose` and `executive/Delegate`.
+- **The calendar:** 21 slots (seven days from Monday, morning, afternoon and evening) and the 16 activities, each with its stamina and stress.
+- **The calendar's rules:** Camp David only at weekends, the Hill only on weekdays, working late only in the evening, no cabinet meetings at weekends or in the evening, campaign stops only in the hundred days before the midterms.
+- **The ready-made weeks:** routine, road and rest, and clearing the week.
+- **Air Force One:** Resolute Desk's flight rule (0.3 hours under 60 miles, otherwise 0.6 hours plus 480 mph; Hawaii 10.5 and Alaska 8.5). The cost of a trip, and the sleep lost on long flights, follow from it.
+- **The president's condition:**
+  - sleep from the evening slots;
+  - stamina, stress, health and fitness, by Resolute Desk's weekly formulas;
+  - age, which makes stamina costs heavier past 60 (`candidate_ages.csv`);
+  - illness: a cold, or a night at Walter Reed.
+- **The chief of staff** can write each week: a routine, a rest week when stamina is low, a swing-state trip every fifth week, a cabinet meeting every six.
+- **The watch plan:** six priorities, six ready-made plans and seven kinds of stop, with Resolute Desk's watched week.
+
+What a slot does to opinion leaves as effects for the politics engine:
+- policy time builds command of an issue and standing on it;
+- remarks make the issue matter more and move standing on it;
+- trips and campaign stops raise standing in the state;
+- ceremonies, family time and remarks add to the record;
+- more than three fundraisers in a week cost some of it.
+
+**Weekly turns.** Every turn in office is now a week. The first hundred days were already weekly, and the president's week runs in them too.
+- The economy steps a week, with the Fed's meetings and the data releases that fall in it.
+- The world and the military move on the first week of each month.
+- Events keep their monthly odds, spread over the weeks.
+- At the end of a war, governing resumes in weeks.
+
+**Approval** is Resolute Desk's (`opinion/Approval.java`), in the politics engine.
+- **The target** is built from:
+  - the era's base (45);
+  - the economy against what people expect (growth, unemployment, inflation, real gas and sentiment);
+  - standing on the issues, weighted by salience;
+  - the president's appeal and the difficulty;
+  - the honeymoon (4 + 0.6 × the mandate, and the mandate is 2 + 0.55 × the popular-vote margin);
+  - the record, scandal and a rally;
+  - the wear of office after six months, and a slow random mood.
+- **The squeeze:** the target is held within 2029's partisan floor and ceiling (34 and 66; a rally passes through the ceiling).
+- **The weekly move:** approval moves 15% of the way to its target each week, plus noise.
+- **The breakdowns:**
+  - **The coalitions:** the prototype's three (base, swing and opposition) are its breakdown, solved by bisection so they add up to the national number. The rest of the game still reads them.
+  - **The states:** their approval comes from each state's 2028 margin, the president's standing there and one national offset, as Resolute Desk does for its cells.
+
+**The era's news.** Resolute Desk's ambient stories (`data/rd/ambient.tsv`) run once each: one or two a week, fewer on a busy week. A story can make an issue matter more, or rally the country. They go into a weighed news list (`News`) with the president's week's own news, and The Capital Ledger is made from both.
+
+**Saves.** A game saved in office before this milestone is upgraded when it loads:
+- it gets the routine week;
+- it moves to weekly turns from the next Monday;
+- it switches to Resolute Desk's approval, carrying on from where approval stood.
+
+**Deviations from the original:**
+- **Distances** are great-circle miles between state centroids, computed from the map data (`state_centroids.csv`); Resolute Desk measures its own map ×2.9.
+- **Ratings.** Resolute Desk's attributes come from this game's five ratings:
+  - speeches = (charisma + policy) / 2;
+  - charm = charisma;
+  - big donors = fundraising;
+  - command at the start = 30 + policy × 0.2.
+  - Establishment, crossover appeal and scandal baggage take Resolute Desk's neutral values (60, 60, 40).
+- **Staff quality** counts as a steady 0.6 for every post until the West Wing's staff arrive (milestone 5).
+- **Trips abroad** are listed but closed until the world arrives (milestone 7).
+- **Banked for later milestones.** These are recorded now, and their systems arrive later:
+  - **For Congress (milestone 4):** hours on the Hill, the Hill relationship, and campaign stops before the midterms.
+  - **For the West Wing (milestone 5):** cabinet meetings.
+  - **The party's war chest** is kept as well.
+- **The issues** are this game's eleven. Resolute Desk's issue codes map onto them (ECON and JOBS go to the economy, PRICES to the cost of living, and so on).
+  - The policy table's results on each issue wait for milestone 6.
+  - Sentiment leaves out the stock market, which this game does not model.
+  - The price level for real gas prices is kept by the politics engine.
+- **This game's own events and laws** keep the size and lifetime they were tuned for. They enter the target as a separate term that fades 15% a week. Resolute Desk's record fades only 4% a week, and carrying our effects there made several laws in a row stack the target 9 to 15 points high. Lasting coalition effects stay lasting.
+- **Data releases** no longer move approval on their own; the economy term reads the economy every week.
+- **Attention** for the old governing commands (push a bill, an address) still refreshes monthly, until Congress and the West Wing replace those commands.
+- **Removed:** the coalition model's own target, adjustment, noise and economic weights.
+
+**Calibration.**
+- **Approval:** twelve full terms played by the autopilot run from about 52 at the oath to a range of 41 to 61, and end the term in the high 40s and low 50s. Resolute Desk's own five runs gave 41 to 57.
+- **Re-election:** the president won 3 of the 8 terms that reached 2032.
+- **The hundred days' strategies** explain less of day-100 approval than under the old model, because Resolute Desk's approval moves gradually and carries its mood. `OpeningStrategyTest` now asks for 10% rather than 20%, and for two measures dominated by strategy rather than three.
+- **Golden fingerprints** were regenerated on purpose.
+- **Parity:** the parity check now plays six full terms, and the browser and the JVM agree to six decimals.
+
+### The screens
+
+- **The calendar.** The desk opens Resolute Desk's calendar: the week as a 7 × 3 grid of cards, each with its activity, what it is about, and its stamina cost including the flight.
+  - **Each card's menu** lists every activity, with the reason it cannot go in that slot where it cannot.
+  - **For an issue**, a second menu puts the issues that need attention first.
+  - **For a state**, a second menu puts the swing states first, or the player picks on the trip map.
+  - **Around the grid:** the ready-made weeks and the chief of staff's toggle.
+  - **The week ahead panel:**
+    - stamina now and after the week, sleep, stress and health;
+    - a note on the cost of age, and a warning when the week would exhaust the president;
+    - Air Force One's itinerary (long flights marked), and a map of approval by state with the week's trips;
+    - last week's summary.
+- **The Capital Ledger** opens after every week, and from the papers on the coffee table.
+  - **The front page:**
+    - the masthead and the edition ("Week 6 of the Marsh administration");
+    - the week's heaviest Washington story, with the president's photograph and Resolute Desk's lead paragraph;
+    - six more stories in three columns, with the paper's features filling the gaps: the week ahead, poll watch, markets (bonds and oil) and an opinion column;
+    - In Brief.
+  - **Beside the page:** By the Numbers.
+  - **The log in the third person.** The game's log speaks to the player, so the paper rewrites it: "You sign the …" becomes "Marsh signs the …".
+  - **Not yet:** the storylines' Developing Stories panel waits for milestone 5.
+- **The top bar** shows stamina and stress as meters.
+- **The week card** shows Resolute Desk's counts (policy slots, trips, recharge), stamina after the week, sleep, and what is waiting or coming.
+- **Watch mode:**
+  - **The plan:** a ready-made plan or six priorities, the kinds of decision to stop for, and three speeds.
+  - **Each watched week,** the staff answers what the plan does not stop for (with the option it recommends), plans the week by the plan and plays it.
+  - **It stops** when a decision needs the player, when the president is exhausted, or on Escape.
+- **The first hundred days** can be handed to the staff from the agenda's folders, until Congress and the West Wing open in their rooms: the flagship bill, the cabinet, crises and the budget. Their decisions now appear with the events' decisions, each with the staff's recommended option.
 
 ## Quality bar
 

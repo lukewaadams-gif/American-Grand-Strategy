@@ -65,6 +65,7 @@ public final class EngineApi {
                 case "campaign" -> campaign(need());
                 case "decisions" -> ok("decisions", decisions(need()));
                 case "presidency" -> presidency(need());
+                case "paper" -> PresidencyViews.paper(need());
                 default -> throw new IllegalArgumentException("No view called " + req.get("name"));
             };
             default -> throw new IllegalArgumentException("No op called " + op);
@@ -183,13 +184,11 @@ public final class EngineApi {
         long week = g.date().isBefore(inaug) ? 0 : ChronoUnit.WEEKS.between(inaug, g.date()) + 1;
         v.put("termWeek", week);
         v.put("termWeeks", ChronoUnit.WEEKS.between(inaug, inaug.plusYears(4)));
-        v.put("pendingDecisions", g.pendingEvents().size());
+        v.put("pendingDecisions", g.pendingEvents().size() + (g.phase() == Phase.FIRST_100_DAYS ? g.hundredDays().map(h -> h.pending().size()).orElse(0) : 0));
         v.put("congress", g.congress().toString());
-        // how long the End button's turn is: a week in the first hundred days, a month while governing (until the
-        // presidency port makes every turn a week), none in the other phases
-        v.put("turnUnit", g.operationsActive() ? "week" : switch (g.phase()) {
-            case FIRST_100_DAYS -> "week";
-            case GOVERNING -> "month";
+        // how long the End button's turn is: a week in office (an operational turn in a war), none in the other phases
+        v.put("turnUnit", g.operationsActive() ? "war" : switch (g.phase()) {
+            case FIRST_100_DAYS, GOVERNING -> "week";
             case TRANSITION -> "transition";
             default -> null;
         });
@@ -229,6 +228,14 @@ public final class EngineApi {
             if (heads.size() >= 12) break;
         }
         v.put("news", heads);
+        if (PresidencyViews.inOffice(g)) {
+            v.put("week", PresidencyViews.week(g));
+            v.put("activities", PresidencyViews.activities(g));
+            v.put("issues", PresidencyViews.issues(g));
+            v.put("states", PresidencyViews.states(g));
+            v.put("watch", PresidencyViews.watch(g));
+        }
+        if (g.phase() == Phase.FIRST_100_DAYS && g.hundredDays().isPresent()) v.put("hundredDays", PresidencyViews.hundredDays(g));
         return v;
     }
 
@@ -521,8 +528,31 @@ public final class EngineApi {
                 options.add(option(o.label(), detail, o.successChance() < 1 ? game.mandate.core.data.Fmt.format("Gamble: %.0f%%", 100 * o.successChance()) : null,
                         o.successChance() < 1 ? "WARN" : null, new Command.ResolveEvent(p.instanceId(), i)));
             }
-            out.add(decision("event", "Event", p.definition().title(), p.definition().body(), options));
+            Map<String, Object> d = decision("event", "Event", p.definition().title(), p.definition().body(), options);
+            d.put("recommended", game.mandate.core.ai.AutoPilot.chooseOption(p));
+            d.put("stop", game.mandate.core.presidency.WatchPlan.STOP_WORLD);
+            out.add(d);
         }
+        // the first hundred days' own questions (a crisis, a deadline, a failed vote), which must be answered before the week ends
+        if (g.phase() == Phase.FIRST_100_DAYS) g.hundredDays().ifPresent(h -> {
+            for (var hd : h.pending()) {
+                List<Object> options = new ArrayList<>();
+                for (int i = 0; i < hd.options().size(); i++) {
+                    var o = hd.options().get(i);
+                    options.add(option(o.label(), o.preview(), null, null, new Command.Act(new game.mandate.core.opening.OpeningAction.Decide(hd.id(), i))));
+                }
+                Map<String, Object> d = decision("hundredDays", "The first hundred days", hd.title(), hd.situation(), options);
+                d.put("recommended", game.mandate.core.opening.ChiefOfStaff.recommend(h, hd));
+                d.put("stop", switch (hd.kind()) {
+                    case CRISIS, AFTERMATH -> game.mandate.core.presidency.WatchPlan.STOP_WORLD;
+                    case FUNDING, SHUTDOWN, ECONOMY -> game.mandate.core.presidency.WatchPlan.STOP_BUDGET;
+                    case BILL_FAILED, BOTTLED_IN_COMMITTEE -> game.mandate.core.presidency.WatchPlan.STOP_SIGN;
+                    case LEAK, FACTION_REVOLT -> game.mandate.core.presidency.WatchPlan.STOP_SCANDAL;
+                    case NOMINEE_REJECTED -> -1;
+                });
+                out.add(d);
+            }
+        });
         boolean campaign = g.phase() == Phase.GENERAL_CAMPAIGN_2028 || g.phase() == Phase.REELECTION_CAMPAIGN_2032;
         if (campaign && g.debateThisWeek().isPresent() && g.election().pendingPosture() == null) {
             var theirs = game.mandate.core.campaign.DebatePosture.tendencyOf(g.opponent().candidate());

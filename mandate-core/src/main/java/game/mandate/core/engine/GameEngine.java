@@ -210,7 +210,24 @@ public final class GameEngine implements WorldView {
         g.rng.restore(random);
         g.history.addAll(commands);
         g.pollMemo = null;
+        g.upgradeOldSnapshot();
         return g;
+    }
+
+    /**
+     * A game saved in office before the presidency port had no president's week, monthly turns and the coalition model's
+     * approval: it gets the week (Resolute Desk's routine), weekly turns from the next Monday, and Resolute Desk's
+     * approval carrying on from where approval stood.
+     */
+    private void upgradeOldSnapshot() {
+        if (w.president != null || (w.phase != Phase.FIRST_100_DAYS && w.phase != Phase.GOVERNING) || !w.politics.governing()) return;
+        politicsEngine.upgradeApproval(w.politics, approvalStart(), opinionInputs());
+        w.president = presidentEngine.newPresident(player().candidate().id());
+        presidentEngine.firstWeek(w.president, weekContext());
+        if (w.phase == Phase.GOVERNING && w.clock.mode() == Granularity.MONTHLY) {
+            w.clock.set(date().with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)));
+            w.clock.setMode(Granularity.WEEKLY);
+        }
     }
 
     DeterministicRandomManager random() { return rng; }

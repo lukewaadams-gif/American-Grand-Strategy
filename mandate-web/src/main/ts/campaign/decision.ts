@@ -32,7 +32,8 @@ export function decisionCard(d: Decision, n: number, total: number, host: Dialog
 
 function whatHappened(choice: string, news: NewsItem[], host: DialogHost, after: () => void): void {
   const lines = news.map(n => n.text).filter(t => !t.startsWith('Decision: '));
-  const go = h('button', { class: 'btn primary', type: 'button', onclick: () => { host.close(); after(); } }, 'Continue');
+  // closing the dialog runs `after` (it is the dialog's onClose), so Continue only closes it
+  const go = h('button', { class: 'btn primary', type: 'button', onclick: () => host.close() }, 'Continue');
   host.open(h('div', { class: 'dialog-card' },
     h('div', { class: 'eyebrow' }, 'What happened'),
     h('h2', { class: 'dialog-title' }, 'You chose: ' + choice),

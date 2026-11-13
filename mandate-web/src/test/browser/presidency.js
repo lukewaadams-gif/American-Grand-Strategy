@@ -1,6 +1,8 @@
-// Checks for the presidency preview (target/preview/presidency.html): the Oval Office. Uses every object and door in the
-// room by mouse and by keyboard, opens their dialogs, switches the light from the menu, plays turns (a week in the first
-// hundred days, a month while governing) and answers any decisions they raise. Audits each view with axe-core
+// Checks for the presidency preview (target/preview/presidency.html): the Oval Office and Resolute Desk's week. Uses
+// every object and door in the room by mouse and by keyboard and opens their dialogs; plans the week on the calendar
+// (menus, issues, states from the list and from the map, the ready-made weeks, the chief of staff); plays weeks with
+// The Capital Ledger after each; runs watch mode and takes the controls back; hands the hundred days to the staff;
+// switches the light from the menu; and answers the decisions that come up. Audits each view with axe-core
 // (WCAG 2.1 AA) and a minimum text size, in three palettes, with reduced motion and 125% text, and at 1280, 1000 and
 // 390 pixels wide. Fails on any console error. Usage: node presidency.js [out-dir] [base-url]
 const { chromium } = require('playwright');
@@ -75,7 +77,7 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
     if (!label.startsWith(tip)) fail(`hover label "${tip}" for "${label}"`);
     await b.click();
     await page.waitForSelector('.scrim .dialog');
-    const title = await page.locator('.dialog .dialog-title').first().textContent();
+    const title = await page.locator('.dialog .dialog-title, .dialog .lg-title').first().textContent();
     console.log('  ', label.padEnd(40), '->', title);
     if (i < 6) await axe(page, '  dialog: ' + title.slice(0, 22));
     await closeDialog(page);
@@ -112,7 +114,64 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
   const paused = await page.evaluate(() => getComputedStyle(document.querySelector('.ov-ledger-belt')).animationPlayState);
   if (paused !== 'paused') fail('The Ledger did not pause');
 
-  // 5. turns: three weeks of the first hundred days (answering decisions), with Ctrl+Enter for one
+  // 5. the calendar: a menu by keyboard, an issue, a state from the list and from the map, a ready-made week, the staff
+  await page.click('.ov-spot-desk');
+  await page.waitForSelector('.cal');
+  await axe(page, 'the calendar');
+  await smallest(page, 'the calendar');
+  if ((await page.locator('.cal-slot').count()) !== 21) fail('the calendar has 21 slots');
+  const slot = (i) => page.locator('.cal-slot').nth(Math.floor(i / 3) + (i % 3) * 7);        // the grid runs by part, then day
+  await slot(8).focus(); await page.keyboard.press('Enter');                                   // Wednesday evening
+  await page.waitForSelector('.menu');
+  await page.locator('.menu-item', { hasText: 'Rest' }).first().click();
+  await page.waitForTimeout(150);
+  if (!(await slot(8).getAttribute('aria-label')).includes('Rest')) fail('Wednesday evening is now rest: ' + await slot(8).getAttribute('aria-label'));
+  await slot(0).click();                                                                       // Monday morning: remarks on an issue
+  await page.locator('.menu-item', { hasText: 'White House remarks' }).click();
+  await page.waitForSelector('.menu-title:has-text("which issue")');
+  await page.locator('.menu-item').nth(1).click();
+  await page.waitForTimeout(150);
+  console.log('Monday morning:', await slot(0).getAttribute('aria-label'));
+  await slot(1).click();                                                                       // Monday afternoon: a trip, from the list
+  await page.locator('.menu-item', { hasText: /^Trip/ }).first().click();
+  await page.waitForSelector('.menu-title:has-text("where to")');
+  await page.locator('.menu-item').nth(1).click();
+  await page.waitForTimeout(150);
+  console.log('Monday afternoon:', await slot(1).getAttribute('aria-label'));
+  if (!(await slot(1).getAttribute('aria-label')).includes('Trip to')) fail('the trip went in');
+  await slot(13).click();                                                                      // Friday afternoon: a trip, on the map
+  await page.locator('.menu-item', { hasText: /^Trip/ }).first().click();
+  await page.locator('.menu-item', { hasText: 'Choose on the map' }).click();
+  await page.waitForSelector('.cal-map.picking');
+  await axe(page, 'the calendar, picking a state');
+  await page.locator('.cal-map.picking path[data-state="CA"]').click();
+  await page.waitForTimeout(150);
+  if (!(await slot(13).getAttribute('aria-label')).includes('California')) fail('the map pick sends Friday\'s trip to California: ' + await slot(13).getAttribute('aria-label'));
+  const trips = await page.locator('.cal-trips li').count();
+  console.log('Air Force One legs:', trips, '| after the week:', await page.locator('.cal-meter-value').nth(1).textContent());
+  if (trips < 2) fail('the itinerary lists the trips');
+  await page.screenshot({ path: `${OUT}/calendar.png` });
+  await page.click('.cal-presets button:has-text("Road week")');
+  await page.waitForTimeout(150);
+  if ((await page.locator('.cal-trips li').count()) !== 4) fail('a road week has four trips');
+  await page.click('.cal-presets button.toggle');
+  await page.waitForTimeout(150);
+  if ((await page.locator('.cal-presets button.toggle').getAttribute('aria-pressed')) !== 'true') fail('the chief of staff takes the calendar');
+  await page.click('.cal-presets button.toggle');
+  await page.click('.cal-top .btn.primary');
+  await page.waitForTimeout(150);
+  if (await page.locator('.scrim').count()) fail('the calendar closes');
+
+  // 6. the hundred days: the staff can run the flagship bill until the Roosevelt Room opens
+  await page.click('.ov-spot-folders');
+  await page.waitForSelector('.ov-delegate');
+  await page.locator('.ov-delegate button').first().click();
+  await page.waitForTimeout(150);
+  if ((await page.locator('.ov-delegate button').first().getAttribute('aria-pressed')) !== 'true') fail('the staff takes the flagship bill');
+  await axe(page, 'the agenda');
+  await closeDialog(page);
+
+  // 7. turns: three weeks of the first hundred days (answering decisions), with Ctrl+Enter for one; the paper after each
   const playTurn = async (key) => {
     const before = await page.locator('.ov-date').textContent();
     if (key) await page.keyboard.press('Control+Enter'); else await page.click('.ov-end');
@@ -126,8 +185,37 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
     console.log('turn:', before, '->', after);
     if (before === after) fail('the turn did not move the date');
   };
-  await playTurn(false); await playTurn(true); await playTurn(false);
+  await page.keyboard.press('Control+Enter');
+  await page.waitForSelector('.lg');
+  await axe(page, 'The Capital Ledger');
+  await smallest(page, 'The Capital Ledger');
+  console.log('the lead:', await page.locator('.lg-lead-head').textContent());
+  await page.screenshot({ path: `${OUT}/ledger.png` });
+  await page.keyboard.press('Escape');
+  for (let i = 0; i < 8; i++) { await page.waitForTimeout(200); if (!(await page.locator('.scrim').count())) break; await page.locator('.dialog button.choice, .dialog .btn.primary').first().click(); }
+  await playTurn(false); await playTurn(false);
   await axe(page, 'after three weeks');
+  const stamina = await page.locator('.ov-meter [role=meter]').first().getAttribute('aria-valuenow');
+  console.log('stamina after three weeks:', stamina);
+
+  // 8. watch mode: fast, for a few weeks, then the controls back
+  await page.click('.ov-actions button:has-text("Watch")');
+  await page.waitForSelector('.watch');
+  await axe(page, 'watch mode');
+  await smallest(page, 'watch mode');
+  await page.locator('.watch-presets button', { hasText: 'On the road' }).click();
+  await page.waitForTimeout(150);
+  await page.locator('.watch-speed button', { hasText: 'Fast' }).click();
+  const watchedFrom = await page.locator('.ov-date').textContent();
+  await page.locator('.watch .btn.primary').click();
+  await page.waitForTimeout(2600);
+  for (let i = 0; i < 6 && await page.locator('.scrim').count(); i++) { await page.locator('.dialog button.choice, .dialog .btn.primary').first().click(); await page.waitForTimeout(200); }
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+  const watchedTo = await page.locator('.ov-date').textContent();
+  console.log('watched:', watchedFrom, '->', watchedTo);
+  if (watchedFrom === watchedTo) fail('watch mode plays weeks');
+  if (await page.locator('.ov-end:has-text("Watching")').count()) fail('Escape takes the controls back');
   await page.screenshot({ path: `${OUT}/oval-week4.png` });
   await page.close();
 

@@ -55,7 +55,8 @@ public final class AutoPilot {
         // Events raised during resolution are answered at the start of the next call.
     }
 
-    static int chooseOption(PendingEvent p) {
+    /** The option the autopilot (and watch mode) takes: the best expected value. */
+    public static int chooseOption(PendingEvent p) {
         List<EventOption> os = p.definition().options();
         int best = 0;
         double bestValue = Double.NEGATIVE_INFINITY;
