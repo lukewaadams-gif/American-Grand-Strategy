@@ -79,7 +79,7 @@ class BillsOnTheTableTest {
             if (route == null) continue;
             GameEngine with = SaveManager.load(SaveManager.save(base)), without = SaveManager.load(SaveManager.save(base));
             with.apply(new Command.PushBill("housing", route, 20));
-            if (!with.laws().contains("housing")) continue;
+            if (!EngineFixtures.untilLaw(with, without, "housing")) continue;
             for (int wk = 0; wk < 104; wk++) {
                 EngineFixtures.answerAll(with, 0); with.apply(new Command.EndTurn());
                 EngineFixtures.answerAll(without, 0); without.apply(new Command.EndTurn());

@@ -60,4 +60,6 @@ public sealed interface Command {
 
     /** In office: one change to the president's week or to the watch plan. */
     record Presidency(game.mandate.core.presidency.PresidencyOrder order) implements Command {}
+    /** Something the president does in the Roosevelt Room: drafting, deals, the desk, the budget, deadlines. */
+    record Hill(game.mandate.core.hill.HillOrder order) implements Command {}
 }

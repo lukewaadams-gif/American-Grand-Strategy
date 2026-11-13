@@ -114,21 +114,28 @@ class EngineUnitTest {
     /** Every transition is recorded with the engine that applied it; decisions link to their consequences. */
     @Test
     void theLedgerRecordsEveryTransitionAndItsOwner() {
-        GameEngine g = playUntil(governing(5), x -> x.laws().size() >= 2 || x.over());
+        GameEngine g = playUntil(governing(5), x -> x.over() || x.state().hill() != null
+                && x.state().ledger().decisions().stream().anyMatch(d -> d.description().startsWith("Send"))
+                && x.state().hill().record().stream().anyMatch(r -> r.contains("signed the") || r.contains("became law")));
         ConsequenceLedger l = g.state().ledger();
         assertTrue(l.consequences().size() > 10);
         Set<String> owners = new TreeSet<>();
         l.consequences().forEach(c -> owners.add(c.owner()));
         assertTrue(owners.containsAll(Set.of("congress", "executive+politics", "politics")), "owners " + owners);
-        var push = l.decisions().stream().filter(d -> d.description().startsWith("Push")).findFirst().orElseThrow();
-        assertTrue(l.consequencesOf(push.id()).size() >= 2, "a push decision has consequences");
+        // after the hundred days a bill goes to the Hill: the decision is recorded, and the law, weeks later, has its own consequences
+        var send = l.decisions().stream().filter(d -> d.description().startsWith("Send")).findFirst().orElseThrow();
+        assertTrue(l.consequencesOf(send.id()).stream().anyMatch(c -> c.owner().equals("hill")), "a send decision is recorded");
+        var law = l.byCause("Law ").stream().map(ConsequenceLedger.Consequence::owner).distinct().toList();
+        assertTrue(law.contains("policy") && law.contains("economy"), "a law's consequences: " + law);
     }
 
     @Test
     void refusedCommandsChangeNothing() {
         GameEngine g = governing(9);
         String before = Json.write(g.state().toJson());
-        assertThrows(IllegalCommandException.class, () -> g.apply(new Command.PushBill("lower_costs", game.mandate.core.congress.LegislativeStrategy.PARTY_LINE, 1e9)));
+        assertThrows(IllegalCommandException.class, () -> g.apply(new Command.PushBill("lower_costs", game.mandate.core.congress.LegislativeStrategy.EXECUTIVE_ORDER, 1e9)));
+        assertThrows(IllegalCommandException.class, () -> g.apply(new Command.Hill(new game.mandate.core.hill.HillOrder.Send("no-such-bill"))));
+        assertThrows(IllegalCommandException.class, () -> g.apply(new Command.Hill(new game.mandate.core.hill.HillOrder.Draft("no-such-bill"))));
         assertThrows(IllegalCommandException.class, () -> g.apply(new Command.ResolveEvent(999, 0)));
         assertEquals(before, Json.write(g.state().toJson()));
     }

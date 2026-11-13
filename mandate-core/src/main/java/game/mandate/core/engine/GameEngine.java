@@ -56,6 +56,9 @@ import game.mandate.core.executive.ExecutiveEngine;
 import game.mandate.core.executive.GovernmentState;
 import game.mandate.core.executive.Post;
 import game.mandate.core.game.GameSetup;
+import game.mandate.core.hill.HillEngine;
+import game.mandate.core.hill.HillOrder;
+import game.mandate.core.hill.HillState;
 import game.mandate.core.game.Legacy;
 import game.mandate.core.military.MilitaryCatalog;
 import game.mandate.core.military.MilitaryEngine;
@@ -129,6 +132,7 @@ public final class GameEngine implements WorldView {
     private final ElectionEngine electionEngine;
     private final DecisionResolver decisions = new DecisionResolver();
     private final PresidentEngine presidentEngine;
+    private final HillEngine hillEngine;
     private final AmbientNews ambient;
 
     private final double premiumPerMiddleEast, middleEastPivot, premiumPerRung, stressPerRung, stressWar;
@@ -161,6 +165,7 @@ public final class GameEngine implements WorldView {
         this.militaryEngine = new MilitaryEngine(MilitaryParams.from(tuning), MilitaryCatalog.load());
         this.electionEngine = new ElectionEngine(states, candidates, CampaignParams.from(tuning));
         this.presidentEngine = new PresidentEngine(states);
+        this.hillEngine = new HillEngine(bills, PolicyCatalog.shared());
         this.ambient = new AmbientNews();
         premiumPerMiddleEast = tuning.d("markets.premium.middleEast");
         middleEastPivot = tuning.d("markets.premium.middleEastPivot");
@@ -237,6 +242,7 @@ public final class GameEngine implements WorldView {
     private void upgradeOldSnapshot() {
         economyEngine.upgrade(w.economy, w.budget);
         if (w.policyTable == null) w.policyTable = policyTableEngine.newTable();
+        if (w.hill == null && w.president != null && (w.phase == Phase.FIRST_100_DAYS || w.phase == Phase.GOVERNING)) w.hill = seatHill();
         if (w.president != null || (w.phase != Phase.FIRST_100_DAYS && w.phase != Phase.GOVERNING) || !w.politics.governing()) return;
         politicsEngine.upgradeApproval(w.politics, approvalStart(), opinionInputs());
         w.president = presidentEngine.newPresident(player().candidate().id());
@@ -278,6 +284,7 @@ public final class GameEngine implements WorldView {
             case Command.Act c -> act(c.action());
             case Command.EndTurn c -> endTurn();
             case Command.Presidency c -> presidencyOrder(c.order());
+            case Command.Hill c -> hillOrder(c.order());
         }
         history.add(command);
         w.commandsApplied++;
@@ -307,6 +314,7 @@ public final class GameEngine implements WorldView {
             case Effect.FedPressure x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
             case Effect.OilRelease x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
             case Effect.PolicyStep x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
+            case Effect.FinancialShock x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
             case Effect.LawPassed x -> {
                 if (governing) {
                     if (!policies().bill(x.billId()).isEmpty()) {
@@ -556,8 +564,9 @@ public final class GameEngine implements WorldView {
         int year = first ? 2028 : 2032;
         ElectionEngine.PresidentialOutcome o = electionEngine.presidential(w.election, year, environment(), w.congress.congress(), first, rng);
         ElectionResult r = o.result();
-        int decision = w.ledger.decide(date(), "Election " + year);
-        dispatch(decision, "Election " + year, o.congress());
+        if (!first && w.hill != null)       // Congress race by race, with the presidential race's national swing
+            hillOutcome("Election " + year, hillEngine.holdElection(w.hill, hillContext(calendar.election2032()), r.marginFor(player().party()), hillLeaders(), rng), null);
+        else dispatch(w.ledger.decide(date(), "Election " + year), "Election " + year, o.congress());
         Party winner = r.winner();
         log(Fmt.format("Election Night %d: %s %d, %s %d. Popular vote %s%+.1f. Tipping point: %s.", year,
                 Party.DEMOCRAT.code(), r.demElectoralVotes(), Party.REPUBLICAN.code(), r.repElectoralVotes(),
@@ -641,6 +650,7 @@ public final class GameEngine implements WorldView {
         w.hundredDays = HundredDays.begin(host);
         w.president = presidentEngine.newPresident(player().candidate().id());
         presidentEngine.firstWeek(w.president, weekContext());
+        w.hill = seatHill();
         log("The first hundred days begin. Your flagship: the " + host.flagship().name() + ".");
     }
 
@@ -694,6 +704,7 @@ public final class GameEngine implements WorldView {
         for (String line : executiveEngine.formCabinet(w.government, w.congress.congress(), congressEngine.votes(), w.politics.opposition(),
                 w.politics.party(player().party()).wingMood(1), rng)) log(line);
         w.phase = Phase.GOVERNING;
+        if (w.hill != null) for (String law : w.policy.laws()) hillEngine.noteLaw(w.hill, law);   // the hundred days' laws
         w.clock.setMode(Granularity.WEEKLY);       // Resolute Desk's weeks go on through the term
         executiveEngine.newTurn(w.government);
         // The world did not stand still: the flashpoints drift for the months the hundred days covered. (During the
@@ -779,6 +790,8 @@ public final class GameEngine implements WorldView {
     private void governingWeek() {
         LocalDate from = date(), to = from.plusWeeks(1);
         presidentWeek();
+        hillWeek();
+        if (w.phase != Phase.GOVERNING) return;       // removed from office
 
         economyEngine.step(w.economy, w.budget, 1.0 / EconomyEngine.WEEKS_PER_MONTH, marketContext(), rng);
         EconomyEngine.Shock shock = economyEngine.lastShock(w.economy);
@@ -883,6 +896,103 @@ public final class GameEngine implements WorldView {
         }
     }
 
+    // ---- Congress (Resolute Desk's Hill) -----------------------------------------------------------------------------
+
+    /**
+     * The 121st Congress on inauguration day: the Senate seat by seat (class I and III from the state data, class II for
+     * the rest), the House by state from the election's map, and the leaders of January 2029.
+     */
+    private HillState seatHill() {
+        Map<String, Party> classOne = new TreeMap<>(), classThree = new TreeMap<>();
+        Map<String, Integer> house = new TreeMap<>();
+        for (UsState u : states.all()) {
+            if (u.code().equals("DC")) continue;
+            u.senateUp2030().ifPresent(p -> classOne.put(u.code(), p));
+            u.senateUp2028().ifPresent(p -> classThree.put(u.code(), p));
+            house.put(u.code(), u.electoralVotes() - 2);
+        }
+        ElectionResult r = w.election.result2028();
+        HillState h = hillEngine.newHill(hillContext(), classOne, classThree, house, hillEngine.firstLeaders(), r == null ? 0 : r.marginFor(player().party()), rng);
+        for (String law : w.policy.laws()) hillEngine.noteLaw(h, law);
+        return h;
+    }
+
+    /** The next election Congress faces: the midterms, then 2032. */
+    private LocalDate nextCongressElection() {
+        return w.midtermsHeld ? calendar.election2032() : calendar.midterms();
+    }
+
+    /** What the Hill reads from the rest of the game this week. */
+    public HillEngine.Context hillContext() { return hillContext(nextCongressElection()); }
+
+    private HillEngine.Context hillContext(LocalDate electionDay) {
+        Candidate p = player().candidate();
+        ElectionResult r = w.election.result2028();
+        double national = r == null ? 0 : r.popularMargin();
+        Map<String, Double> lean = new TreeMap<>();
+        for (UsState u : states.all())
+            if (!u.code().equals("DC")) lean.put(u.code(), (r == null ? u.baselineMargin() : r.stateMargins().getOrDefault(u.code(), u.baselineMargin())) - national);
+        PresidentState ps = w.president;
+        EconomyState e = w.economy;
+        double years = ChronoUnit.DAYS.between(calendar.inauguration(), date()) / 365.25;
+        double nominalTn = economyEngine.params().nominalGdp() / 1000 * Math.pow(1.045, Math.max(0, years));
+        return new HillEngine.Context(date(), ps == null ? 0 : ps.week(), player().party(), approval(), rdScale(p.charisma()), 60, 0.6,
+                ps == null ? 0 : ps.hillHours(), ps == null ? List.of() : ps.lastVisited(), ps == null ? Map.of() : ps.midtermEffort(), ps == null ? 0 : ps.warChest(),
+                politicsEngine.params().rdPolarization(), congress().house(Party.DEMOCRAT), congress().senate(Party.DEMOCRAT), e.growth(), e.unemployment(),
+                politicsEngine.params().rdURef(), economyEngine.deficit(e, w.budget), w.budget.debt(), nominalTn, lean, electionDay, w.politics.scandal(),
+                w.politics.honeymoon());
+    }
+
+    /** The leaders a new Congress elects: the sitting ones keep their posts unless their party changes sides (the Hill picks new ones). */
+    private Map<String, String> hillLeaders() { return hillEngine.firstLeaders(); }
+
+    /** The Hill's week: the staff first if the Hill is delegated, then Congress moves. */
+    private void hillWeek() {
+        if (w.hill == null) return;
+        if (w.hill.delegated()) hillOutcome("The staff on the Hill", hillEngine.staff(w.hill, hillContext(), rng), null);
+        hillOutcome("Congress", hillEngine.week(w.hill, hillContext(), rng), null);
+    }
+
+    /**
+     * Routes what the Hill did: laws are recorded in the policy ledger and the table moves; removal from office ends the
+     * game. {@code what} records a decision of the president's own (an order), even one with no transitions.
+     */
+    private void hillOutcome(String cause, HillEngine.Outcome o, String what) {
+        int decision = -1;
+        if (what != null) {
+            decision = w.ledger.decide(date(), cause);
+            w.ledger.record(decision, date(), cause, "hill", what);
+        }
+        for (Effect e : o.effects()) {
+            if (decision < 0) decision = w.ledger.decide(date(), cause);
+            if (e instanceof Effect.LawPassed l) {
+                String lawCause = "Law " + l.billId();
+                if (bills.has(l.billId()) && !w.policy.inForce(l.billId()))
+                    dispatch(decision, lawCause, congressEngine.recordLaw(w.congress, w.policy, bill(l.billId()), date(), LegislativeStrategy.PARTY_LINE, l.moneyScale()));
+                dispatch(decision, lawCause, e);
+            } else dispatch(decision, cause, e);
+        }
+        for (News n : o.news()) news(n);
+        if ("removed".equals(w.hill.impeachment()) && w.phase == Phase.GOVERNING) {
+            log("The Senate convicts. The president is removed from office.");
+            finish();
+        }
+    }
+
+    private void hillOrder(HillOrder o) {
+        if (w.hill == null || w.phase != Phase.GOVERNING) throw new IllegalCommandException("Congress is yours to work once the hundred days are over");
+        HillEngine.Outcome out;
+        try {
+            out = hillEngine.apply(w.hill, hillContext(), o, rng);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalCommandException(e.getMessage());
+        }
+        hillOutcome("Congress: " + HillOrder.describe(o), out, HillOrder.describe(o));
+    }
+
+    public HillEngine hillEngine() { return hillEngine; }
+    public Optional<HillState> hill() { return Optional.ofNullable(w.hill); }
+
     /** What the president's week reads: the president's gifts on Resolute Desk's scale, approval, the issues and the states. */
     public WeekContext weekContext() {
         Candidate p = player().candidate();
@@ -926,13 +1036,18 @@ public final class GameEngine implements WorldView {
     public Optional<PresidentState> president() { return Optional.ofNullable(w.president); }
     public List<News> news() { return w.news(); }
 
+    /** The midterms: every Senate race and the House state by state (the Hill's election), then the new Congress is seated. */
     private void holdMidterms() {
         w.midtermsHeld = true;
         int before = congress().house(player().party()), senBefore = congress().senate(player().party());
-        Effect.CongressElected result = electionEngine.midterm(w.election, player().party(), approval(), w.economy.growth(), congress(),
-                calendar.midterms().getYear(), rng);
-        int decision = w.ledger.decide(date(), "Midterms " + calendar.midterms().getYear());
-        dispatch(decision, "Midterms", result);
+        int year = calendar.midterms().getYear();
+        if (w.hill != null) {
+            hillOutcome("Midterms " + year, hillEngine.holdElection(w.hill, hillContext(calendar.midterms()), null, hillLeaders(), rng), null);
+        } else {
+            Effect.CongressElected result = electionEngine.midterm(w.election, player().party(), approval(), w.economy.growth(), congress(), year, rng);
+            int decision = w.ledger.decide(date(), "Midterms " + year);
+            dispatch(decision, "Midterms", result);
+        }
         log(Fmt.format("Midterms: your party %+d House seats, %+d Senate seats. %s.",
                 congress().house(player().party()) - before, congress().senate(player().party()) - senBefore, congress()));
     }
@@ -986,9 +1101,25 @@ public final class GameEngine implements WorldView {
     /** The chance an executive order survives the courts. An order needs no vote. */
     public double executiveOrderSurvival() { return 1 - congressEngine.courtBlockChance(); }
 
+    /** The whip's read: after the hundred days, the Hill's blocs on the bill as it would be drafted for the strategy; before, the seat-count model. */
     public WhipCount whip(String billId, LegislativeStrategy strategy, double capitalCommitted) {
+        if (hillTakesBill(strategy)) {
+            try {
+                return hillEngine.whip(w.hill, hillContext(), billId, draftSize(strategy), draftScope(strategy), strategy == LegislativeStrategy.RECONCILIATION);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalCommandException(e.getMessage());
+            }
+        }
         return congressEngine.whip(w.congress, bill(billId), strategy, legislativeContext(billId), capitalCommitted);
     }
+
+    private boolean hillTakesBill(LegislativeStrategy strategy) {
+        return w.hill != null && w.phase == Phase.GOVERNING && strategy != LegislativeStrategy.EXECUTIVE_ORDER;
+    }
+
+    /** A bipartisan bill is drafted smaller and narrower; the others at full size. */
+    private static double draftSize(LegislativeStrategy s) { return s == LegislativeStrategy.BIPARTISAN_DEAL ? 0.8 : 1.0; }
+    private static double draftScope(LegislativeStrategy s) { return s == LegislativeStrategy.BIPARTISAN_DEAL ? 0.3 : 0.5; }
 
     private LegislativeContext legislativeContext(String billId) {
         var party = w.politics.party(player().party());
@@ -1001,6 +1132,20 @@ public final class GameEngine implements WorldView {
     private void pushBill(String id, LegislativeStrategy strategy, double capitalCommitted) {
         Bill b = bill(id);
         requireGoverning();
+        if (hillTakesBill(strategy)) {      // after the hundred days a bill goes to the Hill, where it moves week by week
+            if (w.policy.inForce(id)) throw new IllegalCommandException("The " + b.name() + " is already law");
+            if (w.government.attention() < 1) throw new IllegalCommandException("Not enough attention left this turn (" + w.government.attention() + ")");
+            HillEngine.Outcome out;
+            try {
+                out = hillEngine.propose(w.hill, hillContext(), id, draftSize(strategy), draftScope(strategy), strategy == LegislativeStrategy.RECONCILIATION);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalCommandException(e.getMessage());
+            }
+            executiveEngine.spendAttention(w.government, 1);
+            hillOutcome("Send " + id + " (" + strategy + ")", out, "The " + b.name() + " goes to Congress");
+            log("You send the " + b.name() + " to Congress (" + strategy.label() + ").");
+            return;
+        }
         String refusal = congressEngine.refusal(w.congress, w.policy, b, strategy, player().party(), date());
         if (refusal != null) throw new IllegalCommandException(refusal);
         if (capitalCommitted < 0 || capitalCommitted > capital()) throw new IllegalCommandException("Not enough political capital");
@@ -1010,6 +1155,7 @@ public final class GameEngine implements WorldView {
         CongressEngine.Passage p = congressEngine.push(w.congress, w.policy, b, strategy, legislativeContext(id), capitalCommitted, date(), rng);
         log(b.name() + " (" + strategy.label() + "): " + p.explanation());
         if (p.enacted()) log("Signed into law: " + b.name() + ".");
+        if (p.enacted() && w.hill != null) hillEngine.noteLaw(w.hill, id);
         dispatchAll(decision, "Law " + id, p.consequences());
     }
 

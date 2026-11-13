@@ -35,6 +35,9 @@ public final class AutoPilot {
         if ((g.phase() == game.mandate.core.time.Phase.FIRST_100_DAYS || g.phase() == game.mandate.core.time.Phase.GOVERNING)
                 && g.president().map(p -> !p.delegated()).orElse(false))
             g.apply(new Command.Presidency(new game.mandate.core.presidency.PresidencyOrder.Delegate(true)));
+        // and the staff run the Hill: the whip, the desk, the budget and the deadlines
+        if (g.phase() == game.mandate.core.time.Phase.GOVERNING && g.hill().map(h -> !h.delegated()).orElse(false))
+            g.apply(new Command.Hill(new game.mandate.core.hill.HillOrder.Delegate(true)));
         switch (g.phase()) {
             case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> {
                 if (g.phase() == game.mandate.core.time.Phase.GENERAL_CAMPAIGN_2028 && g.election().pledges().isEmpty())

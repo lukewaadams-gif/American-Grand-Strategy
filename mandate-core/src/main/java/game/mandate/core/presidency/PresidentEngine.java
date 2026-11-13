@@ -314,6 +314,8 @@ public final class PresidentEngine {
         health(s, c, weekStart, rng, fx, news);
 
         s.lastWeek.clear();
+        s.lastVisited.clear();
+        s.lastVisited.addAll(visited);
         if (policy > 0) s.lastWeek.add(policy + (policy == 1 ? " policy meeting" : " policy meetings"));
         if (!visited.isEmpty()) s.lastWeek.add((trips == 1 ? "a trip to " : trips + " stops: ") + String.join(", ", visited.stream().map(v -> states.get(v).name()).toList()));
         if (hill > 0) s.lastWeek.add(Fmt.format("%.1f hours on the Hill", s.hillHours));

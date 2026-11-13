@@ -33,6 +33,23 @@ final class EngineFixtures {
         throw new AssertionError("no seed reached governing");
     }
 
+    /**
+     * After a bill is sent, plays weeks (events answered, the Hill in the staff's hands) in this game and its twin until
+     * the bill is law or out of play.
+     * @return whether it became law
+     */
+    static boolean untilLaw(GameEngine g, GameEngine twin, String billId) {
+        for (GameEngine x : java.util.List.of(g, twin))
+            if (!x.state().hill().delegated()) x.apply(new game.mandate.core.command.Command.Hill(new game.mandate.core.hill.HillOrder.Delegate(true)));
+        for (int wk = 0; wk < 40 && !g.laws().contains(billId) && !g.over(); wk++) {
+            boolean moving = g.state().hill().bills().stream().anyMatch(b -> b.source().equals(billId) && (b.stage().active()));
+            if (!moving) return false;
+            answerAll(g, 0); g.apply(new game.mandate.core.command.Command.EndTurn());
+            answerAll(twin, 0); twin.apply(new game.mandate.core.command.Command.EndTurn());
+        }
+        return g.laws().contains(billId);
+    }
+
     static void answerAll(GameEngine g, int option) {
         while (!g.pendingEvents().isEmpty()) {
             var p = g.pendingEvents().get(0);

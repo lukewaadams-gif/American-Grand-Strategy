@@ -42,6 +42,8 @@ public final class PresidentState {
     final Map<String, Double> midtermEffort = new TreeMap<>();
     /** What last week came to, for the calendar and the paper. */
     final List<String> lastWeek = new ArrayList<>();
+    /** The states the president visited last week (trips and campaign stops). */
+    final List<String> lastVisited = new ArrayList<>();
     double lastRaised;
     double lastStaminaChange;
 
@@ -68,6 +70,7 @@ public final class PresidentState {
     public double hillHours() { return hillHours; }
     public Map<String, Double> midtermEffort() { return Collections.unmodifiableMap(midtermEffort); }
     public List<String> lastWeek() { return List.copyOf(lastWeek); }
+    public List<String> lastVisited() { return List.copyOf(lastVisited); }
     public double lastRaised() { return lastRaised; }
     public double lastStaminaChange() { return lastStaminaChange; }
 
@@ -80,7 +83,7 @@ public final class PresidentState {
         m.put("sick", sick); m.put("location", location); m.put("age", age); m.put("week", week); m.put("lastCabinet", lastCabinet);
         m.put("delegate", delegate); m.put("plan", plan.toJson()); m.put("warChest", warChest); m.put("hill", hill); m.put("hillHours", hillHours);
         m.put("midtermEffort", new LinkedHashMap<String, Object>(midtermEffort));
-        m.put("lastWeek", new ArrayList<Object>(lastWeek)); m.put("lastRaised", lastRaised); m.put("lastStaminaChange", lastStaminaChange);
+        m.put("lastWeek", new ArrayList<Object>(lastWeek)); m.put("lastVisited", new ArrayList<Object>(lastVisited)); m.put("lastRaised", lastRaised); m.put("lastStaminaChange", lastStaminaChange);
         return m;
     }
 
@@ -96,6 +99,7 @@ public final class PresidentState {
         s.warChest = Json.num(m.get("warChest")); s.hill = Json.num(m.get("hill")); s.hillHours = Json.num(m.get("hillHours"));
         Json.object(m.get("midtermEffort")).forEach((k, v) -> s.midtermEffort.put(k, Json.num(v)));
         for (Object o : Json.array(m.get("lastWeek"))) s.lastWeek.add((String) o);
+        if (m.containsKey("lastVisited")) for (Object o : Json.array(m.get("lastVisited"))) s.lastVisited.add((String) o);
         s.lastRaised = Json.num(m.get("lastRaised")); s.lastStaminaChange = Json.num(m.get("lastStaminaChange"));
         return s;
     }

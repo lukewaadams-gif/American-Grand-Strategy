@@ -44,7 +44,7 @@ public final class PolicyCatalog {
     public record Score(FiscalClass fiscalClass, double[] phase, Integer lag, double[] channels, String basis) {}
 
     /** One policy. {@code cost} holds each step's cost from the lowest level up, $ billions a year. */
-    public record Def(String id, int area, String name, List<String> levels, int level2029, String routes, double legal, double[] cost,
+    public record Def(String id, int area, String name, List<String> levels, int level2029, String routes, double legal, double[] cost, double econ, double cult,
                       double support, int lean, boolean signature, Map<String, Double> outcomes, int lag, int evidence, String winners,
                       String losers, String precedent, Score score) {
         public int top() { return levels.size() - 1; }
@@ -121,7 +121,8 @@ public final class PolicyCatalog {
                     "Resolute Desk's cost; no economic channels beyond the money");
         }
         int lean = t[12].equals("D") ? 1 : t[12].equals("R") ? -1 : 0;
-        return new Def(t[0], Integer.parseInt(t[1]), t[2], levels, level, t[5], Double.parseDouble(t[7]), cost, Double.parseDouble(t[11]), lean,
+        return new Def(t[0], Integer.parseInt(t[1]), t[2], levels, level, t[5], Double.parseDouble(t[7]), cost, Double.parseDouble(t[9]), Double.parseDouble(t[10]),
+                Double.parseDouble(t[11]), lean,
                 t[13].equals("1"), Collections.unmodifiableMap(outcomes), Integer.parseInt(t[16]), "SMWC".indexOf(t[17].charAt(0)), t[18], t[19], t[20], score);
     }
 

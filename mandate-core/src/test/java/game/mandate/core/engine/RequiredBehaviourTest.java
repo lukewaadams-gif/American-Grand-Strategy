@@ -21,6 +21,7 @@ import static game.mandate.core.engine.EngineFixtures.answerAll;
 import static game.mandate.core.engine.EngineFixtures.governing;
 import static game.mandate.core.engine.EngineFixtures.playUntil;
 import static game.mandate.core.engine.EngineFixtures.setup;
+import static game.mandate.core.engine.EngineFixtures.untilLaw;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -83,14 +84,16 @@ class RequiredBehaviourTest {
             }
             if (bill == null) continue;
             GameEngine withLaw = SaveManager.load(SaveManager.save(base)), without = SaveManager.load(SaveManager.save(base));
-            withLaw.apply(new Command.PushBill(bill, route, 20));
-            if (!withLaw.laws().contains(bill)) continue;
+            withLaw.apply(new Command.PushBill(bill, route, 20));     // to the Hill, where it moves week by week
+            if (!untilLaw(withLaw, without, bill)) continue;
             // two years of weekly turns: a law's money starts after a quarter and phases in by year (infrastructure
             // spends about a fifth of its money in the first year), and the economy takes months to respond
             for (int wk = 0; wk < 104; wk++) {
                 answerAll(withLaw, 0); withLaw.apply(new Command.EndTurn());
                 answerAll(without, 0); without.apply(new Command.EndTurn());
             }
+            // Congress's majority moves bills of its own: a twin that passed the same law is no counterfactual
+            if (without.laws().contains(bill)) continue;
             deficitGap += withLaw.state().budget().policyDeficit() - without.state().budget().policyDeficit();
             growthGap += withLaw.economy().orElseThrow().outputGap() - without.economy().orElseThrow().outputGap();
             recordGap += withLaw.state().politics().record(Coalition.SWING) - without.state().politics().record(Coalition.SWING);

@@ -92,7 +92,7 @@ public final class PolicyTableEngine {
         List<Effect.PolicyStep> steps = new ArrayList<>();
         List<Move> moves = new ArrayList<>();
         double reaction = 0;
-        for (Map.Entry<String, Integer> e : catalog.bill(law.billId()).entrySet()) {
+        for (Map.Entry<String, Integer> e : stepsOf(law.billId()).entrySet()) {
             Moved m = moveAnyway(s, catalog.get(e.getKey()), e.getValue(), Route.BILL, law.law(), date, rng);
             moves.addAll(m.moves());
             for (Effect x : m.effects()) {
@@ -108,7 +108,7 @@ public final class PolicyTableEngine {
     public List<Effect.PolicyStep> billSteps(PolicyTableState s, Effect.LawPassed law, double draw) {
         List<Effect.PolicyStep> steps = new ArrayList<>();
         int k = 0;
-        for (Map.Entry<String, Integer> e : catalog.bill(law.billId()).entrySet()) {
+        for (Map.Entry<String, Integer> e : stepsOf(law.billId()).entrySet()) {
             Def d = catalog.get(e.getKey());
             int level = s.level(d.id()), target = Math.max(0, Math.min(d.top(), level + e.getValue())), sign = Integer.signum(target - level);
             for (int i = 0; i < Math.abs(target - level); i++) {
@@ -118,6 +118,15 @@ public final class PolicyTableEngine {
         }
         payFor(steps, law, law.billId() + "#score-payfor");
         return steps;
+    }
+
+    /** The steps a law makes: one of the game's bills (data/bill_policies.tsv), or a policy-step bill ({@code pol:<policy>:<from>:<to>}). */
+    public Map<String, Integer> stepsOf(String billId) {
+        if (billId.startsWith("pol:")) {
+            String[] t = billId.split(":");
+            return Map.of(t[1], Integer.parseInt(t[3]) - Integer.parseInt(t[2]));
+        }
+        return catalog.bill(billId);
     }
 
     private static Effect.PolicyStep scaled(Effect.PolicyStep p, Effect.LawPassed law) {

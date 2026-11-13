@@ -35,7 +35,7 @@ class ArchitectureTest {
     static final List<Class<?>> DOMAIN_STATES = List.of(EconomyState.class, BudgetState.class, PoliticsState.class, PartyState.class,
             CongressState.class, PolicyState.class, GovernmentState.class, DiplomacyState.class, MilitaryState.class, OperationState.class,
             ElectionState.class, CampaignSide.class, WorldState.class, PresidentState.class,
-            game.mandate.core.policy.PolicyTableState.class);
+            game.mandate.core.policy.PolicyTableState.class, game.mandate.core.hill.HillState.class);
 
     /** Domain states expose readers only. Writes go through their owning engine (same package) or a transition. */
     @Test
@@ -52,7 +52,7 @@ class ArchitectureTest {
         assertTrue(bad.isEmpty(), "public mutators on domain state: " + bad);
     }
 
-    static final Set<String> DOMAINS = Set.of("economy", "politics", "congress", "executive", "diplomacy", "military", "campaign", "presidency", "policy");
+    static final Set<String> DOMAINS = Set.of("economy", "politics", "congress", "executive", "diplomacy", "military", "campaign", "presidency", "policy", "hill");
 
     /** No domain imports another domain's state or engine: cross-system effects must be transitions routed by the game engine. */
     @Test
@@ -74,6 +74,17 @@ class ArchitectureTest {
             }
         }
         assertTrue(bad.isEmpty(), "cross-domain reach: " + bad);
+    }
+
+    /** Saves are hashed for the golden worlds: a map copied from Map.of takes its random iteration order into the JSON. */
+    @Test
+    void savesHaveAFixedKeyOrder() throws IOException {
+        List<String> bad = new ArrayList<>();
+        try (Stream<Path> files = Files.walk(Path.of("src/main/java"))) {
+            for (Path f : files.filter(p -> p.toString().endsWith(".java")).toList())
+                if (Files.readString(f).matches("(?s).*new (Linked)?HashMap<[^>]*>\\((Map|Set)\\.of\\(.*")) bad.add(f.getFileName().toString());
+        }
+        assertTrue(bad.isEmpty(), "maps copied from Map.of: " + bad);
     }
 
     /** No mutable static state in the simulation (the source games' main architectural defect), except content caches. */

@@ -57,6 +57,11 @@ public sealed interface Effect {
         public String describe() { return "Law: " + law; }
     }
 
+    /** A shock to the financial system (a default, a lender's failure): credit tightens and stocks fall. Negative hurts. */
+    record FinancialShock(double points) implements Effect {
+        public String describe() { return "Financial markets " + fmt(points); }
+    }
+
     /** Campaign-season shift of the national margin toward the player's party (negative = away). */
     record CampaignSwing(double points) implements Effect {
         public String describe() { return signed("National polls (you)", points); }
