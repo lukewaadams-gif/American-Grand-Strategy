@@ -128,7 +128,7 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
     const page = await open('', 1600, 900);
     // Individual Crisis: the strait, pessimistic
     await page.locator('.start-mode', { hasText: /^Individual Crisis/ }).click();
-    await page.locator('.start-opt', { hasText: 'The Strait of Hormuz' }).click();
+    await page.locator('fieldset:has(legend:text("The crisis")) .start-opt', { hasText: 'The Strait of Hormuz' }).click();
     const presets = page.locator('fieldset:has(legend:text("How it starts")) .start-opt');
     if ((await presets.count()) !== 3) fail('three ways to start the crisis');
     await presets.filter({ hasText: 'Pessimistic' }).click();

@@ -12,7 +12,7 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
   const browser = await chromium.launch();
   const expect = {
     'eve2028-win': { head: /You win the presidency/, next: /The transition/ },
-    'eve2028-lose': { head: /You lose/, next: /The verdict/ },
+    'eve2028-lose': { head: /You lose/, next: /The campaign/ },
     'eve2032-win': { head: /Four more years/, next: /The Oval Office/ },
     'eve2032-lose': { head: /You lose re-election/, next: /The Oval Office/ },
   };
