@@ -5,9 +5,9 @@ import { CALLOUTS, NATION, STATES, VIEWBOX } from '../generated/usStates.js';
 import type { CampaignView, StateView } from '../core/types.js';
 import { s } from '../core/dom.js';
 import { chance, margin, signed } from '../core/format.js';
-import { inkOn, leanColour, legendStops, marginColour, palette } from './palette.js';
+import { inkOn, leanColour, legendStops, legible, marginColour, mix, palette } from './palette.js';
 
-export type LayerId = 'margin' | 'change' | 'win' | 'ads' | 'volunteers' | 'visits';
+export type LayerId = 'margin' | 'change' | 'win' | 'spending' | 'volunteers' | 'visits';
 
 export interface Layer {
   id: LayerId; label: string; question: string;
@@ -20,8 +20,8 @@ export interface Layer {
 const sign = (v: CampaignView) => (v.player.party === 'D' ? 1 : -1);
 const you = (v: CampaignView, dSide: boolean) => ((v.player.party === 'D') === dSide ? 'You' : 'Them');
 
-function activity(id: 'ads' | 'visits', label: string, unit: string): Layer {
-  const me = (st: StateView) => st[(id + 'Me') as 'adsMe'], them = (st: StateView) => st[(id + 'Them') as 'adsThem'];
+function activity(id: 'visits', label: string, unit: string): Layer {
+  const me = (st: StateView) => st.visitsMe, them = (st: StateView) => st.visitsThem;
   const max = (v: CampaignView) => Math.max(0.01, ...v.states.map(st => Math.abs(me(st) - them(st))));
   return {
     id, label, question: `Where each side's ${unit} is going, and who leads it`,
@@ -53,10 +53,29 @@ export const LAYERS: Layer[] = [
     spoken: st => `${chance(st.win)} chance for you`,
     legend: v => ({ stops: legendStops(), left: v.player.party === 'D' ? 'Them, certain' : 'You, certain', mid: '50/50', right: v.player.party === 'D' ? 'You, certain' : 'Them, certain' }),
   },
-  activity('ads', 'Ads', 'ad money'),
+  spending(),
   volunteers(),
   activity('visits', 'Visits', 'candidate visits'),
 ];
+
+/** Battleground 2028's "Spending": the player's campaign spending in each state over about the last four weeks. */
+function spending(): Layer {
+  const of = (st: StateView, v: CampaignView) => v.ads?.states.find(x => x.code === st.code)?.recent ?? 0;
+  const max = (v: CampaignView) => Math.max(0.01, ...(v.ads?.states ?? []).map(x => x.recent));
+  const shade = (t: number) => legible(mix(palette().toss, '#2f8f63', Math.max(0, Math.min(1, t))));
+  const money = (m: number) => m >= 1 ? '$' + m.toFixed(m >= 10 ? 0 : 1) + 'M' : m >= 0.01 ? '$' + Math.round(m * 1000) + 'K' : '';
+  return {
+    id: 'spending', label: 'Spending', question: 'Where your money goes: your spending in each state, last few weeks',
+    fill: (st, v) => { const x = of(st, v); return x < 0.01 ? palette().toss : shade(0.2 + 0.8 * Math.sqrt(x / max(v))); },
+    value: (st, v) => money(of(st, v)),
+    spoken: (st, v) => { const x = of(st, v); return x < 0.01 ? 'no recent spending' : `${money(x)} spent here over about four weeks`; },
+    legend: () => {
+      const stops = [palette().toss];
+      for (let i = 1; i <= 8; i++) stops.push(shade(0.2 + 0.8 * i / 8));
+      return { stops, left: 'Nothing', mid: '', right: 'Most' };
+    },
+  };
+}
 
 /** Battleground 2028's "Volunteers & doors": the player's shifts this week (colour) and doors knocked to date (label). */
 function volunteers(): Layer {

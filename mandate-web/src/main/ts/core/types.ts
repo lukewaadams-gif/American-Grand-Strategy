@@ -30,7 +30,34 @@ export interface CampaignView {
   pledges: string[]; opponentPledges: string[]; pendingDecisions: number;
   polls: PollWeek[]; errorSd: number; states: StateView[]; tipping: string | null; news: NewsItem[];
   /** Present while a campaign is running. */
-  turn?: TurnInfo; staff?: Staff; trail?: Trail; schedule?: Slot[]; activities?: ActivityInfo[]; field?: Field;
+  turn?: TurnInfo; staff?: Staff; trail?: Trail; schedule?: Slot[]; activities?: ActivityInfo[]; field?: Field; money?: Money; ads?: Ads;
+}
+
+/** The campaign's money. All amounts in $M; weekly amounts are per week even in the final stretch. */
+export interface Money {
+  cash: number; debt: number; raised: number; spent: number; raisedTotal: number; spentTotal: number; history: [number, number][];
+  donorsTapped: number; donorCap: number; smallList: number; hq: number; tiers: { name: string; perWeek: number }[];
+  national: { id: string; label: string; grps: number; costPerPoint: number; perWeek: number }[];
+  platforms: { id: string; label: string; cpm: number; share: number; message: string; skew: string; description: string }[];
+  audience: [number, number, number]; cpm: number; messages: { id: string; label: string; description: string }[];
+  budget: { label: string; amount: number }[]; budgetTotal: number;
+}
+
+export interface Market {
+  id: number; name: string; households: number; costPerPoint: number; grps: number; tone: 'POSITIVE' | 'CONTRAST' | 'NEGATIVE'; perWeek: number;
+  /** [state, share of that state's TV homes]. */ reach: [string, number][];
+}
+
+export interface AdsState { code: string; markets: number[]; digital: number; impressions: number; tvStock: number; superPac: number; redBox: boolean; recent: number; }
+
+export interface StudioAd {
+  name: string; tone: number; issue: string; group: number; messenger: string; tested: number | null; groupScores: number[]; quotes: string[]; made: string;
+}
+
+export interface Ads {
+  markets: Market[]; states: AdsState[]; library: StudioAd[]; airing: number;
+  studio: { tones: string[]; issues: { id: string; label: string }[]; groups: string[]; keyGroups: string[];
+    messengers: { id: string; label: string; description: string }[]; produceCost: number; testCost: number };
 }
 
 /** One state's ground game. Money in $M; persuasion and gotv as a share of their ceilings (0-1). */

@@ -138,6 +138,8 @@ public final class EngineApi {
             v.put("schedule", schedule(g));
             v.put("activities", activities(g));
             v.put("field", field(g));
+            v.put("money", moneyView(g));
+            v.put("ads", adsView(g));
         }
         v.put("news", news(g, 0));
         var result = g.phase() == Phase.REELECTION_CAMPAIGN_2032 ? g.result2032() : g.result2028();
@@ -300,6 +302,134 @@ public final class EngineApi {
         f.put("doorsByTurn", hist);
         f.put("states", states);
         return f;
+    }
+
+    // ---- money and the air war (Battleground 2028's) ---------------------------------------------------------------
+
+    /** Cash, the turn's money, the donor base, the headquarters, national TV, the digital plan and this week's budget. */
+    static Map<String, Object> moneyView(GameEngine g) {
+        CampaignSide me = g.player();
+        var ce = g.campaignEngine();
+        var geo = ce.geography();
+        var o = me.orders();
+        var t = g.campaignTurn();
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("cash", r2(me.cash())); m.put("debt", r2(me.debt()));
+        m.put("raised", r2(me.raisedLastTurn())); m.put("spent", r2(me.spentLastTurn()));
+        m.put("raisedTotal", r2(me.raised())); m.put("spentTotal", r2(me.spent()));
+        List<Object> hist = new ArrayList<>();
+        for (double[] row : me.history()) hist.add(List.of(r2(row[0]), r2(row[1])));
+        m.put("history", hist);
+        m.put("donorsTapped", r2(me.donorsTapped())); m.put("donorCap", r2(me.donorCap())); m.put("smallList", Math.round(me.smallDollarList()));
+        m.put("hq", o.hq());
+        List<Object> tiers = new ArrayList<>();
+        for (int i = 0; i < 3; i++) tiers.add(Map.of("name", game.mandate.core.campaign.CampaignEngine.HQ_NAME[i], "perWeek", r2(4.2 * new double[]{0.5, 1.0, 1.9}[i])));
+        m.put("tiers", tiers);
+        List<Object> nat = new ArrayList<>();
+        for (var n : game.mandate.core.campaign.AirWar.Network.values()) {
+            double cpp = game.mandate.core.campaign.CampaignEngine.nationalCost(n, t);
+            nat.add(Map.of("id", n.name(), "label", n.label, "grps", o.nationalGrp(n), "costPerPoint", Math.round(cpp * 1e6) / 1e6, "perWeek", r3(o.nationalGrp(n) * cpp)));
+        }
+        m.put("national", nat);
+        List<Object> plat = new ArrayList<>();
+        double[] pop = {0.20, 0.57, 0.23}, age = new double[3];
+        double cpmW = 0;
+        for (var p : game.mandate.core.campaign.AirWar.Platform.values()) {
+            double share = o.digitalShare(p);
+            cpmW += share * p.cpm;
+            for (int a = 0; a < 3; a++) age[a] += share * p.ageReach(a) * pop[a];
+            int best = 0;
+            for (int a = 1; a < 3; a++) if (p.ageReach(a) > p.ageReach(best)) best = a;
+            plat.add(Map.of("id", p.name(), "label", p.label, "cpm", p.cpm, "share", r3(share), "message", o.digitalMessage(p).name(),
+                    "skew", new String[]{"18-29", "30-64", "65+"}[best], "description", p.description));
+        }
+        double at = age[0] + age[1] + age[2];
+        m.put("platforms", plat);
+        m.put("audience", List.of(r3(age[0] / at), r3(age[1] / at), r3(age[2] / at)));
+        m.put("cpm", r2(cpmW));
+        List<Object> msgs = new ArrayList<>();
+        for (var d : game.mandate.core.campaign.AirWar.DigitalMessage.values()) msgs.add(Map.of("id", d.name(), "label", d.label, "description", d.description));
+        m.put("messages", msgs);
+        double tv = 0, dig = 0, tr = 0, pay = 0, ev = 0;
+        for (int k = 0; k < geo.marketCount(); k++) tv += o.tvGrp(k) * ce.costPerPoint(k, t);
+        for (var n : game.mandate.core.campaign.AirWar.Network.values()) tv += o.nationalGrp(n) * game.mandate.core.campaign.CampaignEngine.nationalCost(n, t);
+        for (int i = 0; i < geo.size(); i++) {
+            String c = geo.code(i);
+            dig += o.digital(i); tr += o.transfer(i);
+            pay += me.organizers(c) * ce.organizerWeek(i) + me.offices(c) * ce.officeWeek(i);
+        }
+        for (int i = 0; i < game.mandate.core.campaign.CampaignOrders.SLOTS; i++) ev += o.activity(i).cost();
+        double hq = game.mandate.core.campaign.CampaignEngine.hqWeek(me);
+        m.put("budget", List.of(
+                Map.of("label", "TV ads", "amount", r3(tv)), Map.of("label", "Digital", "amount", r3(dig)),
+                Map.of("label", "Field payroll and offices", "amount", r3(pay)), Map.of("label", "State party transfers", "amount", r3(tr)),
+                Map.of("label", "Candidate events", "amount", r3(ev)), Map.of("label", "Headquarters", "amount", r3(hq))));
+        m.put("budgetTotal", r3(tv + dig + tr + pay + ev + hq));
+        return m;
+    }
+
+    /** Each state's TV markets (price, reach, the standing buy), its digital, its super PAC airtime; and the Ad Studio. */
+    static Map<String, Object> adsView(GameEngine g) {
+        CampaignSide me = g.player();
+        var ce = g.campaignEngine();
+        var geo = ce.geography();
+        var o = me.orders();
+        var t = g.campaignTurn();
+        Map<String, Object> m = new LinkedHashMap<>();
+        List<Object> markets = new ArrayList<>();
+        for (var mk : geo.markets()) {
+            Map<String, Object> x = new LinkedHashMap<>();
+            x.put("id", mk.id()); x.put("name", mk.name()); x.put("households", mk.households());
+            double cpp = ce.costPerPoint(mk.id(), t);
+            x.put("costPerPoint", Math.round(cpp * 1e6) / 1e6); x.put("grps", o.tvGrp(mk.id())); x.put("tone", o.tvTone(mk.id()).name());
+            x.put("perWeek", r3(o.tvGrp(mk.id()) * cpp));
+            List<Object> reach = new ArrayList<>();
+            for (int i = 0; i < mk.states().length; i++) reach.add(List.of(geo.code(mk.states()[i]), r3(mk.shares()[i])));
+            x.put("reach", reach);
+            markets.add(x);
+        }
+        m.put("markets", markets);
+        List<Object> states = new ArrayList<>();
+        double cpm = 0;
+        for (var p : game.mandate.core.campaign.AirWar.Platform.values()) cpm += o.digitalShare(p) * p.cpm;
+        for (int i = 0; i < geo.size(); i++) {
+            String c = geo.code(i);
+            Map<String, Object> x = new LinkedHashMap<>();
+            x.put("code", c); x.put("markets", geo.marketsIn(i));
+            x.put("digital", r3(o.digital(i)));
+            x.put("impressions", r2(o.digital(i) * 1e6 / Math.max(1, cpm) * 1000 / Math.max(1, geo.state(i).adults())));
+            x.put("tvStock", Math.round(me.tvStock(c))); x.put("superPac", Math.round(me.superPacStock(c))); x.put("redBox", o.redBoxed(i));
+            x.put("recent", r2(me.recentSpending(c)));
+            states.add(x);
+        }
+        m.put("states", states);
+        // the Ad Studio
+        List<Object> lib = new ArrayList<>();
+        for (var a : me.ads()) {
+            Map<String, Object> x = new LinkedHashMap<>();
+            x.put("name", a.name()); x.put("tone", a.tone()); x.put("issue", a.issue().name()); x.put("group", a.group()); x.put("messenger", a.messenger().name());
+            x.put("tested", a.isTested() ? r3(a.tested()) : null);
+            List<Object> gs = new ArrayList<>();
+            if (a.isTested()) for (int i = 0; i < game.mandate.core.campaign.AirWar.KEY_GROUPS.length; i++) gs.add(r3(a.groupScore(i)));
+            x.put("groupScores", gs); x.put("quotes", a.quotes()); x.put("made", a.made());
+            lib.add(x);
+        }
+        m.put("library", lib); m.put("airing", me.airing());
+        Map<String, Object> studio = new LinkedHashMap<>();
+        studio.put("tones", List.of(game.mandate.core.campaign.AirWar.STUDIO_TONE));
+        List<Object> issues = new ArrayList<>();
+        for (var i : game.mandate.core.campaign.Issue.values()) issues.add(Map.of("id", i.name(), "label", i.label()));
+        studio.put("issues", issues);
+        studio.put("groups", game.mandate.core.campaign.CampaignGeography.GROUPS);
+        List<Object> keys = new ArrayList<>();
+        for (int k : game.mandate.core.campaign.AirWar.KEY_GROUPS) keys.add(game.mandate.core.campaign.CampaignGeography.GROUPS.get(k));
+        studio.put("keyGroups", keys);
+        List<Object> msgr = new ArrayList<>();
+        for (var x : game.mandate.core.campaign.AirWar.Messenger.values()) msgr.add(Map.of("id", x.name(), "label", x.label, "description", x.description));
+        studio.put("messengers", msgr);
+        studio.put("produceCost", game.mandate.core.campaign.AirWar.PRODUCE_COST); studio.put("testCost", game.mandate.core.campaign.AirWar.TEST_COST);
+        m.put("studio", studio);
+        return m;
     }
 
     /** What waits for an answer before the turn can end: events and the week's debate, each option with its command. */

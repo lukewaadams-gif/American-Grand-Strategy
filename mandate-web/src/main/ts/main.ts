@@ -7,10 +7,13 @@ import { day } from './core/format.js';
 import { resetWarRoomMemory, warRoom, type WarRoomState } from './campaign/warroom.js';
 import { decisionCard, type DialogHost } from './campaign/decision.js';
 import { closeMenu, menuOpen } from './core/menu.js';
+import { adStudio } from './campaign/studio.js';
 import { usePalette, type PaletteName } from './campaign/palette.js';
 
 const root = document.getElementById('app')!;
 const state: WarRoomState = { layer: 'margin', selected: null, tab: 'schedule', picking: null, desk: 'overview' };
+// keys 1-6 switch the left panel's tabs (as in Battleground 2028), when no dialog or menu is open and focus is not in a field
+const TAB_KEYS: Record<string, WarRoomState['tab']> = { '1': 'schedule', '2': 'money', '3': 'field', '6': 'wire' };
 let toastTimer = 0;
 
 const host: DialogHost = (() => {
@@ -53,6 +56,7 @@ function render(): void {
     select: c => { state.selected = c; render(); },
     setTab: id => { state.tab = id; render(); document.getElementById('tab-' + id)?.focus(); },
     setDesk: d => { state.desk = d; render(); },
+    studio: () => openStudio(),
     pick: slot => {
       state.picking = slot;
       render();
@@ -72,6 +76,23 @@ function order(o: object): boolean {
   catch (e) { toast(e instanceof Refused ? e.message : String(e)); return false; }
   render();
   return true;
+}
+
+/** The Ad Studio, a dialog over headquarters: redrawn in place after each change, keeping the focused control. */
+function openStudio(): void {
+  const active = document.activeElement as HTMLElement | null;
+  const key = active?.getAttribute('aria-label') ?? active?.textContent ?? null;
+  const v = engine.campaign();
+  host.open(adStudio(v, {
+    order: o => {
+      try { engine.command({ type: 'Campaign', order: o }); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); return false; }
+      openStudio();
+      return true;
+    },
+    refresh: () => openStudio(),
+    close: () => host.close(),
+  }), 'The Ad Studio', render);
+  if (key) [...document.querySelectorAll<HTMLElement>('.studio button')].find(b => (b.getAttribute('aria-label') ?? b.textContent) === key)?.focus();
 }
 
 function openDecisions(after: () => void = render): void {
@@ -108,6 +129,8 @@ function restart(): void { engine.load(saveText); resetWarRoomMemory(); state.se
 
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); closeMenu(false); runWeek(); }
+  else if (TAB_KEYS[e.key] && !e.ctrlKey && !e.metaKey && !e.altKey && !menuOpen() && !document.querySelector('.scrim')
+      && !(document.activeElement instanceof HTMLInputElement)) { state.tab = TAB_KEYS[e.key]!; render(); }
   else if (e.key === 'Escape') {
     if (menuOpen()) return;
     if (document.querySelector('.scrim')) host.close();

@@ -51,7 +51,7 @@ export function fieldTab(v: CampaignView, act: FieldActions): HTMLElement {
     staffOn ? h('p', { class: 'hint-line' }, 'Your field director replans every Monday; turn it off to keep your own orders.') : null);
 }
 
-function rowsOf(rows: [string, string][]): HTMLElement {
+export function rowsOf(rows: [string, string][]): HTMLElement {
   return h('dl', { class: 'fig-rows' }, ...rows.flatMap(([k, v]) => [h('dt', null, k), h('dd', null, v)]));
 }
 
@@ -97,7 +97,7 @@ export function fieldDesk(code: string, v: CampaignView, act: FieldActions): (HT
   ];
 }
 
-function stepper(label: string, value: string, minus: () => void, plus: () => void, note: string | null, extra?: HTMLElement): HTMLElement {
+export function stepper(label: string, value: string, minus: () => void, plus: () => void, note: string | null, extra?: HTMLElement): HTMLElement {
   return h('div', { class: 'stepper', role: 'group', 'aria-label': label },
     h('button', { class: 'btn small step', type: 'button', 'aria-label': 'Less: ' + label, onclick: minus }, '−'),
     h('span', { class: 'step-value', 'aria-live': 'polite' }, value),
