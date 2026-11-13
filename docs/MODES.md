@@ -1,6 +1,6 @@
 # The four games
 
-American Grand Strategy is one game engine (`mandate-core`'s `GameEngine`) with four ways in. They share the same systems: the campaign, the economy, the budget and debt, Congress, the West Wing, the press, the world and its crises. They also share the same saves. The start screen offers exactly these four (`mandate-web/src/main/ts/start.ts`). The engine names them `GameSetup.Mode`.
+American Grand Strategy is one game engine (`mandate-core`'s `GameEngine`) with four ways in. They share the same systems: the campaign, the economy, the budget and debt, Congress, the West Wing, the press, the world and its crises. They also share the same saves. The title screen's **New Game** offers exactly these four, as the first step of the setup (`mandate-web/src/main/ts/start.ts`). The setup then goes one choice per step: for a campaign or a presidency, your side (party and cast), your candidate, your opponent, the country, and a face-off before you begin; for a crisis, the crisis, how it starts, and a briefing. The site's front page is the same title screen; it hands the choice to the game's page (`front-main.ts`, `core/launch.ts`). The engine names them `GameSetup.Mode`.
 
 | Mode | Where it starts | Where it ends |
 |---|---|---|
@@ -58,7 +58,7 @@ The staff play the 2028 campaign for both sides, so Congress, the polls and ever
 
 ## Individual Crisis
 
-The start screen offers both crises with three presets: the base case, optimistic and pessimistic.
+The setup offers both crises with three presets: the base case, optimistic and pessimistic.
 - **Where it begins:** in the sample presidency's world of September 2029 (`saves/governing.json`, real people).
 - **How:** with `Command.IndividualCrisis`. From then on the game's mode is `CRISIS`.
 - **While it lasts:** Congress, the economy, the press and the allies go on around it, as they do in the Full Game.

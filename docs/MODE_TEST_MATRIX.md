@@ -48,11 +48,12 @@ The seed is the index plus one.
 | C | `election.js` (night2032-successor) | A 2032 night without the president: "The White House changes hands" or "Your party keeps it" |
 | D | `election.js` (eve2032-win, night2036); `terms.js` | Four more years, the second term's theme, the race to succeed, the 2036 night, the verdict at the handoff |
 | E, F | `modes.js` (eve2028-campaign-win, eve2028-campaign-lose) | The night, the campaign's end (the assessment, the vote, every state), the night again, the replay |
-| G | `modes.js` | Governing Only from the start screen to the 2028 night and the transition |
-| H | `modes.js` (crisis-hormuz-last, crisis-taiwan-last); `hormuz.js`; `taiwan.js` | The last turn and the after-action report; the crisis started from the start screen; the crisis rooms |
-| All | `play.js`, `presidency.js`, `economy.js`, `congress.js`, `westwing.js`, `residence.js`, `sitroom.js`, `preview.js` | The start screen and a new game; the hundred days and day 100's report (`modes.js`); every room. Each at 1600, 1280 and 390 px, in every palette, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll) |
+| G | `modes.js` | Governing Only from the title screen's setup to the 2028 night and the transition |
+| H | `modes.js` (crisis-hormuz-last, crisis-taiwan-last); `hormuz.js`; `taiwan.js` | The last turn and the after-action report; the crisis started from the setup; the crisis rooms |
+| All | `play.js`, `presidency.js`, `economy.js`, `congress.js`, `westwing.js`, `residence.js`, `sitroom.js`, `preview.js` | The title screen, the setup and a new game; the hundred days and day 100's report (`modes.js`); every room. Each at 1600, 1280 and 390 px, in every palette, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll) |
+| All | `front.js` | The title screen and every step of the setup, the real 2028 field and the fictional cast, the face-off, the keyboard; the site's front page handing a new game and a moment to the game's page; the earlier slice at `classic/`. At 1600 and 390 px, in every palette, at 125% text and with reduced motion |
 | All | `broadcast-unit.mjs` | 398 synthetic nights: every race called for its winner, the final count the result |
-| Older site | `flow.js` | The front page's own flow, with no console errors |
+| Older site | `flow.js` | The earlier slice's own flow (now at `classic/`), with no console errors |
 
 Test saves for these come from `game.mandate.ui.ElectionSaves`. They are generated, not shipped.
 

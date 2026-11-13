@@ -127,12 +127,16 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
   {
     const page = await open('', 1600, 900);
     // Individual Crisis: the strait, pessimistic
-    await page.locator('.start-mode', { hasText: /^Individual Crisis/ }).click();
-    await page.locator('fieldset:has(legend:text("The crisis")) .start-opt', { hasText: 'The Strait of Hormuz' }).click();
-    const presets = page.locator('fieldset:has(legend:text("How it starts")) .start-opt');
+    await page.click('[data-action="new"]');
+    await page.click('.mode-card[data-mode="CRISIS"]');
+    await page.click('.setup-next');
+    await page.click('.crisis-card[data-crisis="hormuz"]');
+    await page.click('.setup-next');
+    const presets = page.locator('.preset-card');
     if ((await presets.count()) !== 3) fail('three ways to start the crisis');
     await presets.filter({ hasText: 'Pessimistic' }).click();
-    await page.locator('.start-go', { hasText: 'Begin the crisis' }).click();
+    await page.click('.setup-next');
+    await page.locator('.setup-begin', { hasText: 'Begin the crisis' }).click();
     await page.waitForSelector('.ov-crisis', { timeout: 30000 }).catch(() => fail('the crisis from the start screen'));
     const end = (await page.locator('.ov-end').textContent().catch(() => '') || '').trim();
     console.log('from the start screen:', end, '|', (await page.locator('.ov-crisis').textContent().catch(() => '')).slice(0, 90));

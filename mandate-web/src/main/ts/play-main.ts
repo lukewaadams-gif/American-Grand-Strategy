@@ -11,7 +11,8 @@ import { mountCampaign, unmountCampaign } from './campaign/app.js';
 import { mountPresidency, unmountPresidency } from './presidency/app.js';
 import { transitionOffice } from './presidency/transition.js';
 import { dateLong } from './presidency/oval-screen.js';
-import { startScreen } from './start.js';
+import { startScreen, type StartActions } from './start.js';
+import { takeLaunch, type Launch } from './core/launch.js';
 import { taiwanRoom } from './presidency/taiwan.js';
 import { electionNight } from './presidency/election-night.js';
 import { soundMenuItem } from './core/sound.js';
@@ -62,22 +63,36 @@ function gameMenu(): MenuItem[] {
   ];
 }
 
+/** What the start screen's choices do here: begin, open or jump into the game on this page. */
+const startActions: StartActions = {
+  options: real => engine.options(real),
+  newGame: g => {
+    // Governing Only plays the 2028 campaign for both sides first: a moment's wait, said so
+    if (g.mode === 'GOVERNING_ONLY') root.replaceChildren(h('main', { class: 'start front', id: 'main' },
+      h('p', { class: 'start-wait', role: 'status' }, 'The staff are playing the 2028 campaign for both sides. Election night comes next.')));
+    setTimeout(() => { try { engine.newGame(g); route(); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); showStart(); } }, 30);
+  },
+  loadFile: text => { try { engine.load(text); route(); } catch (e) { toast('That file is not a saved game: ' + String(e)); showStart(); } },
+  quick: async (save, then) => { try { engine.load(await buildFile(save)); if (then) engine.command(then); route(); } catch (e) { toast(String(e)); showStart(); } },
+  islandChain: o => { try { engine.islandChain.start(o); showIslandChain(); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); showStart(); } },
+};
+
 function showStart(): void {
   leave();
   body('presidency start-page');
-  root.replaceChildren(startScreen({
-    options: real => engine.options(real),
-    newGame: g => {
-      // Governing Only plays the 2028 campaign for both sides first: a moment's wait, said so
-      if (g.mode === 'GOVERNING_ONLY') root.replaceChildren(h('main', { class: 'start', id: 'main' },
-        h('p', { class: 'start-wait', role: 'status' }, 'The staff are playing the 2028 campaign for both sides. Election night comes next.')));
-      setTimeout(() => { try { engine.newGame(g); route(); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); showStart(); } }, 30);
-    },
-    loadFile: text => { try { engine.load(text); route(); } catch (e) { toast('That file is not a saved game: ' + String(e)); } },
-    quick: async (save, then) => { try { engine.load(await buildFile(save)); if (then) engine.command(then); route(); } catch (e) { toast(String(e)); } },
-    islandChain: o => { try { engine.islandChain.start(o); showIslandChain(); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); } },
-  }));
+  root.replaceChildren(startScreen(startActions));
   document.title = 'American Grand Strategy';
+}
+
+/** A choice made on the site's front page, carried out here (core/launch.ts). */
+function launch(l: Launch): void {
+  body('presidency start-page');
+  switch (l.kind) {
+    case 'new': startActions.newGame(l.game); return;
+    case 'quick': startActions.quick(l.save, l.then); return;
+    case 'load': startActions.loadFile(l.text); return;
+    case 'islandChain': startActions.islandChain(l.options); return;
+  }
 }
 
 /** Election night, then wherever the game goes from it. */
@@ -195,7 +210,9 @@ async function boot(): Promise<void> {
   if (params.get('size')) document.documentElement.style.setProperty('--s', params.get('size')!);
   await start();
   const save = params.get('save');
+  const handed = takeLaunch();
   if (save) { engine.load(await buildFile(save)); route(); }
+  else if (handed) launch(handed);
   else showStart();
 }
 boot().catch(e => {

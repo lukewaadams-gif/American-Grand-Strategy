@@ -59,9 +59,13 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
     await check(page, `${w}: the start screen`);
     await page.screenshot({ path: `${OUT}/${w}-start.png`, fullPage: true });
     if (w === 1600) {
-      await page.locator('.start button', { hasText: 'Republican' }).click();
-      await page.waitForTimeout(150);
-      await page.locator('.start-go').click();
+      // the title, then the setup a step at a time: the Full Game, the Republicans, the first candidates, the country, begin
+      await page.click('[data-action="new"]');
+      await page.click('.mode-card[data-mode="FULL_GAME"]');
+      await page.click('.setup-next');
+      await page.click('.party-card[data-party="REPUBLICAN"]');
+      for (let i = 0; i < 4; i++) { await page.click('.setup-next'); await page.waitForTimeout(150); }
+      await page.click('.setup-begin');
       await page.waitForTimeout(800);
       const hq = await page.locator('#main, .warroom').count();
       const title = await page.title();

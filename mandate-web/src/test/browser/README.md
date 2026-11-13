@@ -12,7 +12,8 @@ Playwright scripts test the browser build in Chromium. They are not part of `mvn
 | `congress.js` | Congress (milestone 5), on the governing save: the Roosevelt Room's six tabs at 1600, 1280 and 390 pixels wide and in the high-contrast and colour-blind palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll); the telephone opening on the members; a meeting with a leader; drafting, shaping and sending a bill; a call on its votes; weeks played until the Hill puts a decision on the desk. Fails on any console error. |
 | `westwing.js` | The executive (milestone 6), on the governing save: the West Wing's six tabs and the Press Briefing Room's four at 1600, 1280 and 390 pixels wide and in the other palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll); hiring a staff member, the vice president's tour, signing a library order, an order on one policy from the Cabinet Room, a press conference and an address answered on the desk, and weeks played with the paper's developing stories. Fails on any console error. |
 | `residence.js` | The Residence and the groups (milestone 7), on the governing save: the country room with its groups and the Residence at 1600, 1280 and 390 pixels wide and in the other palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll); a family weekend going onto the calendar. Fails on any console error. |
-| `play.js` | The whole game (milestone 10, the preview's front page): the start screen and a new campaign; the transition office (an interview, a background check, an announcement, the agenda) and the oath into the Oval Office; the verdict as the last page; at 1600 and 390 pixels wide and in the other palettes (axe-core WCAG 2.1 AA, text size, sideways scroll). Fails on any console error. |
+| `front.js` | The front end (`start.ts`) and the site's front page (`front-main.ts`). The title screen and every setup step at 1600 and 390 pixels wide, in the other palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll), with the Capitol never under the menu. The keyboard: the menu by arrows, Enter on New Game, Escape back, Enter forward. The setup: the real 2028 field by default, the fictional cast on request, the chosen candidate's file, the face-off, and Begin opening the war room; the six moments. The site's front page, served on 8767 with `preview/` and `classic/` beside it: the same title screen, a new game and a moment handed over to the game's page (and not again on a reload), and the earlier slice at `classic/`. Fails on any console error. |
+| `play.js` | The whole game (milestone 10): the title screen, the setup and a new campaign; the transition office (an interview, a background check, an announcement, the agenda) and the oath into the Oval Office; the verdict as the last page; at 1600 and 390 pixels wide and in the other palettes (axe-core WCAG 2.1 AA, text size, sideways scroll). Fails on any console error. |
 | `sitroom.js` | The Situation Room (milestone 8), on the governing save: every tab at 1600, 1280 and 390 pixels wide and in the other palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll); a call, a tariff, an objective tried, a war planned and stood down; a trip abroad filling three slots on the calendar. Fails on any console error. |
 | `terms.js` | The second term (milestone 9), on the second-term, succession and handoff saves: the second term's theme on the desk and the weeks to the second inauguration; the Press Briefing Room's "Your term" tab in the race to succeed the president, with an endorsement; the verdict of history at the handoff; at 1600, 1280 and 390 pixels wide and in the other palettes (axe-core WCAG 2.1 AA, text size, sideways scroll). Fails on any console error. |
 | `hormuz.js` | The Strait of Hormuz crisis, on the Hormuz save: the Oval Office in daily turns, the crisis room (the ladder, the map, the oil, Iran and the tools), escorts, an envoy, the reserve, a strike with its confirmation, a day played from the room, and the crisis started from the start screen; at 1600 and 390 pixels wide and in the other palettes (axe-core WCAG 2.1 AA, text size, sideways scroll). Fails on any console error. |
@@ -84,4 +85,18 @@ cd mandate-web/src/test/browser && node residence.js /tmp/residence-checks
 cd mandate-web/src/test/browser && node sitroom.js /tmp/sitroom-checks
 cd mandate-web/src/test/browser && node terms.js /tmp/terms-checks
 cd mandate-web/src/test/browser && node play.js /tmp/play-checks
+```
+
+`front.js` also needs the site's own layout on port 8767: the front page with the preview and the earlier slice beside it.
+
+```bash
+mkdir -p /tmp/siteroot && cp mandate-web/src/main/site-root/index.html /tmp/siteroot/ && ln -sfn "$PWD/mandate-web/target/preview" /tmp/siteroot/preview && ln -sfn "$PWD/mandate-web/target/site" /tmp/siteroot/classic
+```
+
+```bash
+(cd /tmp/siteroot && python3 -m http.server 8767 --bind 127.0.0.1) &
+```
+
+```bash
+cd mandate-web/src/test/browser && node front.js /tmp/front-checks
 ```

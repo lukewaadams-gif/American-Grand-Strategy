@@ -18,11 +18,21 @@ Those repositories are kept untouched; see `docs/SOURCE_AUDIT.md`.
 
 ## Play in your browser
 
-**The whole game:** https://lukewaadams-gif.github.io/American-Grand-Strategy/preview/
+**Start here:** https://lukewaadams-gif.github.io/American-Grand-Strategy/
+
+The front page is the game's title screen. Choose **New Game** and it walks you through the setup one step at a time, then opens the game (served from `preview/`, which you can also open directly: https://lukewaadams-gif.github.io/American-Grand-Strategy/preview/).
 
 Nothing to install: the simulation runs in the page. Use a current Chrome, Edge, Firefox or Safari, on a computer or a phone.
 
-**The start screen offers four games** on one engine (`docs/MODES.md`):
+**The title screen:** **New Game**, **Continue** (open a game you saved) and **Start at a moment**. The arrow keys move through it, Enter chooses.
+
+**The setup, step by step.** Each step is one choice, shown as cards; **Back** and **Next** (or Escape and Enter) move between them, and the bar at the top shows where you are.
+- For a campaign or a presidency: the game, your side (party and cast), your candidate (with their file: charisma, debate, money, policy and discipline), your opponent, the country (the national mood, the difficulty) and a face-off of the two tickets before you begin.
+- For a crisis: the game, the crisis, how it starts, and a briefing before you begin.
+
+The candidates are the real 2028 field by default: Josh Shapiro, Gavin Newsom, Pete Buttigieg and the rest for the Democrats; JD Vance, Marco Rubio, Ron DeSantis and the rest for the Republicans.
+
+**Four games** on one engine (`docs/MODES.md`):
 - **Full Game.** The 2028 campaign. If you win, you govern:
   - the first hundred days, which open the presidency (day 100 brings a report card, then the presidency goes on);
   - the 2030 midterms;
@@ -36,8 +46,8 @@ Nothing to install: the simulation runs in the page. Use a current Chrome, Edge,
 
 The world is **real people** by default: the candidates, senators, congressional leaders, cabinet prospects, justices and leaders abroad of 2028. Fictional newcomers appear from 2030. Turn real people off for a fictional cast throughout.
 
-**Also on the start screen:**
-- **A saved game.** **Save the game** (in the menu) writes a file you can open again here.
+**Also on the title screen:**
+- **A saved game.** **Save the game** (in the menu) writes a file you can open again with **Continue**.
 - **A moment of the Full Game:**
   - the campaign at week 9;
   - Inauguration week;
@@ -53,7 +63,7 @@ The world is **real people** by default: the candidates, senators, congressional
 - **Ctrl+Enter** (⌘+Enter on a Mac) plays the turn, in the Oval Office or inside a crisis room.
 - **Escape** closes a room, or takes the controls back from watch mode.
 
-The site's front page (https://lukewaadams-gif.github.io/American-Grand-Strategy/) still has the first playable slice, in the earlier interface: the 2028 election and the presidency's first years, with Full Game and Campaign Only. Its `version.json` says so. The preview replaces it once it is approved.
+The first playable slice, in the earlier interface (the 2028 election and the presidency's first years, with Full Game and Campaign Only), is kept at https://lukewaadams-gif.github.io/American-Grand-Strategy/classic/. The title screen links it at its foot.
 
 ## What a game plays
 
@@ -211,6 +221,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md).
 ```
 mandate-core/   the simulation (no UI imports, enforced by a test)
 mandate-web/    the browser game: the core compiled to JavaScript by TeaVM, and the TypeScript interface (src/main/ts)
+                src/main/site-root/index.html is the site's front page: the title screen, run from preview/
 mandate-ui/     the desktop interface (Swing): design system, screens, automated UI checks, screenshot tool
 mandate-cli/    the executable (desktop by default), the terminal game and the designer tools; builds mandate.jar
 tools/          BgExport: one-off export of Battleground 2028's electorate and roster

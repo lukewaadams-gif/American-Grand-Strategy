@@ -58,9 +58,24 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
     if (over > 1) fail(`${name}: scrolls sideways by ${over}px`);
   };
   const check = async (page, name) => { await axe(page, name); await smallest(page, name); await sideways(page, name); };
+  /** From the title screen: New Game, then the game's card. */
   const mode = async (page, label) => {
+    if (await page.locator('[data-action="new"]').count()) await page.click('[data-action="new"]');
     await page.locator('.start-mode').filter({ has: page.locator('strong', { hasText: new RegExp('^' + label + '$') }) }).click();
     await page.waitForTimeout(150);
+  };
+  /** On to the setup's last step, checking each step on the way; the step titles seen. */
+  const toReady = async (page, name) => {
+    const seen = [];
+    for (let i = 0; i < 8 && !(await page.locator('.setup-begin').count()); i++) {
+      seen.push(((await page.locator('.setup-title').textContent()) || '').trim());
+      if (name) await check(page, `${name}: ${seen[seen.length - 1]}`);
+      await page.click('.setup-next');
+      await page.waitForTimeout(200);
+    }
+    seen.push(((await page.locator('.setup-title').textContent()) || '').trim());
+    if (name) await check(page, `${name}: ${seen[seen.length - 1]}`);
+    return seen;
   };
   /** Election night: skip to the result, and continue. */
   const night = async (page, name) => {
@@ -75,19 +90,27 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
   // 1. the start screen: four games, and each one's setup
   for (const [w, hgt] of [[1600, 900], [390, 844]]) {
     const page = await open('', w, hgt);
+    await check(page, `${w}: the title screen`);
+    await page.click('[data-action="new"]');
     const modes = (await page.locator('.start-mode strong').allTextContents()).map(s => s.trim());
     console.log(`${w}: the modes:`, modes.join(' | '));
     if (modes.join('|') !== 'Full Game|Campaign Only|Governing Only|Individual Crisis') fail(`${w}: the start screen offers ${modes.join(', ')}`);
     if (modes.some(m => /hundred|100/i.test(m))) fail('a separate hundred-days game is still offered');
     for (const m of ['Full Game', 'Campaign Only', 'Governing Only', 'Individual Crisis']) {
+      // back to the first step for each game
+      while (await page.locator('.setup-back', { hasText: 'Back' }).count()) { await page.click('.setup-back'); await page.waitForTimeout(100); }
       await mode(page, m);
-      const go = ((await page.locator('.start-go').textContent()) || '').trim();
-      console.log(`${w}: ${m.padEnd(18)} ->`, go);
-      const want = { 'Full Game': /Begin the campaign/, 'Campaign Only': /Begin the campaign/, 'Governing Only': /Begin on election night, November 7, 2028/, 'Individual Crisis': /Begin the crisis/ }[m];
+      if (m === 'Individual Crisis') {
+        await page.click('.setup-next');
+        if ((await page.locator('.crisis-card').count()) !== 2) fail('two crises to choose from');
+        await page.click('.setup-back');
+      }
+      const seen = await toReady(page, `${w}: ${m}`);
+      const go = ((await page.locator('.setup-begin').textContent()) || '').trim();
+      console.log(`${w}: ${m.padEnd(18)} ->`, seen.join(' / '), '->', go);
+      const want = { 'Full Game': /Begin the campaign/, 'Campaign Only': /Begin the campaign/, 'Governing Only': /Begin on election night/, 'Individual Crisis': /Begin the crisis/ }[m];
       if (!want.test(go)) fail(`${w}: ${m}'s button reads "${go}"`);
-      if (m === 'Governing Only' && !(await page.locator('legend', { hasText: 'The president-elect' }).count())) fail('Governing Only chooses the president-elect');
-      if (m === 'Individual Crisis' && (await page.locator('fieldset:has(legend:text("The crisis")) .start-opt').count()) !== 2) fail('two crises to choose from');
-      await check(page, `${w}: the start screen, ${m}`);
+      if (m === 'Governing Only' && !seen.includes('The president-elect')) fail('Governing Only chooses the president-elect');
       if (w === 390) await page.screenshot({ path: `${OUT}/390-start-${m.replace(/ /g, '-').toLowerCase()}.png`, fullPage: true });
     }
     await page.close();
@@ -136,7 +159,8 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
   {
     const page = await open('', 1600, 900);
     await mode(page, 'Governing Only');
-    await page.locator('.start-go').click();
+    await toReady(page, null);
+    await page.click('.setup-begin');
     const t0 = Date.now();
     const { head, cont } = await night(page, 'Governing Only');
     console.log('Governing Only: election night in', Date.now() - t0, 'ms:', head, '|', cont);
