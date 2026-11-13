@@ -15,7 +15,9 @@ import { adsDesk, moneyTab, type MoneyActions } from './money.js';
 
 export type TabId = 'schedule' | 'money' | 'field' | 'message' | 'polls' | 'wire';
 export type DeskTab = 'overview' | 'ads' | 'field';
-export interface WarRoomState { layer: LayerId; selected: string | null; tab: TabId; picking: number | null; desk: DeskTab; }
+/** BG's "Week in review": what the turn just run did, shown over the map until dismissed. */
+export interface Digest { title: string; lines: string[]; }
+export interface WarRoomState { layer: LayerId; selected: string | null; tab: TabId; picking: number | null; desk: DeskTab; digest: Digest | null; }
 export interface WarRoomActions {
   runWeek(): void;
   openDecisions(): void;
@@ -28,6 +30,7 @@ export interface WarRoomActions {
   toast(text: string): void;
   setDesk(tab: DeskTab): void;
   studio(): void;
+  dismissDigest(): void;
 }
 
 const TABS: { id: TabId; label: string; ready: boolean }[] = [
@@ -59,7 +62,7 @@ export function warRoom(v: CampaignView, st: WarRoomState, act: WarRoomActions):
     h('div', { class: 'cw-brand' },
       h('span', { class: 'cw-wordmark' }, 'American Grand Strategy'),
       h('span', { class: 'cw-edition' }, daily ? `Campaign ${v.electionDay.slice(0, 4)} · Final stretch` : `Campaign ${v.electionDay.slice(0, 4)} · Week ${v.week} of ${v.weeks}`),
-      h('span', { class: 'cw-date' }, daily ? `${v.turn!.label} · ${v.turn!.weeksToVote > 0 ? v.turn!.weeksToVote + ' weeks' : 'days'} to Election Day`
+      h('span', { class: 'cw-date' }, daily ? `${v.turn!.label} · ${daysTo(v.date, v.electionDay)} to Election Day`
         : `${v.dateLabel} · ${v.weeksLeft} weeks to Election Day`)),
     h('div', { class: 'cw-kpis' },
       kpi('cash', 'Cash on hand', v.player.cash, money, `theirs about ${money(v.opponent.cash)}`),
@@ -120,9 +123,13 @@ export function warRoom(v: CampaignView, st: WarRoomState, act: WarRoomActions):
   const banner = picking ? h('div', { class: 'pick-banner', role: 'status' },
     `Click a state for the ${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][picking.day]} ${['morning', 'afternoon', 'evening'][picking.part]} event`,
     h('button', { class: 'btn quiet small', type: 'button', onclick: () => act.pick(null) }, 'Cancel (Esc)')) : null;
+  const digest = st.digest ? h('div', { class: 'digest', role: 'status' },
+    h('div', { class: 'digest-head' }, h('strong', null, st.digest.title),
+      h('button', { class: 'btn quiet close', type: 'button', 'aria-label': 'Dismiss the review', onclick: () => act.dismissDigest() }, '\u00d7')),
+    ...st.digest.lines.map(l => h('p', null, l))) : null;
   const mapCard = h('section', { class: 'card map-card' + (picking ? ' picking' : ''), 'aria-label': 'The map' },
     h('div', { class: 'card-head' }, h('h2', null, L.question), layerTabs),
-    h('div', { class: 'map-stage' }, banner, map),
+    h('div', { class: 'map-stage' }, banner, digest, map),
     chyron,
     h('div', { class: 'map-foot' }, legend, readout));
   const race = h('section', { class: 'card race-card', 'aria-label': 'The race for 270' }, h('h2', null, 'The race for 270'), raceTo270(v));
@@ -138,6 +145,11 @@ export function warRoom(v: CampaignView, st: WarRoomState, act: WarRoomActions):
       left,
       h('div', { class: 'cw-centre' }, mapCard, race, path),
       right));
+}
+
+function daysTo(from: string, to: string): string {
+  const n = Math.round((Date.parse(to) - Date.parse(from)) / 86400000);
+  return n === 1 ? '1 day' : `${n} days`;
 }
 
 function placePicked(v: CampaignView, slot: number, code: string, act: WarRoomActions): void {

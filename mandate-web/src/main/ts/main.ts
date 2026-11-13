@@ -1,17 +1,19 @@
 // The preview of the new interface: the campaign's war room, live over the real engine. It opens a real
 // mid-campaign save (week 9 of 16) and plays from there; the rest of the game's screens follow in later stages.
 import { engine, Refused, start } from './core/engine.js';
-import type { CampaignView } from './core/types.js';
+import type { CampaignView, NewsItem } from './core/types.js';
 import { h } from './core/dom.js';
-import { day } from './core/format.js';
-import { resetWarRoomMemory, warRoom, type WarRoomState } from './campaign/warroom.js';
+import { day, signed } from './core/format.js';
+import { cost } from './campaign/schedule.js';
+import { compact } from './campaign/field.js';
+import { resetWarRoomMemory, warRoom, type Digest, type WarRoomState } from './campaign/warroom.js';
 import { decisionCard, type DialogHost } from './campaign/decision.js';
 import { closeMenu, menuOpen } from './core/menu.js';
 import { adStudio } from './campaign/studio.js';
 import { usePalette, type PaletteName } from './campaign/palette.js';
 
 const root = document.getElementById('app')!;
-const state: WarRoomState = { layer: 'margin', selected: null, tab: 'schedule', picking: null, desk: 'overview' };
+const state: WarRoomState = { layer: 'margin', selected: null, tab: 'schedule', picking: null, desk: 'overview', digest: null };
 // keys 1-6 switch the left panel's tabs (as in Battleground 2028), when no dialog or menu is open and focus is not in a field
 const TAB_KEYS: Record<string, WarRoomState['tab']> = { '1': 'schedule', '2': 'money', '3': 'field', '6': 'wire' };
 let toastTimer = 0;
@@ -57,6 +59,7 @@ function render(): void {
     setTab: id => { state.tab = id; render(); document.getElementById('tab-' + id)?.focus(); },
     setDesk: d => { state.desk = d; render(); },
     studio: () => openStudio(),
+    dismissDigest: () => { state.digest = null; render(); },
     pick: slot => {
       state.picking = slot;
       render();
@@ -107,8 +110,31 @@ function runWeek(): void {
   const v = engine.campaign();
   if (v.phase !== 'GENERAL_CAMPAIGN_2028' && v.phase !== 'REELECTION_CAMPAIGN_2032') return;
   if (v.pendingDecisions > 0) { openDecisions(runWeek); return; }
-  try { engine.command({ type: 'EndTurn' }); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); return; }
+  let news: NewsItem[];
+  try { news = engine.command({ type: 'EndTurn' }); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); return; }
+  state.picking = null;
+  state.digest = digestOf(v, engine.campaign(), news);
   render();
+}
+
+/** BG's makeDigest: raised and spent, the poll's move, volunteers and doors, the trail, and the turn's headline. */
+function digestOf(before: CampaignView, after: CampaignView, news: NewsItem[]): Digest {
+  const daily = before.turn?.daily ?? false;
+  const title = daily ? `${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][before.turn!.day]} in review (${day(before.date)})`
+    : `Week ${before.week} in review`;
+  const nat = (x: CampaignView) => x.polls[x.polls.length - 1]?.national ?? 0;
+  const lines: string[] = [];
+  const m = after.money;
+  if (m) lines.push(`Raised ${cost(m.raised)}, spent ${cost(m.spent)}  \u00b7  national polls ${signed(nat(after))} (${signed(nat(after) - nat(before))})`);
+  const vol = (x: CampaignView) => x.field?.totals.volunteers ?? 0;
+  if (after.field) lines.push(`Volunteers ${compact(vol(after))} (${vol(after) >= vol(before) ? '+' : '\u2212'}${compact(Math.abs(vol(after) - vol(before)))})  \u00b7  doors knocked ${compact(after.field.totals.doors)}`);
+  const rallies = (after.trail?.rallies ?? 0) - (before.trail?.rallies ?? 0);
+  const show = news.find(n => n.text.startsWith('PODCAST:') && !n.text.includes('passes on'));
+  const trail = [rallies > 0 ? `${rallies} ${rallies === 1 ? 'rally' : 'rallies'}` : '', show ? show.text.replace(/^PODCAST: /, '').split('. ')[0] ?? '' : ''].filter(Boolean);
+  if (trail.length) lines.push(trail.join('  \u00b7  '));
+  const head = news.find(n => n.headline && !n.text.startsWith('PODCAST:'));
+  if (head) lines.push(`${head.headline}: ${head.text.replace(/^Your opponent's campaign: /, '')}`);
+  return { title, lines };
 }
 
 /** After Election Day the campaign view shows the result; the broadcast election night is the next stage. */

@@ -52,6 +52,40 @@ This is the port of Battleground 2028's three core campaign mechanics into the e
 - **The opponent's HQ tier** compares cash with a standard payroll, so it doesn't flip between tiers week to week.
 - **Not ported, as BG's field-director role has no effect:** named staff, surrogates, the running mate's stops, buying internal polls, frames and attack lines. These are the second pass.
 
+## The new interface (preview)
+
+The campaign screen follows Battleground 2028's headquarters layout, in the war-room look.
+
+**Left: the campaign's tabs** (keys 1, 2, 3 and 6). Message and Polls come later.
+- **Schedule:**
+  - the week's 21 cards, each with its activity menu (costs, and the stamina each costs this candidate);
+  - a state button that moves an event (click it, then a state on the map);
+  - show, congregation and community choices;
+  - long same-day flights marked;
+  - auto-fill, clear and the scheduler toggle;
+  - stamina after the turn, event costs and debate preparation.
+- **Money:**
+  - cash and its flow, the donor base and the headquarters tier;
+  - national TV and the digital plan (platform shares and messages);
+  - this week's budget, the pull-all buttons, the ad-team toggle and the Ad Studio.
+- **Field:** the whole programme, contacts, doors turn by turn, the ground game by state, and the field-director toggle.
+- **Wire:** the news.
+
+**Centre:**
+- **The map**, with layers for Polls, Change, Win chance, Spending, Volunteers and Visits.
+- **A right-click on a state**, or the context-menu key, sends the candidate there.
+- **The race for 270** and **the path to 270** sit under the map.
+- **After each turn**, BG's "Week in review" (or the day's) appears over the map.
+
+**Right:** a picked state's desk, or the national picture.
+- **Overview:** polls, chance, the two campaigns' money and visits, and "Send … here".
+- **Ads:** every TV market that reaches the state, with its price, reach, buy and tone; the state's digital spending; and the red box for the super PACs.
+- **Field:** offices, organisers, transfers, the week's ground game, and persuasion and GOTV against their ceilings.
+
+**The Ad Studio** is a dialog: make an ad, test it with a focus group, and put it on the air.
+
+`mandate-web/src/test/browser/preview.js` checks all of this in Chromium (see its README). The preview also ships `saves/daily.json` (25 October 2028), for the final stretch: `index.html?save=saves/daily.json`.
+
 ## The older interfaces
 
 - The Swing desktop UI, the current browser site and the CLI keep working until the new interface replaces them.
