@@ -14,6 +14,7 @@ import { congressLine, dateLong, ovalScreen } from './presidency/oval-screen.js'
 import { calendar, cancelCalendarPick } from './presidency/calendar.js';
 import { capitalLedger } from './presidency/paper.js';
 import { SPEEDS, watchDialog } from './presidency/watch.js';
+import { briefingBook, countryRoom } from './presidency/rooms.js';
 const root = document.getElementById('app');
 const params = new URLSearchParams(location.search);
 /** A fixed hour for the light (from ?hour= or the menu); null follows the player's clock. */
@@ -263,7 +264,6 @@ const LATER = {
     roosevelt: { title: 'The Roosevelt Room', body: 'Congress: the twelve blocs and their leaders, the whip count, drafting and floor votes, hours on the Hill, the budget, shutdowns and the debt limit.', milestone: 4, stage: 'Congress and the budget' },
     westwing: { title: 'The West Wing', body: 'The staff and the cabinet: skills, morale, confirmations, executive orders and rules, the courts, and the vice president’s missions.', milestone: 5, stage: 'the executive, the press and storylines' },
     press: { title: 'The Press Briefing Room', body: 'Press conferences, interviews, addresses and the State of the Union; the outlets’ tone, the party’s wings and the opposition’s strategy.', milestone: 5, stage: 'the executive, the press and storylines' },
-    windows: { title: 'The country', body: 'Approval by state and by voter group, from the same electorate that decided the election, and what the country thinks is going wrong.', milestone: 6, stage: 'the economy and the policy table' },
     residence: { title: 'The Residence', body: 'Family, rest and health: where stamina comes back and the president’s private life goes on.', milestone: 6, stage: 'the economy and the policy table' },
     globe: { title: 'The Situation Room', body: 'Forty countries, calls and summits, crises week by week, operations and covert action, and the standing deployments.', milestone: 7, stage: 'the world' },
 };
@@ -306,7 +306,18 @@ function openSpot(id, v) {
             return;
         }
         case 'book':
-            host.open(card('The briefing book', 'The economy this week', h('dl', { class: 'ov-figures' }, h('dt', null, 'Unemployment'), h('dd', null, v.unemployment == null ? '—' : v.unemployment.toFixed(1) + '%'), h('dt', null, 'Inflation'), h('dd', null, v.inflation == null ? '—' : v.inflation.toFixed(1) + '%'), h('dt', null, 'Growth'), h('dd', null, v.growth == null ? '—' : v.growth.toFixed(1) + '%'), h('dt', null, 'Gas'), h('dd', null, v.gas == null ? '—' : '$' + v.gas.toFixed(2) + ' a gallon')), v.issues ? h('table', { class: 'ov-issues' }, h('caption', { class: 'muted' }, 'Approval on the issues'), h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Issue'), h('th', { scope: 'col' }, 'Approve'), h('th', { scope: 'col' }, 'Your command'))), h('tbody', null, ...[...v.issues].sort((a, b) => b.salience - a.salience).map(i => h('tr', null, h('th', { scope: 'row' }, i.label), h('td', null, Math.round(i.approval) + '%'), h('td', null, String(Math.round(i.command))))))) : null, h('p', { class: 'muted' }, 'The Council of Economic Advisers’ full briefing, with the policy table, opens with milestone 6.')), 'The briefing book');
+            if (!v.week) {
+                toast('The briefing book opens at the inauguration.');
+                return;
+            }
+            host.open(briefingBook(engine.economy(), () => host.close()), 'The briefing book: the economy');
+            return;
+        case 'windows':
+            if (!v.week) {
+                toast('The country\u2019s verdict starts at the inauguration.');
+                return;
+            }
+            host.open(countryRoom(engine.country(), () => host.close()), 'The country');
             return;
         default:
             soon(id);

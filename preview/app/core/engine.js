@@ -20,6 +20,8 @@ export const engine = {
     campaign() { return request({ op: 'view', name: 'campaign' }); },
     presidency() { return request({ op: 'view', name: 'presidency' }); },
     paper() { return request({ op: 'view', name: 'paper' }); },
+    country() { return request({ op: 'view', name: 'country' }); },
+    economy() { return request({ op: 'view', name: 'economy' }); },
     decisions() { return request({ op: 'view', name: 'decisions' }).decisions; },
     /** Applies a command (in the save file's command format); returns the log lines it produced, newest first. */
     command(command) { return request({ op: 'command', command }).news; },
