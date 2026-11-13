@@ -15,6 +15,8 @@ export interface StartActions {
   loadFile(text: string): void;
   /** Opens a save; with a command, gives it first (a crisis begins at once). */
   quick(save: string, then?: object): void;
+  /** Island Chain on its own: the Taiwan crisis without a presidency. */
+  islandChain(o: { year: number; preset: number; side: 'US' | 'PRC' }): void;
 }
 
 /** The in-depth crises, standalone: a governing presidency in September 2029 and the crisis at once (docs/CRISES.md). */
@@ -29,6 +31,7 @@ const QUICK = [
   { save: 'saves/governing.json', label: 'Governing', detail: 'September 2029: Congress, the West Wing and the world are yours.' },
   { save: 'saves/secondterm.json', label: 'Four more years', detail: 'Just re-elected: the second term’s theme on the desk.' },
   { save: 'saves/succession.json', label: 'The race to succeed you', detail: 'Spring 2036: the primaries to choose your successor.' },
+  { save: 'saves/taiwan.json', label: 'The Taiwan crisis', detail: 'September 2029: China’s coast guard closes on Taiwan, and the Situation Room counts the days.' },
 ];
 
 function rating(c: StartCandidate): string {
@@ -39,6 +42,7 @@ export function startScreen(act: StartActions): HTMLElement {
   let real = false;
   let party: 'DEMOCRAT' | 'REPUBLICAN' = 'DEMOCRAT';
   let player = '', opponent = '', scenario = 'TOSS_UP', difficulty = 'STANDARD';
+  let icYear = 2030, icSide: 'US' | 'PRC' = 'US';
   const root = h('main', { class: 'start', id: 'main' });
 
   function draw(): void {
@@ -87,7 +91,17 @@ export function startScreen(act: StartActions): HTMLElement {
         h('ul', { class: 'start-quick start-crises' }, ...CRISES.map(c => h('li', null,
           h('strong', null, c.label), h('span', { class: 'muted small' }, ' · ' + c.detail),
           h('span', { class: 'start-presets', role: 'group', 'aria-label': c.label + ': how it starts' }, ...c.presets.map((p, i) =>
-            h('button', { class: 'btn small', type: 'button', onclick: () => act.quick('saves/governing.json', c.order(i)) }, p))))))));
+            h('button', { class: 'btn small', type: 'button', onclick: () => act.quick('saves/governing.json', c.order(i)) }, p))))),
+          h('li', { class: 'start-ic' },
+            h('strong', null, 'Island Chain'), h('span', { class: 'muted small' }, ' · The Taiwan Strait on its own: weeks of warning, then the war by the hour. Command America, or China.'),
+            h('span', { class: 'start-presets' },
+              h('label', { class: 'small' }, 'Year ', h('select', { 'aria-label': 'Island Chain: the year', onchange: (e: Event) => { icYear = Number((e.target as HTMLSelectElement).value); } },
+                ...[2029, 2030, 2031, 2032, 2033, 2034, 2035, 2036].map(y => h('option', { value: String(y), selected: y === icYear ? 'selected' : null }, String(y))))),
+              h('span', { class: 'hz-steps', role: 'group', 'aria-label': 'Island Chain: your side' }, ...(['US', 'PRC'] as const).map(sd =>
+                h('button', { class: 'btn small toggle' + (sd === icSide ? ' on' : ''), type: 'button', 'aria-pressed': String(sd === icSide), onclick: () => { icSide = sd; draw(); } },
+                  sd === 'US' ? 'America' : 'China')))),
+            h('span', { class: 'start-presets', role: 'group', 'aria-label': 'Island Chain: how it starts' }, ...['Base case', 'Optimistic', 'Pessimistic'].map((p, i) =>
+              h('button', { class: 'btn small', type: 'button', onclick: () => act.islandChain({ year: icYear, preset: i, side: icSide }) }, p)))))));
   }
 
   draw();

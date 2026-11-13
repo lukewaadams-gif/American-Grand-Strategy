@@ -804,3 +804,5 @@
 .tw-toll th[scope="row"], .tw-toll thead th:first-child { text-align: left; }
 .tw-sub { margin: 12px 0 0; font-size: calc(var(--s) * 13px); color: var(--wh-label); text-transform: uppercase; letter-spacing: 0.06em; }
 @media (max-width: 980px) { .tw-ladders { grid-template-columns: 1fr; } }
+.ic-page { max-width: 1440px; margin: 0 auto; padding: 16px; }
+.start-ic { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }

@@ -11,6 +11,7 @@ import { mountPresidency, unmountPresidency } from './presidency/app.js';
 import { transitionOffice } from './presidency/transition.js';
 import { dateLong } from './presidency/oval-screen.js';
 import { startScreen } from './start.js';
+import { taiwanRoom } from './presidency/taiwan.js';
 import { soundMenuItem } from './core/sound.js';
 
 const root = document.getElementById('app')!;
@@ -62,8 +63,26 @@ function showStart(): void {
     newGame: g => { try { engine.newGame(g); route(); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); } },
     loadFile: text => { try { engine.load(text); route(); } catch (e) { toast('That file is not a saved game: ' + String(e)); } },
     quick: async (save, then) => { try { engine.load(await buildFile(save)); if (then) engine.command(then); route(); } catch (e) { toast(String(e)); } },
+    islandChain: o => { try { engine.islandChain.start(o); showIslandChain(); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); } },
   }));
   document.title = 'American Grand Strategy';
+}
+
+/** Island Chain on its own: the Taiwan crisis room, without a presidency around it. */
+function showIslandChain(): void {
+  leave();
+  body('presidency');
+  let room: HTMLElement;
+  const draw = () => { const next = taiwanRoom(acts); room?.replaceWith(next); room = next; };
+  const acts = {
+    view: () => engine.islandChain.view(),
+    order: (o: object) => { try { engine.islandChain.order(o); return true; } catch (e) { toast(e instanceof Refused ? e.message : String(e)); return false; } },
+    next: () => { try { engine.islandChain.turn(); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); } draw(); },
+    back: () => { try { engine.islandChain.end(); } catch { /* none */ } showStart(); },
+  };
+  room = taiwanRoom(acts);
+  root.replaceChildren(h('main', { class: 'ic-page', id: 'main' }, room));
+  document.title = 'Island Chain · American Grand Strategy';
 }
 
 function showTransition(): void {
