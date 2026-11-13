@@ -138,6 +138,15 @@ final class StandaloneHost implements Host {
             case Effect.OilRelease x -> economyEngine.apply(economy, budget, x);
             case Effect.PolicyStep x -> economyEngine.apply(economy, budget, x);
             case Effect.FinancialShock x -> economyEngine.apply(economy, budget, x);
+            case Effect.Tariff x -> economyEngine.apply(economy, budget, x);
+            case Effect.IssueStanding x -> politicsEngine.apply(politics, x);
+            case Effect.PartyRecord x -> politicsEngine.apply(politics, x);
+            case Effect.BlocRelations x -> { }
+            case Effect.PresidentStrain x -> { }
+            case Effect.PolicyByOrder x -> { }
+            case Effect.PartyFunds x -> { }
+            case Effect.GroupStanding x -> { }
+            case Effect.BillPublic x -> { }
             case Effect.LawPassed x -> {
                 var passed = policyTableEngine.enactBill(policyTable, x, start, rng());
                 for (Effect y : passed.effects()) dispatch(cause, y);

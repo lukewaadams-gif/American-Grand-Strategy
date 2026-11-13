@@ -38,6 +38,8 @@ public final class PresidentState {
     double hill = 50;
     /** Hours on the Hill this week: 2.5 a meeting; Congress spends them from milestone 4. */
     double hillHours;
+    /** Cabinet meetings on last week's calendar (the West Wing reads them). */
+    int cabinetMeetings;
     /** Campaign stops for the party before the midterms, by state; the midterm model reads them from milestone 4. */
     final Map<String, Double> midtermEffort = new TreeMap<>();
     /** What last week came to, for the calendar and the paper. */
@@ -68,6 +70,7 @@ public final class PresidentState {
     public double warChest() { return warChest; }
     public double hill() { return hill; }
     public double hillHours() { return hillHours; }
+    public int cabinetMeetings() { return cabinetMeetings; }
     public Map<String, Double> midtermEffort() { return Collections.unmodifiableMap(midtermEffort); }
     public List<String> lastWeek() { return List.copyOf(lastWeek); }
     public List<String> lastVisited() { return List.copyOf(lastVisited); }
@@ -81,7 +84,7 @@ public final class PresidentState {
         m.put("act", a); m.put("arg", g);
         m.put("stamina", stamina); m.put("sleep", sleep); m.put("stress", stress); m.put("health", health); m.put("fitness", fitness);
         m.put("sick", sick); m.put("location", location); m.put("age", age); m.put("week", week); m.put("lastCabinet", lastCabinet);
-        m.put("delegate", delegate); m.put("plan", plan.toJson()); m.put("warChest", warChest); m.put("hill", hill); m.put("hillHours", hillHours);
+        m.put("delegate", delegate); m.put("plan", plan.toJson()); m.put("warChest", warChest); m.put("hill", hill); m.put("hillHours", hillHours); m.put("cabinetMeetings", cabinetMeetings);
         m.put("midtermEffort", new LinkedHashMap<String, Object>(midtermEffort));
         m.put("lastWeek", new ArrayList<Object>(lastWeek)); m.put("lastVisited", new ArrayList<Object>(lastVisited)); m.put("lastRaised", lastRaised); m.put("lastStaminaChange", lastStaminaChange);
         return m;
@@ -96,7 +99,7 @@ public final class PresidentState {
         s.sick = Json.integer(m.get("sick")); s.location = (String) m.get("location"); s.age = Json.integer(m.get("age"));
         s.week = Json.integer(m.get("week")); s.lastCabinet = Json.integer(m.get("lastCabinet"));
         s.delegate = (Boolean) m.get("delegate"); s.plan = WatchPlan.fromJson(Json.object(m.get("plan")));
-        s.warChest = Json.num(m.get("warChest")); s.hill = Json.num(m.get("hill")); s.hillHours = Json.num(m.get("hillHours"));
+        s.warChest = Json.num(m.get("warChest")); s.hill = Json.num(m.get("hill")); s.hillHours = Json.num(m.get("hillHours")); s.cabinetMeetings = m.get("cabinetMeetings") == null ? 0 : Json.integer(m.get("cabinetMeetings"));
         Json.object(m.get("midtermEffort")).forEach((k, v) -> s.midtermEffort.put(k, Json.num(v)));
         for (Object o : Json.array(m.get("lastWeek"))) s.lastWeek.add((String) o);
         if (m.containsKey("lastVisited")) for (Object o : Json.array(m.get("lastVisited"))) s.lastVisited.add((String) o);

@@ -23,6 +23,11 @@ public final class PoliticsState {
     double capital;
     double goodwill;
     OppositionStrategy opposition = OppositionStrategy.SELECTIVE;
+    /** In office after the hundred days, the wings judge the record and the opposition picks its strategy as Resolute Desk does. */
+    boolean rdParty;
+    /** The record's running position (Resolute Desk's {@code recE}, {@code recC}) and its weight. */
+    double recE, recC, recW;
+    int oppWeek;
     double recentAddresses;
     double weeksGoverning;
     final Map<Party, PartyState> parties = new EnumMap<>(Party.class);
@@ -66,6 +71,10 @@ public final class PoliticsState {
     public double capital() { return capital; }
     public double goodwill() { return goodwill; }
     public OppositionStrategy opposition() { return opposition; }
+    /** The record's position: economics and culture, -1 left to +1 right; and how much it weighs. */
+    public double recordEcon() { return recE; }
+    public double recordCulture() { return recC; }
+    public double recordWeight() { return recW; }
     public double recentAddresses() { return recentAddresses; }
     public PartyState party(Party p) { return parties.get(p); }
     public Role role(String politicianId) { return roles.getOrDefault(politicianId, Role.BENCH); }
@@ -96,6 +105,7 @@ public final class PoliticsState {
         salience.forEach((k, v) -> sal.put(k.name(), v));
         m.put("salience", sal);
         m.put("capital", capital); m.put("goodwill", goodwill); m.put("opposition", opposition);
+        m.put("rdParty", java.util.List.of(rdParty ? 1.0 : 0.0, recE, recC, recW, (double) oppWeek));
         m.put("recentAddresses", recentAddresses); m.put("weeksGoverning", weeksGoverning);
         java.util.List<Object> ps = new java.util.ArrayList<>();
         parties.values().forEach(p -> ps.add(p.toJson()));
@@ -130,6 +140,10 @@ public final class PoliticsState {
         Json.object(m.get("salience")).forEach((k, v) -> s.salience.put(Issue.valueOf(k), Json.num(v)));
         s.capital = Json.num(m.get("capital")); s.goodwill = Json.num(m.get("goodwill"));
         s.opposition = OppositionStrategy.valueOf((String) m.get("opposition"));
+        if (m.get("rdParty") != null) {
+            java.util.List<Object> r = Json.array(m.get("rdParty"));
+            s.rdParty = Json.num(r.get(0)) > 0; s.recE = Json.num(r.get(1)); s.recC = Json.num(r.get(2)); s.recW = Json.num(r.get(3)); s.oppWeek = (int) Json.num(r.get(4));
+        }
         s.recentAddresses = Json.num(m.get("recentAddresses")); s.weeksGoverning = Json.num(m.get("weeksGoverning"));
         for (Object o : Json.array(m.get("parties"))) { PartyState p = PartyState.fromJson(Json.object(o)); s.parties.put(p.party, p); }
         Json.object(m.get("roles")).forEach((k, v) -> s.roles.put(k, Role.valueOf((String) v)));

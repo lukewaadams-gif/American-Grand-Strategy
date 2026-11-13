@@ -306,7 +306,7 @@ public final class WestWingState {
     // the courts
     final List<Case> cases = new ArrayList<>();
     double dDistrict = 0.46, dCircuit = 0.42, vacDistrict = 40, vacCircuit = 6, judgeFrac;
-    int judges, judgeStrategy = 1, scotusVoteAt = -1, scotusVacancies, justicesAppointed;
+    int judges, judgeStrategy = 1, scotusVoteAt = -1, scotusVacancies, justicesAppointed, scotusRejected;
     final List<Justice> justices = new ArrayList<>();
     Justice nomineeJ;
     // trouble
@@ -433,7 +433,7 @@ public final class WestWingState {
         for (Case c : cases) cs.add(c.toJson());
         m.put("cases", cs);
         m.put("courts", nums(dDistrict, dCircuit, vacDistrict, vacCircuit, judgeFrac));
-        m.put("courtCounts", List.of(judges, judgeStrategy, scotusVoteAt, scotusVacancies, justicesAppointed));
+        m.put("courtCounts", List.of(judges, judgeStrategy, scotusVoteAt, scotusVacancies, justicesAppointed, scotusRejected));
         List<Object> js = new ArrayList<>();
         for (Justice j : justices) js.add(j.toJson());
         m.put("justices", js); m.put("nomineeJ", nomineeJ == null ? null : nomineeJ.toJson());
@@ -476,7 +476,7 @@ public final class WestWingState {
         s.dDistrict = c[0]; s.dCircuit = c[1]; s.vacDistrict = c[2]; s.vacCircuit = c[3]; s.judgeFrac = c[4];
         List<Object> cc = Json.array(m.get("courtCounts"));
         s.judges = Json.integer(cc.get(0)); s.judgeStrategy = Json.integer(cc.get(1)); s.scotusVoteAt = Json.integer(cc.get(2)); s.scotusVacancies = Json.integer(cc.get(3));
-        s.justicesAppointed = Json.integer(cc.get(4));
+        s.justicesAppointed = Json.integer(cc.get(4)); s.scotusRejected = Json.integer(cc.get(5));
         for (Object o : Json.array(m.get("justices"))) s.justices.add(Justice.fromJson(Json.object(o)));
         s.nomineeJ = m.get("nomineeJ") == null ? null : Justice.fromJson(Json.object(m.get("nomineeJ")));
         for (Object o : Json.array(m.get("scandals"))) s.scandals.add(Scandal.fromJson(Json.object(o)));

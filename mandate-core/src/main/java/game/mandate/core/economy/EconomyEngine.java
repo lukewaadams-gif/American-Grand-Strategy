@@ -189,6 +189,7 @@ public final class EconomyEngine {
             case Effect.OilRelease x -> s.sprRelief = Math.max(s.sprRelief, x.dollars());
             case Effect.PolicyStep x -> enact(s, b, x);
             case Effect.FinancialShock x -> s.financial += x.points();
+            case Effect.Tariff x -> s.tariff = Math.max(0, s.tariff + x.points());
             default -> { return false; }
         }
         return true;

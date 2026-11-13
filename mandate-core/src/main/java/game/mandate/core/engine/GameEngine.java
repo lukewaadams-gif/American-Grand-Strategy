@@ -59,6 +59,10 @@ import game.mandate.core.game.GameSetup;
 import game.mandate.core.hill.HillEngine;
 import game.mandate.core.hill.HillOrder;
 import game.mandate.core.hill.HillState;
+import game.mandate.core.westwing.WestWingData;
+import game.mandate.core.westwing.WestWingEngine;
+import game.mandate.core.westwing.WestWingOrder;
+import game.mandate.core.westwing.WestWingState;
 import game.mandate.core.game.Legacy;
 import game.mandate.core.military.MilitaryCatalog;
 import game.mandate.core.military.MilitaryEngine;
@@ -133,6 +137,7 @@ public final class GameEngine implements WorldView {
     private final DecisionResolver decisions = new DecisionResolver();
     private final PresidentEngine presidentEngine;
     private final HillEngine hillEngine;
+    private final WestWingEngine westWingEngine;
     private final AmbientNews ambient;
 
     private final double premiumPerMiddleEast, middleEastPivot, premiumPerRung, stressPerRung, stressWar;
@@ -166,6 +171,7 @@ public final class GameEngine implements WorldView {
         this.electionEngine = new ElectionEngine(states, candidates, CampaignParams.from(tuning));
         this.presidentEngine = new PresidentEngine(states);
         this.hillEngine = new HillEngine(bills, PolicyCatalog.shared());
+        this.westWingEngine = new WestWingEngine(new WestWingData());
         this.ambient = new AmbientNews();
         premiumPerMiddleEast = tuning.d("markets.premium.middleEast");
         middleEastPivot = tuning.d("markets.premium.middleEastPivot");
@@ -243,6 +249,7 @@ public final class GameEngine implements WorldView {
         economyEngine.upgrade(w.economy, w.budget);
         if (w.policyTable == null) w.policyTable = policyTableEngine.newTable();
         if (w.hill == null && w.president != null && (w.phase == Phase.FIRST_100_DAYS || w.phase == Phase.GOVERNING)) w.hill = seatHill();
+        if (w.westWing == null && w.president != null && w.phase == Phase.GOVERNING) seatWestWing();
         if (w.president != null || (w.phase != Phase.FIRST_100_DAYS && w.phase != Phase.GOVERNING) || !w.politics.governing()) return;
         politicsEngine.upgradeApproval(w.politics, approvalStart(), opinionInputs());
         w.president = presidentEngine.newPresident(player().candidate().id());
@@ -285,6 +292,7 @@ public final class GameEngine implements WorldView {
             case Command.EndTurn c -> endTurn();
             case Command.Presidency c -> presidencyOrder(c.order());
             case Command.Hill c -> hillOrder(c.order());
+            case Command.WestWing c -> westWingOrder(c.order());
         }
         history.add(command);
         w.commandsApplied++;
@@ -315,6 +323,20 @@ public final class GameEngine implements WorldView {
             case Effect.OilRelease x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
             case Effect.PolicyStep x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
             case Effect.FinancialShock x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
+            case Effect.Tariff x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
+            case Effect.IssueStanding x -> owner = governing && politicsEngine.apply(w.politics, x) ? "politics" : "none";
+            case Effect.PartyRecord x -> owner = governing && politicsEngine.apply(w.politics, x) ? "politics" : "none";
+            case Effect.BlocRelations x -> {
+                if (w.hill != null) { hillEngine.relations(w.hill, player().party(), x.who(), x.chamber(), x.delta()); owner = "hill"; } else owner = "none";
+            }
+            case Effect.BillPublic x -> { if (w.hill != null) { hillEngine.publicPush(w.hill, x.bill()); owner = "hill"; } else owner = "none"; }
+            case Effect.PresidentStrain x -> owner = w.president != null && presidentEngine.apply(w.president, x) ? "president" : "none";
+            case Effect.PartyFunds x -> owner = w.president != null && presidentEngine.apply(w.president, x) ? "president" : "none";
+            case Effect.GroupStanding x -> owner = "none";      // the voter groups' model comes with milestone 7
+            case Effect.PolicyByOrder x -> {
+                if (governing) { policyByOrder(decisionId, cause, x); return; }
+                owner = "none";
+            }
             case Effect.LawPassed x -> {
                 if (governing) {
                     if (!policies().bill(x.billId()).isEmpty()) {
@@ -705,6 +727,7 @@ public final class GameEngine implements WorldView {
                 w.politics.party(player().party()).wingMood(1), rng)) log(line);
         w.phase = Phase.GOVERNING;
         if (w.hill != null) for (String law : w.policy.laws()) hillEngine.noteLaw(w.hill, law);   // the hundred days' laws
+        seatWestWing();
         w.clock.setMode(Granularity.WEEKLY);       // Resolute Desk's weeks go on through the term
         executiveEngine.newTurn(w.government);
         // The world did not stand still: the flashpoints drift for the months the hundred days covered. (During the
@@ -792,6 +815,7 @@ public final class GameEngine implements WorldView {
         presidentWeek();
         hillWeek();
         if (w.phase != Phase.GOVERNING) return;       // removed from office
+        westWingWeek();
 
         economyEngine.step(w.economy, w.budget, 1.0 / EconomyEngine.WEEKS_PER_MONTH, marketContext(), rng);
         EconomyEngine.Shock shock = economyEngine.lastShock(w.economy);
@@ -813,6 +837,8 @@ public final class GameEngine implements WorldView {
         }
 
         politicsEngine.step(w.politics, 1.0, opinionInputs(), rng);
+        for (String line : politicsEngine.partyWeek(w.politics, midtermSeason(), w.president == null ? 0 : w.president.week(), rng))
+            news(new News(date(), News.Kind.INFO, line, null, 1.0, null));
 
         boolean newMonth = to.getMonthValue() != from.getMonthValue();
         if (newMonth) {
@@ -873,6 +899,13 @@ public final class GameEngine implements WorldView {
             case "elect" -> date().getYear() % 4 == 0 ? 1 : 0;
             case "midterm" -> date().getYear() % 4 == 2 ? 1 : 0;
             case "mortgage" -> e.mortgageRate(economyEngine.params());
+            case "year" -> date().getYear();
+            case "app" -> w.politics.governing() ? approval() : 50;
+            case "infl" -> e.inflation();
+            case "oil" -> e.oil();
+            case "farm" -> e.farmIncome();
+            case "gasup" -> economyEngine.gas(e) - 3.4;
+            case "base" -> w.politics.party(player().party()).averageMood();
             case "mkt" -> {   // the stock market's change over thirteen weeks, %
                 double then = w.indicators.size() > 13 ? w.indicators.get(w.indicators.size() - 14).detail("stocks") : Double.NaN;
                 yield Double.isNaN(then) || then <= 0 ? 0 : (e.stocks() / then - 1) * 100;
@@ -936,12 +969,179 @@ public final class GameEngine implements WorldView {
         EconomyState e = w.economy;
         double years = ChronoUnit.DAYS.between(calendar.inauguration(), date()) / 365.25;
         double nominalTn = economyEngine.params().nominalGdp() / 1000 * Math.pow(1.045, Math.max(0, years));
-        return new HillEngine.Context(date(), ps == null ? 0 : ps.week(), player().party(), approval(), rdScale(p.charisma()), 60, 0.6,
+        var party = w.politics.party(player().party());
+        int opp = switch (w.politics.opposition()) { case COOPERATE -> 0; case SELECTIVE -> 1; case OBSTRUCT -> 2; };
+        return new HillEngine.Context(date(), ps == null ? 0 : ps.week(), player().party(), approval(), rdScale(p.charisma()), 60, staff(WestWingData.S_LEG),
                 ps == null ? 0 : ps.hillHours(), ps == null ? List.of() : ps.lastVisited(), ps == null ? Map.of() : ps.midtermEffort(), ps == null ? 0 : ps.warChest(),
                 politicsEngine.params().rdPolarization(), congress().house(Party.DEMOCRAT), congress().senate(Party.DEMOCRAT), e.growth(), e.unemployment(),
                 politicsEngine.params().rdURef(), economyEngine.deficit(e, w.budget), w.budget.debt(), nominalTn, lean, electionDay, w.politics.scandal(),
-                w.politics.honeymoon());
+                w.politics.honeymoon(), staff(WestWingData.S_POL), staff(WestWingData.S_COUNSEL),
+                w.westWing == null ? 0 : WestWingEngine.impeachmentPressure(w.westWing), w.westWing == null ? null : WestWingEngine.worstScandal(w.westWing),
+                party.wingMood(0), party.wingMood(1), opp);
     }
+
+    // ---- the West Wing and the press (Resolute Desk's executive) --------------------------------------------------
+
+    /** Day 100: the West Wing is staffed, the three posts the hundred days filled kept, the rest held by their experts. */
+    private void seatWestWing() {
+        Map<Integer, String[]> first = new TreeMap<>();
+        for (Post p : Post.values()) {
+            GovernmentState.Seat seat = w.government.seat(p);
+            int k = switch (p) { case STATE -> WestWingData.P_STATE; case TREASURY -> WestWingData.P_TREAS; case DEFENSE -> WestWingData.P_DEF; };
+            if (seat.status() != GovernmentState.SeatStatus.CONFIRMED || seat.name() == null) { first.put(k, null); continue; }
+            int kind = seat.type() == game.mandate.core.executive.NomineeType.LOYALIST ? 0 : seat.type() == game.mandate.core.executive.NomineeType.CROSSOVER ? 2 : 1;
+            first.put(k, new String[]{seat.name(), String.valueOf(kind)});
+        }
+        w.westWing = westWingEngine.seat(westWingContext(), first, rng);
+        politicsEngine.beginRdParty(w.politics);
+    }
+
+    /** What the West Wing reads from the rest of the game this week. */
+    public WestWingEngine.Context westWingContext() {
+        Candidate p = player().candidate();
+        double[] skills = {rdScale(p.charisma()), rdScale(p.policy()), rdScale(p.discipline()), rdScale(p.debate()), rdScale((p.charisma() + p.policy()) / 2.0),
+                rdScale(p.charisma()), 40, rdScale(p.policy()), rdScale(p.policy())};
+        List<WestWingEngine.SenateBloc> senate = new ArrayList<>();
+        String ownBill = null, ownBillId = null;
+        boolean ownPublic = false, shutdown = false;
+        if (w.hill != null) {
+            for (HillState.Bloc b : w.hill.blocs())
+                if (b.chamber() == HillState.SENATE) senate.add(new WestWingEngine.SenateBloc(b.name(), b.party(), b.seats(), b.econ(), b.cult(), b.loyalty(), b.relationship()));
+            for (HillState.Bill b : w.hill.bills())
+                if (b.ours() && b.stage().active() && b.stage() != HillState.Stage.DESK && ownBill == null) { ownBill = b.name(); ownBillId = b.id(); ownPublic = b.wentPublic(); }
+            shutdown = w.hill.shutdown();
+        }
+        List<WestWingEngine.RealPick> picks = new ArrayList<>();
+        if (setup.realRoster())
+            for (Candidate c : candidates.all())
+                if (c.id().startsWith(Candidate.REAL_PREFIX) && !c.id().equals(p.id()) && !c.id().equals(opponent().candidate().id()))
+                    picks.add(new WestWingEngine.RealPick(c.name(), c.party(), Math.max(50, Math.min(90, 45 + rdScale(c.policy()) * 0.45)), c.ideology()));
+        Map<Issue, Double> sal = new java.util.EnumMap<>(Issue.class), app = new java.util.EnumMap<>(Issue.class);
+        sal.putAll(w.politics.salience());
+        app.putAll(w.politics.issueApproval());
+        PresidentState ps = w.president;
+        EconomyState e = w.economy;
+        return new WestWingEngine.Context(date(), setup.seed(), ps == null ? 0 : ps.week(), player().party(), p.name(), approval(), app, sal,
+                ps == null ? 80 : ps.stamina(), ps == null ? 25 : ps.stress(), skills, senate, congress().houseMajority(), congress().senateMajority(player().party()),
+                politicsEngine.params().rdPolarization(), shutdown, e.unemployment(), e.inflation(), midtermSeason(), ownBill, ownBillId, ownPublic,
+                ps == null ? 0 : ps.cabinetMeetings(), this::newsVariable, setup.realRoster(), picks);
+    }
+
+    private void westWingWeek() {
+        if (w.westWing == null) return;
+        westWingOutcome("The West Wing", westWingEngine.week(w.westWing, westWingContext(), rng), null);
+    }
+
+    private void westWingOutcome(String cause, WestWingEngine.Outcome o, String what) {
+        int decision = -1;
+        if (what != null) {
+            decision = w.ledger.decide(date(), cause);
+            w.ledger.record(decision, date(), cause, "westwing", what);
+        }
+        for (Effect e : o.effects()) {
+            if (decision < 0) decision = w.ledger.decide(date(), cause);
+            dispatch(decision, cause, e);
+        }
+        for (News n : o.news()) news(n);
+    }
+
+    private void westWingOrder(WestWingOrder o) {
+        if (w.westWing == null || w.phase != Phase.GOVERNING) throw new IllegalCommandException("The West Wing is yours once the hundred days are over");
+        WestWingEngine.Outcome out;
+        try {
+            out = o instanceof WestWingOrder.PolicyAction x ? policyAction(x) : westWingEngine.apply(w.westWing, westWingContext(), o, rng);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalCommandException(e.getMessage());
+        }
+        westWingOutcome("West Wing: " + o.getClass().getSimpleName(), out, describe(o));
+    }
+
+    private static String describe(WestWingOrder o) {
+        return switch (o) {
+            case WestWingOrder.Hire x -> "Hire for " + WestWingData.STAFF_TITLE[Math.max(0, Math.min(8, x.role()))].toLowerCase();
+            case WestWingOrder.Fire x -> "Fire someone";
+            case WestWingOrder.Nominate x -> "Nominate for " + WestWingData.POST_TITLE[Math.max(0, Math.min(20, x.post()))].toLowerCase();
+            case WestWingOrder.Withdraw x -> "Withdraw a nomination";
+            case WestWingOrder.Delegate x -> (x.on() ? "Delegate " : "Take back ") + x.what();
+            case WestWingOrder.Issue x -> "Executive action: " + x.action();
+            case WestWingOrder.Custom x -> "An order of your own";
+            case WestWingOrder.PolicyAction x -> (x.rule() ? "A rule on " : "An order on ") + x.policy();
+            case WestWingOrder.Revoke x -> "Revoke an action";
+            case WestWingOrder.JudgeStrategy x -> "Judicial nominations: " + WestWingData.JUDGE_STRATEGY[Math.max(0, Math.min(2, x.strategy()))].toLowerCase();
+            case WestWingOrder.NominateJustice x -> "Nominate a justice";
+            case WestWingOrder.ViceMission x -> "A mission for the vice president";
+            case WestWingOrder.PressConference x -> "A press conference";
+            case WestWingOrder.Interview x -> "An interview";
+            case WestWingOrder.Address x -> "An address to the nation";
+            case WestWingOrder.Post x -> "A post";
+            case WestWingOrder.Poll x -> "A poll";
+            case WestWingOrder.Answer x -> "An answer";
+        };
+    }
+
+    /** An order or rule on one policy (from the Cabinet Room): checked here against the table, then issued by the West Wing. */
+    private WestWingEngine.Outcome policyAction(WestWingOrder.PolicyAction x) {
+        PolicyCatalog cat = PolicyCatalog.shared();
+        if (!cat.has(x.policy())) throw new IllegalArgumentException("No such policy");
+        PolicyCatalog.Def d = cat.get(x.policy());
+        PolicyCatalog.Route route = x.rule() ? PolicyCatalog.Route.RULE : PolicyCatalog.Route.ORDER;
+        if (!d.can(route)) throw new IllegalArgumentException("The " + d.name().toLowerCase() + " cannot be changed by " + (x.rule() ? "a rule" : "an executive order"));
+        int level = w.policyTable.level(d.id());
+        if (Math.abs(x.to() - level) != 1 || x.to() < 0 || x.to() > d.top()) throw new IllegalArgumentException("An order or rule moves a policy one step");
+        if (w.hill != null) for (HillState.Bill b : w.hill.bills())
+            if (b.ours() && b.source().startsWith("pol:" + d.id() + ":") && (b.stage() == HillState.Stage.DRAFT || b.stage().active()))
+                throw new IllegalArgumentException("A bill on it is before Congress");
+        int steps = x.to() - level;
+        Party lean = d.leanSign() == 0 ? null : (d.leanSign() > 0) == (steps > 0) ? Party.DEMOCRAT : Party.REPUBLICAN;
+        String name = d.name() + ": " + Character.toLowerCase(d.levels().get(x.to()).charAt(0)) + d.levels().get(x.to()).substring(1);
+        return westWingEngine.policyAction(w.westWing, westWingContext(), d.id(), level, x.to(), x.rule(), WestWingData.AREA_ISSUE[d.area()], d.legal(), name, lean, rng);
+    }
+
+    /**
+     * An order or rule moves a policy (Resolute Desk's {@code Policies.fromAction}): at 60% of a law's strength for an
+     * order, 85% for a rule. Undone, it goes back quietly, if nothing else has moved the policy since.
+     */
+    private void policyByOrder(int decision, String cause, Effect.PolicyByOrder x) {
+        int level = w.policyTable.level(x.policy());
+        if (level != (x.revert() ? x.to() : x.from())) { w.ledger.record(decision, date(), cause, "none", x.describe()); return; }
+        PolicyCatalog.Route route = x.rule() ? PolicyCatalog.Route.RULE : PolicyCatalog.Route.ORDER;
+        double k = x.rule() ? 0.85 : 0.6;
+        PolicyTableEngine.Moved m = policyTableEngine.move(w.policyTable, x.policy(), x.revert() ? x.from() - x.to() : x.to() - x.from(), route, x.label(), date(), rng);
+        w.ledger.record(decision, date(), cause, "policy", x.describe());
+        for (Effect e : m.effects()) {
+            if (e instanceof Effect.PolicyStep st) {
+                double[] ch = st.channels().clone();
+                for (int i = 0; i < ch.length; i++) ch[i] *= k;
+                dispatch(decision, cause, new Effect.PolicyStep(st.id(), st.label(), st.fiscalClass(), st.pctGdp() * k, st.phase(), st.lagWeeks(), st.draw(), ch));
+            } else if (!(x.revert() && e instanceof Effect.Approval)) dispatch(decision, cause, e);
+        }
+    }
+
+    /** A law the departments carry out: a botched rollout (Resolute Desk's {@code Implement.roll}) leaves three-quarters of it. */
+    private Effect.LawPassed rollout(int decision, Effect.LawPassed l) {
+        if (w.westWing == null) return l;
+        int area;
+        if (l.billId().startsWith("pol:")) {
+            String id = l.billId().split(":")[1];
+            area = PolicyCatalog.shared().has(id) ? WestWingData.AREA_ISSUE[PolicyCatalog.shared().get(id).area()] : 0;
+        } else area = bills.has(l.billId()) ? rdArea(bill(l.billId()).issue()) : 0;
+        boolean[] failed = new boolean[1];
+        WestWingEngine.Outcome o = westWingEngine.rolloutLaw(w.westWing, westWingContext(), l.law(), area, rng, failed);
+        for (Effect e : o.effects()) dispatch(decision, "Rollout of the " + l.law(), e);
+        for (News n : o.news()) news(n);
+        return failed[0] ? new Effect.LawPassed(l.billId(), l.law(), l.moneyScale() * 0.75, l.channelScale() * 0.75, l.payFor(), l.react(), l.lastingShare()) : l;
+    }
+
+    /** This game's issue as Resolute Desk's (the department that carries out policy on it). */
+    static int rdArea(Issue i) {
+        return switch (i) {
+            case ECONOMY -> 0; case COST_OF_LIVING -> 1; case HEALTHCARE -> 3; case IMMIGRATION -> 4; case CRIME -> 5; case CLIMATE_ENERGY -> 9;
+            case CHINA -> 8; case AI_TECH -> 11; case DEMOCRACY -> 13; case EDUCATION -> 12; case ABORTION -> 10;
+        };
+    }
+
+    public WestWingEngine westWingEngine() { return westWingEngine; }
+    public Optional<WestWingState> westWing() { return Optional.ofNullable(w.westWing); }
 
     /** The leaders a new Congress elects: the sitting ones keep their posts unless their party changes sides (the Hill picks new ones). */
     private Map<String, String> hillLeaders() { return hillEngine.firstLeaders(); }
@@ -965,7 +1165,8 @@ public final class GameEngine implements WorldView {
         }
         for (Effect e : o.effects()) {
             if (decision < 0) decision = w.ledger.decide(date(), cause);
-            if (e instanceof Effect.LawPassed l) {
+            if (e instanceof Effect.LawPassed l0) {
+                Effect.LawPassed l = rollout(decision, l0);
                 String lawCause = "Law " + l.billId();
                 if (bills.has(l.billId()) && !w.policy.inForce(l.billId()))
                     dispatch(decision, lawCause, congressEngine.recordLaw(w.congress, w.policy, bill(l.billId()), date(), LegislativeStrategy.PARTY_LINE, l.moneyScale()));
@@ -998,8 +1199,12 @@ public final class GameEngine implements WorldView {
         Candidate p = player().candidate();
         String last = p.name().substring(p.name().lastIndexOf(' ') + 1);
         return new WeekContext(last, rdScale((p.charisma() + p.policy()) / 2.0), rdScale(p.charisma()), rdScale(p.fundraising()), 60,
-                approval(), w.politics.salience(), w.politics.issueApproval(), w.politics.stateApproval(), midtermSeason(), 0.6);
+                approval(), w.politics.salience(), w.politics.issueApproval(), w.politics.stateApproval(), midtermSeason(), staff(WestWingData.S_COS),
+                staff(WestWingData.S_DPC), staff(WestWingData.S_COMMS), staff(WestWingData.S_POL));
     }
+
+    /** A staff member's quality, 0-1: the West Wing's once it is staffed, 0.6 before. */
+    private double staff(int role) { return w.westWing == null ? 0.6 : WestWingEngine.sq(w.westWing, role); }
 
     /** A 1-10 rating on Resolute Desk's 0-100 scale (as the campaign port maps Battleground 2028's). */
     static double rdScale(double r) { return (r - 1) * 100 / 9; }
@@ -1069,7 +1274,7 @@ public final class GameEngine implements WorldView {
 
     private void startWar(TheaterScenario.Commitment commitment, int decisionId) {
         TheaterScenario s = new TheaterScenario(w.diplomacy.deterrence(), militaryEngine.munitionsIndex(w.military), w.diplomacy.japanBasing(),
-                w.diplomacy.warningMonths(), commitment, executiveEngine.competence(w.government, Post.DEFENSE));
+                w.diplomacy.warningMonths(), commitment, cabinetCompetence(Post.DEFENSE));
         militaryEngine.startOperation(w.military, s, rng);
         w.clock.setMode(Granularity.OPERATIONAL);
         w.ledger.record(decisionId, date(), "War", "military", "War begins: " + commitment);
@@ -1181,7 +1386,7 @@ public final class GameEngine implements WorldView {
         requireGoverning();
         executiveEngine.spendAttention(w.government, 1);
         int decision = w.ledger.decide(date(), "Diplomacy: " + h);
-        boolean ok = diplomacyEngine.talks(w.diplomacy, h, player().candidate().policy(), executiveEngine.competence(w.government, Post.STATE), rng);
+        boolean ok = diplomacyEngine.talks(w.diplomacy, h, player().candidate().policy(), cabinetCompetence(Post.STATE), rng);
         w.ledger.record(decision, date(), "Diplomacy", "diplomacy", ok ? "Tension eases" : "Talks go nowhere");
         log(ok ? "Your diplomacy on the " + h.label() + " eases tensions." : "Talks on the " + h.label() + " go nowhere.");
     }
@@ -1221,7 +1426,7 @@ public final class GameEngine implements WorldView {
                 + (w.diplomacy.rung() == null || w.diplomacy.warOver() ? 0 : premiumPerRung * (w.diplomacy.rung().ordinal() + 1));
         double stress = (w.diplomacy.rung() == null || w.diplomacy.warOver() ? 0 : stressPerRung * (w.diplomacy.rung().ordinal() + 1))
                 + (w.military.operationActive() ? stressWar : 0);
-        return new MarketContext(premium, 0, executiveEngine.competence(w.government, Post.TREASURY), stress);
+        return new MarketContext(premium, 0, cabinetCompetence(Post.TREASURY), stress);
     }
 
     private OpinionInputs opinionInputs() {
@@ -1357,7 +1562,14 @@ public final class GameEngine implements WorldView {
     public double startMisery() { return w.economy.startMisery(); }
     public Optional<Legacy> legacy() { return Optional.ofNullable(w.legacy); }
     public boolean over() { return w.phase == Phase.EPILOGUE || w.phase == Phase.GAME_OVER; }
-    public double competence(Post p) { return executiveEngine.competence(w.government, p); }
+    public double competence(Post p) { return cabinetCompetence(p); }
+
+    /** A cabinet department's competence, 0-100: the West Wing's officer once it is staffed, the hundred days' seat before. */
+    private double cabinetCompetence(Post p) {
+        if (w.westWing == null) return executiveEngine.competence(w.government, p);
+        int k = switch (p) { case STATE -> WestWingData.P_STATE; case TREASURY -> WestWingData.P_TREAS; case DEFENSE -> WestWingData.P_DEF; };
+        return WestWingEngine.pq(w.westWing, k) * 100;
+    }
     public double deficit() { return economyEngine.deficit(w.economy, w.budget); }
     /** Gas, dollars a gallon, from the economy as it stands (also before the inauguration). */
     public double gas() { return economyEngine.gas(w.economy); }

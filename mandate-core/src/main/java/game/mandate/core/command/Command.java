@@ -62,4 +62,6 @@ public sealed interface Command {
     record Presidency(game.mandate.core.presidency.PresidencyOrder order) implements Command {}
     /** Something the president does in the Roosevelt Room: drafting, deals, the desk, the budget, deadlines. */
     record Hill(game.mandate.core.hill.HillOrder order) implements Command {}
+    /** The West Wing and the Press Briefing Room (Resolute Desk's executive and press). */
+    record WestWing(game.mandate.core.westwing.WestWingOrder order) implements Command {}
 }

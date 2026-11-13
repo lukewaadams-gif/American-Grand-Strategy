@@ -184,9 +184,12 @@ public sealed interface Effect {
         public String describe() { return "The record " + (econ + cult < 0 ? "leans left" : econ + cult > 0 ? "leans right" : "holds the center"); }
     }
 
-    /** Relations with Congress's blocs: the president's party's ({@code own}) or the other party's. */
-    record BlocRelations(boolean own, double delta) implements Effect {
-        public String describe() { return signed(own ? "Relations with your party in Congress" : "Relations with the other party in Congress", delta); }
+    /** Relations with Congress's blocs: {@code who} 1 the president's party, -1 the other, 0 both; {@code chamber} 0 House, 1 Senate, -1 both. */
+    record BlocRelations(int who, int chamber, double delta) implements Effect {
+        public BlocRelations(boolean own, double delta) { this(own ? 1 : -1, -1, delta); }
+        public String describe() {
+            return signed("Relations with " + (who > 0 ? "your party" : who < 0 ? "the other party" : "both parties") + (chamber == 0 ? " in the House" : chamber == 1 ? " in the Senate" : " in Congress"), delta);
+        }
     }
 
     /** The president's stamina and stress. */
@@ -195,7 +198,7 @@ public sealed interface Effect {
     }
 
     /** An executive order or agency rule moves one policy a step ({@code revert}: it is undone, quietly). */
-    record PolicyByOrder(String policy, int steps, boolean rule, String label, boolean revert) implements Effect {
+    record PolicyByOrder(String policy, int from, int to, boolean rule, String label, boolean revert) implements Effect {
         public String describe() { return (revert ? "Undone: " : "") + label; }
     }
 
@@ -207,6 +210,11 @@ public sealed interface Effect {
     /** Money raised for the party, $ millions. */
     record PartyFunds(double millions) implements Effect {
         public String describe() { return signed("Party funds ($M)", millions); }
+    }
+
+    /** The president takes a bill before Congress to the country (a speech's ask): the Hill's "go public". */
+    record BillPublic(String bill) implements Effect {
+        public String describe() { return "A bill taken to the country"; }
     }
 
     /** Approval in one voter group (Resolute Desk's {@code groupBump}), by group code; the groups' model comes with milestone 7. */

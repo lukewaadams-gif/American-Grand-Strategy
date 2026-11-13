@@ -72,6 +72,13 @@ public final class PoliticsEngine {
                     ps.wingMood[x.wing()] = clamp(ps.wingMood[x.wing()] + x.delta(), 0, 100);
                 }
             }
+            case Effect.IssueStanding x -> s.issueAdj.put(x.issue(), clamp(s.standing(x.issue()) + x.delta(), -1.5, 1.5));
+            case Effect.PartyRecord x -> {
+                if (x.weight() <= 0) return false;
+                s.recE = (s.recE * s.recW + x.econ() * x.weight()) / (s.recW + x.weight());
+                s.recC = (s.recC * s.recW + x.cult() * x.weight()) / (s.recW + x.weight());
+                s.recW = Math.min(12, s.recW + x.weight());
+            }
             case Effect.PresidentInaugurated x -> inaugurate(s, x);
             default -> { return false; }
         }
@@ -119,14 +126,59 @@ public final class PoliticsEngine {
         s.weeksGoverning += weeks;
         for (int k = 0, n = Math.max(1, (int) Math.round(weeks)); k < n; k++) approvalWeek(s, in, rng);
 
-        for (PartyState ps : s.parties.values())
+        if (!s.rdParty) for (PartyState ps : s.parties.values())
             for (int w = 0; w < 2; w++) ps.wingMood[w] = clamp(ps.wingMood[w] + (1 - Math.pow(1 - p.moodDriftPerWeek(), weeks)) * (p.moodStart() - ps.wingMood[w]), 0, 100);
 
         s.recentAddresses *= Math.pow(p.addressDecayPerWeek(), weeks);
         s.goodwill = clamp(s.goodwill * Math.pow(p.goodwillDecayPerWeek(), weeks) + p.goodwillNoisePerWeek() * Math.sqrt(weeks) * rng.gaussian("opposition.mood"), -50, 50);
         double nat = approval(s);
         s.capital = Math.max(0, Math.min(p.capitalCap(), s.capital + weeks * (p.capitalPerApprovalWeek() * (nat - p.capitalApprovalPivot()) + p.capitalBaseWeek())));
-        updateOpposition(s);
+        if (!s.rdParty) updateOpposition(s);
+    }
+
+    // ---- Resolute Desk's party and opposition (home/HomeFront), in office after the hundred days ---------------------
+
+    /** Where each wing stands, economics and culture: Democrats' progressives and moderates, Republicans' populists and traditional conservatives. */
+    static final double[][][] WING_AT = {{{-0.7, -0.6}, {-0.2, -0.2}}, {{0.3, 0.8}, {0.7, 0.4}}};
+    public static final String[] OPP_STRAT = {"Cooperate where they can", "Pick their fights", "Obstruct everything"};
+
+    /** From here the wings and the opposition follow Resolute Desk's rules. */
+    public void beginRdParty(PoliticsState s) { s.rdParty = true; s.oppWeek = 0; }
+
+    /**
+     * A week of the party and the opposition: each wing's satisfaction moves toward how close the record sits to it and
+     * how the president is doing; every thirteen weeks the opposition chooses to cooperate, pick its fights or obstruct.
+     * @return news, if any: the opposition changing course, or hammering the president on an issue
+     */
+    public java.util.List<String> partyWeek(PoliticsState s, boolean campaignSeason, int termWeek, DeterministicRandomManager rng) {
+        java.util.List<String> news = new java.util.ArrayList<>();
+        if (!s.rdParty || s.presidentParty == null) return news;
+        double app = s.approval;
+        PartyState ps = s.parties.get(s.presidentParty);
+        int side = s.presidentParty == Party.DEMOCRAT ? 0 : 1;
+        for (int f = 0; f < 2; f++) {
+            double dist = s.recW < 0.5 ? 0.3 : Math.sqrt(Math.pow(s.recE - WING_AT[side][f][0], 2) + Math.pow(s.recC - WING_AT[side][f][1], 2));
+            ps.wingMood[f] = clamp(ps.wingMood[f] + (68 - 34 * dist + (app - 45) * 0.5 - ps.wingMood[f]) * 0.03 + rng.gaussian("party.wings") * 0.5, 0, 100);
+        }
+        s.oppWeek++;
+        if (s.oppWeek % 13 == 1) {
+            int k = app < 43 ? 2 : app > 55 ? 0 : 1;
+            if (campaignSeason || termWeek > 170) k = Math.min(2, k + 1);
+            OppositionStrategy next = k == 0 ? OppositionStrategy.COOPERATE : k == 1 ? OppositionStrategy.SELECTIVE : OppositionStrategy.OBSTRUCT;
+            if (next != s.opposition) news.add("The opposition changes course: " + OPP_STRAT[k].toLowerCase());
+            s.opposition = next;
+        }
+        if (s.opposition == OppositionStrategy.OBSTRUCT && rng.uniform("party.opposition") < 0.04) {
+            Issue worst = Issue.ECONOMY;
+            double lo = Double.MAX_VALUE;
+            for (Issue i : Issue.values()) {
+                double sal = s.salience(i), v = (s.approval + 4 * s.standing(i) + (s.command(i) - 50) * 0.04) * sal - 45 * sal;
+                if (v < lo) { lo = v; worst = i; }
+            }
+            s.issueAdj.put(worst, clamp(s.standing(worst) - 0.05, -1.5, 1.5));
+            news.add((s.presidentParty == Party.DEMOCRAT ? "Republicans" : "Democrats") + " hammer you on " + worst.label().toLowerCase());
+        }
+        return news;
     }
 
     // ---- Resolute Desk's approval (opinion/Approval.java) -------------------------------------------------------------

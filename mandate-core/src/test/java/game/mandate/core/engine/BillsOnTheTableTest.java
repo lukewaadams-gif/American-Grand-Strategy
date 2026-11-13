@@ -67,7 +67,9 @@ class BillsOnTheTableTest {
     /** The Build More Homes Act builds homes: starts are higher two years on than without it. */
     @Test
     void theBuildMoreHomesActBuildsHomes() {
-        for (long seed = 1; seed < 200; seed += 8) {
+        double total = 0;
+        int passed = 0;
+        for (long seed = 1; seed < 300 && passed < 4; seed += 8) {
             GameEngine base = EngineFixtures.governing(seed);
             if (base.laws().contains("housing")) continue;   // it was this seed's hundred-days flagship
             LegislativeStrategy route = null;
@@ -84,12 +86,16 @@ class BillsOnTheTableTest {
                 EngineFixtures.answerAll(with, 0); with.apply(new Command.EndTurn());
                 EngineFixtures.answerAll(without, 0); without.apply(new Command.EndTurn());
             }
-            double gain = with.state().economy().housing() / without.state().economy().housing() - 1;
-            assertTrue(gain > 0.01, "housing starts two years on: " + gain);
+            if (without.laws().contains("housing")) continue;     // the majority passed it in the twin too: no counterfactual
             assertEquals(2, with.state().policyTable().level("zoning"));
             assertTrue(with.state().economy().laws().stream().anyMatch(l -> l.id().startsWith("zoning@")));
-            return;
+            total += with.state().economy().housing() / without.state().economy().housing() - 1;
+            passed++;
         }
-        throw new AssertionError("no seed passed the Build More Homes Act");
+        if (passed == 0) throw new AssertionError("no seed passed the Build More Homes Act");
+        // two years on, housing starts are higher than without it (each game's other laws and luck differ, so on average).
+        // Zoning's +5% a step phases in over five years (a fifth by the second year), so two steps at a bill's strength
+        // of about 0.7 should show roughly 1%; at least half of that must be there.
+        assertTrue(total / passed > 0.005, "housing starts two years on, on average over " + passed + " games: " + total / passed);
     }
 }

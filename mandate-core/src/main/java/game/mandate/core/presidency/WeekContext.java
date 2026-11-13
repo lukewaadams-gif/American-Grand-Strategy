@@ -11,4 +11,12 @@ import java.util.Map;
  */
 public record WeekContext(String presidentLast, double speech, double charisma, double bigDonors, double establishment,
                           double approval, Map<Issue, Double> salience, Map<Issue, Double> issueApproval,
-                          Map<String, Double> stateApproval, boolean midtermSeason, double staffQuality) {}
+                          Map<String, Double> stateApproval, boolean midtermSeason, double staffQuality,
+                          double policyStaff, double commsStaff, double politicalStaff) {
+    /** One quality for the whole staff (before the West Wing is staffed). */
+    public WeekContext(String presidentLast, double speech, double charisma, double bigDonors, double establishment, double approval,
+                       Map<Issue, Double> salience, Map<Issue, Double> issueApproval, Map<String, Double> stateApproval, boolean midtermSeason, double staffQuality) {
+        this(presidentLast, speech, charisma, bigDonors, establishment, approval, salience, issueApproval, stateApproval, midtermSeason, staffQuality,
+                staffQuality, staffQuality, staffQuality);
+    }
+}

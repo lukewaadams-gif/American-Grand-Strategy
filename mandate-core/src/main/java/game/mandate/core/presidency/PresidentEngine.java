@@ -248,6 +248,7 @@ public final class PresidentEngine {
         Map<String, Double> standing = new LinkedHashMap<>();
         List<String> visited = new ArrayList<>();
         s.hillHours = 0;
+        s.cabinetMeetings = 0;
         for (int i = 0; i < SLOTS; i++) {
             Activity a = s.act[i];
             String arg = s.arg[i];
@@ -256,7 +257,7 @@ public final class PresidentEngine {
                 case POLICY -> { if (arg != null) { work.merge(Issue.valueOf(arg), 1, Integer::sum); policy++; } }
                 case REMARKS -> {
                     if (arg != null) {
-                        fx.add(new Effect.Remarks(Issue.valueOf(arg), (0.04 * c.speech() / 70) * (0.85 + 0.3 * q), rng.gaussian("president.remarks") * 0.02));
+                        fx.add(new Effect.Remarks(Issue.valueOf(arg), (0.04 * c.speech() / 70) * (0.85 + 0.3 * c.commsStaff()), rng.gaussian("president.remarks") * 0.02));
                         perf += 0.012;
                     }
                 }
@@ -273,7 +274,7 @@ public final class PresidentEngine {
                 }
                 case FUNDRAISER -> {
                     funds++;
-                    double raised = (1.5 + rng.uniform("president.fundraiser") * 2) * c.bigDonors() / 70 * (0.85 + 0.3 * q);
+                    double raised = (1.5 + rng.uniform("president.fundraiser") * 2) * c.bigDonors() / 70 * (0.85 + 0.3 * c.politicalStaff());
                     s.warChest += raised;
                     raisedTotal += raised;
                 }
@@ -281,7 +282,7 @@ public final class PresidentEngine {
                 case HILL -> { s.hill = Math.min(100, s.hill + 1.2 * c.establishment() / 70); s.hillHours += 2.5; hill++; }
                 case FAMILY -> perf += 0.004;
                 case EXERCISE -> s.fitness = Math.min(100, s.fitness + 1.2);
-                case CABINET -> s.lastCabinet = s.week;
+                case CABINET -> { s.lastCabinet = s.week; s.cabinetMeetings++; }
                 case CAMPAIGN -> {
                     if (arg != null) {
                         s.midtermEffort.merge(arg, c.charisma() / 70, Double::sum);
@@ -295,7 +296,7 @@ public final class PresidentEngine {
                 default -> { }
             }
         }
-        work.forEach((issue, n) -> fx.add(0, new Effect.IssueWork(issue, 0.85 + 0.3 * q, n)));
+        work.forEach((issue, n) -> fx.add(0, new Effect.IssueWork(issue, 0.85 + 0.3 * c.policyStaff(), n)));
         if (funds > 3) {
             perf -= 0.06 * (funds - 3);
             if (funds >= 5) news.add(new News(weekStart, News.Kind.BAD, "Critics count " + funds + " fundraisers in a week for " + c.presidentLast(), null, 0.7, null));
@@ -349,6 +350,16 @@ public final class PresidentEngine {
     // ---- orders -----------------------------------------------------------------------------------------------------------------
 
     /** Applies one of the player's orders. Ready-made weeks need the context; plain slot changes do not. */
+    /** Transitions from other systems: the strain of a press conference or a crisis, money the vice president raises. */
+    public boolean apply(PresidentState s, Effect e) {
+        switch (e) {
+            case Effect.PresidentStrain x -> { s.stamina = clamp(s.stamina + x.stamina(), 0, 100); s.stress = clamp(s.stress + x.stress(), 0, 100); }
+            case Effect.PartyFunds x -> s.warChest = Math.max(0, s.warChest + x.millions());
+            default -> { return false; }
+        }
+        return true;
+    }
+
     public void apply(PresidentState s, PresidencyOrder o, WeekContext c) {
         switch (o) {
             case PresidencyOrder.Slot x -> setSlot(s, x.slot(), x.activity(), x.arg(), c.midtermSeason());

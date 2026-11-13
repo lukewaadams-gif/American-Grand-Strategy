@@ -38,6 +38,11 @@ public final class AutoPilot {
         // and the staff run the Hill: the whip, the desk, the budget and the deadlines
         if (g.phase() == game.mandate.core.time.Phase.GOVERNING && g.hill().map(h -> !h.delegated()).orElse(false))
             g.apply(new Command.Hill(new game.mandate.core.hill.HillOrder.Delegate(true)));
+        // and the chief of staff fills jobs; the counsel answers pardon requests
+        if (g.phase() == game.mandate.core.time.Phase.GOVERNING && g.westWing().map(x -> !x.delegatedPeople()).orElse(false)) {
+            g.apply(new Command.WestWing(new game.mandate.core.westwing.WestWingOrder.Delegate("people", true)));
+            g.apply(new Command.WestWing(new game.mandate.core.westwing.WestWingOrder.Delegate("pardons", true)));
+        }
         switch (g.phase()) {
             case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> {
                 if (g.phase() == game.mandate.core.time.Phase.GENERAL_CAMPAIGN_2028 && g.election().pledges().isEmpty())

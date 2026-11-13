@@ -1,0 +1,13 @@
+# The Supreme Court in 2029 (Resolute Desk's 2025 Court, which the era keeps): nine fictional justices with the real
+# justices' appointing parties, birth years and ideologies (-1 left .. +1 right). The real names are used only with the
+# real-person roster, which is opt-in. The first is the Chief Justice.
+name	born	party	ideology	real
+Harold Whitcomb	1955	R	0.3	John Roberts
+Clayton Burrell	1948	R	0.9	Clarence Thomas
+Martin Delacroix	1950	R	0.85	Samuel Alito
+Marisol Ortega	1954	D	-0.8	Sonia Sotomayor
+Ellen Kessler	1960	D	-0.6	Elena Kagan
+Nathan Ellery	1967	R	0.6	Neil Gorsuch
+Thomas Kincaid	1965	R	0.45	Brett Kavanaugh
+Anne Marie Lowell	1972	R	0.5	Amy Coney Barrett
+Kendra Ballard	1970	D	-0.85	Ketanji Brown Jackson

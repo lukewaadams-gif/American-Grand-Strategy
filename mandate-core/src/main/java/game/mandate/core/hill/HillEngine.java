@@ -89,7 +89,18 @@ public final class HillEngine {
     public record Context(LocalDate date, int termWeek, Party president, double approval, double charisma, double establishment, double staffQuality,
                           double hillHours, List<String> visited, Map<String, Double> campaign, double warChest, double polarization,
                           int houseDem, int senateDem, double growth, double unemployment, double unemploymentRef, double deficitPct, double debtPct,
-                          double nominalGdpTn, Map<String, Double> stateLean, LocalDate electionDay, double scandal, double honeymoon) {}
+                          double nominalGdpTn, Map<String, Double> stateLean, LocalDate electionDay, double scandal, double honeymoon,
+                          double politicalQuality, double counselQuality, double scandalPressure, String scandalTitle, double wingBase, double wingOther,
+                          int opposition) {
+        /** The context as it was, before the West Wing: staff of middling quality, no executive scandal, the wings content. */
+        public Context(LocalDate date, int termWeek, Party president, double approval, double charisma, double establishment, double staffQuality,
+                       double hillHours, List<String> visited, Map<String, Double> campaign, double warChest, double polarization,
+                       int houseDem, int senateDem, double growth, double unemployment, double unemploymentRef, double deficitPct, double debtPct,
+                       double nominalGdpTn, Map<String, Double> stateLean, LocalDate electionDay, double scandal, double honeymoon) {
+            this(date, termWeek, president, approval, charisma, establishment, staffQuality, hillHours, visited, campaign, warChest, polarization, houseDem, senateDem,
+                    growth, unemployment, unemploymentRef, deficitPct, debtPct, nominalGdpTn, stateLean, electionDay, scandal, honeymoon, staffQuality, staffQuality, 0, null, 55, 55, 1);
+        }
+    }
 
     /** What a step or an order did: transitions for the router, and news. */
     public record Outcome(List<Effect> effects, List<News> news) {
@@ -321,12 +332,19 @@ public final class HillEngine {
             }
             for (Bloc b : s.blocs) b.rel = clamp(b.rel + (b.party == c.president() ? 0.7 : 0.35) * k, 0, 100);
         }
-        double pull = (c.approval() - 45) * 0.3 + (c.staffQuality() * c.staffQuality() - 0.55) * 12;
+        double pull = (c.approval() - 45) * 0.3 + (c.staffQuality() - 0.55) * 12;
         for (Bloc b : s.blocs) {
             boolean own = b.party == c.president();
             b.rel += 0.02 * ((own ? 55 : 35) + pull * (own ? 1 : 0.5) - b.rel);
         }
         for (Member m : s.members) m.rel += 0.015 * ((m.party == c.president() ? 55 : 35) + pull * 0.5 - m.rel);
+        // the party's wings pull their blocs toward the president or away; the opposition's strategy moves the other side
+        for (Bloc b : s.blocs) {
+            if (b.party == c.president()) {
+                boolean base = b.name.contains("Progressive") || b.name.contains("Freedom") || b.name.contains("Hardliners");
+                b.rel = clamp(b.rel + ((base ? c.wingBase() : c.wingOther()) - 55) * 0.006, 0, 100);
+            } else b.rel = clamp(b.rel + (1 - c.opposition()) * 0.06, 0, 100);
+        }
         s.mandate *= 0.965;
         if (s.week % 4 == 0 && s.appointments < 6) s.appointments++;
         // a visit keeps a promise there; campaigning for an own-party member warms them
@@ -854,7 +872,7 @@ public final class HillEngine {
             }
             default -> throw new IllegalStateException();
         }
-        boost *= 0.8 + 0.4 * c.staffQuality() * c.staffQuality();
+        boost *= 0.8 + 0.4 * c.staffQuality();
         double share = m.role.equals("Chair") ? 0.35 : m.role.equals("Swing vote") ? 0.22 : 0.3;
         b.sweet[m.bloc] += boost * share;
         if (kind != Deal.THREAT) m.rel = clamp(m.rel + (m.role.equals("Chair") ? 6 : m.leader() ? 5 : 0) * Math.max(0, boost) / 1.5, 0, 100);
@@ -869,6 +887,21 @@ public final class HillEngine {
         if (b.goneP) throw new IllegalArgumentException("You have already taken it to the country");
         b.goneP = true;
         for (Member m : s.members) if (m.leader() && m.party != c.president()) m.rel = clamp(m.rel - 2, 0, 100);
+    }
+
+    /** Relations from outside the Hill: {@code who} 1 the president's party, -1 the other, 0 both; {@code chamber} 0, 1 or -1 for both. */
+    public void relations(HillState s, Party president, int who, int chamber, double delta) {
+        for (Bloc b : s.blocs) {
+            if (chamber >= 0 && b.chamber != chamber) continue;
+            if (who > 0 && b.party != president || who < 0 && b.party == president) continue;
+            b.rel = clamp(b.rel + delta, 0, 100);
+        }
+    }
+
+    /** A bill taken to the country from a speech. */
+    public void publicPush(HillState s, String billId) {
+        HillState.Bill b = s.bill(billId);
+        if (b != null) b.goneP = true;
     }
 
     /** A private meeting with a leader: two hours. */
@@ -1238,7 +1271,7 @@ public final class HillEngine {
         double effort = 0;
         for (double v : c.campaign().values()) effort += v;
         return 0.5 * (c.approval() - 50) - 2.5 + 0.4 * (c.growth() - 2) - 0.3 * (c.unemployment() - c.unemploymentRef()) + Math.min(1.5, c.warChest() / 40)
-                + Math.min(1, effort * 0.05) + (c.staffQuality() * c.staffQuality() - 0.55) * 1.5;
+                + Math.min(1, effort * 0.05) + (c.politicalQuality() - 0.55) * 1.5 + ((c.wingBase() + c.wingOther()) / 2 - 55) * 0.04;
     }
 
     /** The coming election's Senate races, with polls, from Labor Day of an election year. */
@@ -1324,7 +1357,8 @@ public final class HillEngine {
         // the new Congress is seated in January; its shape is known now
         Context next = new Context(c.date(), c.termWeek(), c.president(), c.approval(), c.charisma(), c.establishment(), c.staffQuality(), c.hillHours(), c.visited(),
                 c.campaign(), c.warChest(), c.polarization(), houseD, senateD, c.growth(), c.unemployment(), c.unemploymentRef(), c.deficitPct(), c.debtPct(),
-                c.nominalGdpTn(), c.stateLean(), c.electionDay(), c.scandal(), c.honeymoon());
+                c.nominalGdpTn(), c.stateLean(), c.electionDay(), c.scandal(), c.honeymoon(), c.politicalQuality(), c.counselQuality(), c.scandalPressure(), c.scandalTitle(),
+                c.wingBase(), c.wingOther(), c.opposition());
         s.congressNumber++;
         s.seatedWeek = s.week;
         seatBlocs(s, next, rng);
@@ -1345,7 +1379,7 @@ public final class HillEngine {
         if ((houseOther || senateOther) && s.week >= s.nextProbe) {
             Probe p = new Probe();
             p.chamber = houseOther ? H : S;
-            p.subject = c.scandal() > 1 ? "the administration's scandal" : PROBE_SUBJECTS[rng.nextInt("hill.probe", PROBE_SUBJECTS.length)];
+            p.subject = c.scandalTitle() != null ? lower(c.scandalTitle()) : c.scandal() > 1 ? "the administration's scandal" : PROBE_SUBJECTS[rng.nextInt("hill.probe", PROBE_SUBJECTS.length)];
             p.status = "open"; p.opened = s.week; p.weeks = 10; p.severity = 1 + c.scandal() * 0.3; p.subpoenaPending = true;
             s.probes.add(p);
             s.pending.add(new Pending("subpoena", String.valueOf(s.probes.size() - 1), s.week + 2));
@@ -1354,7 +1388,7 @@ public final class HillEngine {
         }
         for (Probe p : s.probes) {
             if (p.status.equals("in court") && s.week - p.opened >= p.weeks) {
-                boolean won = rng.uniform("hill.probe") < 0.35 + 0.3 * c.staffQuality() * c.staffQuality();
+                boolean won = rng.uniform("hill.probe") < 0.35 + 0.3 * c.counselQuality();
                 p.status = won ? "closed" : "open";
                 if (!won) p.severity += 0.6 + 1.4 * rng.uniform("hill.probe");
                 p.opened = s.week;
@@ -1372,7 +1406,8 @@ public final class HillEngine {
         // impeachment
         double pr = 0;
         for (Probe p : s.probes) pr += (p.contempt ? 2 : 0) + (p.impeachable ? p.severity : 0);
-        if (s.impeachment.equals("none") && houseOther && pr >= 9 && rng.uniform("hill.impeach") < 0.06 + (pr - 9) * 0.01) {
+        pr += c.scandalPressure();
+        if ((s.impeachment.equals("none") || s.impeachment.equals("acquitted")) && houseOther && pr >= 9 && rng.uniform("hill.impeach") < 0.06 + (pr - 9) * 0.01) {
             s.impeachment = "inquiry";
             s.impeachWeek = s.week + 8 + rng.nextInt("hill.impeach", 6);
             out.news().add(news(c, News.Kind.BAD, "The House opens an impeachment inquiry", null, 3.0, null));
@@ -1422,7 +1457,7 @@ public final class HillEngine {
         p.subpoenaPending = false;
         switch (choice) {
             case COMPLY -> p.severity += -0.6 + 2.0 * rng.uniform("hill.probe");
-            case NEGOTIATE -> { if (rng.uniform("hill.probe") >= 0.35 + 0.5 * c.staffQuality() * c.staffQuality()) p.severity += -0.6 + 2.0 * rng.uniform("hill.probe"); }
+            case NEGOTIATE -> { if (rng.uniform("hill.probe") >= 0.35 + 0.5 * c.counselQuality()) p.severity += -0.6 + 2.0 * rng.uniform("hill.probe"); }
             case PRIVILEGE -> { p.status = "in court"; p.opened = s.week; p.weeks = 14 + rng.nextInt("hill.probe", 10); }
             default -> {
                 p.contempt = true;
