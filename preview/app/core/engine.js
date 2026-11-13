@@ -52,6 +52,10 @@ export const engine = {
     sitRoom() { return request({ op: 'view', name: 'sitroom' }); },
     foreignCountry(country) { return request({ op: 'view', name: 'foreignCountry', country }); },
     verdict() { return request({ op: 'view', name: 'verdict' }); },
+    transition() { return request({ op: 'view', name: 'transition' }); },
+    /** What a new game can be: the candidates, scenarios and difficulties. */
+    options(realRoster) { return request({ op: 'options', realRoster }); },
+    newGame(g) { request({ op: 'newGame', ...g }); },
     residence() { return request({ op: 'view', name: 'residence' }); },
     /** The budget office's score of moving a policy some steps from where it stands. */
     score(policy, steps) { return request({ op: 'view', name: 'score', policy, steps }); },

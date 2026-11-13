@@ -155,7 +155,7 @@
       "presidentParty": "REPUBLICAN",
       "level": [85.5606333100479, 53.11368224698592, 14.546474432116701],
       "record": [0.0, 0.0, 0.0],
-      "honeymoon": 5.307844305791146,
+      "honeymoon": 6.08117763912448,
       "salience": {
         "ECONOMY": 0.26,
         "COST_OF_LIVING": 0.19,
@@ -4453,6 +4453,286 @@
       "nextId": 1
     },
     "foreign": null,
+    "transition": {
+      "prospects": [{
+          "id": "t0",
+          "name": "Sam Kilgore",
+          "profile": "A Hill veteran who ran a committee staff",
+          "baggage": null,
+          "i": [0, 0, 3],
+          "d": [79.0, 56.0, 75.0554310361071, 60.310875435850086, 0.20468073711240886, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t1",
+          "name": "Raj Vance-Hill",
+          "profile": "Your campaign manager",
+          "baggage": "paid speeches to a Wall Street bank",
+          "i": [0, 1, 2],
+          "d": [71.0, 95.0, 62.97885521438986, 99.0, 0.8585965509524477, 0.5],
+          "b": [false, false]
+        }, {
+          "id": "t2",
+          "name": "Paul Pruitt",
+          "profile": "Television news anchor",
+          "baggage": null,
+          "i": [0, 3, 6],
+          "d": [76.0, 67.0, 68.18944342708141, 59.67473332980351, 0.14705593632056876, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t3",
+          "name": "Robert Whitfield",
+          "profile": "Former deputy defense secretary",
+          "baggage": null,
+          "i": [1, 0, 8],
+          "d": [77.0, 68.0, 69.40718554245196, 62.86256431352149, 0.3990532890636561, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t4",
+          "name": "Ben Voss",
+          "profile": "Your campaign's national-security adviser, a retired colonel",
+          "baggage": null,
+          "i": [1, 1, 2],
+          "d": [71.0, 85.0, 63.977063708016004, 93.99653466942034, 0.7513164043227532, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t5",
+          "name": "Eric Hollis",
+          "profile": "House member from Arizona and former Marine officer",
+          "baggage": null,
+          "i": [1, 2, 3],
+          "d": [70.0, 73.0, 72.91304827118483, 63.105784996540955, 0.2091832554637258, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t6",
+          "name": "William Jardine",
+          "profile": "A retired general who has never voted in a primary",
+          "baggage": null,
+          "i": [1, 4, 6],
+          "d": [77.0, 57.0, 80.22287912648673, 53.3914667567377, 0.03571876925262473, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t7",
+          "name": "Michael Rourke",
+          "profile": "A Hill veteran who ran a committee staff",
+          "baggage": "a household employee paid off the books",
+          "i": [2, 0, 1],
+          "d": [85.0, 74.0, 80.08317780722939, 63.34808288986847, 0.3781686968692194, 0.8],
+          "b": [false, false]
+        }, {
+          "id": "t8",
+          "name": "Ben Ashby",
+          "profile": "Ran your campaign in Virginia",
+          "baggage": null,
+          "i": [2, 1, 2],
+          "d": [61.0, 85.0, 56.202982651595775, 95.0666877112394, 0.8098522858502626, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t9",
+          "name": "William Holloway",
+          "profile": "Founder of a polling firm",
+          "baggage": null,
+          "i": [2, 3, 0],
+          "d": [84.0, 62.0, 83.73702074173158, 55.685831887344825, 0.008932885389531658, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t10",
+          "name": "Thomas Talbot",
+          "profile": "A Democratic veteran of the White House",
+          "baggage": "paid speeches to a Wall Street bank",
+          "i": [2, 4, 9],
+          "d": [81.0, 46.0, 91.99325867240135, 45.77174085070034, 0.023921211470942994, 0.5],
+          "b": [false, false]
+        }, {
+          "id": "t11",
+          "name": "Michelle Underwood",
+          "profile": "Federal appeals judge",
+          "baggage": null,
+          "i": [3, 0, 2],
+          "d": [82.0, 54.0, 90.97185338471022, 48.46013749898089, 0.44863992053547697, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t12",
+          "name": "Hannah Hargrove",
+          "profile": "The campaign's general counsel",
+          "baggage": null,
+          "i": [3, 1, 2],
+          "d": [68.0, 92.0, 78.63783721355178, 99.0, 0.6070345572195796, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t13",
+          "name": "Nancy Mercer",
+          "profile": "Civil-rights lawyer with a national practice",
+          "baggage": null,
+          "i": [3, 3, 4],
+          "d": [79.0, 74.0, 87.15142939303935, 80.69358690429985, 0.22999600968540126, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t14",
+          "name": "Hannah Garrity",
+          "profile": "Attorney general of Michigan",
+          "baggage": null,
+          "i": [3, 2, 9],
+          "d": [82.0, 56.0, 88.26506304356391, 48.542392149302394, 0.22875333329920094, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t15",
+          "name": "Luis Montague",
+          "profile": "Deputy Treasury secretary in the last Republican administration",
+          "baggage": null,
+          "i": [4, 0, 7],
+          "d": [85.0, 61.0, 85.29841448274583, 70.77058122501445, 0.43520971474924025, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t16",
+          "name": "Brian Fairbanks",
+          "profile": "Your campaign's chief economic adviser",
+          "baggage": null,
+          "i": [4, 1, 2],
+          "d": [59.0, 80.0, 65.4953316336233, 73.82899500405591, 0.7444377373065749, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t17",
+          "name": "David Castellano",
+          "profile": "Founder of an investment firm",
+          "baggage": null,
+          "i": [4, 3, 0],
+          "d": [89.0, 73.0, 80.00537298850088, 85.47032448235822, 0.13901546108191598, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t18",
+          "name": "William Langford",
+          "profile": "State commissioner in New Hampshire with a national reputation",
+          "baggage": null,
+          "i": [5, 0, 5],
+          "d": [87.0, 65.0, 86.26395327186893, 64.09787301688695, 0.34344380684966536, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t19",
+          "name": "Tim Okafor",
+          "profile": "Your campaign's policy director",
+          "baggage": null,
+          "i": [5, 1, 2],
+          "d": [62.0, 84.0, 61.7280036353252, 78.89389972185005, 0.7754727786329455, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t20",
+          "name": "Joy Oyelaran",
+          "profile": "House member from Iowa who chairs a subcommittee",
+          "baggage": null,
+          "i": [5, 2, 7],
+          "d": [71.0, 61.0, 79.85616005191793, 54.3664264793894, 0.08355713695914072, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t21",
+          "name": "Maria Gilmore",
+          "profile": "Chief executive of a big hospital system",
+          "baggage": null,
+          "i": [5, 3, 2],
+          "d": [75.0, 76.0, 65.58571338493076, 87.09520006968631, 0.0929916213850597, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t22",
+          "name": "Andre Ostrander",
+          "profile": "A Democratic mayor known for working across the aisle",
+          "baggage": null,
+          "i": [5, 4, 0],
+          "d": [81.0, 45.0, 83.70364833255587, 53.09130577750203, 0.048603939997524395, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t23",
+          "name": "Tasha Thornton",
+          "profile": "A Hill veteran who ran a committee staff",
+          "baggage": null,
+          "i": [6, 0, 2],
+          "d": [80.0, 52.0, 69.05290014642102, 63.03723562789773, 0.3193004940341799, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t24",
+          "name": "Elizabeth Vasquez",
+          "profile": "Your campaign manager",
+          "baggage": null,
+          "i": [6, 1, 2],
+          "d": [65.0, 90.0, 62.76859604756477, 94.37343730994515, 0.6875240175568333, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t25",
+          "name": "Michael Yardley",
+          "profile": "Former House member from Virginia with friends on both sides",
+          "baggage": null,
+          "i": [6, 2, 9],
+          "d": [69.0, 63.0, 67.75977245881285, 70.99712831233656, 0.047934727228875235, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t26",
+          "name": "Nancy Iverson",
+          "profile": "Veteran of two administrations",
+          "baggage": null,
+          "i": [7, 0, 1],
+          "d": [87.0, 59.0, 87.06143904215064, 55.18905297730254, 0.25950885541094987, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t27",
+          "name": "Nancy Ellison",
+          "profile": "Ran your campaign in Georgia",
+          "baggage": null,
+          "i": [7, 1, 2],
+          "d": [70.0, 87.0, 68.31289391046528, 88.82197993817668, 0.7853409029923049, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t28",
+          "name": "Doug Abernathy",
+          "profile": "Television news anchor",
+          "baggage": null,
+          "i": [7, 3, 4],
+          "d": [65.0, 70.0, 70.96458634127788, 59.22249682598622, 0.16161699229891532, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t29",
+          "name": "Sam Halloran",
+          "profile": "Former chief of staff to a cabinet secretary",
+          "baggage": null,
+          "i": [8, 0, 3],
+          "d": [72.0, 57.0, 73.2079731979812, 56.587763758178916, 0.29447607667496994, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t30",
+          "name": "Michelle Stratton",
+          "profile": "Your campaign manager",
+          "baggage": null,
+          "i": [8, 1, 2],
+          "d": [52.0, 89.0, 51.00313042547857, 85.77147736007844, 0.7908661104351556, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t31",
+          "name": "Kevin Ruiz",
+          "profile": "Lieutenant governor of Georgia",
+          "baggage": null,
+          "i": [8, 2, 2],
+          "d": [82.0, 64.0, 84.50039987826582, 60.094309709803646, 0.09965491648037586, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t32",
+          "name": "James Whitaker",
+          "profile": "A Democratic veteran of the White House",
+          "baggage": null,
+          "i": [8, 4, 3],
+          "d": [63.0, 60.0, 64.7293641100606, 51.63260579045236, 0.05091905753606522, 0.0],
+          "b": [false, false]
+        }, {
+          "id": "t33",
+          "name": "Carlos Corcoran",
+          "profile": "Television news anchor",
+          "baggage": null,
+          "i": [8, 3, 3],
+          "d": [80.0, 66.0, 86.94558790595009, 57.8724585794458, 0.1359382956118228, 0.0],
+          "b": [false, false]
+        }],
+      "pick": [null, null, null, null, null, null, null, null, null],
+      "x": [0.0, 67.73333333333333],
+      "leaks": 0,
+      "done": true,
+      "news": ["2028-11-07: the transition begins. Name your own people, check them, and keep the leaks down."]
+    },
     "news": [],
     "ambientUsed": [],
     "scheduler": {
@@ -4465,7 +4745,7 @@
       "consequences": [[1, "2028-07-17", "Promise housing", "election", "National polls (you) +0.4"], [1, "2028-07-17", "Promise housing", "politics", "Cost of living matters more to voters"], [2, "2028-07-17", "Promise ai_safety", "election", "National polls (you) +0.2"], [2, "2028-07-17", "Promise ai_safety", "politics", "AI and jobs matters more to voters"], [3, "2028-10-29", "Event october_surprise", "election", "National polls (you) -0.6"], [3, "2028-10-29", "Event october_surprise", "election", "Campaign cash ($M) +8"], [4, "2028-11-04", "Event jobs_report", "politics", "The economy matters more to voters"], [5, "2028-11-07", "Election 2028", "congress", "Congress: House D 212, Senate D 50"], [7, "2029-01-20", "Inauguration", "executive+politics", "A Republican president takes office (302 electoral votes)"]],
       "nextId": 8
     },
-    "log": ["2028-07-17  The general election begins: Diane Marsh (R) vs Thomas Whitfield (D).", "2028-07-17  Your opponent's campaign: Ground game, steady spending, message chosen weekly. Early in the race, it is building field offices that pay off in November. (It reads the polls as ahead by 1.7.)", "2028-07-17  You promise to pass the Build More Homes Act.", "2028-07-17  You promise to pass the AI Safety Standards Act.", "2028-07-17  PODCAST: Diane Marsh on a top long-form talk show: 15.5M views, good reviews. 24,774 new donors ($0.16M).", "2028-07-17  PODCAST: Diane Marsh on a working-class comedy podcast: 22.9M views, good reviews. 34,349 new donors ($0.22M).", "2028-07-24  PODCAST: Diane Marsh on an influencer stunt show: 29.2M views, rave reviews. 59,935 new donors ($0.38M).", "2028-07-31  PODCAST: Diane Marsh on a comedy roundtable: 8.9M views, mixed reviews. 7,226 new donors ($0.05M).", "2028-08-07  Your opponent's campaign: Battleground blitz, steady spending, message chosen weekly. In a close race, it concentrates on the battlegrounds. (It reads the polls as ahead by 0.3.)", "2028-08-07  PODCAST: Diane Marsh on a sports and culture interview show: 5.5M views, rave reviews. 10,607 new donors ($0.07M).", "2028-08-07  GAFFE: Thomas Whitfield mangles the price of groceries in Michigan.", "2028-08-14  RALLY: A sparse crowd of 5,320 in Georgia; reporters notice the empty seats.", "2028-08-14  PODCAST: Diane Marsh on a science and technology marathon: 6.1M views, good reviews. 7,274 new donors ($0.05M).", "2028-08-21  PODCAST: Diane Marsh on an influencer talk show: 5.8M views, mixed reviews. 4,647 new donors ($0.03M).", "2028-08-21  GAFFE: Thomas Whitfield makes an off-colour joke that goes viral for the wrong reasons.", "2028-08-21  GAFFE: Thomas Whitfield snaps at a voter's question on camera in Minnesota.", "2028-09-04  RALLY: A sparse crowd of 5,100 in Georgia; reporters notice the empty seats.", "2028-09-18  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 1.5.)", "2028-09-18  PODCAST: Diane Marsh on a football and family podcast: 3.7M views, mixed reviews. 3,041 new donors ($0.02M).", "2028-09-18  RALLY: A sparse crowd of 5,010 in Arizona; reporters notice the empty seats.", "2028-09-25  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (+0.1).", "2028-09-25  PODCAST: Diane Marsh on a relationships show: 6.2M views, mixed reviews. 4,382 new donors ($0.03M).", "2028-09-25  RALLY: A sparse crowd of 4,760 in North Carolina; reporters notice the empty seats.", "2028-10-02  PODCAST: Diane Marsh on a business and self-improvement show: 6.1M views, an awkward hour. 1,556 new donors ($0.01M).", "2028-10-09  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (+0.1).", "2028-10-09  PODCAST: Diane Marsh on a veterans and security podcast: 5.3M views, mixed reviews. 4,969 new donors ($0.03M).", "2028-10-09  RALLY: A sparse crowd of 4,620 in Wisconsin; reporters notice the empty seats.", "2028-10-09  GAFFE: Thomas Whitfield snaps at a voter's question on camera in North Carolina.", "2028-10-16  VIRAL: a clip from the sports and beer show racks up millions of views.", "2028-10-16  PODCAST: Diane Marsh on a sports and beer show: 4.1M views, rave reviews. 8,350 new donors ($0.05M).", "2028-10-16  PODCAST: Diane Marsh on a hip-hop morning show: 3.7M views, mixed reviews. 1,717 new donors ($0.01M).", "2028-10-23  Two weeks to go. From now on every day counts: each turn is one day until Election Day.", "2028-10-23  Your opponent's campaign: Air war, all in spending, message chosen weekly. Behind with weeks to go, it floods the air with ads to change the race. (It reads the polls as behind by 2.7.)", "2028-10-23  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (-0.2).", "2028-10-24  PODCAST: Diane Marsh on a tech investors' podcast: 1.6M views, rave reviews. 3,295 new donors ($0.02M).", "2028-10-28  EVENT: October surprise", "2028-10-29  October surprise: Attack the source", "2028-10-30  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 2.4.)", "2028-11-03  PODCAST: Diane Marsh on a conservative talk show: 876K views, good reviews. 1,174 new donors ($0.01M).", "2028-11-03  EVENT: A weak jobs report", "2028-11-04  A weak jobs report: Pivot your message to the economy", "2028-11-06  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 2.3.)", "2028-11-07  Election Night 2028: D 236, R 302. Popular vote R+0.3. Tipping point: PA.", "2028-11-07  You won. House D 212-R 223, Senate D 50-R 50. Choose your agenda.", "2029-01-20  Inauguration Day. Diane Marsh takes the oath with 302 electoral votes and House D 212-R 223, Senate D 50-R 50. Approval 51%, political capital 56.", "2029-01-22  The first hundred days begin. Your flagship: the Build More Homes Act."],
+    "log": ["2028-07-17  The general election begins: Diane Marsh (R) vs Thomas Whitfield (D).", "2028-07-17  Your opponent's campaign: Ground game, steady spending, message chosen weekly. Early in the race, it is building field offices that pay off in November. (It reads the polls as ahead by 1.7.)", "2028-07-17  You promise to pass the Build More Homes Act.", "2028-07-17  You promise to pass the AI Safety Standards Act.", "2028-07-17  PODCAST: Diane Marsh on a top long-form talk show: 15.5M views, good reviews. 24,774 new donors ($0.16M).", "2028-07-17  PODCAST: Diane Marsh on a working-class comedy podcast: 22.9M views, good reviews. 34,349 new donors ($0.22M).", "2028-07-24  PODCAST: Diane Marsh on an influencer stunt show: 29.2M views, rave reviews. 59,935 new donors ($0.38M).", "2028-07-31  PODCAST: Diane Marsh on a comedy roundtable: 8.9M views, mixed reviews. 7,226 new donors ($0.05M).", "2028-08-07  Your opponent's campaign: Battleground blitz, steady spending, message chosen weekly. In a close race, it concentrates on the battlegrounds. (It reads the polls as ahead by 0.3.)", "2028-08-07  PODCAST: Diane Marsh on a sports and culture interview show: 5.5M views, rave reviews. 10,607 new donors ($0.07M).", "2028-08-07  GAFFE: Thomas Whitfield mangles the price of groceries in Michigan.", "2028-08-14  RALLY: A sparse crowd of 5,320 in Georgia; reporters notice the empty seats.", "2028-08-14  PODCAST: Diane Marsh on a science and technology marathon: 6.1M views, good reviews. 7,274 new donors ($0.05M).", "2028-08-21  PODCAST: Diane Marsh on an influencer talk show: 5.8M views, mixed reviews. 4,647 new donors ($0.03M).", "2028-08-21  GAFFE: Thomas Whitfield makes an off-colour joke that goes viral for the wrong reasons.", "2028-08-21  GAFFE: Thomas Whitfield snaps at a voter's question on camera in Minnesota.", "2028-09-04  RALLY: A sparse crowd of 5,100 in Georgia; reporters notice the empty seats.", "2028-09-18  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 1.5.)", "2028-09-18  PODCAST: Diane Marsh on a football and family podcast: 3.7M views, mixed reviews. 3,041 new donors ($0.02M).", "2028-09-18  RALLY: A sparse crowd of 5,010 in Arizona; reporters notice the empty seats.", "2028-09-25  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (+0.1).", "2028-09-25  PODCAST: Diane Marsh on a relationships show: 6.2M views, mixed reviews. 4,382 new donors ($0.03M).", "2028-09-25  RALLY: A sparse crowd of 4,760 in North Carolina; reporters notice the empty seats.", "2028-10-02  PODCAST: Diane Marsh on a business and self-improvement show: 6.1M views, an awkward hour. 1,556 new donors ($0.01M).", "2028-10-09  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (+0.1).", "2028-10-09  PODCAST: Diane Marsh on a veterans and security podcast: 5.3M views, mixed reviews. 4,969 new donors ($0.03M).", "2028-10-09  RALLY: A sparse crowd of 4,620 in Wisconsin; reporters notice the empty seats.", "2028-10-09  GAFFE: Thomas Whitfield snaps at a voter's question on camera in North Carolina.", "2028-10-16  VIRAL: a clip from the sports and beer show racks up millions of views.", "2028-10-16  PODCAST: Diane Marsh on a sports and beer show: 4.1M views, rave reviews. 8,350 new donors ($0.05M).", "2028-10-16  PODCAST: Diane Marsh on a hip-hop morning show: 3.7M views, mixed reviews. 1,717 new donors ($0.01M).", "2028-10-23  Two weeks to go. From now on every day counts: each turn is one day until Election Day.", "2028-10-23  Your opponent's campaign: Air war, all in spending, message chosen weekly. Behind with weeks to go, it floods the air with ads to change the race. (It reads the polls as behind by 2.7.)", "2028-10-23  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (-0.2).", "2028-10-24  PODCAST: Diane Marsh on a tech investors' podcast: 1.6M views, rave reviews. 3,295 new donors ($0.02M).", "2028-10-28  EVENT: October surprise", "2028-10-29  October surprise: Attack the source", "2028-10-30  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 2.4.)", "2028-11-03  PODCAST: Diane Marsh on a conservative talk show: 876K views, good reviews. 1,174 new donors ($0.01M).", "2028-11-03  EVENT: A weak jobs report", "2028-11-04  A weak jobs report: Pivot your message to the economy", "2028-11-06  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 2.3.)", "2028-11-07  Election Night 2028: D 236, R 302. Popular vote R+0.3. Tipping point: PA.", "2028-11-07  You won. House D 212-R 223, Senate D 50-R 50. Choose your agenda and your White House staff.", "2029-01-20  The transition closes with a grade of C (68).", "2029-01-20  Inauguration Day. Diane Marsh takes the oath with 302 electoral votes and House D 212-R 223, Senate D 50-R 50. Approval 51%, political capital 56.", "2029-01-22  The first hundred days begin. Your flagship: the Build More Homes Act."],
     "indicators": [{
         "date": "2029-01-20",
         "approval": 51.093997518747344,
