@@ -49,6 +49,8 @@ export const engine = {
     westWingOptions(kind, index) { return request({ op: 'view', name: 'westwingOptions', kind, index }); },
     press() { return request({ op: 'view', name: 'press' }); },
     terms() { return request({ op: 'view', name: 'terms' }); },
+    sitRoom() { return request({ op: 'view', name: 'sitroom' }); },
+    foreignCountry(country) { return request({ op: 'view', name: 'foreignCountry', country }); },
     verdict() { return request({ op: 'view', name: 'verdict' }); },
     residence() { return request({ op: 'view', name: 'residence' }); },
     /** The budget office's score of moving a policy some steps from where it stands. */

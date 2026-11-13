@@ -4452,6 +4452,7 @@
       "record": [],
       "nextId": 1
     },
+    "foreign": null,
     "news": [],
     "ambientUsed": [],
     "scheduler": {
