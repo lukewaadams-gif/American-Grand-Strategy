@@ -29,6 +29,36 @@ export interface CampaignView {
   debate: string | null; player: Side; opponent: Side; opponentPlan: string; opponentReasoning: string;
   pledges: string[]; opponentPledges: string[]; pendingDecisions: number;
   polls: PollWeek[]; errorSd: number; states: StateView[]; tipping: string | null; news: NewsItem[];
+  /** Present while a campaign is running. */
+  turn?: TurnInfo; staff?: Staff; trail?: Trail; schedule?: Slot[]; activities?: ActivityInfo[];
+}
+
+/** A week, or (from two weeks out) a single day. */
+export interface TurnInfo { daily: boolean; day: number; dailyFrom: string; label: string; weeksToVote: number; }
+
+/** Which parts of the campaign the staff runs. */
+export interface Staff { schedule: boolean; ads: boolean; field: boolean; }
+
+/** The candidate on the trail. Stamina 0-100; the projection is after this turn's events. */
+export interface Trail {
+  stamina: number; staminaAfter: number; eventCosts: number; prep: number; location: string; locationName: string;
+  enthusiasm: number; nameRecognition: number; rallies: number; bestRally: string; nextDebate: string | null;
+}
+
+export type ActivityKind = 'none' | 'crowd' | 'persuade' | 'money' | 'media' | 'groups' | 'prep' | 'rest';
+
+/** One of the week's 21 slots (day x morning/afternoon/evening). */
+export interface Slot {
+  slot: number; day: number; part: number; date: string; activity: string; past: boolean;
+  state: string | null; stateName: string | null; param: number; paramName: string | null;
+  /** A long same-day flight: the event runs at 70% and tires the candidate. */ travel: boolean;
+}
+
+export interface ActivityChoice { name: string; audience?: string; tier?: string; views?: number; lean?: number; refusal?: string | null; }
+
+export interface ActivityInfo {
+  id: string; label: string; short: string; kind: ActivityKind; cost: number; stamina: number; local: boolean; description: string;
+  choices: ActivityChoice[];
 }
 
 export interface DecisionOption { label: string; detail: string; tag: string | null; tone: Tone | null; command: object; }

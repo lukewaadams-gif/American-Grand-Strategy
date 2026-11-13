@@ -6,10 +6,11 @@ import { h } from './core/dom.js';
 import { day } from './core/format.js';
 import { resetWarRoomMemory, warRoom, type WarRoomState } from './campaign/warroom.js';
 import { decisionCard, type DialogHost } from './campaign/decision.js';
+import { closeMenu, menuOpen } from './core/menu.js';
 import { usePalette, type PaletteName } from './campaign/palette.js';
 
 const root = document.getElementById('app')!;
-const state: WarRoomState = { layer: 'margin', selected: null };
+const state: WarRoomState = { layer: 'margin', selected: null, tab: 'schedule', picking: null };
 let toastTimer = 0;
 
 const host: DialogHost = (() => {
@@ -46,12 +47,30 @@ function render(): void {
   try { v = engine.campaign(); } catch (e) { toast(String(e)); return; }
   const focusKey = document.activeElement?.getAttribute('aria-label') ?? null;
   const scroll = document.getElementById('main')?.scrollTop ?? 0;
-  root.replaceChildren(warRoom(v, state, { runWeek, openDecisions, setLayer: id => { state.layer = id; render(); }, select: c => { state.selected = c; render(); } }));
+  root.replaceChildren(warRoom(v, state, {
+    runWeek, openDecisions, toast, order,
+    setLayer: id => { state.layer = id; render(); },
+    select: c => { state.selected = c; render(); },
+    setTab: id => { state.tab = id; render(); document.getElementById('tab-' + id)?.focus(); },
+    pick: slot => {
+      state.picking = slot;
+      render();
+      if (slot !== null) document.querySelector<SVGElement>('.usmap path.state[tabindex="0"]')?.focus({ preventScroll: false });
+    },
+  }));
   const main = document.getElementById('main');
   if (main) main.scrollTop = scroll;
   if (focusKey) [...root.querySelectorAll<HTMLElement>('[aria-label]')].find(e => e.getAttribute('aria-label') === focusKey)?.focus({ preventScroll: true });
   document.title = `Campaign ${v.electionDay.slice(0, 4)} · ${day(v.date)} · American Grand Strategy`;
   if (v.phase !== 'GENERAL_CAMPAIGN_2028' && v.phase !== 'REELECTION_CAMPAIGN_2032') electionOver(v);
+}
+
+/** A campaign order (schedule, ads, field, staff): applied at once and redrawn, or refused with the reason shown. */
+function order(o: object): boolean {
+  try { engine.command({ type: 'Campaign', order: o }); }
+  catch (e) { toast(e instanceof Refused ? e.message : String(e)); return false; }
+  render();
+  return true;
 }
 
 function openDecisions(after: () => void = render): void {
@@ -87,8 +106,13 @@ let saveText = '';
 function restart(): void { engine.load(saveText); resetWarRoomMemory(); state.selected = null; render(); }
 
 document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runWeek(); }
-  else if (e.key === 'Escape') { if (document.querySelector('.scrim')) host.close(); else if (state.selected) { state.selected = null; render(); } }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); closeMenu(false); runWeek(); }
+  else if (e.key === 'Escape') {
+    if (menuOpen()) return;
+    if (document.querySelector('.scrim')) host.close();
+    else if (state.picking !== null) { state.picking = null; render(); }
+    else if (state.selected) { state.selected = null; render(); }
+  }
 });
 
 async function boot(): Promise<void> {

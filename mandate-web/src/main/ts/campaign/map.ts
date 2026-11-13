@@ -68,6 +68,8 @@ export interface MapOptions {
   view: CampaignView; layer: Layer; selected: string | null;
   onSelect(code: string): void;
   onHover(code: string | null): void;
+  /** A right-click (or the context-menu key) on a state: the screen point to open a menu at. */
+  onContext?(code: string, x: number, y: number): void;
 }
 
 /** Draws the map; returns the SVG (it keeps its labels at a readable size as it resizes). */
@@ -75,7 +77,7 @@ export function usMap(o: MapOptions): SVGSVGElement {
   const { view, layer: L } = o;
   const byCode = new Map(view.states.map(st => [st.code, st]));
   const svg = s('svg', { class: 'usmap', viewBox: `0 0 ${MAP_W} ${VIEWBOX.height}`, role: 'group',
-    'aria-label': `Map of the states: ${L.question}. Arrow keys move between states; Enter picks one.` });
+    'aria-label': `Map of the states: ${L.question}. Arrow keys move between states; Enter picks one; the context-menu key or Shift+F10 sends the candidate.` });
   const shapes = s('g', { class: 'shapes' }), labels = s('g', { class: 'labels', 'aria-hidden': 'true' }), callouts = s('g', { class: 'callouts' });
   const ring = s('path', { class: 'focus-ring', d: '' }), pick = s('path', { class: 'pick-ring', d: '' });
   const paths = new Map<string, SVGPathElement>();
@@ -94,8 +96,15 @@ export function usMap(o: MapOptions): SVGSVGElement {
     p.addEventListener('mouseleave', () => o.onHover(null));
     p.addEventListener('focus', () => { ring.setAttribute('d', shape.d); o.onHover(shape.code); });
     p.addEventListener('blur', () => ring.setAttribute('d', ''));
+    p.addEventListener('contextmenu', e => { if (!o.onContext) return; e.preventDefault(); o.onContext(shape.code, e.clientX, e.clientY); });
     p.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); o.onSelect(shape.code); return; }
+      if (o.onContext && (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10'))) {
+        e.preventDefault();
+        const r = p.getBoundingClientRect();
+        o.onContext(shape.code, r.left + r.width / 2, r.top + r.height / 2);
+        return;
+      }
       const dir: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
       const d = dir[e.key];
       if (!d) return;
@@ -126,6 +135,7 @@ export function usMap(o: MapOptions): SVGSVGElement {
     const code = s('text', { fill: ink, class: 'code' }, c.code), val = s('text', { fill: ink, class: 'value', 'text-anchor': 'end' }, value);
     const box = s('g', { class: 'callout', 'data-code': c.code, 'aria-hidden': 'true' }, line, rect, code, val);
     box.addEventListener('click', () => o.onSelect(c.code));
+    box.addEventListener('contextmenu', e => { if (!o.onContext) return; e.preventDefault(); o.onContext(c.code, e.clientX, e.clientY); });
     box.addEventListener('mouseenter', () => o.onHover(c.code));
     box.addEventListener('mouseleave', () => o.onHover(null));
     callouts.append(box);

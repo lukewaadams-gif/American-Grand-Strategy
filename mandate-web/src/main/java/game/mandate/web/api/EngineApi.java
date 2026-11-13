@@ -130,6 +130,14 @@ public final class EngineApi {
         v.put("states", states);
         PollPoint last = polls.isEmpty() ? null : polls.get(polls.size() - 1);
         v.put("tipping", last == null ? null : last.tippingPoint());
+        boolean campaigning = g.phase() == Phase.GENERAL_CAMPAIGN_2028 || g.phase() == Phase.REELECTION_CAMPAIGN_2032;
+        if (campaigning) {
+            v.put("turn", turn(g));
+            v.put("staff", staff(g));
+            v.put("trail", trail(g));
+            v.put("schedule", schedule(g));
+            v.put("activities", activities(g));
+        }
         v.put("news", news(g, 0));
         var result = g.phase() == Phase.REELECTION_CAMPAIGN_2032 ? g.result2032() : g.result2028();
         result.ifPresent(r -> {
@@ -142,6 +150,110 @@ public final class EngineApi {
             v.put("result", m);
         });
         return v;
+    }
+
+    // ---- the candidate's schedule (Battleground 2028's) -------------------------------------------------------------
+
+    /** The turn: a week, or a day of the final stretch. */
+    static Map<String, Object> turn(GameEngine g) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        int day = g.campaignDay();
+        m.put("daily", day >= 0);
+        m.put("day", day);
+        m.put("dailyFrom", game.mandate.core.campaign.CampaignEngine.Turn.monday(g.electionDay()).minusWeeks(2).toString());
+        m.put("label", day >= 0 ? game.mandate.core.campaign.CampaignOrders.DAY[day] + " " + Notable.date(g.date()) : "The week of " + Notable.date(g.date()));
+        m.put("weeksToVote", g.campaignTurn().weeksToVote());
+        return m;
+    }
+
+    static Map<String, Object> staff(GameEngine g) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        for (var a : game.mandate.core.campaign.ElectionState.StaffArea.values()) m.put(a.name().toLowerCase(), g.election().staffRuns(a));
+        return m;
+    }
+
+    /** The candidate on the trail: stamina now and after the turn's events, their cost, debate preparation, where they are. */
+    static Map<String, Object> trail(GameEngine g) {
+        CampaignSide me = g.player();
+        var o = me.orders();
+        int day = g.campaignDay();
+        int s0 = day >= 0 ? day * 3 : 0, s1 = day >= 0 ? s0 + 3 : game.mandate.core.campaign.CampaignOrders.SLOTS;
+        double fm = 1.3 - me.ratings().sta() / 150.0, fat = 0, cost = 0;
+        for (int i = s0; i < s1; i++) { fat += o.activity(i).fatigue() * fm * 0.55; cost += o.activity(i).cost(); }
+        double after = Math.max(5, Math.min(100, me.stamina() - fat + (38 + 0.12 * me.ratings().sta()) * (day >= 0 ? 1.0 / 7 : 1)));
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("stamina", r2(me.stamina())); m.put("staminaAfter", r2(after)); m.put("eventCosts", r2(cost));
+        m.put("prep", r2(me.prep()));
+        m.put("location", me.location()); m.put("locationName", g.states().get(me.location()).name());
+        m.put("enthusiasm", r3(me.enthusiasm())); m.put("nameRecognition", r3(me.nameRecognition()));
+        m.put("rallies", me.rallies()); m.put("bestRally", me.bestRally());
+        LocalDate next = null;
+        for (LocalDate d : g.campaignDebates()) if (!d.isBefore(g.date()) && (next == null || d.isBefore(next))) next = d;
+        m.put("nextDebate", next == null ? null : next.toString());
+        return m;
+    }
+
+    /** The week's 21 slots as the schedule shows them: what, where, the choice, whether it is past, and long same-day flights. */
+    static List<Object> schedule(GameEngine g) {
+        CampaignSide me = g.player();
+        var geo = g.campaignEngine().geography();
+        var o = me.orders();
+        int day = g.campaignDay(), from = day >= 0 ? day * 3 : 0;
+        LocalDate monday = game.mandate.core.campaign.CampaignEngine.Turn.monday(g.date());
+        int prev = geo.index(me.location());
+        List<Object> out = new ArrayList<>();
+        for (int i = 0; i < game.mandate.core.campaign.CampaignOrders.SLOTS; i++) {
+            var a = o.activity(i);
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("slot", i); m.put("day", i / 3); m.put("part", i % 3); m.put("date", monday.plusDays(i / 3).toString());
+            m.put("activity", a.name()); m.put("past", i < from);
+            int loc = a.local() ? (o.location(i) >= 0 ? o.location(i) : prev) : -1;
+            boolean travel = false;
+            if (i >= from && loc >= 0) {
+                travel = loc != prev && i % 3 != 0 && geo.distance(loc, prev) > 220;
+                prev = loc;
+            }
+            m.put("state", loc >= 0 ? geo.code(loc) : null);
+            m.put("stateName", loc >= 0 ? g.states().get(geo.code(loc)).name() : null);
+            m.put("param", o.parameter(i));
+            m.put("paramName", a.parameterName(o.parameter(i)));
+            m.put("travel", travel);
+            out.add(m);
+        }
+        return out;
+    }
+
+    /** The activity menu, in Battleground 2028's order, with costs and the stamina each costs this candidate. */
+    static List<Object> activities(GameEngine g) {
+        CampaignSide me = g.player();
+        double fm = 1.3 - me.ratings().sta() / 150.0;
+        var order = List.of(game.mandate.core.campaign.Activity.RALLY, game.mandate.core.campaign.Activity.TOWN_HALL, game.mandate.core.campaign.Activity.RETAIL,
+                game.mandate.core.campaign.Activity.DINNER, game.mandate.core.campaign.Activity.SPEECH, game.mandate.core.campaign.Activity.UNION,
+                game.mandate.core.campaign.Activity.CHURCH, game.mandate.core.campaign.Activity.CAMPUS, game.mandate.core.campaign.Activity.COMMUNITY,
+                game.mandate.core.campaign.Activity.FUNDRAISER, game.mandate.core.campaign.Activity.CALL_TIME, game.mandate.core.campaign.Activity.PODCAST,
+                game.mandate.core.campaign.Activity.TV, game.mandate.core.campaign.Activity.CROSSOVER, game.mandate.core.campaign.Activity.PREP,
+                game.mandate.core.campaign.Activity.REST);
+        List<Object> out = new ArrayList<>();
+        for (var a : order) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", a.name()); m.put("label", a.label()); m.put("short", a.shortLabel()); m.put("kind", a.kind().name().toLowerCase());
+            m.put("cost", a.cost()); m.put("stamina", r2(a.fatigue() * fm * 0.55)); m.put("local", a.local()); m.put("description", a.description());
+            List<Object> choices = new ArrayList<>();
+            for (int p = 0; p < a.parameterChoices(); p++) {
+                Map<String, Object> c = new LinkedHashMap<>();
+                c.put("name", a.parameterName(p));
+                if (a == game.mandate.core.campaign.Activity.PODCAST) {
+                    var show = game.mandate.core.campaign.Show.ALL.get(p);
+                    c.put("audience", show.audience()); c.put("tier", game.mandate.core.campaign.Show.TIER_NAME[show.tier()]);
+                    c.put("views", show.views()); c.put("lean", show.lean());
+                    c.put("refusal", g.campaignEngine().showRefusal(me, p, g.date()));
+                }
+                choices.add(c);
+            }
+            m.put("choices", choices);
+            out.add(m);
+        }
+        return out;
     }
 
     /** What waits for an answer before the turn can end: events and the week's debate, each option with its command. */
