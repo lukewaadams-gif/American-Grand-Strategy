@@ -596,7 +596,9 @@ public final class EconomyEngine {
     private static final class Run {
         final double[] growth = new double[3], u = new double[3], jobs = new double[3], inflation = new double[3], output = new double[3];
         final double[] prices = new double[Part.COUNT], sectors = new double[6];
-        double deficit, direct, cost, debt, tenYear;
+        /** Each week's deficit (% of GDP), the policy's own money (% of GDP) and nominal GDP ($ billions). */
+        final double[] weekDeficit = new double[520], weekOwn = new double[520], weekNominal = new double[520];
+        double deficit, debt, tenYear;
 
         Score minus(Run base) {
             double[] g = new double[3], un = new double[3], j = new double[3], in = new double[3], o = new double[3];
@@ -607,7 +609,14 @@ public final class EconomyEngine {
             double[] pr = new double[Part.COUNT], se = new double[6];
             for (int i = 0; i < Part.COUNT; i++) pr[i] = prices[i] - base.prices[i];
             for (int i = 0; i < 6; i++) se[i] = i == 0 || i == 2 ? (sectors[i] / base.sectors[i] - 1) * 100 : sectors[i] - base.sectors[i];
-            return new Score(g, un, j, in, o, deficit - base.deficit, direct - base.direct, cost - base.cost, debt - base.debt, tenYear - base.tenYear, pr, se);
+            // dollars at the baseline's GDP, as the budget office prices both paths, so a law that shrinks the economy
+            // is not credited with smaller deficits in dollars for it
+            double direct = 0, cost = 0;
+            for (int w = 0; w < 520; w++) {
+                direct += weekOwn[w] / 100 * base.weekNominal[w] / 52;
+                cost += (weekDeficit[w] - base.weekDeficit[w]) / 100 * base.weekNominal[w] / 52;
+            }
+            return new Score(g, un, j, in, o, deficit - base.deficit, direct, cost, debt - base.debt, tenYear - base.tenYear, pr, se);
         }
     }
 
@@ -628,10 +637,10 @@ public final class EconomyEngine {
             week(s, b, MarketContext.calm(), rng);
             if (w % 4 == 0) { jobsReport(s, rng); inflationReport(s, rng); }
             if ((w * 8) / 52 != ((w - 1) * 8) / 52) fedMeeting(s, b);
-            double nominal = p.nominalGdp * Math.exp(s.logY[s.ring] - y0 + s.cpiLog - c0);
+            r.weekNominal[w - 1] = p.nominalGdp * Math.exp(s.logY[s.ring] - y0 + s.cpiLog - c0);
+            r.weekDeficit[w - 1] = b.deficit;
+            for (Program pr : money) r.weekOwn[w - 1] += pr.pctGdp(s.week);
             r.deficit += b.deficit / 520;
-            r.cost += b.deficit / 100 * nominal / 52;
-            for (Program pr : money) r.direct += pr.pctGdp(s.week) / 100 * nominal / 52;
             if (k < 3 && w == 52 * Score.YEARS[k]) {
                 r.growth[k] = s.growth; r.u[k] = s.unemployment; r.inflation[k] = s.inflation; r.output[k] = (s.logY[s.ring] - y0) * 100;
                 r.jobs[k] = p.labourForce / 1000 * Math.exp(s.population) * (s.participation / p.participation) * (1 - s.unemployment / 100);

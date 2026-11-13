@@ -17,6 +17,8 @@ import { calendar, cancelCalendarPick } from './presidency/calendar.js';
 import { capitalLedger } from './presidency/paper.js';
 import { SPEEDS, watchDialog } from './presidency/watch.js';
 import { briefingBook, countryRoom } from './presidency/rooms.js';
+import { cabinetRoom } from './presidency/cabinet.js';
+import { scoreView } from './presidency/score.js';
 
 const root = document.getElementById('app')!;
 const params = new URLSearchParams(location.search);
@@ -212,13 +214,48 @@ function duskHour(month: number): number {
 // ---- what the room's objects and doors do in this milestone --------------------------------------------------------
 
 const LATER: Record<string, { title: string; body: string; milestone: number; stage: string }> = {
-  phone: { title: 'The telephone', body: 'Call members of Congress for their votes, with favours and promises, and foreign leaders about trade, alliances and crises.', milestone: 4, stage: 'Congress and the budget (calls abroad with milestone 7)' },
-  roosevelt: { title: 'The Roosevelt Room', body: 'Congress: the twelve blocs and their leaders, the whip count, drafting and floor votes, hours on the Hill, the budget, shutdowns and the debt limit.', milestone: 4, stage: 'Congress and the budget' },
-  westwing: { title: 'The West Wing', body: 'The staff and the cabinet: skills, morale, confirmations, executive orders and rules, the courts, and the vice president’s missions.', milestone: 5, stage: 'the executive, the press and storylines' },
-  press: { title: 'The Press Briefing Room', body: 'Press conferences, interviews, addresses and the State of the Union; the outlets’ tone, the party’s wings and the opposition’s strategy.', milestone: 5, stage: 'the executive, the press and storylines' },
-  residence: { title: 'The Residence', body: 'Family, rest and health: where stamina comes back and the president’s private life goes on.', milestone: 6, stage: 'the economy and the policy table' },
-  globe: { title: 'The Situation Room', body: 'Forty countries, calls and summits, crises week by week, operations and covert action, and the standing deployments.', milestone: 7, stage: 'the world' },
+  phone: { title: 'The telephone', body: 'Call members of Congress for their votes, with favours and promises, and foreign leaders about trade, alliances and crises.', milestone: 5, stage: 'Congress and the budget (calls abroad with milestone 8)' },
+  roosevelt: { title: 'The Roosevelt Room', body: 'Congress: the twelve blocs and their leaders, the whip count, drafting and floor votes, hours on the Hill, the budget, shutdowns and the debt limit.', milestone: 5, stage: 'Congress and the budget' },
+  westwing: { title: 'The West Wing', body: 'The staff and the cabinet: skills, morale, confirmations, executive orders and rules, the courts, and the vice president’s missions.', milestone: 6, stage: 'the executive, the press and storylines' },
+  press: { title: 'The Press Briefing Room', body: 'Press conferences, interviews, addresses and the State of the Union; the outlets’ tone, the party’s wings and the opposition’s strategy.', milestone: 6, stage: 'the executive, the press and storylines' },
+  residence: { title: 'The Residence', body: 'Family, rest and health: where stamina comes back and the president’s private life goes on.', milestone: 7, stage: 'the Residence and the voter groups' },
+  globe: { title: 'The Situation Room', body: 'Forty countries, calls and summits, crises week by week, operations and covert action, and the standing deployments.', milestone: 8, stage: 'the world' },
 };
+
+/** The West Wing: the Cabinet Room opens now; the staff and the cabinet secretaries with milestone 6. */
+function westWing(): void {
+  const l = LATER['westwing']!;
+  host.open(h('div', { class: 'dialog-card' },
+    h('div', { class: 'eyebrow' }, 'The West Wing'),
+    h('h2', { class: 'dialog-title' }, 'Down the hall'),
+    h('div', { class: 'ww-doors' },
+      h('button', { class: 'btn primary', type: 'button', onclick: () => openCabinet() }, 'The Cabinet Room: the policy table'),
+      h('p', { class: 'muted small' }, 'Every policy, where it stands, and what the budget office says a step would do. Laws move it from the Hill; orders and rules come with the staff.'),
+      h('button', { class: 'btn', type: 'button', disabled: true }, 'The staff and the cabinet secretaries'),
+      h('p', { class: 'muted small' }, `${l.body} They open with milestone ${l.milestone}: ${l.stage}.`)),
+    h('div', { class: 'dialog-foot' }, h('button', { class: 'btn quiet', type: 'button', onclick: () => host.close() }, 'Back to the Oval Office'))), 'The West Wing');
+}
+
+function openCabinet(): void {
+  host.open(cabinetRoom(engine.cabinet(), {
+    score: (policy, steps) => engine.score(policy, steps),
+    billScore: bill => engine.billScore(bill),
+    back: () => host.close(),
+  }), 'The Cabinet Room');
+}
+
+/** A bill's score behind a disclosure, run when it is opened (the budget office takes a moment). */
+function billScoreDisclosure(id: string, law: boolean): HTMLElement {
+  if (law) return h('span', { class: 'muted small' }, 'Law: its effects build in the briefing book');
+  const body = h('div', { class: 'ov-score' });
+  const d = h('details', { class: 'ov-score-wrap' }, h('summary', null, 'The budget office’s score'), body);
+  d.addEventListener('toggle', () => {
+    if (d.open && !body.childElementCount) {
+      try { body.append(scoreView(engine.billScore(id), 'h4')); } catch (e) { body.append(h('p', { class: 'muted small' }, 'No score: ' + String(e))); }
+    }
+  });
+  return d;
+}
 
 function soon(id: string): void {
   const l = LATER[id]!;
@@ -240,8 +277,10 @@ function openAgenda(): void {
   const v = engine.presidency();
   const hd = v.hundredDays;
   host.open(card('Your agenda', v.bills.length ? `${v.bills.length} ${v.bills.length === 1 ? 'bill' : 'bills'} on your agenda` : 'No agenda yet',
-    v.bills.length ? h('ul', { class: 'ov-dialog-list' }, ...v.bills.map(b => h('li', null, h('span', null, b.name), h('span', { class: 'pill' }, b.stage)))) : null,
-    h('p', { class: 'muted' }, congressLine(v.congress) + '. The whip count and the floor open in the Roosevelt Room with milestone 4.'),
+    v.bills.length ? h('ul', { class: 'ov-dialog-list ov-agenda' }, ...v.bills.map(b => h('li', null,
+      h('div', { class: 'ov-agenda-head' }, h('span', null, b.name), h('span', { class: 'pill' }, b.stage)),
+      billScoreDisclosure(b.id, b.stage === 'Law')))) : null,
+    h('p', { class: 'muted' }, congressLine(v.congress) + '. The whip count and the floor open in the Roosevelt Room with milestone 5. Every policy and its score is in the Cabinet Room, in the West Wing.'),
     hd ? h('section', { class: 'ov-delegate', 'aria-labelledby': 'ov-delegate-title' },
       h('h3', { class: 'ov-delegate-title', id: 'ov-delegate-title' }, `The first hundred days, week ${Math.min(hd.week, hd.weeks)} of ${hd.weeks}: hand it to the staff`),
       h('p', { class: 'muted' }, 'Until Congress and the West Wing open in their rooms, the chief of staff can run the hundred days’ business. The staff is cautious: it trades for votes at half strength and nominates experts.'),
@@ -270,6 +309,9 @@ function openSpot(id: SpotId, v: PresidencyView): void {
     case 'windows':
       if (!v.week) { toast('The country\u2019s verdict starts at the inauguration.'); return; }
       host.open(countryRoom(engine.country(), () => host.close()), 'The country');
+      return;
+    case 'westwing':
+      westWing();
       return;
     default:
       soon(id);

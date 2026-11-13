@@ -429,6 +429,37 @@ The minimum wage and zoning targets need the policy table (step 3) and are teste
 - **Over 14 full autopilot terms:** the president was re-elected in 6 (4 before this step); terms without a recession end with approval at 47–53.
 - **Still on the old columns:** bills.csv's `deficit_pct_gdp` still prices a bill under debate (the markets' "pending deficit") and the hundred days' design screen, and its impulses guide the autopilot's choices. The screens in step 5 show the table's score instead.
 
+## Step 5 as built: the screens (13 November 2026)
+
+- **A score** (the Cabinet Room, the agenda's folders) leads with one plain sentence: what it does to output (after ten years, or by year three if it fades), jobs if notable, the price people notice most, and its ten-year cost. Then the numbers:
+  - output, growth, jobs, unemployment and inflation after one, three and ten years, each with its range;
+  - the ten-year cost as the budget office scores it (and its range as the law's effects turn out), and the change in the deficit with interest and the economy's response, both in dollars at the baseline's GDP;
+  - the debt, and the 10-year yield;
+  - prices and industries after five years;
+  - the other outcomes, and where the numbers come from.
+- **The Cabinet Room**, through the West Wing door:
+  - the twelve areas, each policy's level against 2029;
+  - a policy's levels, routes, cost per step, public support and the party that wants it, evidence and lag, who gains and who pays, the precedent, the economics, and its moves since the inauguration;
+  - the score of a step up or down;
+  - the game's bills as their steps, with each bill's score;
+  - what the moves so far have done beyond the economy.
+- **The briefing book adds:**
+  - prices part by part, with core inflation;
+  - the industries with their trends and drivers;
+  - the budget (revenue against mandatory, discretionary, interest and the laws' programs, with the deficit, debt and the average rate on the debt);
+  - **What your laws have done:** each law's effect so far on output, unemployment, prices and this year's deficit, from its own channels, with what it does at full effect, and the Fed's response to all of them as one line. A law still building says so rather than showing zeros.
+- **The Capital Ledger** runs the budget office's verdict when a law passes ("Budget office: the Build More Homes Act will cost...").
+- **Fixes found on screen:**
+  - a pay-for now phases in with the money it pays for; it had been cutting demand before the bill spent anything;
+  - scores price both paths at the baseline's GDP, so a law that shrinks the economy is not credited with smaller deficits in dollars.
+
+## Step 6: the checks
+
+- **Engine:** the calibration tests (`EconomyModelTest`, `PolicyScoreTest`), the releases (`EconomyReleasesTest`), the bills (`BillsOnTheTableTest`), saves from before the model, the architecture tests (including every data file embedded for the browser), and the rest of the suite all pass. The golden fingerprints were regenerated on purpose at each step.
+- **Parity:** the browser and Java builds agree on 40 seeds, on six full terms, and on four scores.
+- **Balance:** over 14 full autopilot terms, about one recession in six years. Terms without one end with approval at 47–53, as before; the president was re-elected in 6 of 14.
+- **Browser:** a new script, `economy.js`, covers the briefing book, the West Wing, the Cabinet Room, a policy's and a bill's score, and the agenda's scores. Every view passes axe (WCAG 2.1 AA), keeps text at 12 px or more, and does not scroll sideways at 1600, 1280 and 390 pixels wide. A score takes 130–180 ms in the browser. The milestone 3 and campaign suites still pass.
+
 ## What changes elsewhere
 
 - **The economy engine is rewritten.** Its interface stays: the weekly step, the Fed's meetings, the jobs and inflation reports, gas and the deficit. So the hundred days, the governing week and the campaign keep working.

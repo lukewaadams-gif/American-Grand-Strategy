@@ -27,7 +27,7 @@ export const SPOTS: Spot[] = [
   { id: 'paper', x: 690, y: 752, w: 220, h: 70, label: "Today's paper: The Capital Ledger" },
   { id: 'windows', x: 585, y: 120, w: 430, h: 255, label: 'The windows: the country' },
   { id: 'globe', x: 300, y: 420, w: 110, h: 150, label: 'The globe: the Situation Room' },
-  { id: 'westwing', x: 50, y: 200, w: 110, h: 300, label: 'To the West Wing: staff and cabinet' },
+  { id: 'westwing', x: 50, y: 200, w: 110, h: 300, label: 'To the West Wing: the Cabinet Room and the staff' },
   { id: 'press', x: 205, y: 150, w: 90, h: 270, label: 'To the Press Briefing Room' },
   { id: 'roosevelt', x: 1180, y: 160, w: 90, h: 250, label: 'To the Roosevelt Room: Congress' },
   { id: 'residence', x: 1440, y: 200, w: 110, h: 300, label: 'To the Residence' },

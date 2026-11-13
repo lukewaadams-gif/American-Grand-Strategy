@@ -28,6 +28,8 @@ public final class BillCatalog {
 
     public List<Bill> availableTo(Party p) { return bills.stream().filter(b -> b.availableTo(p)).toList(); }
 
+    public boolean has(String id) { return bills.stream().anyMatch(b -> b.id().equals(id)); }
+
     public Bill get(String id) {
         return bills.stream().filter(b -> b.id().equals(id)).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Unknown bill " + id));

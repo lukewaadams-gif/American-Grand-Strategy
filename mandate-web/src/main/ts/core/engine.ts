@@ -1,6 +1,6 @@
 // The engine: the Java simulation compiled to JavaScript (target/preview/engine/engine.js), behind one call that
 // takes and returns JSON. Everything the interface shows comes from its view models; everything it does is a command.
-import type { CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView } from './types.js';
+import type { CabinetView, CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView, ScoreView } from './types.js';
 
 interface EngineModule { call(request: string): string; }
 let mod: EngineModule | null = null;
@@ -27,6 +27,11 @@ export const engine = {
   paper(): PaperView { return request<PaperView>({ op: 'view', name: 'paper' }); },
   country(): CountryView { return request<CountryView>({ op: 'view', name: 'country' }); },
   economy(): EconomyView { return request<EconomyView>({ op: 'view', name: 'economy' }); },
+  cabinet(): CabinetView { return request<CabinetView>({ op: 'view', name: 'cabinet' }); },
+  /** The budget office's score of moving a policy some steps from where it stands. */
+  score(policy: string, steps: number): ScoreView { return request<ScoreView>({ op: 'view', name: 'score', policy, steps }); },
+  /** The budget office's score of one of the game's bills. */
+  billScore(bill: string): ScoreView { return request<ScoreView>({ op: 'view', name: 'billScore', bill }); },
   decisions(): Decision[] { return request<{ decisions: Decision[] }>({ op: 'view', name: 'decisions' }).decisions; },
   /** Applies a command (in the save file's command format); returns the log lines it produced, newest first. */
   command(command: object): NewsItem[] { return request<{ news: NewsItem[] }>({ op: 'command', command }).news; },

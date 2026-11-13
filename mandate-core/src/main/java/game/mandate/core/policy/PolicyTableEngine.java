@@ -89,35 +89,67 @@ public final class PolicyTableEngine {
     public record Passed(List<Effect> effects, List<Move> moves, double reaction, double cost) {}
 
     public Passed enactBill(PolicyTableState s, Effect.LawPassed law, LocalDate date, DeterministicRandomManager rng) {
-        List<Effect> effects = new ArrayList<>();
+        List<Effect.PolicyStep> steps = new ArrayList<>();
         List<Move> moves = new ArrayList<>();
-        double reaction = 0, cost = 0;
+        double reaction = 0;
         for (Map.Entry<String, Integer> e : catalog.bill(law.billId()).entrySet()) {
             Moved m = moveAnyway(s, catalog.get(e.getKey()), e.getValue(), Route.BILL, law.law(), date, rng);
             moves.addAll(m.moves());
             for (Effect x : m.effects()) {
-                if (x instanceof Effect.Approval a) { reaction += a.points(); continue; }
-                Effect.PolicyStep p = (Effect.PolicyStep) x;
-                double[] ch = p.channels().clone();
-                for (int i = 0; i < ch.length; i++) ch[i] *= law.channelScale();
-                Effect.PolicyStep scaled = new Effect.PolicyStep(p.id(), p.label(), p.fiscalClass(), p.pctGdp() * law.moneyScale(), p.phase(), p.lagWeeks(),
-                        p.draw(), ch);
-                cost += scaled.pctGdp();
-                effects.add(scaled);
+                if (x instanceof Effect.Approval a) reaction += a.points();
+                else steps.add(scaled((Effect.PolicyStep) x, law));
             }
         }
-        // the pay-for: taxes on the wealthy and corporations, or cuts elsewhere, cover part of what the bill adds
-        double share = switch (law.payFor()) { case "REVENUE" -> 0.8; case "CUTS" -> 0.7; default -> 0; };
-        if (cost > 0 && share > 0) {
-            boolean revenue = law.payFor().equals("REVENUE");
-            double[] ch = new double[Channel.COUNT];
-            if (revenue) ch[Channel.USER_COST.ordinal()] = 1.5 * cost * share / 0.3;   // about 1.5% on the cost of capital per 0.3% of GDP raised
-            effects.add(new Effect.PolicyStep(law.billId() + "@" + date + "-payfor", law.law() + ": " + (revenue ? "taxes on the wealthy and corporations" : "cuts elsewhere"),
-                    revenue ? FiscalClass.TAX_HIGH : FiscalClass.PURCHASES, -cost * share, new double[]{1}, 13, 1, ch));
-            cost -= cost * share;
+        double cost = payFor(steps, law, law.billId() + "@" + date + "-payfor");
+        return new Passed(new ArrayList<Effect>(steps), moves, Math.max(-5, Math.min(5, reaction * law.moneyScale())), cost);
+    }
+
+    /** What a bill would do at a given luck for every step (-1, 0, +1), from where the table stands, without moving it. */
+    public List<Effect.PolicyStep> billSteps(PolicyTableState s, Effect.LawPassed law, double draw) {
+        List<Effect.PolicyStep> steps = new ArrayList<>();
+        int k = 0;
+        for (Map.Entry<String, Integer> e : catalog.bill(law.billId()).entrySet()) {
+            Def d = catalog.get(e.getKey());
+            int level = s.level(d.id()), target = Math.max(0, Math.min(d.top(), level + e.getValue())), sign = Integer.signum(target - level);
+            for (int i = 0; i < Math.abs(target - level); i++) {
+                Effect.PolicyStep st = step(d, level + i * sign, sign, draw, law.billId() + "#score" + k++, law.law());
+                if (st != null) steps.add(scaled(st, law));
+            }
         }
-        reaction *= law.moneyScale();
-        return new Passed(effects, moves, Math.max(-5, Math.min(5, reaction)), cost);
+        payFor(steps, law, law.billId() + "#score-payfor");
+        return steps;
+    }
+
+    private static Effect.PolicyStep scaled(Effect.PolicyStep p, Effect.LawPassed law) {
+        double[] ch = p.channels().clone();
+        for (int i = 0; i < ch.length; i++) ch[i] *= law.channelScale();
+        return new Effect.PolicyStep(p.id(), p.label(), p.fiscalClass(), p.pctGdp() * law.moneyScale(), p.phase(), p.lagWeeks(), p.draw(), ch);
+    }
+
+    /**
+     * The pay-for: taxes on the wealthy and corporations, or cuts elsewhere, cover part of what the bill adds, phased in
+     * with the money they pay for (one offset for each step that costs money). Adds the offsets to {@code steps} and
+     * returns what the bill still adds to the deficit at full effect, % of GDP.
+     */
+    private static double payFor(List<Effect.PolicyStep> steps, Effect.LawPassed law, String id) {
+        double cost = 0, spending = 0;
+        for (Effect.PolicyStep p : steps) { cost += p.pctGdp(); spending += Math.max(0, p.pctGdp()); }
+        double share = switch (law.payFor()) { case "REVENUE" -> 0.8; case "CUTS" -> 0.7; default -> 0; };
+        if (cost <= 0 || share <= 0) return cost;
+        boolean revenue = law.payFor().equals("REVENUE");
+        double f = share * cost / spending;
+        List<Effect.PolicyStep> offsets = new ArrayList<>();
+        int k = 0;
+        for (Effect.PolicyStep p : steps) {
+            if (p.pctGdp() <= 0) continue;
+            double offset = f * p.pctGdp();
+            double[] ch = new double[Channel.COUNT];
+            if (revenue) ch[Channel.USER_COST.ordinal()] = 1.5 * offset / 0.3;   // about 1.5% on the cost of capital per 0.3% of GDP raised
+            offsets.add(new Effect.PolicyStep(id + (k++ == 0 ? "" : "-" + k), law.law() + ": " + (revenue ? "taxes on the wealthy and corporations" : "cuts elsewhere"),
+                    revenue ? FiscalClass.TAX_HIGH : FiscalClass.PURCHASES, -offset, p.phase(), Math.min(13, p.lagWeeks()), 1, ch));
+        }
+        steps.addAll(offsets);
+        return cost * (1 - share);
     }
 
     /** Resolute Desk's public reaction to a move: support against an even split, more for a signature policy, capped at 5 points. */

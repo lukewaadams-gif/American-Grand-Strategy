@@ -366,3 +366,99 @@
 .econ-more { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0; font-size: calc(var(--s) * 13px); }
 .econ-more dt { color: var(--muted); }
 .econ-more dd { margin: 0; font-weight: 700; }
+
+/* the briefing book: prices by part, the industries, the budget, the laws */
+.econ-parts { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--s) * 170px), 1fr)); gap: 10px; }
+.econ-part { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "label label" "value value" "unit unit" "spark spark"; gap: 2px 8px;
+  border: 1px solid var(--rule); border-radius: var(--r); padding: 8px 10px; background: var(--panel); }
+.econ-part .pv-spark, .econ-part .pv-spark-none { grid-area: spark; display: block; width: 100%; height: 26px; margin-top: 4px; }
+.econ-sectors { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: calc(var(--s) * 13px); }
+.econ-sectors li { display: grid; grid-template-columns: minmax(0, 1fr) auto calc(var(--s) * 110px); grid-template-areas: "name value spark" "drivers drivers drivers";
+  align-items: center; gap: 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
+.econ-sector-name { grid-area: name; display: flex; flex-direction: column; }
+.econ-sector-name .econ-unit { font-size: calc(var(--s) * 12px); }
+.econ-sector-value { grid-area: value; font-weight: 700; font-feature-settings: "tnum"; }
+.econ-sectors .pv-spark, .econ-sectors .pv-spark-none { grid-area: spark; width: 100%; height: 22px; }
+.econ-sector-drivers { grid-area: drivers; }
+.econ-budget { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: calc(var(--s) * 13px); }
+.econ-budget li { display: grid; grid-template-columns: calc(var(--s) * 170px) minmax(0, 1fr) calc(var(--s) * 56px); align-items: center; gap: 10px; }
+.econ-budget-track { height: 12px; position: relative; }
+.econ-budget-bar { position: absolute; left: 0; top: 0; bottom: 0; background: #6b778a; border-radius: 0 4px 4px 0; }
+.econ-budget-bar.in { background: var(--viz-1); }
+.econ-budget-value { font-weight: 700; text-align: right; font-feature-settings: "tnum"; }
+.econ-laws-wrap { overflow-x: auto; }
+.econ-laws { width: 100%; border-collapse: collapse; font-size: calc(var(--s) * 13px); }
+.econ-laws th, .econ-laws td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--rule); vertical-align: top; font-feature-settings: "tnum"; }
+.econ-laws thead th { font-size: calc(var(--s) * 12px); color: var(--muted); }
+.econ-laws tbody th { font-weight: 400; max-width: calc(var(--s) * 380px); }
+.econ-laws tfoot th, .econ-laws tfoot td { border-bottom: 0; padding-top: 10px; }
+.econ-law-since { display: block; }
+.econ-law-full summary { cursor: pointer; font-size: calc(var(--s) * 12px); color: var(--muted); }
+.econ-law-full ul { margin: 4px 0 0; padding-left: 18px; font-size: calc(var(--s) * 12px); color: var(--muted); }
+
+/* the budget office's score */
+.score { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--rule); padding-top: 10px; margin-top: 4px; }
+.score-title { font: 700 calc(var(--s) * 14px)/1.3 Inter, sans-serif; color: var(--text); }
+.score-reading { font: 600 calc(var(--s) * 15px)/1.45 Inter, sans-serif; color: var(--text); }
+.score-table { width: 100%; border-collapse: collapse; font-size: calc(var(--s) * 13px); }
+.score-table th, .score-table td { text-align: left; padding: 5px 10px 5px 0; border-bottom: 1px solid var(--rule); vertical-align: top; font-feature-settings: "tnum"; }
+.score-table thead th { font-size: calc(var(--s) * 12px); color: var(--muted); }
+.score-table tbody th { font-weight: 700; }
+.score-unit { display: block; font-weight: 400; font-size: calc(var(--s) * 12px); color: var(--muted); }
+.score-central { display: block; font-weight: 700; color: var(--text); }
+.score-range { display: block; font-size: calc(var(--s) * 12px); color: var(--muted); }
+@media (min-width: 601px) { .score-range { white-space: nowrap; } }
+.score-touches .score-range { display: inline; }
+.score-budget { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; font-size: calc(var(--s) * 13px); }
+.score-budget dt { color: var(--muted); }
+.score-budget dd { margin: 0; }
+.score-touches { display: grid; grid-template-columns: repeat(auto-fit, minmax(calc(var(--s) * 200px), 1fr)); gap: 8px 18px; font-size: calc(var(--s) * 13px); }
+.score-touches h5 { font: 700 calc(var(--s) * 12px)/1.3 Inter, sans-serif; color: var(--muted); margin: 0 0 2px; }
+.score-touches ul { margin: 0; padding-left: 18px; }
+.score-basis summary { cursor: pointer; font-size: calc(var(--s) * 12px); color: var(--muted); }
+.score-basis ul { margin: 6px 0 0; padding-left: 18px; font-size: calc(var(--s) * 12px); display: flex; flex-direction: column; gap: 4px; }
+
+/* the West Wing and the Cabinet Room */
+.ww-doors { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.ww-doors .btn { margin-top: 6px; }
+.cab-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.cab-split { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 14px; align-items: start; }
+.cab-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.cab-row { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name ladder" "level note"; gap: 2px 10px; align-items: center;
+  text-align: left; font: inherit; color: var(--text); background: var(--desk); border: 1px solid var(--rule); border-radius: var(--r); padding: 8px 10px; cursor: pointer; min-height: 44px; }
+.cab-row:hover { border-color: var(--rule-strong); }
+.cab-row.on { border-color: var(--accent); background: var(--panel-2); }
+.cab-row-name { grid-area: name; font-weight: 700; font-size: calc(var(--s) * 13px); }
+.cab-row-level { grid-area: level; font-size: calc(var(--s) * 12px); color: var(--muted); }
+.cab-row-note { grid-area: note; font-size: calc(var(--s) * 12px); color: var(--muted); justify-self: end; }
+.cab-ladder { grid-area: ladder; display: inline-flex; gap: 3px; }
+.cab-rung { width: 14px; height: 8px; border-radius: 2px; background: #273042; }
+.cab-rung.on { background: var(--viz-1); }
+.cab-rung.was { box-shadow: inset 0 0 0 1px #8b97a8; }
+.cab-detail { background: var(--desk); border: 1px solid var(--rule); border-radius: var(--r); padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.cab-detail-title { font: 700 calc(var(--s) * 16px)/1.3 Inter, sans-serif; color: var(--text); }
+.cab-levels { margin: 0; padding-left: 20px; font-size: calc(var(--s) * 13px); display: flex; flex-direction: column; gap: 2px; }
+.cab-levels li.now { font-weight: 700; }
+.cab-levels .pill { margin-left: 8px; }
+.cab-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.cab-facts { display: grid; grid-template-columns: max-content 1fr; gap: 5px 16px; margin: 0; font-size: calc(var(--s) * 13px); }
+.cab-facts dt { color: var(--muted); }
+.cab-facts dd { margin: 0; }
+.cab-sub { font: 700 calc(var(--s) * 12px)/1.3 Inter, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.cab-moves { margin: 0; padding-left: 18px; font-size: calc(var(--s) * 13px); }
+.cab-bills { display: flex; flex-direction: column; gap: 10px; }
+.cab-bill .room-card-title .pill { margin-left: 8px; }
+.cab-steps { margin: 0; padding-left: 18px; font-size: calc(var(--s) * 13px); }
+.ov-agenda li { flex-direction: column; align-items: stretch !important; gap: 4px; }
+.ov-agenda-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.ov-score-wrap summary { cursor: pointer; font-size: calc(var(--s) * 12px); color: var(--muted); }
+.ov-score-wrap summary:hover { color: var(--text); }
+@media (max-width: 900px) {
+  .cab-split { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .score-budget, .cab-facts, .econ-more { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .score-budget dd, .cab-facts dd, .econ-more dd { margin-bottom: 8px; }
+  .score-table { font-size: calc(var(--s) * 12px); }
+  .econ-budget li { grid-template-columns: calc(var(--s) * 120px) minmax(0, 1fr) calc(var(--s) * 50px); }
+}

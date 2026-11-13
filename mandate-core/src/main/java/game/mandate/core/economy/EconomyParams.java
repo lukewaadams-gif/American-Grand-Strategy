@@ -154,6 +154,8 @@ public final class EconomyParams {
     public double startUnemployment() { return startUnemployment; }
     public double startFedRate() { return startFedRate; }
     public double tariff() { return tariff; }
+    /** The weight the Fed's rule puts on the output gap. */
+    public double taylorGapWeight() { return taylorGap; }
     /** Nominal GDP in 2029, $ billions. */
     public double nominalGdp() { return nominalGdp; }
 }

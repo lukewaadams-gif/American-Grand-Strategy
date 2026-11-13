@@ -1,5 +1,8 @@
 package game.mandate.web.api;
 
+import game.mandate.core.economy.Part;
+import game.mandate.core.data.Fmt;
+
 import game.mandate.core.campaign.Issue;
 import game.mandate.core.electorate.UsState;
 import game.mandate.core.engine.GameEngine;
@@ -227,6 +230,88 @@ final class PresidencyViews {
         next.sort(Comparator.comparing(o -> (String) ((Map<?, ?>) o).get("date")));
         m.put("next", next);
         m.put("date", today.toString());
+        // prices by part, the sectors, the budget, and what the laws have done
+        List<Object> parts = new ArrayList<>();
+        for (Part p : Part.values()) parts.add(Map.of("key", p.key, "label", p.label, "detail", p.detail, "weight", p.weight, "value", r2(e.part(p))));
+        m.put("parts", parts);
+        m.put("core", r2(e.core()));
+        List<Object> sectors = new ArrayList<>();
+        sectors.add(sector("housing", "Housing starts", "million a year", e.housing(), 2, "Mortgage rates, the gap and building policy"));
+        sectors.add(sector("manufacturing", "Manufacturing", "index; 50 is no change", e.manufacturing(), 1, "The gap, tariffs, the dollar and industrial policy"));
+        sectors.add(sector("ai", "AI investment", "index; 100 at the start", e.aiInvestment(), 0, "Its trend, regulation and the cost of capital"));
+        sectors.add(sector("farm", "Farm income", "index; 100 at the start", e.farmIncome(), 0, "Retaliation against tariffs, farm support, energy costs"));
+        sectors.add(sector("energyProduction", "Energy production", "index; 100 at the start", e.energyProduction(), 0, "Oil prices, leasing and drilling, clean-energy credits"));
+        sectors.add(sector("tourism", "Tourism", "index; 100 at the start", e.tourism(), 0, "The gap and the dollar"));
+        sectors.add(sector("stocks", "Stock market", "index", e.stocks(), 0, "Growth, interest rates and shocks"));
+        sectors.add(sector("dollar", "The dollar", "index; 100 at the start", e.dollar(), 1, "Our interest rates against the world's, and tariffs"));
+        m.put("sectors", sectors);
+        var b = g.state().budget();
+        Map<String, Object> budget = new LinkedHashMap<>();
+        budget.put("revenue", r2(b.revenue())); budget.put("mandatory", r2(b.mandatory())); budget.put("discretionary", r2(b.discretionary()));
+        budget.put("interest", r2(b.interest())); budget.put("laws", r2(b.programsNow())); budget.put("outlays", r2(b.outlays()));
+        budget.put("deficit", r2(b.deficit())); budget.put("debt", r2(b.debt())); budget.put("averageRate", r2(b.averageRate()));
+        m.put("budget", budget);
+        m.put("laws", laws(g, e));
+        return m;
+    }
+
+    private static Map<String, Object> sector(String id, String label, String unit, double value, int digits, String drivers) {
+        return Map.of("id", id, "label", label, "unit", unit, "value", r2(value), "digits", digits, "drivers", drivers);
+    }
+
+    /**
+     * What each law has done so far, from its own channels (docs/ECONOMY_MODEL.md, "Credit for what laws did"), and the
+     * Fed's response to all of them at once, as its own line.
+     */
+    private static Map<String, Object> laws(GameEngine g, game.mandate.core.economy.EconomyState e) {
+        Map<String, game.mandate.core.policy.PolicyTableState.Move> moves = new java.util.HashMap<>();
+        for (var mv : g.policyTable().moves()) moves.put(mv.effectId(), mv);
+        var p = g.economyParams();
+        Map<String, Double> money = new java.util.HashMap<>();
+        for (var pr : g.state().budget().programs()) money.put(pr.id(), pr.pctGdp(e.week()));
+        // each law's steps (and its pay-for) are one row, in the order the laws passed
+        Map<String, Map<String, Object>> byLaw = new LinkedHashMap<>();
+        double gap = 0;
+        for (var l : e.laws()) {
+            gap += l.gapCredit();
+            var mv = moves.get(l.id());
+            String law = mv != null && mv.law() != null ? mv.law()
+                    : l.id().contains("-payfor") && l.label().contains(": ") ? l.label().substring(0, l.label().indexOf(": ")) : l.label();
+            String step = mv != null && l.label().endsWith(" (" + law + ")") ? l.label().substring(0, l.label().length() - law.length() - 3)
+                    : l.id().contains("-payfor") ? "How it is paid for: " + l.label().substring(l.label().indexOf(": ") + 2) : l.label();
+            Map<String, Object> r = byLaw.computeIfAbsent(law, k -> {
+                Map<String, Object> x = new LinkedHashMap<>();
+                x.put("label", k); x.put("since", null); x.put("started", false);
+                for (String f : List.of("output", "demand", "supply", "unemployment", "prices", "deficit")) x.put(f, 0.0);
+                x.put("fullEffect", new ArrayList<Object>());
+                return x;
+            });
+            if (mv != null && (r.get("since") == null || mv.date().toString().compareTo((String) r.get("since")) < 0)) r.put("since", mv.date().toString());
+            if (e.week() >= l.startWeek() || Math.abs(money.getOrDefault(l.id(), 0.0)) > 0) r.put("started", true);
+            r.merge("output", l.outputCredit(), (x, y) -> (Double) x + (Double) y);
+            r.merge("demand", l.gapCredit(), (x, y) -> (Double) x + (Double) y);
+            r.merge("supply", l.potentialCredit(), (x, y) -> (Double) x + (Double) y);
+            r.merge("unemployment", l.unemploymentCredit(p), (x, y) -> (Double) x + (Double) y);
+            r.merge("prices", l.priceCredit(), (x, y) -> (Double) x + (Double) y);
+            r.merge("deficit", money.getOrDefault(l.id(), 0.0), (x, y) -> (Double) x + (Double) y);
+            List<String> ch = new ArrayList<>();
+            for (var c : game.mandate.core.economy.Channel.values()) {
+                double v = l.channel(c);
+                if (Math.abs(v) >= 0.005) ch.add(c.label + " " + (v > 0 ? "+" : "\u2212") + Fmt.format(Math.abs(v) >= 1 ? "%.1f" : "%.2f", Math.abs(v)) + " " + c.unit);
+            }
+            @SuppressWarnings("unchecked") List<Object> full = (List<Object>) r.get("fullEffect");
+            String line = step + (ch.isEmpty() ? "" : ": " + String.join(", ", ch));
+            if (!full.contains(line)) full.add(line);
+        }
+        List<Object> rows = new ArrayList<>();
+        for (Map<String, Object> r : byLaw.values()) {
+            for (String f : List.of("output", "demand", "supply", "unemployment", "prices", "deficit")) r.put(f, r2((Double) r.get(f)));
+            rows.add(r);
+        }
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("rows", rows);
+        // the Fed reads the demand the laws add (its balanced-approach rule puts 1.0 on the gap): an estimate, not a ledger
+        m.put("fed", r2(p.taylorGapWeight() * gap));
         return m;
     }
 
@@ -256,7 +341,14 @@ final class PresidencyViews {
             fed.add(r2(p.fedRate())); ten.add(r2(p.tenYear())); mort.add(r2(p.tenYear() + spread)); deficit.add(r2(p.deficit()));
         }
         m.put("dates", dates);
-        m.put("series", Map.of("growth", growth, "unemployment", unemp, "inflation", infl, "gas", gas, "fed", fed, "tenYear", ten, "mortgage", mort, "deficit", deficit));
+        Map<String, Object> series = new LinkedHashMap<>(Map.of("growth", growth, "unemployment", unemp, "inflation", infl, "gas", gas, "fed", fed, "tenYear", ten,
+                "mortgage", mort, "deficit", deficit));
+        for (String k : game.mandate.core.engine.IndicatorPoint.DETAIL) {
+            List<Object> v = new ArrayList<>();
+            for (var p : g.indicators()) { double x = p.detail(k); v.add(Double.isNaN(x) ? null : r2(x)); }
+            series.put(k, v);
+        }
+        m.put("series", series);
         return m;
     }
 

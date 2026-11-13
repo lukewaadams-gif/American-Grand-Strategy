@@ -62,7 +62,7 @@ Each milestone goes to the preview.
    - the calendar and The Capital Ledger;
    - the country through the windows;
    - the briefing book's economy.
-4. **The economy and the policy table.** A new structural model, with Resolute Desk's sectors on top. Every policy level is scored, with ranges, and the effects are credited to the laws behind them. On screen: the briefing book's sectors and laws, and the Cabinet Room.
+4. **The economy and the policy table** (built, for review). A new structural model, with Resolute Desk's sectors on top. Every policy level is scored, with ranges, and the effects are credited to the laws behind them. On screen: the briefing book's sectors and laws, and the Cabinet Room. The design and what was built are in `ECONOMY_MODEL.md`.
 5. **Congress and the budget.** Bills move the policy table. On screen: the Roosevelt Room.
 6. **The executive, the press and storylines.** On screen: the West Wing and the Press Briefing Room.
 7. **The Residence and the country's groups.** Approval by group from the 96-cell electorate.
@@ -168,11 +168,11 @@ What a slot does to opinion leaves as effects for the politics engine:
   - big donors = fundraising;
   - command at the start = 30 + policy × 0.2.
   - Establishment, crossover appeal and scandal baggage take Resolute Desk's neutral values (60, 60, 40).
-- **Staff quality** counts as a steady 0.6 for every post until the West Wing's staff arrive (milestone 5).
-- **Trips abroad** are listed but closed until the world arrives (milestone 7).
+- **Staff quality** counts as a steady 0.6 for every post until the West Wing's staff arrive (milestone 6).
+- **Trips abroad** are listed but closed until the world arrives (milestone 8).
 - **Banked for later milestones.** These are recorded now, and their systems arrive later:
-  - **For Congress (milestone 4):** hours on the Hill, the Hill relationship, and campaign stops before the midterms.
-  - **For the West Wing (milestone 5):** cabinet meetings.
+  - **For Congress (milestone 5):** hours on the Hill, the Hill relationship, and campaign stops before the midterms.
+  - **For the West Wing (milestone 6):** cabinet meetings.
   - **The party's war chest** is kept as well.
 - **The issues** are this game's eleven. Resolute Desk's issue codes map onto them (ECON and JOBS go to the economy, PRICES to the cost of living, and so on).
   - The policy table's results on each issue wait for milestone 6.
@@ -230,6 +230,29 @@ What a slot does to opinion leaves as effects for the politics engine:
   - **Each watched week,** the staff answers what the plan does not stop for (with the option it recommends), plans the week by the plan and plays it.
   - **It stops** when a decision needs the player, when the president is exhausted, or on Escape.
 - **The first hundred days** can be handed to the staff from the agenda's folders, until Congress and the West Wing open in their rooms: the flagship bill, the cabinet, crises and the budget. Their decisions now appear with the events' decisions, each with the staff's recommended option.
+
+## The economy and the policy table (milestone 4)
+
+The full design, the calibration targets and what each step built are in `ECONOMY_MODEL.md`. In short:
+- **The economy** is a structural model stepped weekly:
+  - supply from productivity, capital and labour;
+  - an output gap moved by rates, fiscal policy (CBO's multiplier ranges), trade, wealth and mood;
+  - prices from six parts;
+  - a Taylor-rule Fed;
+  - a 10-year with a debt premium;
+  - the budget as CBO keeps it;
+  - Resolute Desk's markets, sentiment, sectors and shocks.
+  It reproduces CBO's projection with no new policy and the note's other targets, each a test.
+- **The states** have their own unemployment and gas, and both feed approval there.
+- **The releases** run on their real days (jobs, prices, quarterly GDP, the Fed) and make the paper's economic news.
+- **The policy table** is Resolute Desk's 146 policies. 110 of them have an economic score through the model's channels, with ranges by evidence; each law draws its luck when it passes, and every law keeps its credit.
+- **This game's bills** are the policy steps they make: a law moves the table, and the public reacts by Resolute Desk's rule.
+
+**On screen:**
+- **The West Wing door** leads to the Cabinet Room: the table by area, each policy's levels, routes, evidence, politics and history, the score of a step either way, the game's bills as their steps, and what the moves have done beyond the economy. It only shows in this milestone: orders and rules arrive with the West Wing's staff (milestone 6), the budget with Congress (milestone 5).
+- **The briefing book adds:** prices by part, the industries, the budget, and what each law has done (with the Fed's response as its own line).
+- **The agenda's folders** show each bill's score before it moves.
+- **The Capital Ledger** prints the budget office's verdict when a law passes.
 
 ## Quality bar
 

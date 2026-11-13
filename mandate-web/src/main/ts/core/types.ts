@@ -193,11 +193,63 @@ export interface CountryView {
 
 export interface EconomyTile { id: string; label: string; unit: string; value: number; digits: number; upIsGood: boolean | null; yearAgo?: number; atOath?: number; }
 
-/** The briefing book: the figures, more figures, what is coming, and each figure's weekly history. */
+/** One part of consumer prices: its share of the index and its rise over the year. */
+export interface PricePart { key: string; label: string; detail: string; weight: number; value: number; }
+/** One of the sectors on top of the model. */
+export interface Sector { id: string; label: string; unit: string; value: number; digits: number; drivers: string; }
+/** The budget, % of GDP. */
+export interface BudgetView { revenue: number; mandatory: number; discretionary: number; interest: number; laws: number; outlays: number; deficit: number; debt: number; averageRate: number; }
+/** What one law has done so far, from its own channels, and its channels at full effect. */
+export interface LawCredit {
+  label: string; since: string | null; started: boolean;
+  output: number; demand: number; supply: number; unemployment: number; prices: number; deficit: number;
+  fullEffect: string[];
+}
+
+/** The briefing book: the figures, more figures, what is coming, each figure's weekly history, and the structural model's detail. */
 export interface EconomyView {
   date: string;
   tiles: EconomyTile[];
   more: { label: string; value: string }[];
   next: { what: string; date: string }[];
-  history: { dates: string[]; series: Record<string, number[]> };
+  history: { dates: string[]; series: Record<string, (number | null)[]> };
+  parts: PricePart[];
+  core: number;
+  sectors: Sector[];
+  budget: BudgetView;
+  laws: { rows: LawCredit[]; fed: number };
+}
+
+/** One row of a score: a measure at one, three and ten years, its central estimate and its range. */
+export interface ScoreRow { label: string; unit: string; central: number[]; low: number[]; high: number[]; }
+/** The budget office's score of a policy step or a bill. */
+export interface ScoreView {
+  title: string;
+  reading: string;
+  evidence: string;
+  years: number[];
+  rows: ScoreRow[];
+  budget: { direct: number; directLow: number; directHigh: number; total: number; deficit: number; debt: number; tenYear: number };
+  prices: { label: string; value: number; low: number; high: number }[];
+  sectors: { label: string; value: number; unit: string }[];
+  outcomes: { label: string; value: number }[];
+  basis: { policy: string; basis: string; evidence: string }[];
+}
+
+/** One policy on the table. */
+export interface PolicyEntry {
+  id: string; name: string; levels: string[]; level: number; start: number;
+  routes: string[]; evidence: string; spread: string; lag: number; support: number; lean: string | null; signature: boolean;
+  winners: string; losers: string; precedent: string; basis: string | null; scored: boolean;
+  costUp: number | null; costDown: number | null;
+  moves: { date: string; from: string; to: string; law: string }[];
+  outcomes: { label: string; value: number }[];
+}
+
+/** The Cabinet Room: the policy table by area, this game's bills as their steps, and what the moves have done so far. */
+export interface CabinetView {
+  date: string;
+  areas: { name: string; policies: PolicyEntry[] }[];
+  bills: { id: string; name: string; law: boolean; steps: { policy: string; name: string; from: string; to: string; steps: number }[] }[];
+  outcomes: { label: string; value: number }[];
 }

@@ -309,6 +309,11 @@ public final class GameEngine implements WorldView {
             case Effect.PolicyStep x -> owner = governing && economyEngine.apply(w.economy, w.budget, x) ? "economy" : "none";
             case Effect.LawPassed x -> {
                 if (governing) {
+                    if (!policies().bill(x.billId()).isEmpty()) {
+                        Score.Range score = scoreLaw(x);   // before the law moves the table
+                        news(new News(date(), News.Kind.ECON, "Budget office: the " + x.law() + " " + Score.costPhrase(score.central().direct()),
+                                Score.reading(score), 1.0, "Economy"));
+                    }
                     PolicyTableEngine.Passed passed = policyTableEngine.enactBill(w.policyTable, x, date(), rng);
                     w.ledger.record(decisionId, date(), cause, "policy", x.describe());
                     dispatchAll(decisionId, cause, passed.effects());
@@ -1163,6 +1168,17 @@ public final class GameEngine implements WorldView {
         return r;
     }
 
+    /** The budget office's score of one of this game's bills, as the catalog writes it, from where the table stands. */
+    public Score.Range scoreBill(String billId) {
+        if (!date().equals(scoreMemoDate)) { scoreMemo.clear(); scoreMemoDate = date(); }
+        return scoreMemo.computeIfAbsent("bill|" + billId, k -> scoreLaw(new Effect.LawPassed(billId, bills().get(billId).name(), 1, 1, "BORROW", false, 0)));
+    }
+
+    private Score.Range scoreLaw(Effect.LawPassed law) {
+        return economyEngine.score(w.economy, w.budget, policyTableEngine.billSteps(w.policyTable, law, -1), policyTableEngine.billSteps(w.policyTable, law, 0),
+                policyTableEngine.billSteps(w.policyTable, law, 1));
+    }
+
     /** What a move would do to Resolute Desk's other outcomes (uninsured, poverty, crime...) at full effect. */
     public Map<String, Double> policyOutcomesOf(String id, int steps) { return policyTableEngine.outcomesOf(id, steps); }
 
@@ -1178,6 +1194,9 @@ public final class GameEngine implements WorldView {
 
     /** The economy state by state: unemployment and gas in each. */
     public StateEconomy stateEconomy() { return stateEconomy; }
+
+    /** The economy's constants (read-only). */
+    public EconomyParams economyParams() { return economyEngine.params(); }
     public double approval() { return politicsEngine.approval(w.politics); }
     public double capital() { return w.politics.capital(); }
     public int attention() { return w.government.attention(); }
