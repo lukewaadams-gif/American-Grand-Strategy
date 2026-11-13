@@ -52,6 +52,7 @@ export const engine = {
     sitRoom() { return request({ op: 'view', name: 'sitroom' }); },
     hormuz() { return request({ op: 'view', name: 'hormuz' }); },
     taiwan() { return request({ op: 'view', name: 'taiwan' }); },
+    electionNight() { return request({ op: 'view', name: 'electionNight' }); },
     /** Island Chain on its own (docs/ISLAND_CHAIN.md): a crisis without a presidency, as America or as China. */
     islandChain: {
         start(o) { request({ op: 'islandChain', action: 'start', seed: Math.floor(Math.random() * 1e9), ...o }); },

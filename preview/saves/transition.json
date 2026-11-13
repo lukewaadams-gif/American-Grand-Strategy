@@ -94,6 +94,9 @@
       "type": "EndTurn"
     }, {
       "type": "EndTurn"
+    }, {
+      "type": "ElectionNightSeen",
+      "year": 2028
     }],
   "world": {
     "clock": {
@@ -3217,6 +3220,7 @@
     "hormuz": null,
     "taiwan": null,
     "taiwanEscalated": false,
+    "electionNightSeen": 2028,
     "news": [],
     "ambientUsed": [],
     "scheduler": {
@@ -3234,7 +3238,7 @@
     "midtermsHeld": false,
     "inaugurationCommand": -1,
     "legacy": null,
-    "commandsApplied": 36
+    "commandsApplied": 37
   },
   "random": {
     "ai.debate": "-4448743184875940781",

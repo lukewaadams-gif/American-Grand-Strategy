@@ -813,3 +813,46 @@
 .tw-island .hz-place.tw-big { font-size: 28px; }
 .tw-island .tw-chip rect { stroke-width: 2.4; }
 .tw-island .tw-lodge { transform-box: fill-box; transform-origin: center; transform: scale(2); }
+
+/* ---- election night (presidency/election-night.ts) ---- */
+.en { max-width: 1480px; margin: 0 auto; padding: 16px; }
+.en-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 8px 16px; margin-bottom: 12px; }
+.en-clock { display: flex; align-items: center; gap: 10px; font: 700 calc(var(--s) * 22px) Inter, sans-serif; color: var(--text); font-variant-numeric: tabular-nums; }
+.en-live { padding: 2px 8px; border-radius: 3px; background: var(--breaking); color: #fff; font-size: calc(var(--s) * 12px); letter-spacing: 0.1em; }
+.en-score { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: center; padding: 14px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--panel); }
+.en-side { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.en-side.r { flex-direction: row-reverse; text-align: right; }
+.en-side .portrait { flex: none; border-radius: 4px; }
+.en-who { display: flex; flex-direction: column; min-width: 0; }
+.en-name { font: 700 calc(var(--s) * 17px) Inter, sans-serif; color: var(--text); }
+.en-ev { font: 800 calc(var(--s) * 44px)/1 Inter, sans-serif; font-variant-numeric: tabular-nums; }
+.en-side.d .en-ev { color: var(--d-text); } .en-side.r .en-ev { color: var(--r-text); }
+.en-side.won .en-name::after { content: ' ✓'; color: var(--good); }
+.en-mid { text-align: center; }
+.en-bar { position: relative; display: flex; justify-content: space-between; height: calc(var(--s) * 26px); border-radius: 4px; background: #262d38; overflow: hidden; }
+.en-bar-d { background: #34588c; } .en-bar-r { background: #8f3c34; margin-left: auto; }
+.en-270 { position: absolute; left: 50.2%; top: 0; bottom: 0; border-left: 2px solid #fff; padding-left: 4px; font: 700 calc(var(--s) * 12px)/calc(var(--s) * 26px) Inter, sans-serif; color: #fff; }
+.en-controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.en-continue { margin-left: auto; }
+.en-now { padding: 10px 14px; border-left: 4px solid var(--accent); background: var(--panel-2); border-radius: 0 var(--r) var(--r) 0; margin-bottom: 12px; }
+.en-grid { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.en-mapcard { border: 1px solid var(--rule); border-radius: var(--r); background: var(--panel); padding: 8px; }
+.en-map { width: 100%; height: auto; display: block; }
+.en-map .leader { stroke: #5b6677; stroke-width: 0.8; }
+.en-code { font: 700 12px Inter, sans-serif; pointer-events: none; }
+.en-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 6px 4px 2px; padding: 0; list-style: none; font-size: calc(var(--s) * 12px); color: var(--muted); }
+.en-key { display: inline-block; width: 12px; height: 12px; margin-right: 5px; vertical-align: -1px; border-radius: 2px; }
+.en-feed { margin: 0; padding: 0; list-style: none; max-height: 560px; overflow-y: auto; border: 1px solid var(--rule); border-radius: var(--r); background: var(--panel); }
+.en-beat { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border-top: 1px solid var(--rule); font-size: calc(var(--s) * 13px); }
+.en-beat:first-child { border-top: 0; }
+.en-beat.now { background: rgba(224, 173, 74, 0.08); }
+.en-beat.projection strong, .en-beat.speech strong { color: var(--accent); }
+.en-time { font-size: calc(var(--s) * 12px); color: var(--muted); font-variant-numeric: tabular-nums; }
+.en-board-wrap { margin-top: 14px; overflow-x: auto; }
+.en-board { width: 100%; border-collapse: collapse; font-size: calc(var(--s) * 13px); background: var(--panel); border: 1px solid var(--rule); border-radius: var(--r); }
+.en-board caption { text-align: left; padding: 8px 0; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-size: calc(var(--s) * 12px); }
+.en-board th, .en-board td { padding: 6px 10px; text-align: left; border-top: 1px solid var(--rule); }
+.en-board td.d { color: var(--d-text); } .en-board td.r { color: var(--r-text); }
+.en-board tr.called { color: var(--muted); }
+.en-analysis { margin-top: 14px; }
+@media (max-width: 1000px) { .en-score { grid-template-columns: 1fr; } .en-grid { grid-template-columns: 1fr; } .en-feed { max-height: 320px; } }

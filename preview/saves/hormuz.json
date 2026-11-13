@@ -95,6 +95,9 @@
     }, {
       "type": "EndTurn"
     }, {
+      "type": "ElectionNightSeen",
+      "year": 2028
+    }, {
       "type": "SetAgenda",
       "bills": ["housing", "ai_safety", "chips_china"]
     }, {
@@ -6257,6 +6260,7 @@
     },
     "taiwan": null,
     "taiwanEscalated": false,
+    "electionNightSeen": 2028,
     "news": [{
         "date": "2029-01-25",
         "kind": "INFO",
@@ -7494,9 +7498,9 @@
         "detail": [3.13, 3.88, 2.82, 9.01, 3.61, 1.69, 3.07, 1.34, 50.64, 103.06, 101.77, 101.07, 99.59, 88.28, 7294.81, 98.77, 107.62, 6.07, 31.59, -0.33, 1.78, 17.72, 24.53, 3.46, 102.41]
       }],
     "midtermsHeld": false,
-    "inaugurationCommand": 37,
+    "inaugurationCommand": 38,
     "legacy": null,
-    "commandsApplied": 114
+    "commandsApplied": 115
   },
   "random": {
     "ai.debate": "-4448743184875940781",
