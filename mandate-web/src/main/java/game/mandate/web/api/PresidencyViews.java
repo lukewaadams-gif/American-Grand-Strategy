@@ -173,12 +173,33 @@ final class PresidencyViews {
         List<Story> st = new ArrayList<>();
         java.util.Set<String> heads = new java.util.HashSet<>();
         for (News n : g.news()) if (!n.date().isBefore(from)) { st.add(new Story(n.section(), n.head(), n.body(), n.weight(), n.kind().name())); heads.add(n.head()); }
+        // the events of the last five weeks, so that the answer to one ("A major hurricane: Go there yourself...") joins
+        // its story, or runs under the event's own title if the event made last week's paper
+        Map<String, Integer> events = new LinkedHashMap<>();
+        java.util.Set<String> recentEvents = new java.util.HashSet<>();
+        for (String line : g.log())
+            if (line.length() > 19 && line.substring(0, 10).compareTo(today.minusDays(35).toString()) >= 0 && line.startsWith("EVENT: ", 12)) recentEvents.add(line.substring(19));
         // the week's log lines that are not already stories, weighed as Notable classifies them
         for (String line : g.log()) {
             if (line.length() < 13 || line.substring(0, 10).compareTo(from.toString()) < 0) continue;
             String text = line.substring(12);
             if (heads.contains(text)) continue;
             heads.add(text);
+            String answered = null;
+            for (String e : events.keySet()) if (text.startsWith(e + ": ")) { answered = e; break; }
+            String earlier = null;
+            if (answered == null) for (String e : recentEvents) if (text.startsWith(e + ": ")) { earlier = e; break; }
+            if (earlier != null) {
+                st.add(new Story(null, earlier, "The White House's response: " + text.substring(earlier.length() + 2).replaceAll("\\.$", "") + ".", 2.0, "INFO"));
+                continue;
+            }
+            if (answered != null) {
+                int k = events.get(answered);
+                Story ev = st.get(k);
+                st.set(k, new Story(ev.section(), ev.head(), "The White House's response: " + text.substring(answered.length() + 2).replaceAll("\\.$", "") + ".",
+                        ev.weight() + 0.4, ev.kind()));
+                continue;
+            }
             text = thirdPerson(text, g.player().candidate().name());
             var note = Notable.classify(line);
             boolean event = text.startsWith("EVENT: ");
@@ -187,6 +208,7 @@ final class PresidencyViews {
             double w = event ? 1.8 : note.map(n -> n.tone() == game.mandate.web.Session.Tone.BAD || n.tone() == game.mandate.web.Session.Tone.WARN ? 2.2 : 2.0).orElse(0.8);
             // the game's log speaks to the player ("Your flagship..."): such lines go to In Brief, not the front page's headlines
             if (note.isEmpty() && !event && (text.startsWith("You") || text.contains(" you ") || text.contains("Your "))) w = 0.3;
+            if (event) events.put(head, st.size());
             st.add(new Story(null, head, body, w, note.map(n -> n.tone().name()).orElse("INFO")));
         }
         st.sort(Comparator.comparingDouble((Story s) -> -s.weight()));

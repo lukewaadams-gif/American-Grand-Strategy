@@ -158,7 +158,7 @@ function hillCard(v: PresidencyView, hd: OvalHandlers): HTMLElement {
 
 /** A news item as a line: its headline first, unless the text already starts with it. */
 export function headline(n: { headline?: string; text: string }): string {
-  return n.headline && !n.text.startsWith(n.headline) ? n.headline + ': ' + n.text : n.text;
+  return n.headline && !n.text.toLowerCase().startsWith(n.headline.toLowerCase()) ? n.headline + ': ' + n.text : n.text;
 }
 
 /** The Ledger: the latest headlines running along the bottom, with a pause button; still under reduced motion. */
