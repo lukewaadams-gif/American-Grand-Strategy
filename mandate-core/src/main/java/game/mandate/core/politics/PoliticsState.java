@@ -28,6 +28,10 @@ public final class PoliticsState {
     /** The record's running position (Resolute Desk's {@code recE}, {@code recC}) and its weight. */
     double recE, recC, recW;
     int oppWeek;
+    /** Effects aimed at the thirty voter groups (Resolute Desk's {@code groupAdj}, logit), fading 1% a week. */
+    final double[] voterAdj = new double[GroupModel.NG];
+    /** Approval in each voter group this week, and at the first reading. Null before. */
+    double[] groupApproval, groupStart;
     double recentAddresses;
     double weeksGoverning;
     final Map<Party, PartyState> parties = new EnumMap<>(Party.class);
@@ -75,6 +79,10 @@ public final class PoliticsState {
     public double recordEcon() { return recE; }
     public double recordCulture() { return recC; }
     public double recordWeight() { return recW; }
+    /** Approval in each of the thirty voter groups ({@link GroupModel#GROUP} order), or null before the first reading. */
+    public double[] groupApproval() { return groupApproval == null ? null : groupApproval.clone(); }
+    public double[] groupStart() { return groupStart == null ? null : groupStart.clone(); }
+    public double voterAdj(int g) { return voterAdj[g]; }
     public double recentAddresses() { return recentAddresses; }
     public PartyState party(Party p) { return parties.get(p); }
     public Role role(String politicianId) { return roles.getOrDefault(politicianId, Role.BENCH); }
@@ -106,6 +114,11 @@ public final class PoliticsState {
         m.put("salience", sal);
         m.put("capital", capital); m.put("goodwill", goodwill); m.put("opposition", opposition);
         m.put("rdParty", java.util.List.of(rdParty ? 1.0 : 0.0, recE, recC, recW, (double) oppWeek));
+        java.util.List<Object> va = new java.util.ArrayList<>();
+        for (double v : voterAdj) va.add(v);
+        m.put("voterAdj", va);
+        m.put("groupApproval", groupApproval == null ? null : nums(groupApproval));
+        m.put("groupStart", groupStart == null ? null : nums(groupStart));
         m.put("recentAddresses", recentAddresses); m.put("weeksGoverning", weeksGoverning);
         java.util.List<Object> ps = new java.util.ArrayList<>();
         parties.values().forEach(p -> ps.add(p.toJson()));
@@ -144,6 +157,9 @@ public final class PoliticsState {
             java.util.List<Object> r = Json.array(m.get("rdParty"));
             s.rdParty = Json.num(r.get(0)) > 0; s.recE = Json.num(r.get(1)); s.recC = Json.num(r.get(2)); s.recW = Json.num(r.get(3)); s.oppWeek = (int) Json.num(r.get(4));
         }
+        if (m.get("voterAdj") != null) { java.util.List<Object> va = Json.array(m.get("voterAdj")); for (int i = 0; i < va.size() && i < s.voterAdj.length; i++) s.voterAdj[i] = Json.num(va.get(i)); }
+        if (m.get("groupApproval") != null) s.groupApproval = arr(m.get("groupApproval"));
+        if (m.get("groupStart") != null) s.groupStart = arr(m.get("groupStart"));
         s.recentAddresses = Json.num(m.get("recentAddresses")); s.weeksGoverning = Json.num(m.get("weeksGoverning"));
         for (Object o : Json.array(m.get("parties"))) { PartyState p = PartyState.fromJson(Json.object(o)); s.parties.put(p.party, p); }
         Json.object(m.get("roles")).forEach((k, v) -> s.roles.put(k, Role.valueOf((String) v)));
@@ -167,4 +183,17 @@ public final class PoliticsState {
     }
 
     private static void copy(java.util.List<Object> from, double[] to) { for (int i = 0; i < to.length; i++) to[i] = Json.num(from.get(i)); }
+
+    private static java.util.List<Object> nums(double[] v) {
+        java.util.List<Object> l = new java.util.ArrayList<>();
+        for (double x : v) l.add(x);
+        return l;
+    }
+
+    private static double[] arr(Object o) {
+        java.util.List<Object> l = Json.array(o);
+        double[] v = new double[l.size()];
+        for (int i = 0; i < v.length; i++) v[i] = Json.num(l.get(i));
+        return v;
+    }
 }

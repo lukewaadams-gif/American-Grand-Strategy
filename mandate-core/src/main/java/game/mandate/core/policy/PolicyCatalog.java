@@ -46,7 +46,7 @@ public final class PolicyCatalog {
     /** One policy. {@code cost} holds each step's cost from the lowest level up, $ billions a year. */
     public record Def(String id, int area, String name, List<String> levels, int level2029, String routes, double legal, double[] cost, double econ, double cult,
                       double support, int lean, boolean signature, Map<String, Double> outcomes, int lag, int evidence, String winners,
-                      String losers, String precedent, Score score) {
+                      String losers, String precedent, Score score, Map<String, Double> groups) {
         public int top() { return levels.size() - 1; }
         public boolean can(Route r) { return routes.indexOf(r.code) >= 0; }
         /** Public support for a move this way, %. */
@@ -91,6 +91,17 @@ public final class PolicyCatalog {
     }
 
     /** The policy steps a bill makes (policy id to steps), or none if the bill is not on the table. */
+    /** Voter-group points a step up ("union=1 wcol=-1"), by group code, in order. */
+    private static Map<String, Double> groups(String spec) {
+        Map<String, Double> g = new java.util.LinkedHashMap<>();
+        if (spec != null && !spec.trim().isEmpty() && !spec.trim().equals("-"))
+            for (String tok : spec.trim().split("\\s+")) {
+                int eq = tok.indexOf('=');
+                if (eq > 0) g.put(tok.substring(0, eq), Double.parseDouble(tok.substring(eq + 1)));
+            }
+        return Collections.unmodifiableMap(g);
+    }
+
     public Map<String, Integer> bill(String billId) { return bills.getOrDefault(billId, Map.of()); }
 
     public java.util.Set<String> bills() { return Collections.unmodifiableSet(bills.keySet()); }
@@ -123,7 +134,8 @@ public final class PolicyCatalog {
         int lean = t[12].equals("D") ? 1 : t[12].equals("R") ? -1 : 0;
         return new Def(t[0], Integer.parseInt(t[1]), t[2], levels, level, t[5], Double.parseDouble(t[7]), cost, Double.parseDouble(t[9]), Double.parseDouble(t[10]),
                 Double.parseDouble(t[11]), lean,
-                t[13].equals("1"), Collections.unmodifiableMap(outcomes), Integer.parseInt(t[16]), "SMWC".indexOf(t[17].charAt(0)), t[18], t[19], t[20], score);
+                t[13].equals("1"), Collections.unmodifiableMap(outcomes), Integer.parseInt(t[16]), "SMWC".indexOf(t[17].charAt(0)), t[18], t[19], t[20], score,
+                groups(t[15]));
     }
 
     /** Columns: id class cost phase lag immigration participation nairu tfp_level tfp_growth capital prices oil gas sectors basis. */

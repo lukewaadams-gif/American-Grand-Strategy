@@ -578,3 +578,17 @@
   .ww-cabinet thead th:nth-child(3), .ww-cabinet td:nth-child(3) { display: none; }
   .ww-sev { width: calc(var(--s) * 80px); }
 }
+
+/* the Residence */
+.res-advice { border-left: 3px solid var(--good); padding: 4px 0 4px 10px; }
+.res-advice.warn { border-left-color: var(--warn); }
+.res-plans { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.res-plans .btn + p { margin-bottom: 6px; }
+.res-done { color: var(--good); font-weight: 700; }
+@media (max-width: 600px) {
+  .ctry-issues { table-layout: fixed; }
+  .ctry-issues th, .ctry-issues td { padding-right: 4px; overflow-wrap: anywhere; }
+  .ctry-meter { width: calc(var(--s) * 44px); }
+  .ctry-bar { width: calc(var(--s) * 44px); margin-right: 4px; }
+  .ctry-issues .pill { display: block; margin: 2px 0 0; width: max-content; max-width: 100%; }
+}

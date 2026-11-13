@@ -85,7 +85,7 @@ Each milestone goes to the preview.
 4. **The economy and the policy table** (built, for review). A new structural model, with Resolute Desk's sectors on top. Every policy level is scored, with ranges, and the effects are credited to the laws behind them. On screen: the briefing book's sectors and laws, and the Cabinet Room. The design and what was built are in `ECONOMY_MODEL.md`.
 5. **Congress and the budget** (built, for review). Bills move the policy table. Each Congress is seated after its election with its own leaders, blocs and members, so the game can face several. The 2030 midterms are race by race, and the president can campaign in them from the calendar. Divided government brings investigations, impeachment, shutdown and debt-limit fights; blocked nominees come with the nominations themselves, in milestone 6. On screen: the Roosevelt Room.
 6. **The executive, the press and storylines** (built, for review), with the Senate's confirmations (an opposition Senate blocks nominees). On screen: the West Wing and the Press Briefing Room.
-7. **The Residence and the country's groups.** Approval by group from the 96-cell electorate.
+7. **The Residence and the country's groups** (built, for review). Approval by group from the 96-cell electorate.
 8. **The world.** On screen: the presidency's Situation Room.
 9. **The second term.**
    - The lame-duck weeks after a 2032 loss.
@@ -351,6 +351,23 @@ The full design, the calibration targets and what each step built are in `ECONOM
   - **Your party:** the wings and the opposition.
 - **The desk:** questions from scandals, leaks, courts, Congress's resolutions, pardons, press conferences, speeches and stories come as decision cards, with the staff's answer marked. Left past their week, the staff's answer is taken.
 - **The Capital Ledger** gains Resolute Desk's "Developing stories" panel.
+
+## The Residence and the country's groups (milestone 7)
+
+- **The groups** (Resolute Desk's thirty, `politics/GroupModel`):
+  - Every state's voters sit in 96 cells (sixteen backgrounds, three ages, two sexes) from the campaign's calibrated electorate. Each cell leans as it voted in 2024, more strongly in a polarized era, and is shifted with the rest so the nation matches the headline number.
+  - Nine groups cut across the cells: suburban, rural and urban voters, union and veteran households, gun owners, LGBTQ voters, students and parents. Each state's shares come from the campaign's data (`state_traits.csv`), placed by Resolute Desk's own rules.
+  - What moves the groups:
+    - policy moves, each by the policy's own group points, by law, order or rule;
+    - the library's orders, pardons and interviews;
+    - storylines.
+  - These effects shift a group against the rest and fade 1% a week; the headline number is unchanged.
+  - The groups are shown in the country room, with the change since the oath, and in the polls the press office commissions.
+- **The Residence** (Resolute Desk's `Rooms.residence`):
+  - how the president is holding up: stamina, sleep, stress, fitness, health and illness;
+  - the White House physician's advice;
+  - the term's stamina and stress;
+  - this week away from the desk: a family weekend, a weekend at Camp David, exercise every morning, or a week of rest, each put straight on the calendar.
 
 ## Quality bar
 

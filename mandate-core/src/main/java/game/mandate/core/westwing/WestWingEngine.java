@@ -40,7 +40,7 @@ public final class WestWingEngine {
                           Map<Issue, Double> issueApproval, Map<Issue, Double> salience, double stamina, double stress, double[] skills,
                           List<SenateBloc> senate, Party houseMajority, Party senateMajority, double polarization, boolean shutdown,
                           double unemployment, double inflation, boolean midtermSeason, String ownBill, String ownBillId, boolean ownBillPublic, int cabinetMeetings,
-                          ToDoubleFunction<String> var, boolean realPeople, List<RealPick> realPicks) {
+                          ToDoubleFunction<String> var, boolean realPeople, List<RealPick> realPicks, double[] groups) {
         double skill(int k) { return skills[k]; }
         int side() { return president == Party.REPUBLICAN ? 1 : -1; }
         boolean holdsSenate() { return senateMajority == president; }

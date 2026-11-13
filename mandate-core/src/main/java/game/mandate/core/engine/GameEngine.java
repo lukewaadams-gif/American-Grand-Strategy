@@ -332,7 +332,7 @@ public final class GameEngine implements WorldView {
             case Effect.BillPublic x -> { if (w.hill != null) { hillEngine.publicPush(w.hill, x.bill()); owner = "hill"; } else owner = "none"; }
             case Effect.PresidentStrain x -> owner = w.president != null && presidentEngine.apply(w.president, x) ? "president" : "none";
             case Effect.PartyFunds x -> owner = w.president != null && presidentEngine.apply(w.president, x) ? "president" : "none";
-            case Effect.GroupStanding x -> owner = "none";      // the voter groups' model comes with milestone 7
+            case Effect.GroupStanding x -> owner = governing && politicsEngine.apply(w.politics, x) ? "politics" : "none";
             case Effect.PolicyByOrder x -> {
                 if (governing) { policyByOrder(decisionId, cause, x); return; }
                 owner = "none";
@@ -677,6 +677,7 @@ public final class GameEngine implements WorldView {
     }
 
     private void recordIndicators() {
+        politicsEngine.updateGroups(w.politics);
         EconomyState e = w.economy;
         BudgetState b = w.budget;
         double[] v = {e.core(), e.part(Part.SHELTER), e.part(Part.FOOD), e.part(Part.ENERGY), e.part(Part.MEDICAL), e.part(Part.GOODS), e.part(Part.SERVICES),
@@ -1024,7 +1025,7 @@ public final class GameEngine implements WorldView {
         return new WestWingEngine.Context(date(), setup.seed(), ps == null ? 0 : ps.week(), player().party(), p.name(), approval(), app, sal,
                 ps == null ? 80 : ps.stamina(), ps == null ? 25 : ps.stress(), skills, senate, congress().houseMajority(), congress().senateMajority(player().party()),
                 politicsEngine.params().rdPolarization(), shutdown, e.unemployment(), e.inflation(), midtermSeason(), ownBill, ownBillId, ownPublic,
-                ps == null ? 0 : ps.cabinetMeetings(), this::newsVariable, setup.realRoster(), picks);
+                ps == null ? 0 : ps.cabinetMeetings(), this::newsVariable, setup.realRoster(), picks, w.politics.groupApproval());
     }
 
     private void westWingWeek() {
@@ -1113,7 +1114,7 @@ public final class GameEngine implements WorldView {
                 double[] ch = st.channels().clone();
                 for (int i = 0; i < ch.length; i++) ch[i] *= k;
                 dispatch(decision, cause, new Effect.PolicyStep(st.id(), st.label(), st.fiscalClass(), st.pctGdp() * k, st.phase(), st.lagWeeks(), st.draw(), ch));
-            } else if (!(x.revert() && e instanceof Effect.Approval)) dispatch(decision, cause, e);
+            } else if (!(x.revert() && (e instanceof Effect.Approval || e instanceof Effect.GroupStanding))) dispatch(decision, cause, e);
         }
     }
 

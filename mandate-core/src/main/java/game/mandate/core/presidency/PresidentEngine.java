@@ -323,6 +323,8 @@ public final class PresidentEngine {
         if (raisedTotal > 0) s.lastWeek.add(Fmt.format("$%.1fM raised for the party", raisedTotal));
         s.lastRaised = raisedTotal;
         s.lastStaminaChange = s.stamina - before;
+        s.history.add(new double[]{s.stamina, s.stress, s.health, s.sleep, s.fitness});
+        if (s.history.size() > 260) s.history.remove(0);
         s.week++;
         return new Outcome(fx, news);
     }

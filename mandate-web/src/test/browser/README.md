@@ -11,6 +11,7 @@ Playwright scripts test the browser build in Chromium. They are not part of `mvn
 | `economy.js` | The presidency's economy (milestone 4), on the governing save: the briefing book's prices by part, industries, budget and laws; the West Wing and the Cabinet Room, a policy's score and a bill's score, and the agenda's scores. Every view gets an axe-core WCAG 2.1 AA audit, a minimum text size check and a sideways-scroll check at 1600, 1280 and 390 pixels wide; times a score; fails on any console error. |
 | `congress.js` | Congress (milestone 5), on the governing save: the Roosevelt Room's six tabs at 1600, 1280 and 390 pixels wide and in the high-contrast and colour-blind palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll); the telephone opening on the members; a meeting with a leader; drafting, shaping and sending a bill; a call on its votes; weeks played until the Hill puts a decision on the desk. Fails on any console error. |
 | `westwing.js` | The executive (milestone 6), on the governing save: the West Wing's six tabs and the Press Briefing Room's four at 1600, 1280 and 390 pixels wide and in the other palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll); hiring a staff member, the vice president's tour, signing a library order, an order on one policy from the Cabinet Room, a press conference and an address answered on the desk, and weeks played with the paper's developing stories. Fails on any console error. |
+| `residence.js` | The Residence and the groups (milestone 7), on the governing save: the country room with its groups and the Residence at 1600, 1280 and 390 pixels wide and in the other palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll); a family weekend going onto the calendar. Fails on any console error. |
 | `interactions.js` | Reload and Continue, undo (Ctrl+Z), the single-key shortcuts, the number keys in a decision card, importing a desktop save from a file, exporting a save, a setting surviving a reload, and the Tab order. |
 
 ## Running them
@@ -49,7 +50,7 @@ If Playwright's own browser is not installed on the machine, `npx playwright ins
 
 The paths are relative to `mandate-web/src/test/browser`. Each script takes the output directory first; `checks.js` and `interactions.js` then take the directory of moments.
 
-For `preview.js`, `presidency.js`, `economy.js`, `congress.js` and `westwing.js`, build the new interface and serve it instead:
+For `preview.js`, `presidency.js`, `economy.js`, `congress.js`, `westwing.js` and `residence.js`, build the new interface and serve it instead:
 
 ```bash
 (cd mandate-web && npm install && npm run build)
@@ -71,4 +72,5 @@ cd mandate-web/src/test/browser && node presidency.js /tmp/presidency-checks
 cd mandate-web/src/test/browser && node economy.js /tmp/economy-checks
 cd mandate-web/src/test/browser && node congress.js /tmp/congress-checks
 cd mandate-web/src/test/browser && node westwing.js /tmp/westwing-checks
+cd mandate-web/src/test/browser && node residence.js /tmp/residence-checks
 ```

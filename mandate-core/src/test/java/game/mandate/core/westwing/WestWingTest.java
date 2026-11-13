@@ -42,7 +42,7 @@ class WestWingTest {
         Party senateMaj = senateDem > 50 ? Party.DEMOCRAT : senateDem < 50 ? Party.REPUBLICAN : president;
         return new WestWingEngine.Context(date, 42, 30, president, "President Test", 47, app, sal, 70, 30, new double[]{60, 60, 60, 60, 60, 60, 40, 60, 60},
                 senate(senateDem), president, senateMaj, 0.85, false, 4.3, 2.8, false, null, null, false, 0,
-                k -> vars.getOrDefault(k, Double.NaN), real, List.of());
+                k -> vars.getOrDefault(k, Double.NaN), real, List.of(), null);
     }
 
     static WestWingState seat(Party p, int senateDem, boolean real) {

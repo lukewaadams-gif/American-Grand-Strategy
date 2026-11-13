@@ -188,6 +188,20 @@ final class PresidencyViews {
             coalitions.add(Map.of("id", c.name(), "label", c.label(), "approval", r1(s.approval(c)), "weight", g.tuning().d("politics.weight." + c.name().toLowerCase())));
         m.put("coalitions", coalitions);
         m.put("states", states(g));
+        // the voter groups (Resolute Desk's thirty, from the cells)
+        double[] ga = g.state().politics().groupApproval(), gs = g.state().politics().groupStart();
+        List<Object> groups = new ArrayList<>();
+        if (ga != null) {
+            java.util.Set<Integer> shown = new java.util.HashSet<>();
+            for (int k : game.mandate.core.politics.GroupModel.SHOW) shown.add(k);
+            for (int k = 0; k < ga.length; k++) {
+                Map<String, Object> x = new LinkedHashMap<>();
+                x.put("code", game.mandate.core.politics.GroupModel.CODE[k]); x.put("label", game.mandate.core.politics.GroupModel.GROUP[k]);
+                x.put("approval", r1(ga[k])); x.put("start", gs == null ? r1(ga[k]) : r1(gs[k])); x.put("shown", shown.contains(k));
+                groups.add(x);
+            }
+        }
+        m.put("groups", groups);
         return m;
     }
 
@@ -368,6 +382,36 @@ final class PresidencyViews {
     record Story(String section, String head, String body, double weight, String kind) {}
 
     /** The week's front page (Resolute Desk's {@code ui/Paper}): the lead, six stories, features, In Brief and the numbers. */
+    /** The Residence (Resolute Desk's {@code Rooms.residence}): how the president is holding up, and the physician's word. */
+    static Map<String, Object> residence(GameEngine g) {
+        Map<String, Object> m = EngineApi.ok();
+        m.put("date", g.date().toString());
+        var ps = g.president();
+        if (ps.isEmpty()) { m.put("reason", "The Residence is yours from the inauguration."); return m; }
+        var p = ps.get();
+        m.put("name", g.player().candidate().name());
+        m.put("age", p.age());
+        m.put("stamina", r1(p.stamina())); m.put("sleep", r1(p.sleep())); m.put("stress", r1(p.stress()));
+        m.put("fitness", r1(p.fitness())); m.put("health", r1(p.health())); m.put("sick", p.sickWeeks());
+        String advice = p.sickWeeks() > 0 ? "You're unwell. Keep the schedule light until you recover."
+                : p.stamina() < 30 ? "The physician wants you to rest: exhaustion makes gaffes and illness more likely."
+                : p.stress() > 70 ? "Your stress is high. Family time and exercise help; so does a weekend at Camp David."
+                : p.sleep() < 5.8 ? "You aren't sleeping enough. Fewer late nights and evening events."
+                : "The White House physician says you're in good shape for the job.";
+        m.put("advice", advice);
+        m.put("warn", p.sickWeeks() > 0 || p.stamina() < 30 || p.stress() > 70);
+        List<double[]> h = p.history();
+        List<Object> dates = new ArrayList<>(), stamina = new ArrayList<>(), stress = new ArrayList<>(), health = new ArrayList<>();
+        LocalDate first = g.hundredDaysStart().plusWeeks(Math.max(0, p.week() - h.size()));
+        for (int i = 0; i < h.size(); i++) {
+            dates.add(first.plusWeeks(i).toString());
+            stamina.add(h.get(i)[0]); stress.add(h.get(i)[1]); health.add(h.get(i)[2]);
+        }
+        m.put("history", Map.of("dates", dates, "stamina", stamina, "stress", stress, "health", health));
+        m.put("delegated", p.delegated());
+        return m;
+    }
+
     static Map<String, Object> paper(GameEngine g) {
         Map<String, Object> m = EngineApi.ok();
         LocalDate today = g.date(), from = today.minusDays(7);

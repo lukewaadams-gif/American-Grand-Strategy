@@ -75,6 +75,7 @@ public final class EngineApi {
                 case "westwing" -> WestWingViews.room(need());
                 case "westwingOptions" -> WestWingViews.options(need(), (String) req.get("kind"), Json.integer(req.get("index")));
                 case "press" -> WestWingViews.press(need());
+                case "residence" -> PresidencyViews.residence(need());
                 default -> throw new IllegalArgumentException("No view called " + req.get("name"));
             };
             default -> throw new IllegalArgumentException("No op called " + op);

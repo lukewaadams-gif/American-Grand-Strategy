@@ -73,6 +73,11 @@ public final class PoliticsEngine {
                 }
             }
             case Effect.IssueStanding x -> s.issueAdj.put(x.issue(), clamp(s.standing(x.issue()) + x.delta(), -1.5, 1.5));
+            case Effect.GroupStanding x -> {
+                int g = GroupModel.index(x.group());
+                if (g < 0) return false;
+                s.voterAdj[g] += x.points() * 0.04;
+            }
             case Effect.PartyRecord x -> {
                 if (x.weight() <= 0) return false;
                 s.recE = (s.recE * s.recW + x.econ() * x.weight()) / (s.recW + x.weight());
@@ -134,6 +139,18 @@ public final class PoliticsEngine {
         double nat = approval(s);
         s.capital = Math.max(0, Math.min(p.capitalCap(), s.capital + weeks * (p.capitalPerApprovalWeek() * (nat - p.capitalApprovalPivot()) + p.capitalBaseWeek())));
         if (!s.rdParty) updateOpposition(s);
+    }
+
+    // ---- the voter groups (Resolute Desk's Groups) -------------------------------------------------------------------
+
+    private static final GroupModel GROUPS = new GroupModel();
+
+    /** This week's approval in each voter group, from the cells; the effects aimed at groups fade 1% a week. */
+    public void updateGroups(PoliticsState s) {
+        if (!s.governing || s.presidentParty == null) return;
+        for (int g = 0; g < GroupModel.NG; g++) s.voterAdj[g] *= 0.99;
+        s.groupApproval = GROUPS.approval(s.approval, s.presidentParty, p.rdPolarization(), s.voterAdj, s.stateBump);
+        if (s.groupStart == null) s.groupStart = s.groupApproval.clone();
     }
 
     // ---- Resolute Desk's party and opposition (home/HomeFront), in office after the hundred days ---------------------

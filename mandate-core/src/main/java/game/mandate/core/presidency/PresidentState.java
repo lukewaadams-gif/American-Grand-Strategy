@@ -46,6 +46,8 @@ public final class PresidentState {
     final List<String> lastWeek = new ArrayList<>();
     /** The states the president visited last week (trips and campaign stops). */
     final List<String> lastVisited = new ArrayList<>();
+    /** Each week's stamina, stress, health, sleep and fitness, for the Residence's chart (the last four years). */
+    final List<double[]> history = new ArrayList<>();
     double lastRaised;
     double lastStaminaChange;
 
@@ -75,6 +77,8 @@ public final class PresidentState {
     public List<String> lastWeek() { return List.copyOf(lastWeek); }
     public List<String> lastVisited() { return List.copyOf(lastVisited); }
     public double lastRaised() { return lastRaised; }
+    /** Each week's stamina, stress, health, sleep and fitness. */
+    public List<double[]> history() { List<double[]> l = new ArrayList<>(); for (double[] h : history) l.add(h.clone()); return l; }
     public double lastStaminaChange() { return lastStaminaChange; }
 
     public Map<String, Object> toJson() {
@@ -85,6 +89,9 @@ public final class PresidentState {
         m.put("stamina", stamina); m.put("sleep", sleep); m.put("stress", stress); m.put("health", health); m.put("fitness", fitness);
         m.put("sick", sick); m.put("location", location); m.put("age", age); m.put("week", week); m.put("lastCabinet", lastCabinet);
         m.put("delegate", delegate); m.put("plan", plan.toJson()); m.put("warChest", warChest); m.put("hill", hill); m.put("hillHours", hillHours); m.put("cabinetMeetings", cabinetMeetings);
+        List<Object> hist = new ArrayList<>();
+        for (double[] h : history) { List<Object> row = new ArrayList<>(); for (double v : h) row.add(Math.round(v * 10) / 10.0); hist.add(row); }
+        m.put("history", hist);
         m.put("midtermEffort", new LinkedHashMap<String, Object>(midtermEffort));
         m.put("lastWeek", new ArrayList<Object>(lastWeek)); m.put("lastVisited", new ArrayList<Object>(lastVisited)); m.put("lastRaised", lastRaised); m.put("lastStaminaChange", lastStaminaChange);
         return m;
@@ -100,6 +107,12 @@ public final class PresidentState {
         s.week = Json.integer(m.get("week")); s.lastCabinet = Json.integer(m.get("lastCabinet"));
         s.delegate = (Boolean) m.get("delegate"); s.plan = WatchPlan.fromJson(Json.object(m.get("plan")));
         s.warChest = Json.num(m.get("warChest")); s.hill = Json.num(m.get("hill")); s.hillHours = Json.num(m.get("hillHours")); s.cabinetMeetings = m.get("cabinetMeetings") == null ? 0 : Json.integer(m.get("cabinetMeetings"));
+        if (m.get("history") != null) for (Object o : Json.array(m.get("history"))) {
+            List<Object> row = Json.array(o);
+            double[] h = new double[row.size()];
+            for (int i = 0; i < h.length; i++) h[i] = Json.num(row.get(i));
+            s.history.add(h);
+        }
         Json.object(m.get("midtermEffort")).forEach((k, v) -> s.midtermEffort.put(k, Json.num(v)));
         for (Object o : Json.array(m.get("lastWeek"))) s.lastWeek.add((String) o);
         if (m.containsKey("lastVisited")) for (Object o : Json.array(m.get("lastVisited"))) s.lastVisited.add((String) o);

@@ -246,8 +246,22 @@ final class Press {
         double app = c.issueApproval().getOrDefault(i, c.approval()), sal = c.salience().getOrDefault(i, i.baseSalience()) / i.baseSalience() * 0.5;
         out.effects().add(new Effect.PartyFunds(-0.5));
         s.lastPoll = Math.round(app) + "% approve of your handling of " + i.label().toLowerCase() + ", and " + (sal > 1 ? "a lot of" : sal > 0.6 ? "many" : "relatively few")
-                + " voters say it is one of the most important problems facing the country. Overall approval is " + Math.round(c.approval()) + "%.";
+                + " voters say it is one of the most important problems facing the country. Overall approval is " + Math.round(c.approval()) + "%."
+                + groupsLine(c, app);
         out.news().add(news(c, News.Kind.INFO, "The party's pollster reports on " + i.label().toLowerCase(), s.lastPoll, 0.3, "Executive"));
+    }
+
+    /** Resolute Desk's poll breakdown: ten groups, each at its approval shifted by how the issue runs against the headline. */
+    private static String groupsLine(Context c, double issueApproval) {
+        if (c.groups() == null) return "";
+        int[] show = {21, 4, 5, 0, 1, 12, 10, 8, 9, 22};
+        String[] names = {"suburban voters", "women", "men", "Gen Z", "seniors", "Hispanic voters", "Black voters", "whites without a degree", "whites with a degree", "rural voters"};
+        StringBuilder b = new StringBuilder(" By group: ");
+        for (int i = 0; i < show.length; i++) {
+            if (i > 0) b.append(", ");
+            b.append(names[i]).append(' ').append(Math.round(clamp(c.groups()[show[i]] + (issueApproval - c.approval()), 2, 98))).append('%');
+        }
+        return b.append('.').toString();
     }
 
     /** The issue that hurts most: approval below 45, weighted by how much it matters. */

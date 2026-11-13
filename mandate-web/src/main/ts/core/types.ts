@@ -190,6 +190,15 @@ export interface CountryView {
   issues: IssueStanding[];
   coalitions: { id: string; label: string; approval: number; weight: number }[];
   states: StateStanding[];
+  groups?: { code: string; label: string; approval: number; start: number; shown: boolean }[];
+}
+
+/** The Residence: how the president is holding up. */
+export interface ResidenceView {
+  date: string; reason?: string; name?: string; age?: number;
+  stamina?: number; sleep?: number; stress?: number; fitness?: number; health?: number; sick?: number;
+  advice?: string; warn?: boolean; delegated?: boolean;
+  history?: { dates: string[]; stamina: number[]; stress: number[]; health: number[] };
 }
 
 export interface EconomyTile { id: string; label: string; unit: string; value: number; digits: number; upIsGood: boolean | null; yearAgo?: number; atOath?: number; }

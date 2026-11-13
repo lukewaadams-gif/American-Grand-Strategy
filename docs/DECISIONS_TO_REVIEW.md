@@ -43,3 +43,12 @@ Choices made while building overnight that we had not discussed. Each was made i
 11. **Stories that read the home front** (protests, overdoses, the crime index, cyber attacks, the grid) wait for those measures, which come with milestones 7 and 8.
 12. **The vice president is a fictional running mate** made for the ticket, with ratings drawn when the West Wing is staffed.
 13. **The housing test now averages several games:** zoning's housing effect phases in over five years, so a single game's two-year comparison was too noisy to judge.
+
+## Milestone 7: the Residence and the country's groups
+
+1. **The groups break the national number down; they do not move it** (as in Resolute Desk). An effect aimed at a group shifts its cells by the effect times their share of members, so groups that cut across the cells (union households, say) move less than whole cells (Black voters).
+2. **The cross-cutting groups' state shares** are the campaign's own figures (Battleground 2028's union, veteran, gun-owner and LGBTQ shares), exported by `tools/BgStateTraits.java`.
+3. **State approval keeps milestone 3's model** (the 2028 lean, visits and the state's economy). The cells set only the groups; using them for the states too is a later choice.
+4. **The groups do not yet feed the 2032 campaign;** the second term (milestone 9) will carry them into the electorate.
+5. **The Residence's plans fill this week's weekend or mornings on the calendar,** replacing whatever was there; the calendar stays the place to fine-tune it.
+6. **A milestone 3 fix:** the country room's issue table overflowed a phone's width; both tables now fit.

@@ -77,6 +77,9 @@ public final class PolicyTableEngine {
         if (n != 0) {
             s.levels.put(id, target);
             effects.add(new Effect.Approval(reaction(d, n, route)));
+            // the groups it touches (Resolute Desk's Policies.groupEffect)
+            for (Map.Entry<String, Double> g : d.groups().entrySet())
+                effects.add(new Effect.GroupStanding(g.getKey(), g.getValue() * n * route.strength * (d.signature() ? 1.5 : 1)));
         }
         return new Moved(effects, moves);
     }
@@ -90,6 +93,7 @@ public final class PolicyTableEngine {
 
     public Passed enactBill(PolicyTableState s, Effect.LawPassed law, LocalDate date, DeterministicRandomManager rng) {
         List<Effect.PolicyStep> steps = new ArrayList<>();
+        List<Effect> groups = new ArrayList<>();
         List<Move> moves = new ArrayList<>();
         double reaction = 0;
         for (Map.Entry<String, Integer> e : stepsOf(law.billId()).entrySet()) {
@@ -97,11 +101,14 @@ public final class PolicyTableEngine {
             moves.addAll(m.moves());
             for (Effect x : m.effects()) {
                 if (x instanceof Effect.Approval a) reaction += a.points();
-                else steps.add(scaled((Effect.PolicyStep) x, law));
+                else if (x instanceof Effect.PolicyStep p) steps.add(scaled(p, law));
+                else if (x instanceof Effect.GroupStanding g) groups.add(new Effect.GroupStanding(g.group(), g.points() * law.moneyScale()));
             }
         }
         double cost = payFor(steps, law, law.billId() + "@" + date + "-payfor");
-        return new Passed(new ArrayList<Effect>(steps), moves, Math.max(-5, Math.min(5, reaction * law.moneyScale())), cost);
+        List<Effect> out = new ArrayList<Effect>(steps);
+        out.addAll(groups);
+        return new Passed(out, moves, Math.max(-5, Math.min(5, reaction * law.moneyScale())), cost);
     }
 
     /** What a bill would do at a given luck for every step (-1, 0, +1), from where the table stands, without moving it. */

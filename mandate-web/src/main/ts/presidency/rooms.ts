@@ -73,7 +73,27 @@ export function countryRoom(c: CountryView, back: () => void): HTMLElement {
         h('details', { class: 'pv-table' }, h('summary', null, 'Every state'),
           h('table', null, h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'State'), h('th', { scope: 'col' }, 'Approve'), h('th', { scope: 'col' }, 'Electoral votes'))),
             h('tbody', null, ...ranked.map(st => h('tr', null, h('th', { scope: 'row' }, st.name), h('td', null, Math.round(st.approval) + '%'), h('td', null, String(st.ev)))))))),
+    c.groups && c.groups.length ? groupsCard(c) : null,
     ));
+}
+
+/** The country's voter groups (Resolute Desk's thirty): approval in each, and the change since the oath. */
+function groupsCard(c: CountryView): HTMLElement {
+  const row = (g: NonNullable<CountryView['groups']>[number]) => {
+    const d = g.approval - g.start;
+    return h('tr', null, h('th', { scope: 'row' }, g.label),
+      h('td', null, h('span', { class: 'ctry-bar', 'aria-hidden': 'true' }, h('span', { style: `width:${g.approval}%` }), h('span', { class: 'ctry-bar-mid' })), h('span', { class: 'ctry-bar-value' }, Math.round(g.approval) + '%')),
+      h('td', { class: 'num' }, Math.abs(d) < 0.5 ? 'even' : (d > 0 ? '+' : '−') + Math.abs(d).toFixed(0)));
+  };
+  const table = (gs: NonNullable<CountryView['groups']>) => h('table', { class: 'ctry-issues' },
+    h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Group'), h('th', { scope: 'col' }, 'Approve'), h('th', { scope: 'col' }, 'Since the oath'))),
+    h('tbody', null, ...gs.map(row)));
+  const gs = c.groups!;
+  return h('section', { class: 'room-card', 'aria-labelledby': 'ctry-groups' },
+    h('h3', { class: 'room-card-title', id: 'ctry-groups' }, 'The groups'),
+    h('p', { class: 'muted small' }, 'Every state’s voters in ninety-six cells by background, age and sex, each leaning as it voted in 2024, together making the national number. Orders, pardons, speeches and policies aimed at a group move it against the rest.'),
+    table(gs.filter(g => g.shown)),
+    h('details', { class: 'pv-table' }, h('summary', null, 'All thirty groups'), table(gs)));
 }
 
 /** Approval by state as a shaded map (one hue, lighter is higher); the lists and the table carry the numbers. */

@@ -52,7 +52,8 @@ class PolicyScoreTest {
         assertEquals(3, s.level("min_wage"));
         assertEquals(2, bill.moves().size());
         // the public's reaction: support of 62% for a signature policy, two steps of a law
-        Effect.Approval reaction = (Effect.Approval) bill.effects().get(bill.effects().size() - 1);
+        Effect.Approval reaction = (Effect.Approval) bill.effects().stream().filter(e -> e instanceof Effect.Approval).findFirst().orElseThrow();
+        assertTrue(bill.effects().stream().anyMatch(e -> e instanceof Effect.GroupStanding), "the groups it touches move too");
         within("minimum wage, two steps: the public's reaction", reaction.points(), 4.7, 4.9);
         assertTrue(bill.moves().stream().allMatch(m -> m.draw() >= -1 && m.draw() <= 1));
         var order = TABLE.move(s, "drilling", 2, PolicyCatalog.Route.ORDER, null, LocalDate.of(2029, 5, 1), rng);
