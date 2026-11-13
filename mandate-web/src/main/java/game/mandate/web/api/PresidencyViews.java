@@ -78,6 +78,7 @@ final class PresidencyViews {
         return switch (a.arg) {
             case ISSUE -> Issue.valueOf(arg).label();
             case STATE -> g.states().get(arg).name();
+            case COUNTRY -> { int i = g.foreignEngine().data().index(arg); yield i < 0 ? arg : g.foreignEngine().data().country(i).name(); }
             default -> arg;
         };
     }
@@ -127,6 +128,22 @@ final class PresidencyViews {
             m.put("approval", r1(s.stateApproval().getOrDefault(u.code(), g.approval()))); m.put("flight", r1(e.flight(u.code())));
             m.put("standing", r1(s.stateStanding(u.code())));
             out.add(m);
+        }
+        return out;
+    }
+
+    /** The countries for a trip abroad, nearest first: the flight, relations and the leader to meet. */
+    static List<Object> abroad(GameEngine g) {
+        List<Object> out = new ArrayList<>();
+        if (g.foreign().isEmpty()) return out;
+        var f = g.foreign().get();
+        var d = g.foreignEngine().data();
+        List<Integer> order = new ArrayList<>();
+        for (int i = 0; i < game.mandate.core.foreign.ForeignData.NC; i++) order.add(i);
+        order.sort((a, b) -> Double.compare(d.country(a).flight(), d.country(b).flight()));
+        for (int i : order) {
+            var k = d.country(i);
+            out.add(Map.of("code", k.id(), "name", k.name(), "flight", r1(k.flight()), "rel", Math.round(f.relations(i)), "leader", f.leader(i), "visits", f.visits(i)));
         }
         return out;
     }

@@ -12,6 +12,7 @@ Playwright scripts test the browser build in Chromium. They are not part of `mvn
 | `congress.js` | Congress (milestone 5), on the governing save: the Roosevelt Room's six tabs at 1600, 1280 and 390 pixels wide and in the high-contrast and colour-blind palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll); the telephone opening on the members; a meeting with a leader; drafting, shaping and sending a bill; a call on its votes; weeks played until the Hill puts a decision on the desk. Fails on any console error. |
 | `westwing.js` | The executive (milestone 6), on the governing save: the West Wing's six tabs and the Press Briefing Room's four at 1600, 1280 and 390 pixels wide and in the other palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll); hiring a staff member, the vice president's tour, signing a library order, an order on one policy from the Cabinet Room, a press conference and an address answered on the desk, and weeks played with the paper's developing stories. Fails on any console error. |
 | `residence.js` | The Residence and the groups (milestone 7), on the governing save: the country room with its groups and the Residence at 1600, 1280 and 390 pixels wide and in the other palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll); a family weekend going onto the calendar. Fails on any console error. |
+| `sitroom.js` | The Situation Room (milestone 8), on the governing save: every tab at 1600, 1280 and 390 pixels wide and in the other palettes, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll); a call, a tariff, an objective tried, a war planned and stood down; a trip abroad filling three slots on the calendar. Fails on any console error. |
 | `terms.js` | The second term (milestone 9), on the second-term, succession and handoff saves: the second term's theme on the desk and the weeks to the second inauguration; the Press Briefing Room's "Your term" tab in the race to succeed the president, with an endorsement; the verdict of history at the handoff; at 1600, 1280 and 390 pixels wide and in the other palettes (axe-core WCAG 2.1 AA, text size, sideways scroll). Fails on any console error. |
 | `interactions.js` | Reload and Continue, undo (Ctrl+Z), the single-key shortcuts, the number keys in a decision card, importing a desktop save from a file, exporting a save, a setting surviving a reload, and the Tab order. |
 
@@ -51,7 +52,7 @@ If Playwright's own browser is not installed on the machine, `npx playwright ins
 
 The paths are relative to `mandate-web/src/test/browser`. Each script takes the output directory first; `checks.js` and `interactions.js` then take the directory of moments.
 
-For `preview.js`, `presidency.js`, `economy.js`, `congress.js`, `westwing.js`, `residence.js` and `terms.js`, build the new interface and serve it instead:
+For `preview.js`, `presidency.js`, `economy.js`, `congress.js`, `westwing.js`, `residence.js`, `sitroom.js` and `terms.js`, build the new interface and serve it instead:
 
 ```bash
 (cd mandate-web && npm install && npm run build)
@@ -74,5 +75,6 @@ cd mandate-web/src/test/browser && node economy.js /tmp/economy-checks
 cd mandate-web/src/test/browser && node congress.js /tmp/congress-checks
 cd mandate-web/src/test/browser && node westwing.js /tmp/westwing-checks
 cd mandate-web/src/test/browser && node residence.js /tmp/residence-checks
+cd mandate-web/src/test/browser && node sitroom.js /tmp/sitroom-checks
 cd mandate-web/src/test/browser && node terms.js /tmp/terms-checks
 ```

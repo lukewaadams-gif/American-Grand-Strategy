@@ -222,6 +222,23 @@ public sealed interface Effect {
         public String describe() { return signed("Standing with " + group, points); }
     }
 
+    // ---- the world (Resolute Desk's world, milestone 8) ------------------------------------------------------------
+
+    /** A department's readiness (Resolute Desk's {@code ready[post]}, 5-100), by the West Wing's post index. */
+    record Readiness(int post, double delta) implements Effect {
+        public String describe() { return signed("Department readiness", delta); }
+    }
+
+    /** One of the world's own measures (a hot spot, an alliance, relations with a country as {@code rel:CC}), moved by a story or event. */
+    record WorldShift(String key, double delta) implements Effect {
+        public String describe() { return signed("The world: " + key, delta); }
+    }
+
+    /** The president visits a country (a trip abroad on the calendar), by its two-letter code. */
+    record VisitAbroad(String country) implements Effect {
+        public String describe() { return "A visit to " + country; }
+    }
+
     private static String signed(String label, double v) { return label + " " + fmt(v); }
 
     private static String fmt(double v) {

@@ -129,6 +129,8 @@ export interface PresidencyView {
   upcoming: { date: string; what: string }[];
   bills: PresidencyBill[];
   news: NewsItem[];
+  /** The countries a trip abroad can go to, nearest first (from day 100). */
+  abroad?: { code: string; name: string; flight: number; rel: number; leader: string; visits: number }[];
   /** In office: the president's week and what it reads. */
   week?: PresidentWeek;
   activities?: ActivityChoice[];
@@ -337,6 +339,39 @@ export interface WestWingView {
   probes?: { subject: string; status: string; chamber: string }[]; impeachment?: string;
   record?: { date: string; what: string }[];
 }
+/** The Situation Room (milestone 8): the world, the brief, hot spots, operations, trade, alliances and wars. */
+export interface SitCountry { id: string; name: string; region: string; align: string; rel: number; power: number; trade: number; balance: number; nuclear: boolean;
+  leader: string; title: string; flag: string; label: [number, number]; tariff: number; sanction: number; aid: number; visits: number; visitIn: number;
+  atWar: boolean; toppled: boolean; flight: number; calledRecently: boolean }
+export interface SitGauge { name: string; value: number; tone: 'good' | 'mid' | 'bad' }
+export interface SitWar { id: string; name: string; enemy: string; kind: string; stage: string; fighting: boolean; weeks: number; front: number; support: number;
+  talks: number; troops: number; need: number; kia: number; cost: number; strategy: number; authorized: boolean; timetable: number; handoff: number; unrest: number }
+export interface SitRoomView {
+  date: string; open: boolean; reason?: string; defcon?: number; message?: string | null; callsLeft?: number; countries?: SitCountry[];
+  summit?: { country: string; inWeeks: number; round: number };
+  brief?: { priority: number; text: string }[];
+  hotspots?: { name: string; stage: string; gauges: SitGauge[]; note: string }[];
+  operations?: { index: number; name: string; desc: string; odds: number; ready: boolean; status: string }[];
+  covert?: { index: number; name: string; desc: string; odds: number; leak: number; ready: boolean; status: string }[];
+  counters?: { operations: number; covert: number; exposed: number; crises: number; deals: number; kia: number; ok: number; failed: number };
+  tariffs?: string[]; levels?: string[]; aidLevels?: string[];
+  alliances?: { nato: number; pacific: number; allySpend: number; deterrence: number; article5: boolean; press: boolean; drills: boolean;
+    posture: { area: string; level: number }[]; postureLevels: string[] };
+  wars?: SitWar[]; strategies?: string[]; strategyHelp?: string[]; record?: string[];
+  flash?: { name: string; x: number; y: number }[];
+}
+export interface ForeignCountryView {
+  open: boolean; id: string; name: string; nameIn: string; leader: string; title: string; align: string; region: string; rel: number; nuclear: boolean; power: number;
+  ties: number; tiesLevels: string[]; unrest: number; toppled: boolean; atWar: boolean; trade: number; balance: number; tariff: number; sanction: number; aid: number;
+  milAid: number; milAidLevels: string[]; arms: number; armsLevels: string[]; troops: number; troopStep: number; troopSteps: string[];
+  peacekeepers: boolean; canKeepPeace: boolean; pact: boolean; tradeOdds: number; treaty: string; treatyReady: boolean;
+  covert: { kind: number; name: string; desc: string; odds: number; leak: number; weeks: number; ready: boolean; reason: string }[];
+  program?: string;
+  force: { kind: number; name: string; desc: string; troops: number; expect: string; ready: boolean; reason: string }[];
+  authorized: boolean; authorizeOdds: number;
+  objectives: { id: string; name: string; why: string; steps: number; step: number; status: string; next?: string; reason?: string; odds?: string; ready?: boolean }[];
+}
+
 /** Terms of office (milestone 9): the term, the run question, the race to succeed the president, the legacy goals. */
 export interface TermsContender { index?: number; name: string; party: string; home: string; role: string; share: number; delegates: number;
   charisma: number; debate: number; endorsed?: boolean; nominee?: boolean }

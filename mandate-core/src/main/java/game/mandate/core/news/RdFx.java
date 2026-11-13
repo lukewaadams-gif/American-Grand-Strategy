@@ -29,6 +29,10 @@ public final class RdFx {
     /** A salience change on Resolute Desk's scale (its base is 0.5), relative to the issue's usual weight here. */
     public static Effect salience(Issue i, double rd) { return new Effect.Salience(i, rd * i.baseSalience()); }
 
+    /** The world's own keys (Resolute Desk's {@code Diplo.fx}): they move the world, not the rest of the game. */
+    public static final java.util.Set<String> WORLD_KEYS = java.util.Set.of("twt", "deter", "ukr", "talks", "gaza", "iran", "redsea", "proxy", "nk", "terror",
+            "cyber", "migr", "cartel", "nato", "pacific", "twstage", "ua", "defcon", "tcn", "kia");
+
     public static List<Effect> effects(String fx) {
         List<Effect> out = new ArrayList<>();
         if (fx == null || fx.trim().isEmpty()) return out;
@@ -40,6 +44,7 @@ public final class RdFx {
             try { v = Double.parseDouble(tok.substring(eq + 1)); } catch (NumberFormatException e) { continue; }
             if (k.startsWith("sal:")) { Issue i = AmbientNews.issue(k.substring(4)); if (i != null) out.add(salience(i, v)); continue; }
             if (k.startsWith("st:")) { out.add(new Effect.StateStanding(k.substring(3), v)); continue; }
+            if (k.startsWith("rel:") || WORLD_KEYS.contains(k)) { out.add(new Effect.WorldShift(k, v)); continue; }
             if (k.length() > 1 && k.charAt(0) == 'g' && Character.isDigit(k.charAt(1))) {
                 int g = Integer.parseInt(k.substring(1));
                 if (g >= 0 && g < GROUPS.length) out.add(new Effect.GroupStanding(GROUPS[g], v));

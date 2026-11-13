@@ -86,7 +86,7 @@ Each milestone goes to the preview.
 5. **Congress and the budget** (built, for review). Bills move the policy table. Each Congress is seated after its election with its own leaders, blocs and members, so the game can face several. The 2030 midterms are race by race, and the president can campaign in them from the calendar. Divided government brings investigations, impeachment, shutdown and debt-limit fights; blocked nominees come with the nominations themselves, in milestone 6. On screen: the Roosevelt Room.
 6. **The executive, the press and storylines** (built, for review), with the Senate's confirmations (an opposition Senate blocks nominees). On screen: the West Wing and the Press Briefing Room.
 7. **The Residence and the country's groups** (built, for review). Approval by group from the 96-cell electorate.
-8. **The world.** On screen: the presidency's Situation Room.
+8. **The world** (built, for review). On screen: the presidency's Situation Room.
 9. **The second term** (built, for review).
    - The lame-duck weeks after a 2032 loss.
    - After a win: the second transition and inauguration, then the second term to January 2037, with the 2034 midterms run on milestone 5's model.
@@ -368,6 +368,58 @@ The full design, the calibration targets and what each step built are in `ECONOM
   - the White House physician's advice;
   - the term's stamina and stress;
   - this week away from the desk: a family weekend, a weekend at Camp David, exercise every morning, or a week of rest, each put straight on the calendar.
+
+## The world and the Situation Room (milestone 8)
+
+Resolute Desk's world is a domain of its own (`foreign/ForeignEngine`, after `world/Diplo`, `Statecraft`, `Objectives`, `Summit`, `Wars` and the war loop of `history/History`). It opens on day 100, with the West Wing. Its data is Resolute Desk's exported tables (`rd/countries.tsv`, `crises.tsv`, `operations.tsv`, `covert.tsv`, `objectives.tsv`); the tables Resolute Desk keeps in code are in `ForeignData`.
+- **Forty countries,** each with relations, an alignment, a leader (a made-up stand-in; the real ones with the real-person roster) and trade.
+  - Relations drift each week toward a target set by the starting anchor, aid, sanctions, tariffs, the president's foreign-policy credibility, the alliances and, for five Pacific partners, deterrence over Taiwan.
+  - Big economies under heavy tariffs may retaliate against American farmers.
+- **Calls, invitations and visits:**
+  - three calls a week;
+  - an invited leader arrives in three to six weeks;
+  - a **trip abroad** on the calendar fills three slots, pays the flight in stamina, and counts as one visit.
+- **Summits.** A bilateral summit has three rounds on the desk: the opening, the ask (eleven, by country) and the give. The G7, NATO, the UN General Assembly and the G20 each ask whether to reassure allies, press them, or send the vice president.
+- **The hot spots, week by week:**
+  - Taiwan: tension, deterrence and six stages;
+  - Ukraine: Ukraine's strength, Russian gains, talks, and war, ceasefire or peace;
+  - the Middle East: Gaza, Iran's program, the Red Sea and the militias;
+  - Korea, terror, cyber, migration and the cartels;
+  - NATO and Pacific cohesion, the allies' spending, unrest and refugees, and DEFCON.
+- **Crises:** Resolute Desk's twenty, at most one a week, each with three or four options. Every option comes with its adviser's view of the odds, which depend on the cabinet and staff behind it.
+- **Operations and covert action:**
+  - ten operations, each with a target condition, an eight-week reset and a cost to readiness;
+  - seven covert actions, each of which can leak into a scandal;
+  - four kinds of covert program against one country, up to regime change.
+- **Statecraft, country by country:** military aid, arms sales, American forces based there, diplomatic ties (recognizing Taiwan included), peacekeepers, trade agreements (both chambers vote) and defense treaties (two-thirds of the Senate).
+- **Objectives:** seventy-one, most with two or three steps, each with its own odds, requirements and payoff.
+- **Alliances and posture:**
+  - the Article 5, allied-spending and joint-exercise buttons, each once a quarter;
+  - force posture in the Pacific, Europe and the Middle East.
+- **Wars of choice:** strikes, a blockade, a no-fly zone or an invasion.
+  - Each war tracks the front, support at home, talks, casualties and its cost.
+  - The levers are strategy, troops, timetables, a handover, escalation, declaring victory and withdrawal.
+  - Congress may or may not authorize the war. An unauthorized war faces a War Powers vote after about nine weeks.
+  - An invasion that wins becomes an occupation.
+- **The President's Daily Brief**, written every week from the hot spots and the wars.
+- **The Taiwan war is fought on this game's operational model.** When the Strait reaches war, the familiar decision (defend Taiwan, arm it and sanction China, or stay out) opens the operational war, and its outcome sets the Strait's stage. Resolute Desk's single roll is not used. The older monthly diplomacy model no longer runs during the presidency; its tensions follow the world each week, so the markets and the war's starting deterrence read the same world.
+- **What the world does to the rest of the game:**
+  - performance, rally and scandal for approval;
+  - standing on foreign policy (this game's China issue) and on immigration;
+  - financial shocks, oil shocks and the Taiwan supply shock;
+  - permanent costs for aid, posture and every operation, and the war budget;
+  - readiness at Defense, the president's stamina and stress.
+  - The era's stories now move the world (`cyber`, `cartel` and the rest) and read it.
+  - The verdict's crisis-leadership and international-relations measures read the world's record: crises that went your way, relations with treaty allies, agreements reached and visits made.
+- **Watch mode** keeps Resolute Desk's hands-off diplomacy: regular calls to friends and to China and Russia, a summit a year, and invitations. The staff answers crises with Resolute Desk's cautious choice (the best odds, discounted for force and for doing nothing).
+- **On screen:** the globe opens the Situation Room. Its tabs:
+  - The world: a Robinson map from world-atlas, coloured by relations, with the flashpoints pulsing; the country's panel; and every country by region;
+  - Daily brief; Hot spots;
+  - Operations (and covert action);
+  - Trade (tariffs, sanctions and aid);
+  - Alliances (with the posture and the record);
+  - Wars;
+  - Statecraft: one country's objectives, tools, covert programs and force, with a confirmation before the first shots.
 
 ## The second term (milestone 9)
 

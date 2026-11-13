@@ -66,4 +66,6 @@ public sealed interface Command {
     record WestWing(game.mandate.core.westwing.WestWingOrder order) implements Command {}
     /** Terms of office: whether to run again, the second term's theme and inaugural, an endorsement in the succession. */
     record Terms(game.mandate.core.terms.TermsOrder order) implements Command {}
+    /** The Situation Room: calls, summits, trade, operations, covert action, statecraft, alliances and wars. */
+    record Foreign(game.mandate.core.foreign.ForeignOrder order) implements Command {}
 }

@@ -69,6 +69,20 @@ public final class DiplomacyEngine {
         return true;
     }
 
+    /**
+     * Resolute Desk's world runs the hot spots during the presidency (milestone 8): this state follows it each week, so
+     * the markets, the war's starting deterrence and the older screens read the same world. Taiwan's stages map onto
+     * the ladder (drills, quarantine, blockade, war) and, unlike the ladder, can come down.
+     */
+    public void follow(DiplomacyState s, double taiwan, double middleEast, double easternEurope, double deterrence, int taiwanStage) {
+        s.tension.put(HotSpot.TAIWAN_STRAIT, Math.max(0, Math.min(100, taiwan)));
+        s.tension.put(HotSpot.MIDDLE_EAST, Math.max(0, Math.min(100, middleEast)));
+        s.tension.put(HotSpot.EASTERN_EUROPE, Math.max(0, Math.min(100, easternEurope)));
+        s.deterrence = Math.max(0, Math.min(100, deterrence));
+        Escalation r = switch (taiwanStage) { case 2 -> Escalation.DRILLS; case 3 -> Escalation.QUARANTINE; case 4 -> Escalation.BLOCKADE; case 5 -> Escalation.WAR; default -> null; };
+        if (s.rung != Escalation.WAR || r == Escalation.WAR) s.rung = r;
+    }
+
     /** Advance one month; returns newly crossed Taiwan rungs (at most one a month). */
     public List<Escalation> stepMonth(DiplomacyState s, DeterministicRandomManager rng) {
         for (HotSpot h : HotSpot.values()) {

@@ -147,6 +147,9 @@ final class StandaloneHost implements Host {
             case Effect.PartyFunds x -> { }
             case Effect.GroupStanding x -> { }
             case Effect.BillPublic x -> { }
+            case Effect.Readiness x -> { }
+            case Effect.WorldShift x -> { }
+            case Effect.VisitAbroad x -> { }
             case Effect.LawPassed x -> {
                 var passed = policyTableEngine.enactBill(policyTable, x, start, rng());
                 for (Effect y : passed.effects()) dispatch(cause, y);

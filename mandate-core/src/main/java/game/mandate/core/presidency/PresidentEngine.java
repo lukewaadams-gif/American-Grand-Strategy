@@ -35,8 +35,14 @@ public final class PresidentEngine {
     private final Map<String, double[]> centroid = new TreeMap<>();
     private final Map<String, Integer> ages = new TreeMap<>();
 
-    public PresidentEngine(StateCatalog states) {
+    /** Hours in the air to each country a trip abroad can go to (Resolute Desk's {@code flightAbroad}), by code. */
+    private final Map<String, Double> abroad = new TreeMap<>();
+
+    public PresidentEngine(StateCatalog states) { this(states, Map.of()); }
+
+    public PresidentEngine(StateCatalog states, Map<String, Double> flightsAbroad) {
         this.states = states;
+        this.abroad.putAll(flightsAbroad);
         for (String[] r : Csv.readResource("/data/state_centroids.csv")) centroid.put(r[0], new double[]{Double.parseDouble(r[1]), Double.parseDouble(r[2])});
         for (String[] r : Csv.readResource("/data/candidate_ages.csv")) ages.put(r[0], Integer.parseInt(r[1]));
     }
@@ -87,7 +93,7 @@ public final class PresidentEngine {
             case WORK_LATE -> evening(slot) ? null : "Working late is for evenings";
             case CABINET -> weekend(slot) || evening(slot) ? "The cabinet meets on weekday mornings and afternoons" : null;
             case CAMPAIGN -> midtermSeason ? null : "Campaign stops are for the hundred days before an election";
-            case ABROAD -> "Trips abroad arrive with the world (presidency milestone 7)";
+            case ABROAD -> abroad.isEmpty() ? "Trips abroad arrive with the world" : null;
             default -> null;
         };
     }
@@ -99,7 +105,7 @@ public final class PresidentEngine {
             case NONE -> null;
             case ISSUE -> { if (arg == null) throw new IllegalArgumentException("Choose an issue"); yield Issue.valueOf(arg).name(); }
             case STATE -> { if (arg == null || !states.contains(arg) || arg.equals("DC")) throw new IllegalArgumentException("Choose a state"); yield arg; }
-            case COUNTRY -> throw new IllegalArgumentException("Choose a country");
+            case COUNTRY -> { if (arg == null || !abroad.containsKey(arg)) throw new IllegalArgumentException("Choose a country"); yield arg; }
         };
         s.act[slot] = a;
         s.arg[slot] = v;
@@ -222,6 +228,8 @@ public final class PresidentEngine {
         Activity a = s.act[i];
         double v = a.stamina;
         if (a.isTrip() && s.arg[i] != null) v -= Math.min(6, flight(s.arg[i]) * 0.9);
+        // abroad: the flight out is paid by the first slot of a run (Resolute Desk's Week.resolve)
+        if (a == Activity.ABROAD && s.arg[i] != null && (i == 0 || s.act[i - 1] != Activity.ABROAD)) v -= Math.min(12, abroad.getOrDefault(s.arg[i], 8.0) * 0.8);
         return v < 0 ? v * ageFactor(s) : v;
     }
 
@@ -282,6 +290,10 @@ public final class PresidentEngine {
                     raisedTotal += raised;
                 }
                 case CEREMONY -> perf += 0.012;
+                case ABROAD -> {
+                    // one visit for a run of slots in one country
+                    if (arg != null && (i == 0 || s.act[i - 1] != Activity.ABROAD || !arg.equals(s.arg[i - 1]))) fx.add(new Effect.VisitAbroad(arg));
+                }
                 case HILL -> { s.hill = Math.min(100, s.hill + 1.2 * c.establishment() / 70); s.hillHours += 2.5; hill++; }
                 case FAMILY -> perf += 0.004;
                 case EXERCISE -> s.fitness = Math.min(100, s.fitness + 1.2);

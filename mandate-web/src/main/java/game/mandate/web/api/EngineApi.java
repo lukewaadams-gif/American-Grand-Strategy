@@ -76,6 +76,8 @@ public final class EngineApi {
                 case "westwingOptions" -> WestWingViews.options(need(), (String) req.get("kind"), Json.integer(req.get("index")));
                 case "press" -> WestWingViews.press(need());
                 case "terms" -> TermsViews.view(need());
+                case "sitroom" -> ForeignViews.room(need());
+                case "foreignCountry" -> ForeignViews.country(need(), (String) req.get("country"));
                 case "verdict" -> TermsViews.verdict(need());
                 case "residence" -> PresidencyViews.residence(need());
                 default -> throw new IllegalArgumentException("No view called " + req.get("name"));
@@ -202,7 +204,7 @@ public final class EngineApi {
         v.put("over", g.over());
         g.terms().ifPresent(t -> { if (t.leaving()) { v.put("successor", t.successor()); v.put("handoff", t.handoff().toString()); } });
         v.put("pendingDecisions", g.pendingEvents().size() + (g.phase() == Phase.FIRST_100_DAYS ? g.hundredDays().map(h -> h.pending().size()).orElse(0) : 0)
-                + HillViews.count(g) + WestWingViews.decisions(g).size() + TermsViews.count(g));
+                + HillViews.count(g) + WestWingViews.decisions(g).size() + TermsViews.count(g) + ForeignViews.count(g));
         v.put("congress", g.congress().toString());
         // how long the End button's turn is: a week in office (an operational turn in a war), none in the other phases
         v.put("turnUnit", g.operationsActive() ? "war" : switch (g.phase()) {
@@ -261,6 +263,7 @@ public final class EngineApi {
             v.put("activities", PresidencyViews.activities(g));
             v.put("issues", PresidencyViews.issues(g));
             v.put("states", PresidencyViews.states(g));
+            v.put("abroad", PresidencyViews.abroad(g));
             v.put("watch", PresidencyViews.watch(g));
         }
         if (g.phase() == Phase.FIRST_100_DAYS && g.hundredDays().isPresent()) v.put("hundredDays", PresidencyViews.hundredDays(g));
@@ -584,6 +587,7 @@ public final class EngineApi {
         out.addAll(HillViews.decisions(g));
         out.addAll(WestWingViews.decisions(g));
         out.addAll(TermsViews.decisions(g));
+        out.addAll(ForeignViews.decisions(g));
         boolean campaign = g.phase() == Phase.GENERAL_CAMPAIGN_2028 || g.phase() == Phase.REELECTION_CAMPAIGN_2032;
         if (campaign && g.debateThisWeek().isPresent() && g.election().pendingPosture() == null) {
             var theirs = game.mandate.core.campaign.DebatePosture.tendencyOf(g.opponent().candidate());

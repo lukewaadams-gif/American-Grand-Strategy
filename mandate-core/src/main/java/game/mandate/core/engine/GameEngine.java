@@ -58,6 +58,10 @@ import game.mandate.core.executive.Post;
 import game.mandate.core.game.GameSetup;
 import game.mandate.core.hill.HillEngine;
 import game.mandate.core.terms.TermsEngine;
+import game.mandate.core.foreign.ForeignData;
+import game.mandate.core.foreign.ForeignEngine;
+import game.mandate.core.foreign.ForeignOrder;
+import game.mandate.core.foreign.ForeignState;
 import game.mandate.core.terms.TermsOrder;
 import game.mandate.core.terms.TermsState;
 import game.mandate.core.hill.HillOrder;
@@ -142,6 +146,7 @@ public final class GameEngine implements WorldView {
     private final HillEngine hillEngine;
     private final WestWingEngine westWingEngine;
     private final TermsEngine termsEngine;
+    private final ForeignEngine foreignEngine;
     private final AmbientNews ambient;
 
     private final double premiumPerMiddleEast, middleEastPivot, premiumPerRung, stressPerRung, stressWar;
@@ -173,10 +178,11 @@ public final class GameEngine implements WorldView {
         this.diplomacyEngine = new DiplomacyEngine(tuning, Country.load());
         this.militaryEngine = new MilitaryEngine(MilitaryParams.from(tuning), MilitaryCatalog.load());
         this.electionEngine = new ElectionEngine(states, candidates, CampaignParams.from(tuning));
-        this.presidentEngine = new PresidentEngine(states);
+        this.presidentEngine = new PresidentEngine(states, flights(new ForeignData()));
         this.hillEngine = new HillEngine(bills, PolicyCatalog.shared());
         this.westWingEngine = new WestWingEngine(new WestWingData());
         this.termsEngine = new TermsEngine();
+        this.foreignEngine = new ForeignEngine(new ForeignData());
         this.ambient = new AmbientNews();
         premiumPerMiddleEast = tuning.d("markets.premium.middleEast");
         middleEastPivot = tuning.d("markets.premium.middleEastPivot");
@@ -256,6 +262,7 @@ public final class GameEngine implements WorldView {
         if (w.hill == null && w.president != null && (w.phase == Phase.FIRST_100_DAYS || w.phase == Phase.GOVERNING)) w.hill = seatHill();
         if (w.westWing == null && w.president != null && w.phase == Phase.GOVERNING) seatWestWing();
         if (w.terms == null && w.president != null) w.terms = termsEngine.newTerms();
+        if (w.foreign == null && w.westWing != null && w.phase == Phase.GOVERNING) seatForeign();
         if (w.president != null || (w.phase != Phase.FIRST_100_DAYS && w.phase != Phase.GOVERNING) || !w.politics.governing()) return;
         politicsEngine.upgradeApproval(w.politics, approvalStart(), opinionInputs());
         w.president = presidentEngine.newPresident(player().candidate().id());
@@ -300,6 +307,7 @@ public final class GameEngine implements WorldView {
             case Command.Hill c -> hillOrder(c.order());
             case Command.WestWing c -> westWingOrder(c.order());
             case Command.Terms c -> termsOrder(c.order());
+            case Command.Foreign c -> foreignOrder(c.order());
         }
         history.add(command);
         w.commandsApplied++;
@@ -367,6 +375,9 @@ public final class GameEngine implements WorldView {
             case Effect.Tension x -> owner = diplomacyEngine.apply(w.diplomacy, x) ? "diplomacy" : "none";
             case Effect.Deterrence x -> owner = diplomacyEngine.apply(w.diplomacy, x) ? "diplomacy" : "none";
             case Effect.WarEnded x -> owner = diplomacyEngine.apply(w.diplomacy, x) ? "diplomacy" : "none";
+            case Effect.Readiness x -> owner = w.westWing != null && westWingEngine.readiness(w.westWing, x.post(), x.delta()) ? "westwing" : "none";
+            case Effect.WorldShift x -> owner = w.foreign != null && foreignEngine.shift(w.foreign, foreignContext(), x.key(), x.delta(), ForeignEngine.Outcome.empty()) ? "world" : "none";
+            case Effect.VisitAbroad x -> owner = visitAbroad(x.country()) ? "world" : "none";
             case Effect.Munitions x -> owner = militaryEngine.apply(w.military, x) ? "military" : "none";
             case Effect.CongressElected x -> owner = congressEngine.apply(w.congress, x) ? "congress" : "none";
             case Effect.IssueWork x -> owner = governing && politicsEngine.apply(w.politics, x) ? "politics" : "none";
@@ -753,12 +764,13 @@ public final class GameEngine implements WorldView {
         w.phase = Phase.GOVERNING;
         if (w.hill != null) for (String law : w.policy.laws()) hillEngine.noteLaw(w.hill, law);   // the hundred days' laws
         seatWestWing();
+        seatForeign();
         w.clock.setMode(Granularity.WEEKLY);       // Resolute Desk's weeks go on through the term
         executiveEngine.newTurn(w.government);
         // The world did not stand still: the flashpoints drift for the months the hundred days covered. (During the
         // hundred days their own crisis is the foreign-policy story, so standing escalations wait until now.)
         for (long m = ChronoUnit.MONTHS.between(calendar.inauguration(), date()); m > 0; m--) {
-            for (Escalation e : diplomacyEngine.stepMonth(w.diplomacy, rng)) queueEvent(EventCatalog.escalation(e));
+            if (w.foreign == null) for (Escalation e : diplomacyEngine.stepMonth(w.diplomacy, rng)) queueEvent(EventCatalog.escalation(e));
             militaryEngine.stepMonth(w.military);
         }
     }
@@ -843,6 +855,7 @@ public final class GameEngine implements WorldView {
         westWingWeek();
         termsWeek();
         if (w.phase != Phase.GOVERNING) return;
+        foreignWeek();
 
         economyEngine.step(w.economy, w.budget, 1.0 / EconomyEngine.WEEKS_PER_MONTH, marketContext(), rng);
         EconomyEngine.Shock shock = economyEngine.lastShock(w.economy);
@@ -869,7 +882,8 @@ public final class GameEngine implements WorldView {
 
         boolean newMonth = to.getMonthValue() != from.getMonthValue();
         if (newMonth) {
-            for (Escalation e : diplomacyEngine.stepMonth(w.diplomacy, rng)) queueEvent(EventCatalog.escalation(e));
+            // with Resolute Desk's world the hot spots move weekly (foreignWeek); the old monthly model runs without it
+            if (w.foreign == null) for (Escalation e : diplomacyEngine.stepMonth(w.diplomacy, rng)) queueEvent(EventCatalog.escalation(e));
             militaryEngine.stepMonth(w.military);
         }
 
@@ -924,8 +938,8 @@ public final class GameEngine implements WorldView {
             case "deficit" -> economyEngine.deficit(e, w.budget);
             case "month" -> date().getMonthValue();
             case "ai" -> 1;
-            case "wars" -> w.military.operationActive() ? 1 : 0;
-            case "kia" -> war().map(o -> (double) o.usKilled()).orElse(0.0);
+            case "wars" -> w.foreign != null ? foreignEngine.var(w.foreign, "wars") : w.military.operationActive() ? 1 : 0;
+            case "kia" -> war().map(o -> (double) o.usKilled()).orElse(0.0) + (w.foreign == null ? 0 : w.foreign.kia());
             case "sent" -> e.sentiment();
             case "uchg" -> w.indicators.size() > 26 ? e.unemployment() - w.indicators.get(w.indicators.size() - 27).unemployment() : 0;
             case "tw" -> termWeek();
@@ -944,7 +958,7 @@ public final class GameEngine implements WorldView {
                 double then = w.indicators.size() > 13 ? w.indicators.get(w.indicators.size() - 14).detail("stocks") : Double.NaN;
                 yield Double.isNaN(then) || then <= 0 ? 0 : (e.stocks() / then - 1) * 100;
             }
-            default -> Double.NaN;
+            default -> w.foreign == null ? Double.NaN : foreignEngine.var(w.foreign, k);   // the world's measures (cyber, terror, migr, nk, gaza ...)
         };
     }
 
@@ -960,6 +974,12 @@ public final class GameEngine implements WorldView {
             presidentEngine.apply(w.president, o, weekContext());
         } catch (IllegalArgumentException e) {
             throw new IllegalCommandException(e.getMessage());
+        }
+        // watch mode: the hands-off president's diplomacy (Resolute Desk's Decisions.autoExec)
+        if (o instanceof PresidencyOrder.WatchWeek && w.foreign != null && w.phase == Phase.GOVERNING && !w.military.operationActive()) {
+            ForeignEngine.Outcome fo = ForeignEngine.Outcome.empty();
+            foreignEngine.autoExec(w.foreign, foreignContext(), fo, rng);
+            foreignOutcome("The staff's diplomacy", fo, null);
         }
     }
 
@@ -1013,6 +1033,102 @@ public final class GameEngine implements WorldView {
                 w.westWing == null ? 0 : WestWingEngine.impeachmentPressure(w.westWing), w.westWing == null ? null : WestWingEngine.worstScandal(w.westWing),
                 party.wingMood(0), party.wingMood(1), opp, lameDuck());
     }
+
+    // ---- the world (Resolute Desk's world: the Situation Room) -----------------------------------------------------
+
+    /** Hours in the air to each of the world's countries, for trips abroad on the calendar. */
+    static Map<String, Double> flights(ForeignData data) {
+        Map<String, Double> m = new TreeMap<>();
+        for (ForeignData.Country c : data.countries()) m.put(c.id(), c.flight());
+        return m;
+    }
+
+    /** Day 100: the Situation Room opens on Resolute Desk's 2029 world. */
+    private void seatForeign() {
+        java.util.Map<String, String> real = new TreeMap<>();
+        if (setup.realRoster())
+            for (String[] r : game.mandate.core.data.Csv.readTsv("/data/rd/real_names.tsv")) if (r[0].startsWith("leader")) real.put(r[1], r[2]);
+        w.foreign = foreignEngine.newWorld(foreignContext(), w.president == null ? 0 : w.president.week(), setup.realRoster(), real);
+        followWorld();
+    }
+
+    /** What the world reads from the rest of the game this week. */
+    public ForeignEngine.Context foreignContext() {
+        Candidate p = player().candidate();
+        WestWingState ww = w.westWing;
+        List<ForeignEngine.Bloc> house = new ArrayList<>(), senate = new ArrayList<>();
+        if (w.hill != null) for (HillState.Bloc b : w.hill.blocs())
+            (b.chamber() == HillState.SENATE ? senate : house).add(new ForeignEngine.Bloc(b.party(), b.seats(), b.loyalty(), b.hawk(), b.relationship()));
+        double cha = rdScale(p.charisma()), fpc = rdScale(p.policy());
+        java.util.function.IntToDoubleFunction pq = k -> ww == null ? 0.6 : WestWingEngine.pq(ww, k);
+        java.util.function.IntToDoubleFunction sq = k -> ww == null ? 0.6 : WestWingEngine.sq(ww, k);
+        java.util.function.IntToDoubleFunction ready = k -> ww == null ? 62 : ww.readiness(k);
+        Congress cg = congress();
+        return new ForeignEngine.Context(date(), setup.seed(), p.party(), p.name(), cha, fpc, rdScale((p.charisma() + p.debate()) / 2.0),
+                w.president == null ? 60 : w.president.age(), approval(), politicsEngine.params().rdPolarization(),
+                pq.applyAsDouble(WestWingData.P_DEF), pq.applyAsDouble(WestWingData.P_STATE), pq.applyAsDouble(WestWingData.P_CIA), pq.applyAsDouble(WestWingData.P_DNI),
+                pq.applyAsDouble(WestWingData.P_DHS), pq.applyAsDouble(WestWingData.P_DOJ), pq.applyAsDouble(WestWingData.P_HHS),
+                sq.applyAsDouble(WestWingData.S_NSA), sq.applyAsDouble(WestWingData.S_COS), sq.applyAsDouble(WestWingData.S_COMMS), sq.applyAsDouble(WestWingData.S_PRESS),
+                ready.applyAsDouble(WestWingData.P_DEF), ready.applyAsDouble(WestWingData.P_DHS), ready.applyAsDouble(WestWingData.P_DOJ), ready.applyAsDouble(WestWingData.P_HHS),
+                house, senate, cg.houseMajority() == p.party(), cg.senateMajority(p.party()) == p.party(), w.economy.priceLevel(), null);
+    }
+
+    private void foreignWeek() {
+        if (w.foreign == null) return;
+        ForeignEngine.Outcome o = foreignEngine.week(w.foreign, foreignContext(), rng);
+        foreignOutcome("The world", o, null);
+    }
+
+    /** The old diplomacy state follows the world: tensions, deterrence and the Taiwan ladder (markets and the war read them). */
+    private void followWorld() {
+        if (w.foreign == null) return;
+        double[] t = foreignEngine.tensions(w.foreign);
+        diplomacyEngine.follow(w.diplomacy, t[0], t[1], t[2], w.foreign.deter(), w.foreign.twStage());
+    }
+
+    private void foreignOutcome(String cause, ForeignEngine.Outcome o, String what) {
+        int decision = -1;
+        if (what != null) {
+            decision = w.ledger.decide(date(), cause);
+            w.ledger.record(decision, date(), cause, "world", what);
+        }
+        for (Effect e : o.effects()) {
+            if (decision < 0) decision = w.ledger.decide(date(), cause);
+            dispatch(decision, cause, e);
+        }
+        for (News n : o.news()) news(n);
+        for (String line : o.log()) log(line);
+        followWorld();
+        // the Strait goes to war: the war is fought on the operational model, as the ladder's war always was
+        if (o.startsTaiwanWar() && !w.military.operationActive()) queueEvent(EventCatalog.escalation(Escalation.WAR));
+    }
+
+    private void foreignOrder(ForeignOrder o) {
+        if (w.foreign == null || w.phase != Phase.GOVERNING) throw new IllegalCommandException("The Situation Room opens once the hundred days are over");
+        if (w.military.operationActive()) throw new IllegalCommandException("The war has the president's full attention");
+        ForeignEngine.Outcome out;
+        try {
+            out = foreignEngine.apply(w.foreign, foreignContext(), o, rng);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalCommandException(e.getMessage());
+        }
+        foreignOutcome("The Situation Room", out, o.getClass().getSimpleName().replaceAll("([a-z])([A-Z])", "$1 $2"));
+    }
+
+    /** A trip abroad on the calendar reaches its country. */
+    private boolean visitAbroad(String code) {
+        if (w.foreign == null) return false;
+        int i = foreignEngine.data().index(code);
+        if (i < 0) return false;
+        ForeignEngine.Outcome o = ForeignEngine.Outcome.empty();
+        foreignEngine.visit(w.foreign, foreignContext(), i, true, o);
+        for (News n : o.news()) news(n);
+        for (Effect e : o.effects()) dispatch(w.ledger.decide(date(), "A trip abroad"), "A trip abroad", e);
+        return true;
+    }
+
+    public Optional<ForeignState> foreign() { return Optional.ofNullable(w.foreign); }
+    public ForeignEngine foreignEngine() { return foreignEngine; }
 
     // ---- terms of office (Resolute Desk's Terms and Reelection) ----------------------------------------------------
 
@@ -1170,10 +1286,13 @@ public final class GameEngine implements WorldView {
     public List<TheaterOutcome> wars() { return w.military.wars(); }
 
     /** Crises that went the president's way and crises that did not (Resolute Desk's {@code okCount} and {@code failCount}). */
-    public int[] crisisRecord() { return new int[]{0, 0}; }
+    public int[] crisisRecord() { return w.foreign == null ? new int[]{0, 0} : new int[]{w.foreign.okCount(), w.foreign.failCount()}; }
 
     /** The world as the president leaves it: relations with treaty allies (0-100), agreements reached, trips abroad. */
-    public double[] worldRecord() { return new double[]{50 + (w.diplomacy.deterrence() - 50) * 0.3, 0, 0}; }
+    public double[] worldRecord() {
+        if (w.foreign == null) return new double[]{50 + (w.diplomacy.deterrence() - 50) * 0.3, 0, 0};
+        return new double[]{foreignEngine.alliesRelations(w.foreign), w.foreign.deals(), w.foreign.totalVisits()};
+    }
 
     /** What a law counts for in the verdict's "vision and agenda" (Resolute Desk's {@code big}): its reach, cost and appeal. */
     public double lawWeight(String id) {
@@ -1508,6 +1627,11 @@ public final class GameEngine implements WorldView {
             w.clock.setMode(Granularity.WEEKLY);
             int decision = w.ledger.decide(date(), "War ends: " + o.status());
             dispatchAll(decision, "War", militaryEngine.consequences(o));
+            if (w.foreign != null) {
+                ForeignEngine.Outcome fo = ForeignEngine.Outcome.empty();
+                foreignEngine.taiwanWarOver(w.foreign, foreignContext(), o.status().name(), o.usKilled(), fo);
+                foreignOutcome("War", fo, null);
+            }
             log("WAR ENDS: " + o.summary() + (o.usKilled() > 0 ? " " + o.usKilled() + " Americans killed; " + o.shipsLost() + " ships, "
                     + o.carriersLost() + " carriers and " + o.aircraftLost() + " aircraft lost." : ""));
         });

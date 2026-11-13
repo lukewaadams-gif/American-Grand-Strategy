@@ -22,6 +22,7 @@ import { scoreView } from './presidency/score.js';
 import { rooseveltRoom } from './presidency/roosevelt.js';
 import { westWingRoom } from './presidency/westwing.js';
 import { pressRoom } from './presidency/pressroom.js';
+import { sitRoom } from './presidency/sitroom.js';
 import { residenceRoom } from './presidency/residence.js';
 
 const root = document.getElementById('app')!;
@@ -235,9 +236,7 @@ function duskHour(month: number): number {
 
 // ---- what the room's objects and doors do in this milestone --------------------------------------------------------
 
-const LATER: Record<string, { title: string; body: string; milestone: number; stage: string }> = {
-  globe: { title: 'The Situation Room', body: 'Forty countries, calls and summits, crises week by week, operations and covert action, and the standing deployments.', milestone: 8, stage: 'the world' },
-};
+const LATER: Record<string, { title: string; body: string; milestone: number; stage: string }> = {};
 
 const west = (order: object) => command({ type: 'WestWing', order });
 const ISSUES = [
@@ -269,6 +268,17 @@ function openPress(first?: 'The press' | 'Speeches' | 'Social media' | 'Your par
     terms: () => engine.terms(),
     termsOrder: o => command({ type: 'Terms', order: o }),
   }, first), 'The Press Briefing Room', render);
+}
+
+/** The Situation Room: the world, the brief, hot spots, operations, trade, alliances, wars and statecraft. */
+function openSitRoom(): void {
+  host.open(sitRoom({
+    view: () => engine.sitRoom(),
+    country: code => engine.foreignCountry(code),
+    order: o => command({ type: 'Foreign', order: o }),
+    decide: () => { if (engine.decisions().length) { host.close(); openDecisions(); } },
+    back: () => host.close(),
+  }), 'The Situation Room', render);
 }
 
 function openCabinet(): void {
@@ -365,6 +375,9 @@ function openSpot(id: SpotId, v: PresidencyView): void {
       return;
     case 'press':
       openPress();
+      return;
+    case 'globe':
+      openSitRoom();
       return;
     case 'residence':
       if (!v.week) { toast('The Residence is yours at the inauguration.'); return; }

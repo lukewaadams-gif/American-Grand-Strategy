@@ -74,7 +74,7 @@ function legend(): HTMLElement {
 function slotCard(x: WeekSlot, v: PresidencyView, byId: Map<string, ActivityChoice>, act: CalendarActions): HTMLElement {
   const fam = FAMILY[x.activity] ?? 'open';
   // "on the economy", "to Michigan": issues read in lower case mid-sentence, states keep their capitals
-  const isState = x.activity === 'TRIP' || x.activity === 'CAMPAIGN';
+  const isState = x.activity === 'TRIP' || x.activity === 'CAMPAIGN' || x.activity === 'ABROAD';
   const about = x.argLabel ? (isState ? 'to ' + x.argLabel : 'on ' + x.argLabel.charAt(0).toLowerCase() + x.argLabel.slice(1)) : '';
   const label = `${x.day} ${x.part.toLowerCase()}: ${x.label}${about ? ' ' + about : ''}. Stamina ${signed(x.cost)}${x.flight ? `, ${x.flight} hours in the air each way` : ''}.`;
   const b = h('button', { class: `cal-slot fam-${fam}` + (picking?.slot === x.slot ? ' picking' : ''), type: 'button', 'aria-label': label, 'aria-haspopup': 'menu' },
@@ -96,6 +96,7 @@ function chooser(anchor: HTMLElement, x: WeekSlot, v: PresidencyView, byId: Map<
     pick: () => {
       if (a.arg === 'ISSUE') issueMenu(anchor, x, a, v, act);
       else if (a.arg === 'STATE') stateMenu(anchor, x, a, v, act);
+      else if (a.arg === 'COUNTRY') countryMenu(anchor, x, a, v, act);
       else act.order({ type: 'Slot', slot: x.slot, activity: a.id, arg: null });
     },
   }));
@@ -125,6 +126,20 @@ function stateMenu(anchor: HTMLElement, x: WeekSlot, a: ActivityChoice, v: Presi
       pick: () => act.order({ type: 'Slot', slot: x.slot, activity: a.id, arg: st.code }),
     })),
   ], 'Swing states first. Hours are each way on Air Force One.');
+}
+
+/** A trip abroad fills three slots from this one (Resolute Desk's trip picker): the flight out, the meetings, the way home. */
+function countryMenu(anchor: HTMLElement, x: WeekSlot, a: ActivityChoice, v: PresidencyView, act: CalendarActions): void {
+  const countries = v.abroad ?? [];
+  openMenu(anchor, `${a.label}: where to?`, countries.map(c => ({
+    label: c.name,
+    detail: `${c.leader} · relations ${c.rel > 0 ? '+' : ''}${c.rel}${c.visits ? ` · ${c.visits} ${c.visits === 1 ? 'visit' : 'visits'}` : ''}`,
+    right: `${c.flight} h`,
+    pick: () => {
+      for (let k = 0; k < 3 && x.slot + k < 21; k++)
+        if (!act.order({ type: 'Slot', slot: x.slot + k, activity: a.id, arg: c.code }) && k === 0) return;
+    },
+  })), 'Nearest first. A trip takes three slots; hours are each way.');
 }
 
 function weekAhead(v: PresidencyView, act: CalendarActions): HTMLElement {

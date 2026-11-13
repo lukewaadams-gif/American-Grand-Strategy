@@ -49,7 +49,9 @@ public final class ParityCheck {
                     + " westwing " + g.westWing().map(x -> x.departures() + "/" + x.leaks() + "/" + x.scandals().size() + "/" + x.justices().size() + "/" + x.storylines().size()
                     + "/" + x.record().size() + "/" + game.mandate.core.data.Fmt.format("%.4f", x.pressRelations())).orElse("-")
                     + " terms " + g.terms().map(t -> g.term() + "/" + t.ending() + "/" + (t.race() == null ? "-" : t.race().year() + ":" + t.race().evMe() + "-" + t.race().evOpp())
-                    + "/" + t.record().size()).orElse("-") + " legacy " + g.legacy().map(l -> l.score() + "/" + l.measures()).orElse("-"));
+                    + "/" + t.record().size()).orElse("-") + " legacy " + g.legacy().map(l -> l.score() + "/" + l.measures()).orElse("-")
+                    + " world " + g.foreign().map(f -> f.crisesFaced() + "/" + f.okCount() + "/" + f.kia() + "/" + f.twStage() + "/" + f.uaStage()
+                    + "/" + game.mandate.core.data.Fmt.format("%.4f/%.4f/%.4f", f.twt(), f.nato(), f.relations(0)) + "/" + f.record().size()).orElse("-"));
         }
         // the budget office's scores, on a governing economy
         GameSetup setup = new GameSetup(4, Party.DEMOCRAT, "d_reyes", "r_harlan", Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD,

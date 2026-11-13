@@ -266,6 +266,13 @@ public final class WestWingEngine {
         return out;
     }
 
+    /** A department's readiness moves (the world's operations and posture draw on Defense). */
+    public boolean readiness(WestWingState s, int post, double delta) {
+        if (post < 0 || post >= WestWingState.NPOST) return false;
+        s.ready[post] = clamp(s.ready[post] + delta, 5, 100);
+        return true;
+    }
+
     /** Second-term hires: the best people have served already, and the ones left owe the president less. */
     static void secondTermPool(WestWingState s, List<Person> out) {
         if (s.term < 2) return;

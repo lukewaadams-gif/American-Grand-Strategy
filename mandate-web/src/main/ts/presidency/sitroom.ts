@@ -1,0 +1,306 @@
+// The Situation Room (Resolute Desk's SitRoom and Statecraft; docs/PRESIDENCY_PORT.md, milestone 8): the world map and
+// its forty countries (calls, invitations, summits), the President's Daily Brief, the hot spots, military operations and
+// covert action, trade, sanctions and aid, the alliances and the force posture, wars of choice, and one country's
+// statecraft (objectives, aid, arms, troops, ties, peacekeepers, trade deals, treaties, covert programs and force).
+import { h, s } from '../core/dom.js';
+import { day } from '../core/format.js';
+import type { ForeignCountryView, SitCountry, SitGauge, SitRoomView, SitWar } from '../core/types.js';
+import { WORLD, WORLD_VIEWBOX } from '../generated/world.js';
+
+export interface SitActions {
+  view(): SitRoomView;
+  country(code: string): ForeignCountryView;
+  /** A Situation Room order; false if refused (the refusal is shown). */
+  order(o: object): boolean;
+  /** Opens the desk: the questions the world put there. */
+  decide(): void;
+  back(): void;
+}
+
+const TABS = ['The world', 'Daily brief', 'Hot spots', 'Operations', 'Trade', 'Alliances', 'Wars', 'Statecraft'] as const;
+type Tab = typeof TABS[number];
+
+function meter(v: number, label: string, tone: string): HTMLElement {
+  return h('span', { class: 'hill-meter ' + tone, role: 'meter', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(Math.round(v)), 'aria-label': label },
+    h('span', { style: `width:${Math.max(2, Math.min(100, v))}%` }), h('span', { class: 'hill-meter-value' }, String(Math.round(v))));
+}
+
+/** Relations from -100 to 100, as a bar either side of zero. */
+function relBar(rel: number, label: string): HTMLElement {
+  const w = Math.min(50, Math.abs(rel) / 2);
+  return h('span', { class: 'sit-rel', role: 'meter', 'aria-valuemin': '-100', 'aria-valuemax': '100', 'aria-valuenow': String(rel), 'aria-label': label },
+    h('span', { class: 'sit-rel-fill ' + (rel >= 0 ? 'pos' : 'neg'), style: rel >= 0 ? `left:50%;width:${w}%` : `left:${50 - w}%;width:${w}%` }),
+    h('span', { class: 'sit-rel-value' }, (rel > 0 ? '+' : '') + rel));
+}
+
+/** Resolute Desk's map colours: friends toward green, rivals toward red, the United States blue. */
+function shade(rel: number): string {
+  const mix = (a: number[], b: number[], t: number) => a.map((x, i) => Math.round(x + (b[i]! - x) * Math.max(0, Math.min(1, t))));
+  const base = [0x2b, 0x3a, 0x55];
+  const c = rel >= 0 ? mix(base, [0x2f, 0x9e, 0x6a], rel / 80) : mix(base, [0xc0, 0x39, 0x2b], -rel / 80);
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+
+export function sitRoom(act: SitActions, first: Tab = 'The world'): HTMLElement {
+  let tab: Tab = first;
+  let selected = 'CN', statecraft = 'CN', warId = '';
+  let arming: number | null = null;
+  const root = h('div', { class: 'room hill sitroom' });
+  const order = (o: object) => { act.order(o); draw(); };
+
+  function draw(): void {
+    const v = act.view();
+    const top = h('div', { class: 'room-top' },
+      h('div', null, h('div', { class: 'eyebrow' }, 'Below the West Wing'), h('h2', { class: 'dialog-title' }, 'The Situation Room'),
+        h('p', { class: 'muted' }, 'Week of ' + day(v.date, true) + (v.defcon !== undefined ? ' · ' : ''),
+          v.defcon !== undefined ? h('span', { class: 'sit-defcon d' + v.defcon }, 'DEFCON ' + v.defcon) : null)),
+      h('button', { class: 'btn primary', type: 'button', onclick: act.back }, 'Back to the Oval Office'));
+    if (!v.countries) { root.replaceChildren(top, h('p', null, v.reason ?? '')); return; }
+    const nav = h('nav', { class: 'cab-tabs', 'aria-label': 'The Situation Room' }, ...TABS.map(t =>
+      h('button', { class: 'btn small toggle' + (t === tab ? ' on' : ''), type: 'button', 'aria-pressed': String(t === tab), onclick: () => { tab = t; arming = null; draw(); } }, t)));
+    const body = tab === 'The world' ? worldTab(v) : tab === 'Daily brief' ? briefTab(v) : tab === 'Hot spots' ? spotsTab(v) : tab === 'Operations' ? opsTab(v)
+      : tab === 'Trade' ? tradeTab(v) : tab === 'Alliances' ? allianceTab(v) : tab === 'Wars' ? warsTab(v) : statecraftTab(v);
+    root.replaceChildren(...[top, nav,
+      v.open ? null : h('p', { class: 'hill-closed', role: 'note' }, v.reason ?? ''),
+      v.message ? h('p', { class: 'sit-message', role: 'status' }, v.message) : null,
+      body].filter((x): x is HTMLElement => x !== null));
+  }
+
+  // ---- the world ----
+
+  function worldTab(v: SitRoomView): HTMLElement {
+    const byId = new Map(v.countries!.map(c => [c.id, c]));
+    const c = byId.get(selected) ?? v.countries![0]!;
+    const map = s('svg', { class: 'sit-map', viewBox: `0 0 ${WORLD_VIEWBOX.width} ${WORLD_VIEWBOX.height}`, role: 'img',
+      'aria-label': 'The world, coloured by relations with the United States: green for friends, red for rivals. Choose a country from the list below the map.' },
+      ...WORLD.map(w => {
+        const k = w.id ? byId.get(w.id) : undefined;
+        const fill = w.id === 'US' ? '#1f4fa8' : k ? shade(k.rel) : '#253044';
+        const p = s('path', { d: w.d, fill, class: 'sit-land' + (k ? ' tracked' : '') + (k && k.id === c.id ? ' on' : '') });
+        if (k) p.addEventListener('click', () => { selected = k.id; draw(); });
+        return p;
+      }),
+      ...(v.flash ?? []).map(f => s('g', { class: 'sit-flash' }, s('circle', { cx: String(f.x), cy: String(f.y), r: '7' }), s('circle', { cx: String(f.x), cy: String(f.y), r: '3', class: 'core' }))),
+      s('text', { x: String(c.label[0]), y: String(c.label[1]), class: 'sit-map-label' }, c.name));
+    const panel = h('section', { class: 'room-card sit-country', 'aria-labelledby': 'sit-c-name' },
+      h('h3', { class: 'room-card-title', id: 'sit-c-name' }, c.name),
+      h('p', null, `${c.leader}, ${c.title}`),
+      h('p', { class: 'small' }, `${c.align} · ${c.region}${c.nuclear ? ' · nuclear-armed' : ''}${c.atWar ? ' · AT WAR' : ''}`),
+      h('dl', { class: 'ww-stats' },
+        h('dt', null, 'Relations'), h('dd', null, relBar(c.rel, `Relations with ${c.name}`)),
+        h('dt', null, 'Trade'), h('dd', null, `$${c.trade} billion a year (balance ${c.balance >= 0 ? '+' : '−'}$${Math.abs(c.balance)} billion)`),
+        h('dt', null, 'Your policy'), h('dd', null, `Tariff ${v.tariffs![c.tariff]}, sanctions ${v.levels![c.sanction]!.toLowerCase()}, aid ${v.aidLevels![c.aid]!.toLowerCase()}`),
+        h('dt', null, 'Visits'), h('dd', null, String(c.visits) + (c.visitIn >= 0 ? ` · ${c.leader} arrives in ${c.visitIn} ${c.visitIn === 1 ? 'week' : 'weeks'}` : ''))),
+      v.summit && v.summit.country === c.id ? h('p', { class: 'small' }, v.summit.round === 0 ? `A summit is set for ${v.summit.inWeeks} weeks from now.` : 'The summit is under way.') : null,
+      h('div', { class: 'cab-buttons' },
+        h('button', { class: 'btn small primary', type: 'button', disabled: !v.open || c.atWar || v.callsLeft! <= 0, onclick: () => order({ type: 'Call', country: c.id }) },
+          `Call (${v.callsLeft} left this week)`),
+        h('button', { class: 'btn small', type: 'button', disabled: !v.open || c.atWar || c.visitIn >= 0, onclick: () => order({ type: 'Invite', country: c.id }) }, 'Invite to the White House'),
+        h('button', { class: 'btn small', type: 'button', disabled: !v.open || c.atWar || !!v.summit, onclick: () => order({ type: 'Summit', country: c.id }) }, 'Propose a summit'),
+        h('button', { class: 'btn small', type: 'button', onclick: () => { statecraft = c.id; tab = 'Statecraft'; draw(); } }, 'Objectives, aid, arms, troops and force')),
+      h('p', { class: 'muted small' }, 'A call warms relations a little (less if you called lately); a visit, in Washington or abroad (a trip on the calendar), warms them more.'));
+    const regions = [...new Set(v.countries!.map(k => k.region))];
+    const list = h('section', { class: 'room-card', 'aria-labelledby': 'sit-list' },
+      h('h3', { class: 'room-card-title', id: 'sit-list' }, 'Every country, by region'),
+      h('div', { class: 'sit-regions' }, ...regions.map(r => h('div', { class: 'sit-region' }, h('h4', { class: 'sit-region-name' }, r),
+        h('ul', { class: 'sit-clist' }, ...v.countries!.filter(k => k.region === r).map(k => h('li', null,
+          h('button', { class: 'btn link sit-cbtn' + (k.id === c.id ? ' on' : ''), type: 'button', 'aria-pressed': String(k.id === c.id), onclick: () => { selected = k.id; draw(); } },
+            h('span', null, k.name + (k.atWar ? ' (war)' : '')), h('span', { class: 'sit-crel ' + (k.rel >= 0 ? 'pos' : 'neg') }, (k.rel > 0 ? '+' : '') + k.rel)))))))));
+    return h('div', { class: 'hill-body' }, h('div', { class: 'sit-world' }, h('div', { class: 'sit-map-wrap' }, map,
+      h('p', { class: 'muted small' }, (v.record ?? []).length ? 'Your record: ' + v.record![0] : 'Your record in the world begins today.')), panel), list);
+  }
+
+  // ---- the Daily Brief ----
+
+  function briefTab(v: SitRoomView): HTMLElement {
+    return h('div', { class: 'hill-body' }, h('section', { class: 'room-card sit-pdb', 'aria-labelledby': 'sit-pdb' },
+      h('p', { class: 'sit-pdb-mark' }, 'TOP SECRET'),
+      h('h3', { class: 'room-card-title', id: 'sit-pdb' }, 'The President’s Daily Brief'),
+      h('p', { class: 'muted small' }, day(v.date, true)),
+      h('ul', { class: 'sit-pdb-items' }, ...v.brief!.map(b => h('li', { class: 'p' + b.priority }, b.text))),
+      h('p', { class: 'muted small' }, 'Prepared by the Office of the Director of National Intelligence.')));
+  }
+
+  // ---- the hot spots ----
+
+  function gauges(gs: SitGauge[]): HTMLElement {
+    return h('dl', { class: 'ww-stats' }, ...gs.flatMap(g => [h('dt', null, g.name), h('dd', null, meter(g.value, g.name, g.tone))]));
+  }
+
+  function spotsTab(v: SitRoomView): HTMLElement {
+    return h('div', { class: 'hill-body' }, h('div', { class: 'room-grid two' }, ...v.hotspots!.map((p, i) => h('section', { class: 'room-card', 'aria-labelledby': 'sit-hs' + i },
+      h('h3', { class: 'room-card-title', id: 'sit-hs' + i }, p.name), h('p', { class: 'sit-stage' }, p.stage), gauges(p.gauges), h('p', { class: 'muted small' }, p.note)))));
+  }
+
+  // ---- operations and covert action ----
+
+  function opsTab(v: SitRoomView): HTMLElement {
+    const k = v.counters!;
+    return h('div', { class: 'hill-body' },
+      h('section', { class: 'room-card', 'aria-labelledby': 'sit-ops' },
+        h('h3', { class: 'room-card-title', id: 'sit-ops' }, 'Military operations'),
+        h('p', { class: 'muted small' }, 'Each draws on the Defense Department’s readiness and costs money for good. In a divided Congress, strikes bring complaints that you needed its approval.'),
+        h('ul', { class: 'sit-ops' }, ...v.operations!.map(o => h('li', null,
+          h('div', null, h('strong', null, o.name), h('p', { class: 'small' }, o.desc), h('p', { class: 'muted small' }, `${o.odds}% to succeed · ${o.status}`)),
+          h('button', { class: 'btn small', type: 'button', disabled: !o.ready, onclick: () => order({ type: 'Operation', index: o.index }) }, 'Order it'))))),
+      h('section', { class: 'room-card', 'aria-labelledby': 'sit-cov' },
+        h('h3', { class: 'room-card-title', id: 'sit-cov' }, 'Covert action'),
+        h('p', { class: 'muted small' }, 'A program that leaks is a scandal at home and an insult abroad.'),
+        h('ul', { class: 'sit-ops' }, ...v.covert!.map(o => h('li', null,
+          h('div', null, h('strong', null, o.name), h('p', { class: 'small' }, o.desc), h('p', { class: 'muted small' }, `${o.odds}% to work, ${o.leak}% to leak · ${o.status}`)),
+          h('button', { class: 'btn small', type: 'button', disabled: !o.ready, onclick: () => order({ type: 'Covert', index: o.index }) }, 'Sign the finding'))))),
+      h('p', { class: 'muted small' }, `${k.operations} operations, ${k.covert} covert programs (${k.exposed} exposed), ${k.crises} crises (${k.ok} went your way), ${k.deals} agreements; ${k.kia.toLocaleString('en-US')} Americans killed.`));
+  }
+
+  // ---- trade, sanctions and aid ----
+
+  function select(label: string, options: string[], value: number, on: (v: number) => void, disabled: boolean): HTMLElement {
+    return h('select', { 'aria-label': label, disabled, onchange: (e: Event) => on(Number((e.target as HTMLSelectElement).value)) },
+      ...options.map((o, i) => h('option', { value: String(i), selected: i === value }, o)));
+  }
+
+  function tradeTab(v: SitRoomView): HTMLElement {
+    const rows = [...v.countries!].sort((a, b) => b.trade - a.trade);
+    return h('div', { class: 'hill-body' }, h('section', { class: 'room-card', 'aria-labelledby': 'sit-trade' },
+      h('h3', { class: 'room-card-title', id: 'sit-trade' }, 'Trade, sanctions and aid'),
+      h('p', { class: 'muted small' }, 'Tariffs raise prices at home and anger the country (big economies may retaliate against farmers); sanctions squeeze and anger it; aid wins friends and costs money.'),
+      h('div', { class: 'sit-table-wrap' }, h('table', { class: 'hill-members sit-trade' },
+        h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Country'), h('th', { scope: 'col' }, 'Trade ($bn)'), h('th', { scope: 'col' }, 'Tariff'),
+          h('th', { scope: 'col' }, 'Sanctions'), h('th', { scope: 'col' }, 'Aid'))),
+        h('tbody', null, ...rows.map(c => h('tr', null, h('th', { scope: 'row' }, c.name), h('td', null, String(c.trade)),
+          h('td', null, select(`Tariff on ${c.name}`, v.tariffs!, c.tariff, x => order({ type: 'Tariff', country: c.id, level: x }), !v.open)),
+          h('td', null, select(`Sanctions on ${c.name}`, v.levels!, c.sanction, x => order({ type: 'Sanction', country: c.id, level: x }), !v.open || c.atWar)),
+          h('td', null, select(`Aid to ${c.name}`, v.aidLevels!, c.aid, x => order({ type: 'Aid', country: c.id, level: x }), !v.open || c.atWar)))))))));
+  }
+
+  // ---- alliances and posture ----
+
+  function allianceTab(v: SitRoomView): HTMLElement {
+    const a = v.alliances!;
+    const tone = (x: number) => (x >= 55 ? 'good' : x >= 40 ? 'mid' : 'bad');
+    return h('div', { class: 'hill-body' },
+      h('div', { class: 'room-grid two' },
+        h('section', { class: 'room-card', 'aria-labelledby': 'sit-nato' },
+          h('h3', { class: 'room-card-title', id: 'sit-nato' }, 'NATO'),
+          h('dl', { class: 'ww-stats' }, h('dt', null, 'Cohesion'), h('dd', null, meter(a.nato, 'NATO cohesion', tone(a.nato)))),
+          h('p', { class: 'small' }, `Allies spend about ${a.allySpend}% of GDP on defense.`),
+          h('div', { class: 'cab-buttons' },
+            h('button', { class: 'btn small', type: 'button', disabled: !a.article5, onclick: () => order({ type: 'Alliance', what: 'article5' }) }, 'Reaffirm Article 5'),
+            h('button', { class: 'btn small', type: 'button', disabled: !a.press, onclick: () => order({ type: 'Alliance', what: 'press' }) }, 'Press allies to spend more')),
+          h('p', { class: 'muted small' }, 'Each can be used once a quarter.')),
+        h('section', { class: 'room-card', 'aria-labelledby': 'sit-pac' },
+          h('h3', { class: 'room-card-title', id: 'sit-pac' }, 'The Asia-Pacific'),
+          h('dl', { class: 'ww-stats' }, h('dt', null, 'Cohesion'), h('dd', null, meter(a.pacific, 'Pacific alliance cohesion', tone(a.pacific))),
+            h('dt', null, 'Taiwan deterrence'), h('dd', null, meter(a.deterrence, 'Deterrence in the Taiwan Strait', tone(a.deterrence)))),
+          h('button', { class: 'btn small', type: 'button', disabled: !a.drills, onclick: () => order({ type: 'Alliance', what: 'drills' }) }, 'Joint exercises with Japan, Korea and Australia'))),
+      h('section', { class: 'room-card', 'aria-labelledby': 'sit-posture' },
+        h('h3', { class: 'room-card-title', id: 'sit-posture' }, 'Force posture'),
+        h('p', { class: 'muted small' }, 'More forces deter and reassure, cost money for good and draw on readiness; adversaries take them as a challenge.'),
+        ...a.posture.map((p, i) => h('div', { class: 'sit-posture' }, h('span', null, p.area),
+          h('div', { class: 'cab-buttons', role: 'group', 'aria-label': p.area }, ...a.postureLevels.map((l, k) => h('button', { class: 'btn small toggle' + (k === p.level ? ' on' : ''),
+            type: 'button', 'aria-pressed': String(k === p.level), disabled: !v.open, onclick: () => order({ type: 'Posture', area: i, level: k }) }, l)))))),
+      h('section', { class: 'room-card', 'aria-labelledby': 'sit-rec' },
+        h('h3', { class: 'room-card-title', id: 'sit-rec' }, 'The record'),
+        (v.record ?? []).length ? h('ul', { class: 'hill-list small' }, ...v.record!.map(r => h('li', null, r))) : h('p', { class: 'muted small' }, 'Nothing yet.')));
+  }
+
+  // ---- wars ----
+
+  function warsTab(v: SitRoomView): HTMLElement {
+    const wars = v.wars!;
+    if (!wars.length) return h('div', { class: 'hill-body' }, h('section', { class: 'room-card' }, h('h3', { class: 'room-card-title' }, 'Wars'),
+      h('p', null, 'No American war. Force against a country is ordered from its page in Statecraft.')));
+    const x: SitWar = wars.find(w => w.id === warId) ?? wars.find(w => w.fighting) ?? wars[wars.length - 1]!;
+    const w = (how: string) => order({ type: 'EndWar', war: x.id, how });
+    const tone = (n: number) => (n >= 55 ? 'good' : n >= 40 ? 'mid' : 'bad');
+    return h('div', { class: 'hill-body' },
+      h('div', { class: 'cab-buttons', role: 'group', 'aria-label': 'Wars' }, ...wars.map(y => h('button', { class: 'btn small toggle' + (y.id === x.id ? ' on' : ''), type: 'button',
+        'aria-pressed': String(y.id === x.id), onclick: () => { warId = y.id; draw(); } }, y.name + (y.fighting ? '' : ' (over)')))),
+      h('section', { class: 'room-card', 'aria-labelledby': 'sit-war' },
+        h('h3', { class: 'room-card-title', id: 'sit-war' }, x.name),
+        h('p', { class: 'small' }, `${x.kind} against ${x.enemy}. ${x.stage}. ${x.weeks} weeks; ${x.kia.toLocaleString('en-US')} Americans killed; ${x.troops.toLocaleString('en-US')} troops `
+          + `(the generals want ${x.need.toLocaleString('en-US')}); about ${x.cost}% of GDP a year.`),
+        h('dl', { class: 'ww-stats' }, h('dt', null, 'The front'), h('dd', null, meter(x.front, 'The front', tone(x.front))),
+          h('dt', null, 'Support at home'), h('dd', null, meter(x.support, 'Support at home', tone(x.support))),
+          h('dt', null, 'Toward a settlement'), h('dd', null, meter(x.talks, 'Progress toward a settlement', 'mid'))),
+        x.fighting ? h('div', null,
+          h('p', { class: 'muted small' }, x.authorized ? 'Congress has authorized it.' : 'Congress has not authorized this war; after about sixty days it can vote to end it.'),
+          h('div', { class: 'cab-buttons', role: 'group', 'aria-label': 'Strategy' }, ...v.strategies!.map((st, i) => h('button', { class: 'btn small toggle' + (i === x.strategy ? ' on' : ''),
+            type: 'button', 'aria-pressed': String(i === x.strategy), title: v.strategyHelp![i], disabled: !v.open, onclick: () => order({ type: 'WarStrategy', war: x.id, strategy: i }) }, st))),
+          h('div', { class: 'cab-buttons' },
+            ...[[-0.25, 'Bring home a quarter'], [-0.1, 'Bring home a tenth'], [0.1, 'Send a tenth more'], [0.25, 'Send a quarter more']].map(([d, l]) =>
+              h('button', { class: 'btn small', type: 'button', disabled: !v.open, onclick: () => order({ type: 'WarTroops', war: x.id, change: d }) }, String(l)))),
+          h('div', { class: 'cab-buttons' },
+            h('button', { class: 'btn small', type: 'button', disabled: !v.open || x.timetable >= 0, onclick: () => w('timetable26') }, 'Leave in six months'),
+            h('button', { class: 'btn small', type: 'button', disabled: !v.open || x.timetable >= 0, onclick: () => w('timetable52') }, 'Leave in a year'),
+            h('button', { class: 'btn small', type: 'button', disabled: !v.open || x.front < 55 || x.handoff >= 0, onclick: () => w('handover') }, 'Hand over'),
+            h('button', { class: 'btn small', type: 'button', disabled: !v.open, onclick: () => w('escalate') }, 'Escalate'),
+            h('button', { class: 'btn small', type: 'button', disabled: !v.open, onclick: () => w('declare') }, 'Declare victory'),
+            h('button', { class: 'btn small', type: 'button', disabled: !v.open, onclick: () => w('withdraw') }, 'Withdraw now')),
+          x.timetable >= 0 ? h('p', { class: 'small' }, `The last troops leave in ${x.timetable} weeks.`) : null,
+          x.handoff >= 0 ? h('p', { class: 'small' }, `The handover is in ${x.handoff} weeks.`) : null) : null));
+  }
+
+  // ---- statecraft: one country ----
+
+  function statecraftTab(v: SitRoomView): HTMLElement {
+    const c = act.country(statecraft);
+    const pick = h('label', { class: 'hill-field' }, h('span', null, 'Country'),
+      h('select', { 'aria-label': 'The country', onchange: (e: Event) => { statecraft = (e.target as HTMLSelectElement).value; arming = null; draw(); } },
+        ...[...v.countries!].sort((a: SitCountry, b: SitCountry) => a.name.localeCompare(b.name)).map(k => h('option', { value: k.id, selected: k.id === statecraft }, k.name + (k.atWar ? ' (war)' : '')))));
+    const off = !c.open;
+    const tog = (label: string, levels: string[], value: number, type: string, disabled = false) => h('div', { class: 'sit-tool' }, h('span', null, label),
+      h('div', { class: 'cab-buttons', role: 'group', 'aria-label': label }, ...levels.map((l, i) => h('button', { class: 'btn small toggle' + (i === value ? ' on' : ''),
+        type: 'button', 'aria-pressed': String(i === value), disabled: off || disabled, onclick: () => order({ type, country: c.id, ...(type === 'Troops' ? { step: i } : { level: i }) }) }, l))));
+    const header = h('section', { class: 'room-card', 'aria-labelledby': 'sc-head' },
+      h('h3', { class: 'room-card-title', id: 'sc-head' }, c.name),
+      h('p', null, `${c.leader}, ${c.title}. ${c.align}${c.nuclear ? ', nuclear-armed' : ''}.${c.toppled ? ' Its government fell to American action.' : ''}${c.atWar ? ' At war with the United States.' : ''}`),
+      h('dl', { class: 'ww-stats' }, h('dt', null, 'Relations'), h('dd', null, relBar(c.rel, `Relations with ${c.name}`)),
+        h('dt', null, 'Diplomatic ties'), h('dd', null, c.tiesLevels[c.ties]!), ...(c.unrest >= 40 ? [h('dt', null, 'Unrest'), h('dd', null, meter(c.unrest, 'Unrest', 'bad'))] : []),
+        h('dt', null, 'American forces'), h('dd', null, c.troops ? c.troops.toLocaleString('en-US') : 'None')));
+    const objectives = h('section', { class: 'room-card', 'aria-labelledby': 'sc-obj' },
+      h('h3', { class: 'room-card-title', id: 'sc-obj' }, 'Objectives'),
+      c.objectives.length ? h('ul', { class: 'sit-objs' }, ...c.objectives.map(o => h('li', null,
+        h('strong', null, o.name), h('span', { class: 'sit-steps', role: 'img', 'aria-label': `Step ${Math.min(o.step + 1, o.steps)} of ${o.steps}` }, ...Array.from({ length: o.steps }, (_, i) => h('span', { class: 'sit-dot' + (i < o.step ? ' done' : '') }))),
+        h('p', { class: 'small' }, o.why),
+        o.status === 'Achieved' ? h('p', { class: 'small sit-good' }, 'Achieved.') : h('div', null,
+          h('p', { class: 'small' }, 'Next: ' + o.next), h('p', { class: 'muted small' }, o.reason ? o.reason : o.odds ?? ''),
+          h('button', { class: 'btn small', type: 'button', disabled: !o.ready, onclick: () => order({ type: 'Objective', id: o.id }) }, 'Try it')))))
+        : h('p', { class: 'muted small' }, 'Nothing to pursue with ' + c.nameIn + ' this year.'));
+    const tools = h('section', { class: 'room-card', 'aria-labelledby': 'sc-tools' },
+      h('h3', { class: 'room-card-title', id: 'sc-tools' }, 'The tools'),
+      tog('Military aid', c.milAidLevels, c.milAid, 'MilitaryAid', c.atWar),
+      tog('Arms sales', c.armsLevels, c.arms, 'Arms', c.atWar),
+      tog('American forces based there', c.troopSteps, c.troopStep, 'Troops', c.atWar || c.align === 'Adversary'),
+      tog('Diplomatic ties', c.tiesLevels, c.ties, 'Ties'),
+      h('div', { class: 'sit-tool' }, h('span', null, 'Peacekeepers'), h('button', { class: 'btn small toggle' + (c.peacekeepers ? ' on' : ''), type: 'button', 'aria-pressed': String(c.peacekeepers),
+        disabled: off || (!c.peacekeepers && !c.canKeepPeace), onclick: () => order({ type: 'Peacekeepers', country: c.id, on: !c.peacekeepers }) }, c.peacekeepers ? 'Deployed: bring them home' : 'Send peacekeepers')),
+      h('div', { class: 'sit-tool' }, h('span', null, 'A trade agreement'), c.pact ? h('span', { class: 'small' }, 'In force.') : h('span', null,
+        h('span', { class: 'muted small' }, `Needs a majority in both chambers: about ${c.tradeOdds}% to pass. `),
+        h('button', { class: 'btn small', type: 'button', disabled: off || c.atWar, onclick: () => order({ type: 'TradeDeal', country: c.id }) }, 'Send it to Congress'))),
+      h('div', { class: 'sit-tool' }, h('span', null, 'A defense treaty'), h('span', null, h('span', { class: 'muted small' }, c.treaty + ' '),
+        c.treatyReady ? h('button', { class: 'btn small', type: 'button', onclick: () => order({ type: 'Treaty', country: c.id }) }, 'Send it to the Senate') : null)));
+    const covert = h('section', { class: 'room-card', 'aria-labelledby': 'sc-cov' },
+      h('h3', { class: 'room-card-title', id: 'sc-cov' }, 'Covert programs'),
+      c.program ? h('p', { class: 'small' }, c.program) : null,
+      h('ul', { class: 'sit-ops' }, ...c.covert.map(k => h('li', null,
+        h('div', null, h('strong', null, k.name), h('p', { class: 'small' }, k.desc), h('p', { class: 'muted small' }, k.reason || `${k.odds}% to work, ${k.leak}% to leak, about ${k.weeks} weeks`)),
+        h('button', { class: 'btn small', type: 'button', disabled: !k.ready, onclick: () => order({ type: 'CovertProgram', country: c.id, kind: k.kind }) }, 'Sign the finding')))));
+    const force = h('section', { class: 'room-card sit-force', 'aria-labelledby': 'sc-force' },
+      h('h3', { class: 'room-card-title', id: 'sc-force' }, 'Force'),
+      h('p', { class: 'small' }, c.authorized ? 'Congress has authorized force against ' + c.nameIn + '.' : `Congress has not authorized force. Asking: about ${c.authorizeOdds}% to pass. `,
+        c.authorized ? null : h('button', { class: 'btn small', type: 'button', disabled: off, onclick: () => order({ type: 'Authorize', country: c.id }) }, 'Ask Congress')),
+      h('ul', { class: 'sit-ops' }, ...c.force.map(k => h('li', null,
+        h('div', null, h('strong', null, k.name), h('p', { class: 'small' }, k.reason || k.expect)),
+        arming === k.kind
+          ? h('div', { class: 'sit-confirm', role: 'group', 'aria-label': 'Confirm the order' },
+              h('p', { class: 'small' }, 'This can’t be taken back once the first shots are fired.'),
+              h('button', { class: 'btn small danger', type: 'button', onclick: () => { arming = null; order({ type: 'StartWar', country: c.id, kind: k.kind }); } }, 'Give the order'),
+              h('button', { class: 'btn small', type: 'button', onclick: () => { arming = null; draw(); } }, 'Stand down'))
+          : h('button', { class: 'btn small', type: 'button', disabled: !k.ready, onclick: () => { arming = k.kind; draw(); } }, 'Plan it')))));
+    return h('div', { class: 'hill-body' }, pick, header, h('div', { class: 'room-grid two' }, objectives, tools), h('div', { class: 'room-grid two' }, covert, force));
+  }
+
+  draw();
+  return root;
+}

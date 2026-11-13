@@ -67,3 +67,27 @@ Choices made while building overnight that we had not discussed. Each was made i
 10. **The verdict replaces the old legacy score** for any game with a presidency; a game lost in 2028 keeps the campaign's score. The historians' ranking is the C-SPAN 2021 survey Resolute Desk uses, real presidents as a reference table only.
 11. **The weeks between Election Day and the handoff** start on the Monday after the election and end on January 20 itself.
 12. **The 2032 re-election campaign still pauses the presidency's weekly systems** (Congress, the West Wing, the economy) for its fifteen weeks, as before this milestone; running them alongside the campaign is left for the final audits.
+
+## Milestone 8: the world and the Situation Room
+
+1. **The Taiwan war runs on this game's operational model**, not Resolute Desk's single roll. Its outcome sets the Strait's stage: defended, back to quarantine; stalemate, blockade; fallen, Taiwan's allies estranged.
+2. **The older monthly diplomacy model is switched off during the presidency.** Its three tensions, deterrence and the ladder follow the world each week, so the markets, the war and the older screens read one world. Before the presidency, and in games without it, the old model still runs.
+3. **Oil goes through this game's markets.** The hot spots set the risk premium as before, and an "oil" effect is a price shock. Resolute Desk's own oil base and its decay toward a theater target are not ported, to avoid counting the world twice.
+4. **Resolute Desk's bugs, fixed:**
+   - lowering a tariff no longer charges relations as a new tariff;
+   - a toppled government's relations no longer drift back to the old regime's hostility (its anchor rises to neutral);
+   - the "tw_war" crisis is replaced by the operational war (point 1).
+5. **Resolute Desk's quirks, kept:**
+   - "tcn" steps the China tariff down one level whatever its value;
+   - allied spending only lowers NATO cohesion;
+   - Canada reads Pacific cohesion;
+   - a War Powers vote comes only once;
+   - covert actions in the Operations tab have no conditions;
+   - the deficit hawks' votes stand for war hawks on authorizations and treaties.
+6. **Farm effects** (retaliation, trade deals, the summit's trade ask) move rural voters' standing, since this game has no farm-income gauge of Resolute Desk's kind.
+7. **Foreign policy and security count toward this game's "China" issue,** as the storylines already did. Immigration is its own issue.
+8. **A War Powers veto adds scandal** (Resolute Desk's impeachment pressure, which here comes from the West Wing's scandals).
+9. **A trip abroad fills three slots** from the one chosen, and later slots can be changed as usual. Its flight costs stamina on the first slot, up to twelve points.
+10. **The world opens on day 100,** with the West Wing. During the first hundred days the hundred days' own crisis is the foreign-policy story.
+11. **Real leaders only with the real-person roster:** the stand-ins in `countries.tsv` by default, the names in `real_names.tsv` when the roster is on.
+12. **The map** is Natural Earth's 1:110m countries from world-atlas, in the same Robinson projection and frame as Resolute Desk's map, so its label points fit.

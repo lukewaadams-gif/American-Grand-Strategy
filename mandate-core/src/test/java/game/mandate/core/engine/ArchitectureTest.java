@@ -36,7 +36,7 @@ class ArchitectureTest {
             CongressState.class, PolicyState.class, GovernmentState.class, DiplomacyState.class, MilitaryState.class, OperationState.class,
             ElectionState.class, CampaignSide.class, WorldState.class, PresidentState.class,
             game.mandate.core.policy.PolicyTableState.class, game.mandate.core.hill.HillState.class, game.mandate.core.westwing.WestWingState.class,
-            game.mandate.core.terms.TermsState.class);
+            game.mandate.core.terms.TermsState.class, game.mandate.core.foreign.ForeignState.class);
 
     /** Domain states expose readers only. Writes go through their owning engine (same package) or a transition. */
     @Test
@@ -53,7 +53,7 @@ class ArchitectureTest {
         assertTrue(bad.isEmpty(), "public mutators on domain state: " + bad);
     }
 
-    static final Set<String> DOMAINS = Set.of("economy", "politics", "congress", "executive", "diplomacy", "military", "campaign", "presidency", "policy", "hill", "westwing", "terms");
+    static final Set<String> DOMAINS = Set.of("economy", "politics", "congress", "executive", "diplomacy", "military", "campaign", "presidency", "policy", "hill", "westwing", "terms", "foreign");
 
     /** No domain imports another domain's state or engine: cross-system effects must be transitions routed by the game engine. */
     @Test
