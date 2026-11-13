@@ -29,7 +29,7 @@ export function warRoom(v, st, act) {
         return h('div', { class: 'kpi', role: 'group', 'aria-label': `${label}: ${fmt(value)}, ${sub}` }, h('span', { class: 'kpi-label' }, label), val, h('span', { class: 'kpi-sub ' + subTone }, sub));
     };
     const nat = last?.national ?? 0, natChange = last && prev ? last.national - prev.national : 0;
-    const bar = h('header', { class: 'cw-bar' }, h('div', { class: 'cw-brand' }, h('span', { class: 'cw-wordmark' }, 'American Grand Strategy'), h('span', { class: 'cw-edition' }, daily ? `Campaign ${v.electionDay.slice(0, 4)} · Final stretch` : `Campaign ${v.electionDay.slice(0, 4)} · Week ${v.week} of ${v.weeks}`), h('span', { class: 'cw-date' }, daily ? `${v.turn.label} · ${v.turn.weeksToVote > 0 ? v.turn.weeksToVote + ' weeks' : 'days'} to Election Day`
+    const bar = h('header', { class: 'cw-bar' }, h('div', { class: 'cw-brand' }, h('span', { class: 'cw-wordmark' }, 'American Grand Strategy'), h('span', { class: 'cw-edition' }, daily ? `Campaign ${v.electionDay.slice(0, 4)} · Final stretch` : `Campaign ${v.electionDay.slice(0, 4)} · Week ${v.week} of ${v.weeks}`), h('span', { class: 'cw-date' }, daily ? `${v.turn.label} · ${daysTo(v.date, v.electionDay)} to Election Day`
         : `${v.dateLabel} · ${v.weeksLeft} weeks to Election Day`)), h('div', { class: 'cw-kpis' }, kpi('cash', 'Cash on hand', v.player.cash, money, `theirs about ${money(v.opponent.cash)}`), kpi('nat', 'National polls', nat, x => signed(x), last && prev ? `${signed(natChange)} since last poll` : 'first poll next week', Math.abs(natChange) < 0.05 ? '' : natChange > 0 ? 'up' : 'down'), kpi('ev', 'Electoral votes', last?.ev ?? 0, x => String(Math.round(x)), 'if every state poll is right'), kpi('win', 'Forecast', last?.win ?? 0.5, chance, 'from the polls alone')), h('div', { class: 'cw-actions' }, v.pendingDecisions > 0 ? h('button', { class: 'btn danger', type: 'button', onclick: () => act.openDecisions(),
         title: 'Decisions waiting: the turn cannot run until they are answered' }, `Decisions (${v.pendingDecisions})`) : null, h('button', { class: 'btn primary', type: 'button', onclick: () => act.runWeek(), 'aria-keyshortcuts': 'Control+Enter',
         title: 'Both campaigns carry out their plans, a debate is held if one is due, and the polls update' }, h('span', null, daily ? 'Run the day' : 'Run the week'), h('span', { class: 'hint' }, 'Ctrl+Enter'))));
@@ -79,12 +79,17 @@ export function warRoom(v, st, act) {
     const chyron = breaking ? h('div', { class: 'chyron', role: 'status' }, h('span', { class: 'chyron-flag tone-' + (breaking.tone ?? 'INFO').toLowerCase() }, breaking.headline ?? 'News'), h('span', { class: 'chyron-text' }, breaking.text)) : null;
     const picking = st.picking !== null ? (v.schedule ?? [])[st.picking] : null;
     const banner = picking ? h('div', { class: 'pick-banner', role: 'status' }, `Click a state for the ${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][picking.day]} ${['morning', 'afternoon', 'evening'][picking.part]} event`, h('button', { class: 'btn quiet small', type: 'button', onclick: () => act.pick(null) }, 'Cancel (Esc)')) : null;
-    const mapCard = h('section', { class: 'card map-card' + (picking ? ' picking' : ''), 'aria-label': 'The map' }, h('div', { class: 'card-head' }, h('h2', null, L.question), layerTabs), h('div', { class: 'map-stage' }, banner, map), chyron, h('div', { class: 'map-foot' }, legend, readout));
+    const digest = st.digest ? h('div', { class: 'digest', role: 'status' }, h('div', { class: 'digest-head' }, h('strong', null, st.digest.title), h('button', { class: 'btn quiet close', type: 'button', 'aria-label': 'Dismiss the review', onclick: () => act.dismissDigest() }, '\u00d7')), ...st.digest.lines.map(l => h('p', null, l))) : null;
+    const mapCard = h('section', { class: 'card map-card' + (picking ? ' picking' : ''), 'aria-label': 'The map' }, h('div', { class: 'card-head' }, h('h2', null, L.question), layerTabs), h('div', { class: 'map-stage' }, banner, digest, map), chyron, h('div', { class: 'map-foot' }, legend, readout));
     const race = h('section', { class: 'card race-card', 'aria-label': 'The race for 270' }, h('h2', null, 'The race for 270'), raceTo270(v));
     const path = h('section', { class: 'card path-card', 'aria-label': 'Path to 270' }, h('h2', null, 'Path to 270'), pathTo270(v, st.selected, c => act.select(c)));
     // ---- the right: a state, or the nation ---------------------------------------------------------------------
     const right = h('aside', { class: 'cw-right', 'aria-label': selected ? `${selected.name} in detail` : 'The national picture' }, ...(selected ? [stateDesk(selected, v, st, act, sched, fieldAct, moneyAct)] : national(v, last)));
     return h('div', { class: 'cw', 'data-world': 'campaign' }, bar, h('main', { class: 'cw-grid', id: 'main', tabindex: -1 }, left, h('div', { class: 'cw-centre' }, mapCard, race, path), right));
+}
+function daysTo(from, to) {
+    const n = Math.round((Date.parse(to) - Date.parse(from)) / 86400000);
+    return n === 1 ? '1 day' : `${n} days`;
 }
 function placePicked(v, slot, code, act) {
     const s = (v.schedule ?? [])[slot];

@@ -400,3 +400,12 @@ button.link:hover { text-decoration-color: var(--muted); }
 .gs-fill.pos { background: var(--good); } .gs-fill.neg { background: var(--bad); }
 .quotes blockquote { margin: 4px 0; padding-left: 10px; border-left: 2px solid var(--rule-strong); font: 400 calc(var(--s) * 14px)/1.4 "Source Serif 4", Georgia, serif; color: var(--text); }
 @media (max-width: 900px) { .studio-cols { grid-template-columns: minmax(0, 1fr); } }
+
+/* the turn's review, over the map */
+.digest { position: absolute; z-index: 2; left: 8px; bottom: 8px; width: min(calc(var(--s) * 440px), calc(100% - 16px)); padding: 10px 12px;
+  background: rgba(16, 22, 31, 0.96); border: 1px solid var(--rule-strong); border-left: 4px solid var(--accent); border-radius: var(--r);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); font-size: calc(var(--s) * 13px); animation: chyron-in 0.4s ease-out; }
+.digest-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+.digest-head strong { font: 700 calc(var(--s) * 14px)/1.3 "Source Serif 4", Georgia, serif; }
+.digest p { color: var(--muted); }
+.digest p + p { margin-top: 2px; }

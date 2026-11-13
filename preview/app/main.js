@@ -2,14 +2,16 @@
 // mid-campaign save (week 9 of 16) and plays from there; the rest of the game's screens follow in later stages.
 import { engine, Refused, start } from './core/engine.js';
 import { h } from './core/dom.js';
-import { day } from './core/format.js';
+import { day, signed } from './core/format.js';
+import { cost } from './campaign/schedule.js';
+import { compact } from './campaign/field.js';
 import { resetWarRoomMemory, warRoom } from './campaign/warroom.js';
 import { decisionCard } from './campaign/decision.js';
 import { closeMenu, menuOpen } from './core/menu.js';
 import { adStudio } from './campaign/studio.js';
 import { usePalette } from './campaign/palette.js';
 const root = document.getElementById('app');
-const state = { layer: 'margin', selected: null, tab: 'schedule', picking: null, desk: 'overview' };
+const state = { layer: 'margin', selected: null, tab: 'schedule', picking: null, desk: 'overview', digest: null };
 // keys 1-6 switch the left panel's tabs (as in Battleground 2028), when no dialog or menu is open and focus is not in a field
 const TAB_KEYS = { '1': 'schedule', '2': 'money', '3': 'field', '6': 'wire' };
 let toastTimer = 0;
@@ -68,6 +70,7 @@ function render() {
         setTab: id => { state.tab = id; render(); document.getElementById('tab-' + id)?.focus(); },
         setDesk: d => { state.desk = d; render(); },
         studio: () => openStudio(),
+        dismissDigest: () => { state.digest = null; render(); },
         pick: slot => {
             state.picking = slot;
             render();
@@ -144,14 +147,40 @@ function runWeek() {
         openDecisions(runWeek);
         return;
     }
+    let news;
     try {
-        engine.command({ type: 'EndTurn' });
+        news = engine.command({ type: 'EndTurn' });
     }
     catch (e) {
         toast(e instanceof Refused ? e.message : String(e));
         return;
     }
+    state.picking = null;
+    state.digest = digestOf(v, engine.campaign(), news);
     render();
+}
+/** BG's makeDigest: raised and spent, the poll's move, volunteers and doors, the trail, and the turn's headline. */
+function digestOf(before, after, news) {
+    const daily = before.turn?.daily ?? false;
+    const title = daily ? `${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][before.turn.day]} in review (${day(before.date)})`
+        : `Week ${before.week} in review`;
+    const nat = (x) => x.polls[x.polls.length - 1]?.national ?? 0;
+    const lines = [];
+    const m = after.money;
+    if (m)
+        lines.push(`Raised ${cost(m.raised)}, spent ${cost(m.spent)}  \u00b7  national polls ${signed(nat(after))} (${signed(nat(after) - nat(before))})`);
+    const vol = (x) => x.field?.totals.volunteers ?? 0;
+    if (after.field)
+        lines.push(`Volunteers ${compact(vol(after))} (${vol(after) >= vol(before) ? '+' : '\u2212'}${compact(Math.abs(vol(after) - vol(before)))})  \u00b7  doors knocked ${compact(after.field.totals.doors)}`);
+    const rallies = (after.trail?.rallies ?? 0) - (before.trail?.rallies ?? 0);
+    const show = news.find(n => n.text.startsWith('PODCAST:') && !n.text.includes('passes on'));
+    const trail = [rallies > 0 ? `${rallies} ${rallies === 1 ? 'rally' : 'rallies'}` : '', show ? show.text.replace(/^PODCAST: /, '').split('. ')[0] ?? '' : ''].filter(Boolean);
+    if (trail.length)
+        lines.push(trail.join('  \u00b7  '));
+    const head = news.find(n => n.headline && !n.text.startsWith('PODCAST:'));
+    if (head)
+        lines.push(`${head.headline}: ${head.text.replace(/^Your opponent's campaign: /, '')}`);
+    return { title, lines };
 }
 /** After Election Day the campaign view shows the result; the broadcast election night is the next stage. */
 function electionOver(v) {

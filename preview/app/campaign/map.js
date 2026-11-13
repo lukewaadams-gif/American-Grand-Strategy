@@ -20,7 +20,7 @@ function activity(id, label, unit) {
 }
 export const LAYERS = [
     {
-        id: 'margin', label: 'Polls', question: "This week's state polls",
+        id: 'margin', label: 'Polls', question: 'The latest state polls',
         fill: st => marginColour(st.margin), value: st => margin(st.margin),
         spoken: st => `polls ${margin(st.margin)}`,
         legend: () => ({ stops: legendStops(), left: 'R+14', mid: 'Even', right: 'D+14' }),
