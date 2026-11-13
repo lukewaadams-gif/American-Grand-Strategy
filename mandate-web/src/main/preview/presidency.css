@@ -809,3 +809,7 @@
 .tw-zone.near circle { stroke: rgba(201, 210, 221, 0.5); fill: rgba(201, 210, 221, 0.04); }
 .tw-zone-name { fill: #9fb0c3; font: 600 13px Inter, sans-serif; text-anchor: middle; paint-order: stroke; stroke: #0b1a2c; stroke-width: 3px; }
 .tw-minefield { fill: rgba(232, 181, 82, 0.25); stroke: var(--warn); stroke-width: 1.4; }
+.tw-island .tw-zone-name { font-size: 26px; stroke-width: 5px; }
+.tw-island .hz-place.tw-big { font-size: 28px; }
+.tw-island .tw-chip rect { stroke-width: 2.4; }
+.tw-island .tw-lodge { transform-box: fill-box; transform-origin: center; transform: scale(2); }

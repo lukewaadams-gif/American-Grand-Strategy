@@ -191,10 +191,11 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
         : h('p', { class: 'muted small' }, 'No forces at sea in the theatre yet.'));
   }
 
-  function chip(x: number, y: number, cls: string, text: string): SVGElement {
-    const w = 10 + text.length * 8;
-    return s('g', { class: 'tw-chip ' + cls }, s('rect', { x: String(x - w / 2), y: String(y - 10), width: String(w), height: '20', rx: '4' }),
-      s('text', { x: String(x), y: String(y + 5) }, text));
+  /** A count of ships on a map; k scales it to the map (the strait's map is drawn at a larger scale). */
+  function chip(x: number, y: number, cls: string, text: string, k = 1): SVGElement {
+    const w = (10 + text.length * 8) * k;
+    return s('g', { class: 'tw-chip ' + cls }, s('rect', { x: String(x - w / 2), y: String(y - 10 * k), width: String(w), height: String(20 * k), rx: String(4 * k) }),
+      s('text', { x: String(x), y: String(y + 5 * k), style: k === 1 ? null : `font-size:${13 * k}px` }, text));
   }
 
   function zoneText(z: TaiwanZone, v: TaiwanView): string {
@@ -212,7 +213,7 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
     const map = s('svg', { class: 'sit-map tw-island', viewBox: `${SV.x.toFixed(0)} ${SV.y.toFixed(0)} ${SV.w.toFixed(0)} ${SV.h.toFixed(0)}`, role: 'img',
       'aria-label': `Taiwan by sector: ${held.length ? `the PLA holds ${held.map(x => x.name).join(', ')}` : 'Taiwan holds every sector'}${fought.length ? `; fighting in ${fought.map(x => x.name).join(', ')}` : ''}.` },
       s('rect', { x: String(SV.x), y: String(SV.y), width: String(SV.w), height: String(SV.h), class: 'hz-sea' }),
-      ...v.zones.filter(z => z.near && z.id !== 'TAIWAN').map(z => { const [x, y] = sAt(z.lon, z.lat); return s('text', { x: String(x), y: String(y - 22), class: 'tw-zone-name' }, z.name.replace('Taiwan Strait ', 'Strait ')); }),
+      ...v.zones.filter(z => z.near && z.id !== 'TAIWAN').map(z => { const [x, y] = sAt(z.lon, z.lat); return s('text', { x: String(x), y: String(y - 34), class: 'tw-zone-name' }, z.name.replace('Taiwan Strait ', 'Strait ')); }),
       ...TAIWAN_SECTORS.map(g => {
         const sec = v.sectors.find(x => x.name === g.name);
         const p = sec?.prc ?? 0;
@@ -228,13 +229,13 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
         cx /= n.length / 2; cy /= n.length / 2;
         return s('path', { class: 'tw-lodge', d: `M${cx} ${cy - 9}L${cx + 3} ${cy - 3}L${cx + 9} ${cy - 3}L${cx + 4} ${cy + 2}L${cx + 6} ${cy + 9}L${cx} ${cy + 5}L${cx - 6} ${cy + 9}L${cx - 4} ${cy + 2}L${cx - 9} ${cy - 3}L${cx - 3} ${cy - 3}Z` });
       }).filter((x): x is SVGPathElement => x !== null),
-      ...STRAIT_PLACES.map(([n, lo, la]) => { const [x, y] = sAt(lo, la); return s('text', { x: String(x), y: String(y), class: 'hz-place' }, n); }),
+      ...STRAIT_PLACES.map(([n, lo, la]) => { const [x, y] = sAt(lo, la); return s('text', { x: String(x), y: String(y), class: 'hz-place tw-big' }, n); }),
       ...v.zones.filter(z => z.near && z.id !== 'TAIWAN').flatMap(z => {
         const [x, y] = sAt(z.lon, z.lat), out: SVGElement[] = [];
         const own = z.own.ships + z.own.subs, foe = Math.max(z.enemy.ships + z.enemy.subs, z.enemy.contacts);
-        if (own) out.push(chip(x - 18, y, us ? 'us' : 'prc', String(own) + (z.own.carriers ? '★' : '')));
-        if (foe) out.push(chip(x + 18, y, us ? 'prc' : 'us', (z.enemy.known < z.enemy.contacts ? '~' : '') + String(foe) + (z.enemy.amphibious ? '⚓' : '')));
-        if (z.mines > 0) out.push(s('circle', { class: 'tw-minefield', cx: String(x), cy: String(y + 22), r: '7' }, s('title', null, `${z.name}: about ${Math.round(z.mines)} mines`)));
+        if (own) out.push(chip(x - 34, y, us ? 'us' : 'prc', String(own) + (z.own.carriers ? '★' : ''), 2));
+        if (foe) out.push(chip(x + 34, y, us ? 'prc' : 'us', (z.enemy.known < z.enemy.contacts ? '~' : '') + String(foe) + (z.enemy.amphibious ? '⚓' : ''), 2));
+        if (z.mines > 0) out.push(s('circle', { class: 'tw-minefield', cx: String(x), cy: String(y + 40), r: '13' }, s('title', null, `${z.name}: about ${Math.round(z.mines)} mines`)));
         return out;
       }));
     const key = (cls: string, text: string) => h('li', null, h('span', { class: 'hz-key ' + cls, 'aria-hidden': 'true' }), text);
