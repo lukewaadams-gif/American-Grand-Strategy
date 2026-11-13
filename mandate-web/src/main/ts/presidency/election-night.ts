@@ -25,6 +25,13 @@ const NEXT: Record<ElectionNightView['next'], string> = {
 };
 const SPEEDS = [{ label: '1×', ms: 2400 }, { label: '2×', ms: 1200 }, { label: '4×', ms: 550 }];
 
+/** The night's last word: the player's own race (2028, or re-election in 2032), or the party's race to succeed them. */
+function headline(v: ElectionNightView): string {
+  if (v.kind === 'succession') return v.won ? 'Your party keeps the White House' : 'The White House changes hands';
+  if (v.kind === 'reelection' || (!v.kind && v.year > 2028)) return v.won ? 'Four more years' : 'You lose re-election';
+  return v.won ? 'You win the presidency' : 'You lose';
+}
+
 export function electionNight(act: ElectionNightActions): HTMLElement {
   const v = act.view(), n = plan(v), last = n.beats.length - 1;
   const key = `ags-night:${v.year}:${v.electionDay}:${v.result.dem}-${v.result.rep}:${v.player.id}`;
@@ -122,7 +129,7 @@ export function electionNight(act: ElectionNightActions): HTMLElement {
       })));
     root.replaceChildren(
       h('header', { class: 'en-head' },
-        h('div', null, h('div', { class: 'eyebrow' }, `Election night · ${day(v.electionDay, true)}`), h('h1', { class: 'dialog-title' }, final ? (v.won ? (v.year > 2028 ? 'Four more years' : 'You win the presidency') : (v.year > 2028 ? 'You lose re-election' : 'You lose')) : `America decides ${v.year}`)),
+        h('div', null, h('div', { class: 'eyebrow' }, `Election night · ${day(v.electionDay, true)}`), h('h1', { class: 'dialog-title' }, final ? headline(v) : `America decides ${v.year}`)),
         h('div', { class: 'en-clock', 'aria-live': 'off' }, final ? 'Final' : clock(t), !final ? h('span', { class: 'en-live' }, 'LIVE') : null)),
       h('section', { class: 'en-score', 'aria-label': 'The electoral count' }, side('D', tl.dem, tl.demShare), h('div', { class: 'en-mid' }, bar,
         h('p', { class: 'muted small' }, `${Math.round(tl.counted * 100)}% of the expected vote counted · ${tl.votes.toFixed(1)} million votes`)), side('R', tl.rep, tl.repShare)),
@@ -151,7 +158,8 @@ export function electionNight(act: ElectionNightActions): HTMLElement {
         h('dt', null, 'The closest states'), h('dd', null, closest.map(l => `${l.name} ${l.margin >= 0 ? 'D' : 'R'} +${Math.abs(l.margin).toFixed(1)}`).join(' · ')),
         h('dt', null, 'Flipped since 2024'), h('dd', null, [flipsD.length ? `to the Democrats: ${flipsD.map(l => l.name).join(', ')}` : '', flipsR.length ? `to the Republicans: ${flipsR.map(l => l.name).join(', ')}` : ''].filter(Boolean).join('; ') || 'No state changed hands'),
         h('dt', null, 'Congress'), h('dd', null, v.congress)),
-      v.postMortem.length ? h('div', null, h('h3', { class: 'tw-sub' }, 'What happened'), h('ul', { class: 'hill-list' }, ...v.postMortem.map(x => h('li', null, x)))) : null);
+      v.assessment ? h('div', null, h('h3', { class: 'tw-sub' }, 'The campaign: ' + v.assessment.grade), h('ul', { class: 'hill-list' }, ...v.assessment.lines.map(x => h('li', null, x))))
+        : v.postMortem.length ? h('div', null, h('h3', { class: 'tw-sub' }, 'What happened'), h('ul', { class: 'hill-list' }, ...v.postMortem.map(x => h('li', null, x)))) : null);
   }
 
   root.addEventListener('keydown', e => {

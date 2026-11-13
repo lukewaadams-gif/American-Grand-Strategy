@@ -52,6 +52,16 @@ public final class Results {
         if (second) {
             c.with(Text.body(g.congress() + ". " + (won ? "The second term begins on January 20." : "You are president until the handoff on January 20.")));
             c.with(Layouts.wrap(t.u(2), t.u(1), Btn.primary("Back to the Oval Office", e -> { seen.run(); app.stage.closeModal(); app.open(App.ScreenId.OVAL); })));
+        } else if (won && g.mode() == game.mandate.core.game.GameSetup.Mode.CAMPAIGN_ONLY) {
+            // Campaign Only ends here: the campaign's assessment, a replay, or the menu
+            var a = g.campaignAssessment().orElseThrow();
+            c.with(Text.eyebrow("The campaign: " + a.grade()));
+            for (String s : a.lines()) c.with(Text.body("• " + s));
+            c.with(Layouts.wrap(t.u(2), t.u(1),
+                    Btn.primary("Replay the campaign in the same world", e -> { seen.run(); app.stage.closeModal(); app.session.restartSameSeed(); app.startedGame(); })
+                            .tip("The same opponent, polling miss and events: try a different campaign"),
+                    Btn.secondary("New game", e -> { seen.run(); app.stage.closeModal(); app.showNewGame(); }),
+                    Btn.quiet("Main menu", e -> { seen.run(); app.stage.closeModal(); app.showMenu(); })));
         } else if (won) {
             c.with(Text.body(g.congress() + ". " + (g.unifiedGovernment() ? "Your party holds both chambers." : "Divided government.")));
             c.with(Layouts.wrap(t.u(2), t.u(1), Btn.primary("On to the transition", e -> { seen.run(); app.stage.closeModal(); app.open(App.ScreenId.OVAL); })
@@ -112,12 +122,14 @@ public final class Results {
     static JComponent endButtons(App app, GameEngine g, boolean governed) {
         Theme t = Theme.get();
         List<JComponent> bs = new ArrayList<>();
-        if (governed) bs.add(Btn.primary("Govern the hundred days again", e -> { app.session.replayHundredDays(); app.startedGame(); })
+        // the hundred days are the presidency's opening chapter: after the report, it goes on
+        boolean goesOn = g.phase() == game.mandate.core.time.Phase.GOVERNING;
+        if (goesOn) bs.add(Btn.primary("Keep governing", e -> app.open(App.ScreenId.OVAL)).tip("The presidency goes on: the Hill, the West Wing and the world are open"));
+        if (governed) bs.add(new Btn("Govern the hundred days again", goesOn ? Btn.Kind.SECONDARY : Btn.Kind.PRIMARY, e -> { app.session.replayHundredDays(); app.startedGame(); })
                 .tip("Back to Inauguration Day: the same election, Congress and mandate"));
-        Btn.Kind replayKind = governed ? Btn.Kind.SECONDARY : Btn.Kind.PRIMARY;
+        Btn.Kind replayKind = governed || goesOn ? Btn.Kind.SECONDARY : Btn.Kind.PRIMARY;
         bs.add(new Btn("Replay the campaign in the same world", replayKind, e -> { app.session.restartSameSeed(); app.startedGame(); })
                 .tip("The same opponent, polling miss and events: try a different campaign"));
-        if (g.phase() == game.mandate.core.time.Phase.GOVERNING) bs.add(Btn.secondary("Keep governing", e -> app.open(App.ScreenId.OVAL)).tip("Continue the full term"));
         bs.add(Btn.secondary("New game", e -> app.showNewGame()));
         bs.add(Btn.quiet("Main menu", e -> app.showMenu()));
         return Layouts.wrap(t.u(2), t.u(2), bs.toArray(JComponent[]::new));

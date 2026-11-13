@@ -179,3 +179,26 @@ Choices made while building overnight that we had not discussed. Each was made i
    - anyone's record after early 2026.
 
    The data needs a refresh before release.
+
+## The four games and the hundred days (13 November 2026)
+
+1. **Four modes on one engine** (`GameSetup.Mode`; docs/MODES.md): Full Game, Campaign Only, Governing Only and Individual Crisis. Full Game and Governing Only share every line of the presidency.
+2. **The first hundred days are governing's opening chapter, not a game of their own.**
+   - Day 100 brings the report. It is offered once and kept in the menu.
+   - The presidency goes on in the same weekly turns.
+   - The old "election and the first hundred days" choice is gone from every New Game screen.
+3. **Older hundred-days saves load as the Full Game.** One saved before day 100 goes on past it; one that ended at day 100 keeps its ending.
+4. **Governing Only plays the 2028 campaign for both sides** and keeps the first world of the seed that elects the player's ticket.
+   - This gives a Congress, polls and state margins that a real campaign produced.
+   - The 2028 night is shown first, then the transition.
+   - The transition is dated as in the Full Game (December 9, 2028), not November 7.
+   - The chosen national mood shapes the margin. A mood very hostile to the player's party may take several worlds, up to 48 tries; the start screen then says to choose a kinder one.
+5. **Individual Crisis begins from the sample presidency of September 2029** (the shipped governing save), not from a world built at start-up. Building one would mean playing a year of governing in the browser before the crisis.
+   - The player chooses the crisis and its preset.
+   - The administration is the sample's (real people).
+   - A choice of administration for crises is to review.
+6. **What counts as won, lost or ended in part** is set out in docs/MODES.md.
+   - For Hormuz, the occupation of Iran counts as an end in part.
+   - A day-150 stalemate is judged by the oil: 60% of normal flow or more is an end in part; less is a loss.
+7. **Island Chain (the Taiwan war game alone) is offered alongside Individual Crisis**, not as a fifth mode.
+8. **The older interfaces offer Full Game and Campaign Only.** The desktop is to serve the browser game locally (Milestone 10), so that it has all four.

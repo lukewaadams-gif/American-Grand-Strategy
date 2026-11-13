@@ -673,6 +673,18 @@
 .start-go { margin-top: 10px; }
 .start-file { position: relative; display: inline-block; cursor: pointer; }
 .start-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.start-modes { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--s) * 300px), 1fr)); gap: 8px; }
+.start-mode { margin: 0; padding: 10px 12px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; }
+.start-mode.on { border-color: var(--wh-gold); background: rgba(217, 180, 90, 0.08); }
+.start-mode strong { display: block; }
+.start-note { margin: 8px 0; max-width: 70ch; }
+.end-states { width: 100%; border-collapse: collapse; font-size: calc(var(--s) * 13px); }
+.end-states th, .end-states td { padding: 3px 8px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.end-states .num { text-align: right; font-variant-numeric: tabular-nums; }
+.end-result { font: 700 calc(var(--s) * 18px)/1.3 Inter, sans-serif; }
+.end-result.won { color: var(--good, #7fc79a); } .end-result.lost { color: var(--bad, #e08a80); } .end-result.part { color: var(--warn, #e0b45a); }
+.dh-goals { margin: 0; padding: 0; list-style: none; }
+.dh-goals li { margin: 6px 0; }
 .start-quick { margin: 0; padding-left: 18px; }
 .start-quick li { margin: 4px 0; }
 .transition { max-width: 1180px; margin: 0 auto; padding: 18px 16px 40px; }

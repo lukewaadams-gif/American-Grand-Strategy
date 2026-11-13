@@ -29,9 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** The presidency port's milestone 3: Resolute Desk's week, its approval and the weekly turns in office. */
 class PresidencyTest {
 
-    static GameEngine inOffice(long fromSeed, GameSetup.Length length) {
+    static GameEngine inOffice(long fromSeed, GameSetup.Mode length) {
         for (long seed = fromSeed; seed < fromSeed + 200; seed++) {
-            GameEngine g = playUntil(new GameEngine(setup(seed).withLength(length)), x -> x.phase() == Phase.FIRST_100_DAYS);
+            GameEngine g = playUntil(new GameEngine(setup(seed).withMode(length)), x -> x.phase() == Phase.FIRST_100_DAYS);
             if (g.phase() == Phase.FIRST_100_DAYS) return g;
         }
         throw new AssertionError("no seed reached the inauguration");
@@ -58,7 +58,7 @@ class PresidencyTest {
 
     @Test
     void theFirstWeekIsResoluteDesksRoutine() {
-        GameEngine g = inOffice(1, GameSetup.Length.HUNDRED_DAYS);
+        GameEngine g = inOffice(1, GameSetup.Mode.FULL_GAME);
         PresidentState p = g.president().orElseThrow();
         for (int d = 0; d < 5; d++) assertEquals(Activity.POLICY, p.activity(d * 3), "weekday mornings are policy time");
         assertEquals(Activity.REMARKS, p.activity(4));
@@ -74,7 +74,7 @@ class PresidencyTest {
 
     @Test
     void theCalendarKeepsResoluteDesksRules() {
-        GameEngine g = inOffice(1, GameSetup.Length.HUNDRED_DAYS);
+        GameEngine g = inOffice(1, GameSetup.Mode.FULL_GAME);
         String before = SaveManager.save(g);
         assertThrows(IllegalCommandException.class, () -> order(g, new PresidencyOrder.Slot(0, Activity.CAMP_DAVID, null)), "Camp David is for weekends");
         assertThrows(IllegalCommandException.class, () -> order(g, new PresidencyOrder.Slot(15, Activity.HILL, null)), "Congress is away at weekends");
@@ -99,7 +99,7 @@ class PresidencyTest {
 
     @Test
     void readyMadeWeeksAndTheChiefOfStaff() {
-        GameEngine g = inOffice(1, GameSetup.Length.HUNDRED_DAYS);
+        GameEngine g = inOffice(1, GameSetup.Mode.FULL_GAME);
         order(g, new PresidencyOrder.Week(PresidencyOrder.Preset.ROAD));
         PresidentState p = g.president().orElseThrow();
         for (int s : new int[]{1, 4, 7, 10}) assertEquals(Activity.TRIP, p.activity(s));
@@ -118,7 +118,7 @@ class PresidencyTest {
 
     @Test
     void aHardWeekTiresThePresidentAndARestWeekRestores() {
-        GameEngine hard = inOffice(1, GameSetup.Length.HUNDRED_DAYS), easy = SaveManager.load(SaveManager.save(hard));
+        GameEngine hard = inOffice(1, GameSetup.Mode.FULL_GAME), easy = SaveManager.load(SaveManager.save(hard));
         order(hard, new PresidencyOrder.Week(PresidencyOrder.Preset.ROAD));
         for (int d = 0; d < 5; d++) order(hard, new PresidencyOrder.Slot(d * 3 + 2, Activity.WORK_LATE, null));
         order(easy, new PresidencyOrder.Week(PresidencyOrder.Preset.REST));
@@ -137,7 +137,7 @@ class PresidencyTest {
 
     @Test
     void theWeeksWorkMovesOpinion() {
-        GameEngine g = inOffice(1, GameSetup.Length.HUNDRED_DAYS);
+        GameEngine g = inOffice(1, GameSetup.Mode.FULL_GAME);
         for (int d = 0; d < 5; d++) order(g, new PresidencyOrder.Slot(d * 3, Activity.POLICY, Issue.HEALTHCARE.name()));
         order(g, new PresidencyOrder.Slot(1, Activity.TRIP, "MI"));
         double command = g.state().politics().command(Issue.HEALTHCARE), standing = g.state().politics().standing(Issue.HEALTHCARE);
@@ -151,7 +151,7 @@ class PresidencyTest {
 
     @Test
     void approvalFollowsResoluteDesksModel() {
-        GameEngine g = inOffice(1, GameSetup.Length.HUNDRED_DAYS);
+        GameEngine g = inOffice(1, GameSetup.Mode.FULL_GAME);
         var s = g.state().politics();
         double margin = g.result2028().orElseThrow().marginFor(g.player().party());
         assertEquals(Math.max(0.5, Math.min(15, 2 + 0.55 * margin)), s.mandate(), 1e-9, "the mandate comes from the popular vote");
@@ -173,7 +173,7 @@ class PresidencyTest {
 
     @Test
     void inOfficeEveryTurnIsAWeek() {
-        GameEngine g = inOffice(5, GameSetup.Length.FULL_TERM);
+        GameEngine g = inOffice(5, GameSetup.Mode.FULL_GAME);
         playUntil(g, x -> x.phase() == Phase.GOVERNING);
         assertEquals(Granularity.WEEKLY, g.clock().mode());
         var d0 = g.date();
@@ -185,7 +185,7 @@ class PresidencyTest {
 
     @Test
     void theEraNewsAndTheWeeksNewsAreWeighed() {
-        GameEngine g = inOffice(1, GameSetup.Length.FULL_TERM);
+        GameEngine g = inOffice(1, GameSetup.Mode.FULL_GAME);
         playUntil(g, x -> x.president().map(p -> p.week() >= 20).orElse(false));
         long era = g.news().stream().filter(n -> n.section() != null).count();
         assertTrue(era >= 10, "one or two of the era's stories a week: " + era);
@@ -194,7 +194,7 @@ class PresidencyTest {
 
     @Test
     void presidencyOrdersSaveAndReplay() {
-        GameEngine g = inOffice(3, GameSetup.Length.FULL_TERM);
+        GameEngine g = inOffice(3, GameSetup.Mode.FULL_GAME);
         order(g, new PresidencyOrder.Slot(2, Activity.WORK_LATE, null));
         order(g, new PresidencyOrder.WatchPreset(5));
         order(g, new PresidencyOrder.WatchPriority(0, 0.9));

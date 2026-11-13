@@ -114,8 +114,17 @@ export interface Decision {
 export interface PresidencyBill { id: string; name: string; stage: string; }
 
 /** What the Oval Office shows (EngineApi.presidency). Figures that do not exist yet (before the first reading) are null. */
+/** The 100-day report, once day 100 has come: the presidency goes on after it. */
+export interface DayHundredView {
+  outcome: string; score: number; headline: string; rule: string; date: string;
+  goals: { name: string; status: 'MET' | 'PARTLY' | 'MISSED'; why: string }[]; approval: number[]; decisions: string[];
+}
+
 export interface PresidencyView {
   phase: string; date: string; dateLabel: string;
+  /** Which of the four games (docs/MODES.md). */
+  mode?: 'FULL_GAME' | 'CAMPAIGN_ONLY' | 'GOVERNING_ONLY' | 'CRISIS';
+  dayHundred?: DayHundredView;
   /** A presidential election night the player has not yet watched (its year), or 0: it comes before anything else. */
   electionNight: number;
   president: { name: string; id: string; party: 'D' | 'R'; partyName: string; look?: Look | null };
@@ -406,6 +415,13 @@ export interface TermsView {
 export interface VerdictView {
   over: boolean; score?: number; grade?: string; rank?: string | null; measures?: { name: string; score: number }[]; lines?: string[];
   president: string; date: string; terms: number; record?: string[]; summary: string;
+  mode?: 'FULL_GAME' | 'CAMPAIGN_ONLY' | 'GOVERNING_ONLY' | 'CRISIS'; served?: boolean;
+  /** The campaign's end (Campaign Only, or a 2028 defeat): the assessment, the vote and every state (margins from the player's side). */
+  campaign?: { won: boolean; grade: string; headline: string; lines: string[]; ev: number; evOpp: number; popular: number; player: string; opponent: string;
+    party: 'D' | 'R'; states: { code: string; name: string; ev: number; margin: number }[] };
+  /** Individual Crisis: the after-action report. */
+  crisis?: { title: string; preset: string; began: string; result?: 'WON' | 'PARTIAL' | 'LOST'; resultLabel?: string; outcome?: string; reason?: string;
+    ended?: string; days?: number; verdict?: string; figures?: string[]; record?: string[] };
 }
 
 export interface PressView {
@@ -443,6 +459,11 @@ export interface ElectionNightView {
   player: { name: string; id: string; party: 'D' | 'R'; look?: Look | null }; opponent: { name: string; id: string; party: 'D' | 'R'; look?: Look | null };
   won: boolean; next: 'transition' | 'end' | 'second' | 'lameduck';
   postMortem: string[]; congress: string;
+  mode?: string;
+  /** Whose race: the player's own (2028, re-election in 2032), or their party's nominee's to succeed them (2032 without them, 2036). */
+  kind?: 'first' | 'reelection' | 'succession';
+  /** Campaign Only: the campaign's assessment, won or lost. */
+  assessment?: { grade: string; headline: string; lines: string[] };
 }
 
 // ---- the Taiwan crisis (docs/ISLAND_CHAIN.md) ------------------------------------------------------------------------------

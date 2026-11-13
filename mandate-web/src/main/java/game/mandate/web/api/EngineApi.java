@@ -56,6 +56,8 @@ public final class EngineApi {
             case "load" -> { g = SaveManager.load((String) req.get("text")); yield ok(); }
             case "options" -> TransitionViews.options(Boolean.TRUE.equals(req.get("realRoster")));
             case "newGame" -> { g = TransitionViews.newGame(req); yield ok(); }
+            // the same start again: the same seed and world, from the campaign (or Governing Only's election night)
+            case "restart" -> { g = need().restart(); yield ok(); }
             case "save" -> ok("text", SaveManager.save(need(), req.get("ui") == null ? null : Json.object(req.get("ui"))));
             case "command" -> {
                 GameEngine game = need();
@@ -214,8 +216,13 @@ public final class EngineApi {
         v.put("won", won);
         v.put("postMortem", g.postMortem());
         v.put("congress", g.congress().toString());
+        v.put("mode", g.mode().name());
+        // Campaign Only's night ends on the campaign's assessment, won or lost
+        if (year == 2028 && g.mode() == game.mandate.core.game.GameSetup.Mode.CAMPAIGN_ONLY)
+            g.campaignAssessment().ifPresent(a -> v.put("assessment", Map.of("grade", a.grade(), "headline", a.headline(), "lines", a.lines())));
         // what comes after the night, for the button that ends it
-        v.put("next", year == 2028 ? (won ? "transition" : "end") : (won ? "second" : "lameduck"));
+        boolean ends = !won || g.mode() == game.mandate.core.game.GameSetup.Mode.CAMPAIGN_ONLY;
+        v.put("next", year == 2028 ? (ends ? "end" : "transition") : (won ? "second" : "lameduck"));
         return v;
     }
 
@@ -228,6 +235,19 @@ public final class EngineApi {
     static Map<String, Object> presidency(GameEngine g) {
         Map<String, Object> v = ok();
         v.put("phase", g.phase().name());
+        v.put("mode", g.mode().name());
+        // the 100-day report, once day 100 has come: for the player to read now, or later from the menu
+        g.dayHundredReport().ifPresent(r -> {
+            Map<String, Object> d = new LinkedHashMap<>();
+            d.put("outcome", r.outcome().label); d.put("score", r.score()); d.put("headline", r.headline()); d.put("rule", game.mandate.core.opening.DayHundredReport.RULE);
+            List<Object> goals = new ArrayList<>();
+            for (var goal : r.goals()) goals.add(Map.of("name", goal.name(), "status", goal.status().name(), "why", goal.why()));
+            d.put("goals", goals);
+            d.put("approval", r.approvalByWeek().stream().map(EngineApi::n2).toList());
+            d.put("decisions", r.decisions().subList(Math.max(0, r.decisions().size() - 12), r.decisions().size()));
+            d.put("date", g.hundredDaysStart().plusWeeks(14).toString());
+            v.put("dayHundred", d);
+        });
         v.put("electionNight", g.electionNightPending());
         v.put("date", g.date().toString());
         v.put("dateLabel", Notable.date(g.date()));

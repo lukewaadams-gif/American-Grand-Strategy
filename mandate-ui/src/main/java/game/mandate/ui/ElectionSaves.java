@@ -11,9 +11,16 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 
 /**
- * Saves for the browser's election checks (mandate-web/src/test/browser/election.js), not shipped with the game: the eve
- * of each presidential election, one the player wins and one the player loses, in 2028 and 2032, and two saved on the
- * night itself before it is watched. Usage: java -cp mandate.jar game.mandate.ui.ElectionSaves [out-dir]
+ * Saves for the browser's election and mode checks (mandate-web/src/test/browser/election.js and modes.js), not
+ * shipped with the game:
+ * <ul>
+ *   <li>the eve of each presidential election, one the player wins and one the player loses, in 2028 and 2032, and two
+ *       saved on the night itself before it is watched;</li>
+ *   <li>the eve of 2028 in Campaign Only, won and lost (the same games, in that mode);</li>
+ *   <li>the last turn of an Individual Crisis, Hormuz and Taiwan, from the shipped governing save;</li>
+ *   <li>the last week of the first hundred days.</li>
+ * </ul>
+ * Usage: java -cp mandate.jar game.mandate.ui.ElectionSaves [out-dir] [shipped saves dir]
  */
 public final class ElectionSaves {
     private ElectionSaves() {}
@@ -23,7 +30,7 @@ public final class ElectionSaves {
         Files.createDirectories(out);
         boolean win28 = false, lose28 = false, win32 = false, lose32 = false;
         for (long seed = 1; seed < 80 && !(win28 && lose28 && win32 && lose32); seed++) {
-            GameEngine g = new GameEngine(Fixtures.setup(seed, GameSetup.Length.FULL_TERM));
+            GameEngine g = new GameEngine(Fixtures.setup(seed, GameSetup.Mode.FULL_GAME));
             int guard = 0;
             while (!g.over() && g.date().isBefore(LocalDate.of(2028, 11, 6)) && guard++ < 400) AutoPilot.playTurn(g);
             if (g.phase() != Phase.GENERAL_CAMPAIGN_2028) continue;
@@ -31,8 +38,8 @@ public final class ElectionSaves {
             AutoPilot.playTurn(g);
             String night = SaveManager.save(g);
             boolean won = g.result2028().map(r -> r.winner() == g.player().party()).orElse(false);
-            if (won && !win28) { write(out, "eve2028-win", eve); write(out, "night2028-win", night); win28 = true; }
-            if (!won && !lose28) { write(out, "eve2028-lose", eve); lose28 = true; }
+            if (won && !win28) { write(out, "eve2028-win", eve); write(out, "night2028-win", night); write(out, "eve2028-campaign-win", campaignOnly(eve)); win28 = true; }
+            if (!won && !lose28) { write(out, "eve2028-lose", eve); write(out, "eve2028-campaign-lose", campaignOnly(eve)); lose28 = true; }
             if (!won || (win32 && lose32)) continue;
             guard = 0;
             while (!g.over() && g.phase() != Phase.REELECTION_CAMPAIGN_2032 && guard++ < 1500) AutoPilot.playTurn(g);
@@ -46,6 +53,30 @@ public final class ElectionSaves {
             if (!won32 && !lose32) { write(out, "eve2032-lose", eve32); write(out, "night2032-lose", night32); lose32 = true; }
         }
         if (!(win28 && lose28 && win32 && lose32)) throw new IllegalStateException("not every outcome was found");
+        // Individual Crisis, one turn from its end (the staff's playbook, from the shipped governing save)
+        String base = Files.readString(Path.of(args.length > 1 ? args[1] : "mandate-web/src/main/preview/saves").resolve("governing.json"));
+        for (String kind : new String[]{"hormuz", "taiwan"}) {
+            GameEngine c = SaveManager.load(base);
+            c.apply(new game.mandate.core.command.Command.IndividualCrisis(kind, 1));
+            int turns = 0;
+            while (!c.over() && turns < 6000) { AutoPilot.playTurn(c); turns++; }
+            if (!c.over()) throw new IllegalStateException("the " + kind + " crisis did not end");
+            GameEngine again = SaveManager.load(base);       // the same game, stopped one turn short
+            again.apply(new game.mandate.core.command.Command.IndividualCrisis(kind, 1));
+            for (int i = 0; i < turns - 1; i++) AutoPilot.playTurn(again);
+            write(out, "crisis-" + kind + "-last", SaveManager.save(again));
+        }
+        // the last week of the first hundred days
+        GameEngine d = Fixtures.won(GameSetup.Mode.FULL_GAME, x -> x.phase() == Phase.FIRST_100_DAYS && x.hundredDays().map(h -> h.week() >= 14).orElse(false));
+        write(out, "day100-eve", SaveManager.save(d));
+    }
+
+    /** The same game, as Campaign Only: only what happens after the vote differs. */
+    static String campaignOnly(String save) {
+        java.util.Map<String, Object> m = game.mandate.core.data.Json.object(game.mandate.core.data.Json.parse(save));
+        game.mandate.core.data.Json.object(m.get("setup")).put("mode", GameSetup.Mode.CAMPAIGN_ONLY.name());
+        game.mandate.core.data.Json.object(m.get("world")).put("mode", GameSetup.Mode.CAMPAIGN_ONLY.name());
+        return game.mandate.core.data.Json.write(m);
     }
 
     private static void write(Path dir, String name, String save) throws java.io.IOException {

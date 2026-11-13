@@ -21,21 +21,21 @@ import java.util.function.Predicate;
 public final class Fixtures {
     private Fixtures() {}
 
-    static GameSetup setup(long seed, GameSetup.Length length) {
+    static GameSetup setup(long seed, GameSetup.Mode length) {
         boolean dem = seed % 2 == 0;
         return new GameSetup(seed, dem ? Party.DEMOCRAT : Party.REPUBLICAN, dem ? "d_reyes" : "r_marsh", dem ? "r_harlan" : "d_whitfield", Scenario.TOSS_UP,
                 GameSetup.Difficulty.STANDARD, length, false, null);
     }
 
     /** The same moments with real people, the game's default (the shipped sample saves). */
-    static GameSetup realSetup(long seed, GameSetup.Length length) {
+    static GameSetup realSetup(long seed, GameSetup.Mode length) {
         boolean dem = seed % 2 == 0;
         return new GameSetup(seed, dem ? Party.DEMOCRAT : Party.REPUBLICAN, dem ? "bg_shapiro" : "bg_vance", dem ? "bg_vance" : "bg_shapiro", Scenario.TOSS_UP,
                 GameSetup.Difficulty.STANDARD, length, true, null);
     }
 
     /** A won election with real people, played to the moment {@code stop} holds. */
-    static GameEngine wonReal(GameSetup.Length length, Predicate<GameEngine> stop) {
+    static GameEngine wonReal(GameSetup.Mode length, Predicate<GameEngine> stop) {
         for (long seed = 1; seed < 200; seed++) {
             GameEngine g = until(new GameEngine(realSetup(seed, length)), x -> x.phase() == Phase.TRANSITION);
             if (g.phase() != Phase.TRANSITION) continue;
@@ -52,7 +52,7 @@ public final class Fixtures {
     }
 
     /** A won election, played to the moment {@code stop} holds. */
-    static GameEngine won(GameSetup.Length length, Predicate<GameEngine> stop) {
+    static GameEngine won(GameSetup.Mode length, Predicate<GameEngine> stop) {
         for (long seed = 1; seed < 200; seed++) {
             GameEngine g = until(new GameEngine(setup(seed, length)), x -> x.phase() == Phase.TRANSITION);
             if (g.phase() != Phase.TRANSITION) continue;
@@ -65,23 +65,23 @@ public final class Fixtures {
     /** The named moments, each as a save text (so every render starts from a fresh copy). */
     public static Map<String, String> moments() {
         Map<String, String> m = new LinkedHashMap<>();
-        GameEngine campaign = until(new GameEngine(setup(2, GameSetup.Length.HUNDRED_DAYS)), g -> g.polls().size() >= 9);
+        GameEngine campaign = until(new GameEngine(setup(2, GameSetup.Mode.FULL_GAME)), g -> g.polls().size() >= 9);
         m.put("campaign", SaveManager.save(campaign));
-        GameEngine debate = until(new GameEngine(setup(2, GameSetup.Length.HUNDRED_DAYS)), g -> g.debateThisWeek().isPresent());
+        GameEngine debate = until(new GameEngine(setup(2, GameSetup.Mode.FULL_GAME)), g -> g.debateThisWeek().isPresent());
         m.put("debate", SaveManager.save(debate));
-        m.put("transition", SaveManager.save(won(GameSetup.Length.HUNDRED_DAYS, g -> g.phase() == Phase.TRANSITION)));
-        m.put("week1", SaveManager.save(won(GameSetup.Length.HUNDRED_DAYS, g -> g.phase() == Phase.FIRST_100_DAYS)));
-        m.put("crisis", SaveManager.save(won(GameSetup.Length.HUNDRED_DAYS, g -> g.phase() == Phase.FIRST_100_DAYS
+        m.put("transition", SaveManager.save(won(GameSetup.Mode.FULL_GAME, g -> g.phase() == Phase.TRANSITION)));
+        m.put("week1", SaveManager.save(won(GameSetup.Mode.FULL_GAME, g -> g.phase() == Phase.FIRST_100_DAYS)));
+        m.put("crisis", SaveManager.save(won(GameSetup.Mode.FULL_GAME, g -> g.phase() == Phase.FIRST_100_DAYS
                 && g.hundredDays().get().crisis() == CrisisOutcome.ACTIVE && !g.hundredDays().get().pending().isEmpty()
                 && g.hundredDays().get().attention() >= 1 && g.hundredDays().get().stage() != game.mandate.core.opening.Types.BillStage.NOT_DRAFTED
                 && g.hundredDays().get().stage() != game.mandate.core.opening.Types.BillStage.LAW
                 && g.hundredDays().get().stage() != game.mandate.core.opening.Types.BillStage.DEAD)));
-        m.put("report", SaveManager.save(won(GameSetup.Length.HUNDRED_DAYS, g -> g.dayHundredReport().isPresent())));
+        m.put("report", SaveManager.save(won(GameSetup.Mode.FULL_GAME, g -> g.dayHundredReport().isPresent())));
         for (long seed = 1; seed < 200; seed++) {
-            GameEngine g = until(new GameEngine(setup(seed, GameSetup.Length.HUNDRED_DAYS)), x -> x.phase() != Phase.GENERAL_CAMPAIGN_2028);
+            GameEngine g = until(new GameEngine(setup(seed, GameSetup.Mode.FULL_GAME)), x -> x.phase() != Phase.GENERAL_CAMPAIGN_2028);
             if (g.result2028().get().winner() != g.player().party()) { m.put("lost", SaveManager.save(g)); break; }
         }
-        m.put("governing", SaveManager.save(won(GameSetup.Length.FULL_TERM, g -> g.phase() == Phase.GOVERNING && g.indicators().size() > 18 && g.attention() >= 2)));
+        m.put("governing", SaveManager.save(won(GameSetup.Mode.FULL_GAME, g -> g.phase() == Phase.GOVERNING && g.indicators().size() > 18 && g.attention() >= 2)));
         return m;
     }
 

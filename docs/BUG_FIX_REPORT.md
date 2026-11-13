@@ -151,3 +151,46 @@ The same path hit the 2032 re-election, in both outcomes.
 - House members other than the leaders, committee leaders, swing and base members are not represented.
 - The data is as of 2025–26.
 - A newcomer's career history is the record of the role they hold. It does not yet follow a newcomer from one office to another.
+
+## R-02: the first hundred days as a separate game (user request; medium): fixed
+
+**What was wrong:**
+- The desktop, command-line and old browser New Game screens offered "the 2028 election and the first hundred days" as its own game. It ended at the 100-day report. Its mechanics were also the first chapter of the full term, so the same weeks were two different games depending on a setting.
+- The browser game had no 100-day report at all.
+
+**Fix:**
+- The setting is gone (`GameSetup.Length` is replaced by `GameSetup.Mode`), and day 100 never ends the game. The report comes, and the presidency goes on in the same weekly turns.
+- **Browser game:** it offers the report once, after day 100's paper. It is in the menu from then on.
+- **Older interfaces:** they show it with "Keep governing" first. The command line asks "What next?", with keeping on governing as the default.
+- **Older saves:** they load as the Full Game. One saved before day 100 goes on past it; one that ended at day 100 keeps its ending.
+
+**Tests:**
+- `HundredDaysInGameTest` and `OutcomesTest`: day 100 leaves the game in GOVERNING with the report.
+- `ModesTest.anOlderSaveOfTheHundredDaysSliceLoadsAsTheFullGame`.
+- `GameShellTest`: the command-line shell's day-100 choice, and governing the hundred days again from it.
+- `modes.js`: the paper, the report card, "Keep governing", and the report in the menu.
+
+**Goldens:** the "slice" fingerprints now stop at the 100-day report (`GoldenRegressionTest.slice`) instead of at the old slice's end, so they were regenerated.
+
+## M-01: a crisis started from the start screen never ended the game (this audit; medium): fixed
+
+- **Reproduction:** on the start screen, choose "The Strait of Hormuz", then any preset. The crisis runs, ends, and the presidency simply goes on. No outcome is declared and no report is shown.
+- **Fix:** Individual Crisis (`Command.IndividualCrisis`).
+  - The game ends when the crisis does, with an after-action report.
+  - The report gives the result (won, lost or ended in part), what happened, the figures and the crisis's own record.
+  - Taiwan is offered as well as Hormuz, both with three presets.
+- **Tests:**
+  - `ModesTest.anIndividualCrisisEndsAtItsOutcomeWithAnAfterActionReport`: Hormuz reached all three results; Taiwan reached a win and an end in part.
+  - `modes.js`.
+- **Remaining:** no line of play found in the tests makes Taiwan fall in Individual Crisis. In the sample world, Taiwan's outcome depends on the preset and not on the president's orders (staying "diplomatic only" gives the same result as fighting). This is to be examined in the Milestone 8 crisis audit.
+
+## U-03: status labels pushed phone screens sideways (found in this audit's browser run; low): fixed
+
+- **What happened:** at 390 pixels wide, the Roosevelt Room's Bills tab scrolled sideways by 36 px, and the agenda with a score open by 12 px. The cause was a status pill, "Bottled up in committee in the House", that could not wrap.
+- **Fix:** below 640 pixels, pills wrap inside their card (`preview.css`).
+- **Test:** `congress.js` and `economy.js` at 390 pixels.
+
+## T-01: the campaign preview's audit caught the ticker mid-fade (this audit; test only): fixed
+
+- **What happened:** `preview.js` reported low contrast on the news ticker's flag and text. The colours it measured were the ticker's real ones, blended at partial opacity during its 0.6 s fade-in.
+- **Fix:** the suites' audits now wait for running animations to finish (`preview.js`, `modes.js`). The ticker's real colours pass.

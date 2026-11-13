@@ -52,8 +52,10 @@ final class TransitionViews {
         game.mandate.core.game.GameSetup setup = new game.mandate.core.game.GameSetup(game.mandate.core.data.Json.integer(req.get("seed")), party,
                 (String) req.get("player"), (String) req.get("opponent"), game.mandate.core.game.Scenario.valueOf((String) req.get("scenario")),
                 game.mandate.core.game.GameSetup.Difficulty.valueOf((String) req.get("difficulty")))
-                .withRealRoster(Boolean.TRUE.equals(req.get("realRoster")));
-        return new GameEngine(setup);
+                .withRealRoster(Boolean.TRUE.equals(req.get("realRoster")))
+                .withMode(req.get("mode") == null ? game.mandate.core.game.GameSetup.Mode.FULL_GAME : game.mandate.core.game.GameSetup.Mode.valueOf((String) req.get("mode")));
+        // Governing Only opens on election night with the chosen administration elected (the staff play the campaign)
+        return GameEngine.start(setup);
     }
 
     static Map<String, Object> view(GameEngine g) {

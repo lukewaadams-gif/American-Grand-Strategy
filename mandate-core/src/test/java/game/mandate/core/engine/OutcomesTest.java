@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class OutcomesTest {
 
     static GameEngine inaugurated(long seed) {
-        GameEngine g = playUntil(new GameEngine(setup(seed).withLength(GameSetup.Length.HUNDRED_DAYS)), x -> x.phase() == Phase.FIRST_100_DAYS);
+        GameEngine g = playUntil(new GameEngine(setup(seed).withMode(GameSetup.Mode.FULL_GAME)), x -> x.phase() == Phase.FIRST_100_DAYS);
         return g.phase() == Phase.FIRST_100_DAYS ? g : null;
     }
 
@@ -48,7 +48,7 @@ class OutcomesTest {
             for (Strategy s : new Strategy[]{Strategy.STRATEGIST, Strategy.PARTISAN, Strategy.IDLE}) {
                 GameEngine g = SaveManager.load(save);
                 DayHundredReport r = playHundredDays(g, s);
-                assertEquals(Phase.EPILOGUE, g.phase());
+                assertEquals(Phase.GOVERNING, g.phase(), "the report, and the presidency goes on");
                 assertEquals(5, r.goals().size());
                 assertEquals(r.goals().stream().mapToInt(DayHundredReport.Goal::points).sum(), r.score());
                 if (r.outcome() == Outcome.VICTORY) assertTrue(r.score() >= 9 && g.hundredDays().orElseThrow().stage() == BillStage.LAW);
@@ -84,7 +84,7 @@ class OutcomesTest {
     void aDefeatComesWithAPostMortem() {
         int lost = 0;
         for (long seed = 1; lost < 5 && seed < 100; seed++) {
-            GameEngine g = playUntil(new GameEngine(setup(seed).withLength(GameSetup.Length.HUNDRED_DAYS)), x -> x.phase() != Phase.GENERAL_CAMPAIGN_2028);
+            GameEngine g = playUntil(new GameEngine(setup(seed).withMode(GameSetup.Mode.FULL_GAME)), x -> x.phase() != Phase.GENERAL_CAMPAIGN_2028);
             if (g.result2028().orElseThrow().winner() == g.player().party()) { assertTrue(g.postMortem().isEmpty()); continue; }
             lost++;
             assertTrue(g.over());
@@ -115,10 +115,10 @@ class OutcomesTest {
 
     @Test
     void theCoachTeachesAtDecisionsAndNeverChangesTheGame() {
-        GameEngine g = new GameEngine(setup(2).withLength(GameSetup.Length.HUNDRED_DAYS));
+        GameEngine g = new GameEngine(setup(2).withMode(GameSetup.Mode.FULL_GAME));
         Set<String> seen = new HashSet<>();
         Set<String> phases = new HashSet<>();
-        while (!g.over()) {
+        while (!g.over() && g.dayHundredReport().isEmpty()) {
             String before = g.fingerprint();
             Optional<Coach.Lesson> l = Coach.next(g, seen);
             assertEquals(before, g.fingerprint());

@@ -26,6 +26,7 @@ import { taiwanRoom } from './taiwan.js';
 import { residenceRoom } from './residence.js';
 import { chime, soundMenuItem } from '../core/sound.js';
 import type { MenuItem } from '../core/menu.js';
+import { dayHundredReport } from './day-hundred.js';
 
 const root = document.getElementById('app')!;
 const params = new URLSearchParams(location.search);
@@ -125,6 +126,8 @@ function endTurn(): void {
     else room();
     return;
   }
+  // day 100: the paper, then the report card (the presidency goes on; the report stays in the menu)
+  if (!v.dayHundred && after.dayHundred) { showPaper(() => openDayHundred()); return; }
   // Resolute Desk: the paper first, then what is waiting on the desk (and when a crisis has just ended, its room)
   showPaper(crisis(v) ? () => (v.taiwan ? openTaiwan() : openHormuz()) : after.pendingDecisions > 0 ? () => openDecisions() : undefined);
 }
@@ -229,6 +232,8 @@ function watchWeek(): void {
 
 /** The preview covers the presidency in office; the day-100 report, the campaign of 2032 and the rest come later. */
 function beyondPreview(v: PresidencyView): void {
+  // the whole game shows its own ending (the verdict, the campaign's or the crisis's report); the preview, the verdict here
+  if (v.over && hostOpts.onLeave) { host.close(); hostOpts.onLeave(); return; }
   if (v.over) { showVerdict(); return; }
   if (hostOpts.onLeave) { host.close(); hostOpts.onLeave(); return; }
   host.open(h('div', { class: 'dialog-card' },
@@ -239,6 +244,13 @@ function beyondPreview(v: PresidencyView): void {
 }
 
 /** The end: one verdict on the whole presidency (Resolute Desk's legacy screen). */
+/** The 100-day report, from day 100 on. */
+function openDayHundred(): void {
+  const r = engine.presidency().dayHundred;
+  if (!r) return;
+  host.open(dayHundredReport(r, () => { host.close(); render(); if (engine.decisions().length) openDecisions(); }), 'The 100-day report', render);
+}
+
 function showVerdict(): void {
   const vd = engine.verdict();
   const measures = vd.measures ?? [];
@@ -281,6 +293,7 @@ function menu(anchor: HTMLElement): void {
     at('Light: dusk', duskHour(month), 'The last of the light'),
     at('Light: night', 22, 'Lamps lit, the monument floodlit'),
     soundMenuItem(),
+    ...(engine.presidency().dayHundred ? [{ label: 'The 100-day report', detail: 'How the first hundred days went, goal by goal', pick: () => openDayHundred() }] : []),
     ...(hostOpts.menuItems ? hostOpts.menuItems() : [
       { label: 'Start again from the save', detail: 'Back to where this preview began', pick: restart },
       { label: 'The whole game', detail: 'From a new campaign to the verdict on your presidency', pick: () => { location.href = 'index.html'; } },

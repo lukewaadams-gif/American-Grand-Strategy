@@ -24,6 +24,8 @@ let failures = 0;
   };
   const axe = async (page, name) => {
     await page.addScriptTag({ content: axeSrc });
+    // a fade-in caught half way reads as low contrast: audit what the player sees once the animations have run
+    await page.evaluate(() => Promise.all(document.getAnimations().filter(x => x.effect && x.effect.getTiming().iterations !== Infinity).map(x => x.finished.catch(() => null))));
     const r = await page.evaluate(async () => await axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }));
     const n = r.violations.length; failures += n;
     console.log(name.padEnd(28), 'axe:', r.violations.map(v => v.id + '(' + v.nodes.length + ')').join(', ') || 'none');

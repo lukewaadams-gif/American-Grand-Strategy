@@ -70,7 +70,7 @@ class GameShellTest {
     void onePlayerGoesFromTheCampaignThroughTheInaugurationToTheDayHundredReport() throws Exception {
         long seed = winningSeed();
         Path save = dir.resolve("save.json");
-        String out = run(save, seed, toTheEnd(seed, "", "3"));   // at the end: back to the menu, then quit
+        String out = run(save, seed, toTheEnd(seed, "4", "3"));   // at day 100: back to the menu, then quit
         int campaign = out.indexOf("CAMPAIGN HQ"), night = out.indexOf("ELECTION NIGHT"), transition = out.indexOf("THE TRANSITION"),
                 oath = out.indexOf("Inauguration Day."), days = out.indexOf("THE FIRST HUNDRED DAYS   Week 1 of 14"), report = out.indexOf("== DAY 100: ");
         assertTrue(campaign > 0 && campaign < night && night < transition && transition < oath && oath < days && days < report, "one continuous game, in order");
@@ -78,10 +78,11 @@ class GameShellTest {
         assertTrue(out.contains("What moved the race"), "the polls explain themselves");
         assertTrue(out.contains("[MET]") || out.contains("[PART]") || out.contains("[MISS]"));
         assertTrue(out.contains("What next?"));
+        assertTrue(out.contains("Keep governing: the presidency goes on"), "the hundred days are the presidency's opening, not its end");
         // One unified save, readable by the engine, that replays to the same world.
         String text = Files.readString(save);
         GameEngine g = SaveManager.load(text);
-        assertEquals(Phase.EPILOGUE, g.phase());
+        assertEquals(Phase.GOVERNING, g.phase());
         assertTrue(g.dayHundredReport().isPresent());
         assertTrue(SaveManager.consistent(text));
         assertFalse(SaveManager.ui(text).isEmpty(), "the tutorial's progress lives in the same file");
@@ -106,7 +107,7 @@ class GameShellTest {
     void aPlayerCanBuildACandidatePromiseChangeStrategyAndPlanAWeekByHand() throws Exception {
         Path save = dir.resolve("save.json");
         List<String> script = new ArrayList<>(List.of(
-                "1",            // new game: the slice
+                "1",            // new game: Full Game
                 "1",            // Democratic
                 "5",            // create your own candidate
                 "Sam Rivera", "oh", "9", "9", "5", "5", "5", "2",   // name, state, five ratings (33 points), mainstream
@@ -132,7 +133,7 @@ class GameShellTest {
     @Test
     void afterTheReportThePlayerCanGovernTheHundredDaysAgain() throws Exception {
         long seed = winningSeed();
-        List<String> script = toTheEnd(seed, "1");                // govern the hundred days again
+        List<String> script = toTheEnd(seed, "2");                // at day 100: govern the hundred days again
         script.addAll(enters(3));
         String out = run(dir.resolve("again.json"), seed, script);
         assertTrue(out.contains("Back to Inauguration Day."), "the replay starts from the inauguration");

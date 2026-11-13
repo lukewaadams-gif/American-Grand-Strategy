@@ -40,6 +40,7 @@ public final class CommandCodec {
             case Command.Taiwan x -> m.put("order", game.mandate.core.taiwan.TaiwanOrder.toJson(x.order()));
             case Command.TaiwanBegin x -> m.put("preset", x.preset());
             case Command.ElectionNightSeen x -> m.put("year", x.year());
+            case Command.IndividualCrisis x -> { m.put("crisis", x.crisis()); m.put("preset", x.preset()); }
             case Command.Pledge x -> m.put("bill", x.billId());
             case Command.SetAgenda x -> m.put("bills", x.billIds());
             case Command.PushBill x -> { m.put("bill", x.billId()); m.put("strategy", x.strategy().name()); m.put("capital", x.capital()); }
@@ -110,6 +111,7 @@ public final class CommandCodec {
             case "Taiwan" -> new Command.Taiwan(game.mandate.core.taiwan.TaiwanOrder.fromJson(Json.object(m.get("order"))));
             case "TaiwanBegin" -> new Command.TaiwanBegin(Json.integer(m.get("preset")));
             case "ElectionNightSeen" -> new Command.ElectionNightSeen(Json.integer(m.get("year")));
+            case "IndividualCrisis" -> new Command.IndividualCrisis((String) m.get("crisis"), m.get("preset") == null ? 0 : Json.integer(m.get("preset")));
             case "Pledge" -> new Command.Pledge((String) m.get("bill"));
             case "SetAgenda" -> new Command.SetAgenda(Json.array(m.get("bills")).stream().map(o -> (String) o).toList());
             case "PushBill" -> new Command.PushBill((String) m.get("bill"), LegislativeStrategy.valueOf((String) m.get("strategy")), Json.num(m.get("capital")));

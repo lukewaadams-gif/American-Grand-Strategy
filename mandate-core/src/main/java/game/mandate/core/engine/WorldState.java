@@ -79,6 +79,10 @@ public final class WorldState {
      * once, on Election Day; this records only that its broadcast has been seen, so a reload never skips or replays it.
      */
     int electionNightSeen;
+    /** Which of the four games this is: from the setup, or CRISIS once Command.IndividualCrisis has begun one (docs/MODES.md). */
+    game.mandate.core.game.GameSetup.Mode mode;
+    /** The individual crisis being played, and its after-action report once it ends; null in the other modes. */
+    CrisisRecord crisis;
     /** The weighed news The Capital Ledger is made from (the last 400 stories). */
     final List<News> news = new ArrayList<>();
     /** The era's stories that have already run (indexes into the ambient table). */
@@ -126,6 +130,8 @@ public final class WorldState {
     public boolean midtermsHeld() { return midtermsHeld; }
     public int inaugurationCommand() { return inaugurationCommand; }
     public Legacy legacy() { return legacy; }
+    public game.mandate.core.game.GameSetup.Mode mode() { return mode; }
+    public CrisisRecord crisis() { return crisis; }
     public int commandsApplied() { return commandsApplied; }
 
     public Map<String, Object> toJson() {
@@ -146,6 +152,8 @@ public final class WorldState {
         m.put("taiwan", taiwan == null ? null : taiwan.toJson());
         m.put("taiwanEscalated", taiwanEscalated);
         m.put("electionNightSeen", electionNightSeen);
+        m.put("mode", mode == null ? null : mode.name());
+        m.put("crisis", crisis == null ? null : crisis.toJson());
         List<Object> ns = new ArrayList<>();
         for (News n : news) ns.add(n.toJson());
         m.put("news", ns);
@@ -183,6 +191,8 @@ public final class WorldState {
         w.taiwan = m.get("taiwan") == null ? null : TaiwanState.fromJson(Json.object(m.get("taiwan")));
         w.taiwanEscalated = Boolean.TRUE.equals(m.get("taiwanEscalated"));
         w.electionNightSeen = m.get("electionNightSeen") == null ? -1 : Json.integer(m.get("electionNightSeen"));   // -1: an older save, settled by the engine
+        w.mode = m.get("mode") == null ? null : game.mandate.core.game.GameSetup.Mode.valueOf((String) m.get("mode"));   // null: an older save, from its setup
+        w.crisis = m.get("crisis") == null ? null : CrisisRecord.fromJson(Json.object(m.get("crisis")));
         if (m.get("news") != null) for (Object o : Json.array(m.get("news"))) w.news.add(News.fromJson(Json.object(o)));
         if (m.get("ambientUsed") != null) for (Object o : Json.array(m.get("ambientUsed"))) w.ambientUsed.add(Json.integer(o));
         w.scheduler = EventScheduler.fromJson(Json.object(m.get("scheduler")));

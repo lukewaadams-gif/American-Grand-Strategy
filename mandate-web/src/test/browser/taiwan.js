@@ -137,6 +137,7 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
   // 2. Island Chain on its own, as China, from the start screen
   {
     const page = await open('', 1600, 900);
+    await page.locator('.start-mode', { hasText: /^Individual Crisis/ }).click();     // the war game alone is offered with the crises
     await page.locator('.start-ic button', { hasText: 'China' }).click();
     await page.locator('.start-ic select').selectOption('2032');
     await page.locator('.start-ic button', { hasText: 'Pessimistic' }).click();
@@ -164,6 +165,7 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
   }
   {
     const page = await open('', 390, 844);
+    await page.locator('.start-mode', { hasText: /^Individual Crisis/ }).click();
     await page.locator('.start-ic button', { hasText: 'Base case' }).click();
     await page.waitForSelector('.tw', { timeout: 30000 }).catch(() => fail('Island Chain at 390'));
     await check(page, '390: Island Chain as America');

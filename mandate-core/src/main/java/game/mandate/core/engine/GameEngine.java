@@ -221,9 +221,12 @@ public final class GameEngine implements WorldView {
             throw new IllegalArgumentException("Candidates do not match the chosen party");
         String sc = "scenario." + setup.scenario().name() + ".";
 
+        if (setup.mode() == GameSetup.Mode.CRISIS)
+            throw new IllegalArgumentException("An individual crisis begins from a governing presidency (Command.IndividualCrisis)");
         w = new WorldState();
         w.clock = new SimulationClock(calendar.campaignStart(), Granularity.WEEKLY);
         w.phase = Phase.GENERAL_CAMPAIGN_2028;
+        w.mode = setup.mode();
         w.election = electionEngine.newElection(mine, theirs, setup.difficulty().opponentResources(), rng);
         w.economy = economyEngine.newEconomy();
         w.budget = economyEngine.newBudget();
@@ -252,6 +255,30 @@ public final class GameEngine implements WorldView {
         Legacy.validate(t);
     }
 
+    /**
+     * A new game in its mode (docs/MODES.md). Full Game and Campaign Only begin with the 2028 campaign. Governing Only
+     * begins on election night, November 7, 2028, with the administration the player chose already elected: the staff
+     * play the campaign for both sides, and if the player's ticket loses, the game tries the next world of the same
+     * seed until it wins (the setup returned names the seed that did, so the game replays exactly). The 2028 night is
+     * left to be watched, so Governing Only opens on its broadcast.
+     */
+    public static GameEngine start(GameSetup setup) {
+        if (setup.mode() != GameSetup.Mode.GOVERNING_ONLY) return new GameEngine(setup);
+        long seed = setup.seed();
+        for (int k = 0; k < GOVERNING_ONLY_TRIES; k++) {
+            GameEngine g = new GameEngine(setup.withSeed(seed));
+            int guard = 0;
+            while (g.phase() == Phase.GENERAL_CAMPAIGN_2028 && guard++ < 400) game.mandate.core.ai.AutoPilot.playTurn(g);
+            if (g.phase() == Phase.TRANSITION) return g;
+            seed = seed * 6364136223846793005L + 1442695040888963407L;   // the next world of this seed
+        }
+        throw new IllegalArgumentException("No world of this seed elects " + setup.playerParty().name().toLowerCase(java.util.Locale.ROOT)
+                + "s in this national mood: choose a kinder one");
+    }
+
+    /** How many worlds Governing Only tries for one that elects the player's ticket. */
+    static final int GOVERNING_ONLY_TRIES = 48;
+
     public static GameEngine replay(GameSetup setup, List<Command> commands) {
         GameEngine g = new GameEngine(setup);
         for (Command c : commands) g.apply(c);
@@ -262,6 +289,7 @@ public final class GameEngine implements WorldView {
     static GameEngine restore(GameSetup setup, Map<String, Object> world, Map<String, Long> random, List<Command> commands) {
         GameEngine g = new GameEngine(setup);
         g.w = WorldState.fromJson(world, g.candidates);
+        if (g.w.mode == null) g.w.mode = setup.mode();     // an older save: its setup's mode (a hundred-days slice is now the full game)
         g.settleElectionNightSeen();
         g.rng.restore(random);
         g.history.addAll(commands);
@@ -334,6 +362,7 @@ public final class GameEngine implements WorldView {
                 if (latestPresidentialYear() < c.year() || c.year() <= 0) throw new IllegalCommandException("There has been no " + c.year() + " election night");
                 w.electionNightSeen = Math.max(w.electionNightSeen, c.year());
             }
+            case Command.IndividualCrisis c -> individualCrisis(c.crisis(), c.preset());
         }
         history.add(command);
         w.commandsApplied++;
@@ -642,7 +671,12 @@ public final class GameEngine implements WorldView {
         String loserId = (winner == player().party() ? opponent() : player()).candidate().id();
         politicsEngine.setRole(w.politics, loserId, Role.DEFEATED);
         if (first) {
-            if (winner == player().party()) {
+            if (winner == player().party() && w.mode == GameSetup.Mode.CAMPAIGN_ONLY) {
+                log("You won the White House. Campaign Only ends here, on election night: the campaign's assessment is in.");
+                finish();
+            } else if (winner == player().party()) {
+                if (w.mode == GameSetup.Mode.GOVERNING_ONLY)
+                    log("Governing Only: " + player().candidate().name() + " is elected on November 7, 2028. The presidency begins here.");
                 log("You won. " + congress() + ". Choose your agenda and your White House staff.");
                 w.phase = Phase.TRANSITION;
                 w.transition = transitionOffice.begin(player().party(), setup.seed(), date());
@@ -673,6 +707,7 @@ public final class GameEngine implements WorldView {
     }
 
     private void finish() {
+        if (w.mode == GameSetup.Mode.CRISIS) { w.phase = Phase.EPILOGUE; return; }    // the after-action report is the verdict
         if (w.terms != null && w.terms.ending() == null) termsEngine.leave(w.terms, null, null, date(), "served");
         w.legacy = Legacy.score(this);
         log(w.legacy.headline());
@@ -784,15 +819,14 @@ public final class GameEngine implements WorldView {
         }
     }
 
-    /** Day 100: the report; then the slice ends, or the term goes on in monthly turns with the cabinet filled. */
+    /**
+     * Day 100: the report (for the player to read or leave), and the presidency goes on, in the same weeks, with the
+     * cabinet filled and the Hill, the West Wing and the world open. The hundred days are the opening chapter of
+     * governing, not a game of their own (docs/MODES.md).
+     */
     private void endHundredDays() {
         DayHundredReport report = new HundredDays(host, w.hundredDays).finish(w.election.pledges(), w.policy.laws());
         log("Day 100: " + report.outcome().label + " (" + report.score() + " of 10). " + report.headline());
-        if (setup.length() == GameSetup.Length.HUNDRED_DAYS) {
-            w.phase = Phase.EPILOGUE;
-            log("The first hundred days are over.");
-            return;
-        }
         for (String line : executiveEngine.formCabinet(w.government, w.congress.congress(), congressEngine.votes(), w.politics.opposition(),
                 w.politics.party(player().party()).wingMood(1), rng)) log(line);
         w.phase = Phase.GOVERNING;
@@ -822,7 +856,22 @@ public final class GameEngine implements WorldView {
     }
 
     /** A new game from the same start: the same seed, so the same opponent, polling miss and world, for a different strategy. */
-    public GameEngine restart() { return new GameEngine(setup); }
+    public GameEngine restart() { return start(setup); }
+
+    /** Whether a president has been inaugurated in this game (false for a campaign that ended on election night). */
+    public boolean inaugurated() { return w.inaugurationCommand >= 0 || w.president != null; }
+
+    /** Which of the four games this is (docs/MODES.md). */
+    public GameSetup.Mode mode() { return w.mode; }
+
+    /** The individual crisis being played (Individual Crisis), and its after-action report once it ends. */
+    public Optional<CrisisRecord> individualCrisis() { return Optional.ofNullable(w.crisis); }
+
+    /** Campaign Only's verdict, and any 2028 campaign's: the grade, and what decided it. */
+    public Optional<ElectionEngine.Assessment> campaignAssessment() {
+        if (w.election.result2028() == null) return Optional.empty();
+        return Optional.of(electionEngine.assessment(w.election, w.election.result2028()));
+    }
 
     /** The same game rewound to the inauguration: the same election, Congress and mandate, to govern differently. */
     public Optional<GameEngine> replayFromInauguration() {
@@ -1221,6 +1270,7 @@ public final class GameEngine implements WorldView {
             w.clock.setMode(Granularity.WEEKLY);
             w.clock.set(date().with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)));
             log("The Strait of Hormuz crisis is over: " + w.hormuz.outcome() + ". The weeks resume.");
+            if (crisisModeFor("hormuz")) endIndividualCrisis(hormuzReport(w.hormuz));
         }
     }
 
@@ -1274,6 +1324,96 @@ public final class GameEngine implements WorldView {
             throw new IllegalCommandException(e.getMessage());
         }
         hormuzOutcome("The Strait of Hormuz", out, o.getClass().getSimpleName());
+    }
+
+    // ---- Individual Crisis (docs/MODES.md) ------------------------------------------------------------------------------
+
+    /** The game becomes one crisis: begun now, ended at its outcome with an after-action report. */
+    private void individualCrisis(String kind, int preset) {
+        if (!CrisisRecord.KINDS.contains(kind)) throw new IllegalCommandException("No such crisis: " + kind + " (taiwan or hormuz)");
+        if (w.mode == GameSetup.Mode.CRISIS) throw new IllegalCommandException("This game is already a crisis");
+        if (w.phase != Phase.GOVERNING || w.foreign == null) throw new IllegalCommandException("A crisis begins from a governing presidency, once the Situation Room is open");
+        if (hormuzActive() || taiwanActive() || w.military.operationActive()) throw new IllegalCommandException("A crisis is already under way");
+        int p = Math.max(0, Math.min(2, preset));
+        w.mode = GameSetup.Mode.CRISIS;
+        w.crisis = new CrisisRecord(kind, p, date(), approval(), w.economy.misery(), munitionsIndex(), null);
+        log("Individual Crisis: " + w.crisis.title() + ", " + CrisisRecord.PRESETS.get(p).toLowerCase(java.util.Locale.ROOT)
+                + ". The game ends when the crisis does, with an after-action report.");
+        if (kind.equals("taiwan")) startTaiwan(p, null, TaiwanScenario.Commitment.INTERVENE, "China's coast guard and navy close in on Taiwan");
+        else startHormuz(p, 2, "the Guards seize a tanker, and Tehran threatens to close the strait");
+    }
+
+    private boolean crisisModeFor(String kind) {
+        return w.mode == GameSetup.Mode.CRISIS && w.crisis != null && w.crisis.report() == null && w.crisis.kind().equals(kind);
+    }
+
+    /** The crisis is over: its after-action report is the game's verdict, and the game ends. */
+    private void endIndividualCrisis(CrisisRecord.Report r) {
+        w.crisis = w.crisis.withReport(r);
+        log("After-action report: " + r.result().label.toLowerCase(java.util.Locale.ROOT) + ". " + r.verdict());
+        finish();
+    }
+
+    /** The figures both crises share: the days, the approval, the economy and the munitions, from the start to the end. */
+    private List<String> crisisFigures(int days) {
+        CrisisRecord c = w.crisis;
+        List<String> f = new ArrayList<>();
+        f.add(Fmt.format("%d days, from %s to %s.", days, c.began(), date()));
+        f.add(Fmt.format("Approval %.0f%% at the start, %.0f%% at the end.", c.approval(), approval()));
+        f.add(Fmt.format("Misery index (unemployment plus inflation) %.1f at the start, %.1f at the end.", c.misery(), w.economy.misery()));
+        f.add(Fmt.format("Anti-ship munitions at %.0f%% of the 2027 stockpile at the start, %.0f%% at the end.", c.munitions(), munitionsIndex()));
+        return f;
+    }
+
+    /** The crisis's own record, the last thirty entries. */
+    private static List<String> lastOf(List<String> log) { return List.copyOf(log.subList(Math.max(0, log.size() - 30), log.size())); }
+
+    /** Taiwan: deterred or defended is a win, a stalemate an end in part, Taiwan fallen (or a nuclear catastrophe) a loss. */
+    private CrisisRecord.Report taiwanReport(TaiwanState s, TaiwanResult r, TaiwanResult.Status st) {
+        CrisisRecord.Result res = switch (st) { case DETERRED, DEFENDED -> CrisisRecord.Result.WON; case STALEMATE -> CrisisRecord.Result.PARTIAL;
+            case FALLEN, NUCLEAR -> CrisisRecord.Result.LOST; };
+        int days = (int) ChronoUnit.DAYS.between(w.crisis.began(), date());
+        List<String> f = crisisFigures(days);
+        f.add(Fmt.format("%d Americans killed; %d ships lost, %d of them carriers; %d aircraft lost.", r.usKilled(), r.shipsLost(), r.carriersLost(), r.aircraftLost()));
+        if (r.warDays() > 0) f.add(Fmt.format("%.0f days of war.", r.warDays()));
+        if (r.territoryKm2() > 0) f.add(Fmt.format("%.0f square kilometres of Taiwan held by China (%.0f%%).", r.territoryKm2(), 100 * r.territoryShare()));
+        f.add(Fmt.format("Taiwan's electricity at %.0f%% and its chip output at %.0f%% of normal.", 100 * r.electricity(), 100 * r.chips()));
+        String verdict = switch (res) {
+            case WON -> st == TaiwanResult.Status.DETERRED ? "China stood down: deterrence held, and Taiwan's democracy stands without a war."
+                    : "Taiwan was defended: the invasion failed, at the cost the figures show.";
+            case PARTIAL -> "Neither side got what it went to war for: Taiwan stands, but the strait is not at peace.";
+            case LOST -> st == TaiwanResult.Status.NUCLEAR ? "The war crossed the nuclear threshold: whatever else is true, it was lost."
+                    : "Taiwan fell: China holds the island.";
+        };
+        return new CrisisRecord.Report(w.crisis.title(), res, r.outcome(), r.reason() == null ? "" : r.reason(), date(), days, verdict, f, lastOf(s.log()));
+    }
+
+    /**
+     * Hormuz: a settlement or shipping restored is a win; regime change and occupation opens the strait but leaves an
+     * occupation, an end in part; a stalemate at day 150 is an end in part with the oil flowing again (at least 60% of
+     * normal), and a loss with the strait still mostly shut.
+     */
+    private CrisisRecord.Report hormuzReport(HormuzState h) {
+        double flow = h.flow() / HormuzState.NORMAL_FLOW;
+        CrisisRecord.Result res = switch (h.outcome()) {
+            case "A settlement", "Shipping restored" -> CrisisRecord.Result.WON;
+            case "Regime change and occupation" -> CrisisRecord.Result.PARTIAL;
+            default -> flow >= 0.6 ? CrisisRecord.Result.PARTIAL : CrisisRecord.Result.LOST;
+        };
+        int days = (int) ChronoUnit.DAYS.between(w.crisis.began(), date());
+        List<String> f = crisisFigures(days);
+        f.add(Fmt.format("%d Americans killed; %d ships hit; %d tankers seized and %d hit; %d strikes ordered.", h.usKilled(), h.shipsHit(), h.tankersSeized(),
+                h.tankersHit(), h.strikes()));
+        f.add(Fmt.format("The flow through the strait at the end: %.0f%% of normal. The ladder's highest rung: %d of 5.", 100 * flow, h.peakRung()));
+        f.add(Fmt.format("The Strategic Petroleum Reserve: %.0f million barrels left.", h.sprLeft()));
+        String verdict = switch (res) {
+            case WON -> h.outcome().equals("A settlement") ? "A settlement reopened the strait: the tankers sail, and Tehran stood down."
+                    : "Shipping is restored: the strait is open and calm, and Iran has stopped.";
+            case PARTIAL -> h.outcome().equals("Regime change and occupation") ? "The strait is open, but America now occupies Iran: the crisis is over, the war is not."
+                    : "A stalemate: the oil flows again, but Iran was neither settled with nor stopped.";
+            case LOST -> "A stalemate with the strait still mostly shut: the world's oil route stayed in Iran's hands.";
+        };
+        return new CrisisRecord.Report(w.crisis.title(), res, h.outcome(), h.cause(), date(), days, verdict, f, lastOf(h.log()));
     }
 
     // ---- the Taiwan crisis (docs/ISLAND_CHAIN.md) -----------------------------------------------------------------------
@@ -1387,6 +1527,7 @@ public final class GameEngine implements WorldView {
         news(new News(date(), st == TaiwanResult.Status.DETERRED || st == TaiwanResult.Status.DEFENDED ? News.Kind.GOOD : News.Kind.WORLD,
                 "THE TAIWAN CRISIS ENDS: " + r.outcome().toUpperCase(java.util.Locale.ROOT), r.reason(), 5, null));
         log("The Taiwan crisis is over: " + r.outcome() + (r.usKilled() > 0 ? ", " + r.usKilled() + " Americans killed" : "") + ". The weeks resume.");
+        if (crisisModeFor("taiwan")) endIndividualCrisis(taiwanReport(s, r, st));
     }
 
     // ---- terms of office (Resolute Desk's Terms and Reelection) ----------------------------------------------------

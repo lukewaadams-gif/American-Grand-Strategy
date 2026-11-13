@@ -36,7 +36,7 @@ class AdvisorTest {
     void theAdversarysHiddenResolveDoesNotChangeTheAdvice() {
         int compared = 0;
         for (long seed = 1; compared < 4 && seed < 300; seed++) {
-            GameEngine g = playUntil(new GameEngine(setup(seed).withLength(GameSetup.Length.HUNDRED_DAYS)), x -> x.phase() == Phase.FIRST_100_DAYS);
+            GameEngine g = playUntil(new GameEngine(setup(seed).withMode(GameSetup.Mode.FULL_GAME)), x -> x.phase() == Phase.FIRST_100_DAYS);
             if (g.phase() != Phase.FIRST_100_DAYS) continue;
             playUntil(g, x -> x.over() || x.hundredDays().orElseThrow().crisis() == CrisisOutcome.ACTIVE
                     && !Double.isNaN(x.hundredDays().orElseThrow().intelEstimate()));
@@ -57,9 +57,9 @@ class AdvisorTest {
 
     @Test
     void everyPhaseGetsAShortRankedBrief() {
-        GameEngine g = new GameEngine(setup(2).withLength(GameSetup.Length.HUNDRED_DAYS));
+        GameEngine g = new GameEngine(setup(2).withMode(GameSetup.Mode.FULL_GAME));
         boolean sawCampaign = false, sawTransition = false, sawDays = false;
-        while (!g.over()) {
+        while (!g.over() && g.dayHundredReport().isEmpty()) {
             List<Advisor.Advice> brief = Advisor.brief(g, 5);
             assertTrue(brief.size() <= 5);
             for (int i = 1; i < brief.size(); i++) assertTrue(brief.get(i - 1).tone().ordinal() <= brief.get(i).tone().ordinal(), "most pressing first");

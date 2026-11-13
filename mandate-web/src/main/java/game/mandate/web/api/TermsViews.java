@@ -135,6 +135,37 @@ final class TermsViews {
         v.put("terms", g.term());
         g.terms().ifPresent(t -> v.put("record", t.record()));
         v.put("summary", Fmt.format("%s, %d %s.", g.player().candidate().name(), g.term(), g.term() == 1 ? "term" : "terms"));
+        v.put("mode", g.mode().name());
+        v.put("served", g.inaugurated());
+        // the campaign's end (Campaign Only, or a 2028 defeat): the assessment, the popular vote and the states
+        if (!g.inaugurated()) g.campaignAssessment().ifPresent(a -> {
+            Map<String, Object> c = new LinkedHashMap<>();
+            var r = g.result2028().orElseThrow();
+            game.mandate.core.state.Party me = g.player().party();
+            c.put("won", a.won()); c.put("grade", a.grade()); c.put("headline", a.headline()); c.put("lines", a.lines());
+            c.put("ev", r.electoralVotes(me)); c.put("evOpp", r.electoralVotes(me.opponent())); c.put("popular", EngineApi.n2(r.marginFor(me)));
+            c.put("player", g.player().candidate().name()); c.put("opponent", g.opponent().candidate().name()); c.put("party", me.code());
+            List<Object> states = new ArrayList<>();
+            for (var s : g.states().all()) {
+                Map<String, Object> x = new LinkedHashMap<>();
+                double m = r.stateMargins().get(s.code()) * me.sign();
+                x.put("code", s.code()); x.put("name", s.name()); x.put("ev", s.electoralVotes()); x.put("margin", EngineApi.n2(m));
+                states.add(x);
+            }
+            c.put("states", states);
+            v.put("campaign", c);
+        });
+        // Individual Crisis: the after-action report
+        g.individualCrisis().ifPresent(cr -> {
+            Map<String, Object> c = new LinkedHashMap<>();
+            c.put("title", cr.title()); c.put("preset", game.mandate.core.engine.CrisisRecord.PRESETS.get(cr.preset())); c.put("began", cr.began().toString());
+            var r = cr.report();
+            if (r != null) {
+                c.put("result", r.result().name()); c.put("resultLabel", r.result().label); c.put("outcome", r.outcome()); c.put("reason", r.reason());
+                c.put("ended", r.ended().toString()); c.put("days", r.days()); c.put("verdict", r.verdict()); c.put("figures", r.figures()); c.put("record", r.record());
+            }
+            v.put("crisis", c);
+        });
         return v;
     }
 }

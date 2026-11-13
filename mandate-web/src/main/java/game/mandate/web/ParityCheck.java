@@ -18,7 +18,7 @@ public final class ParityCheck {
         for (long seed = 1; seed <= 40; seed++) {
             boolean dem = seed % 2 == 0;
             GameSetup setup = new GameSetup(seed, dem ? Party.DEMOCRAT : Party.REPUBLICAN, dem ? "d_reyes" : "r_marsh", dem ? "r_harlan" : "d_whitfield",
-                    Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD, GameSetup.Length.HUNDRED_DAYS, false, null);
+                    Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD, GameSetup.Mode.FULL_GAME, false, null);
             GameEngine g = new GameEngine(setup);
             int guard = 0;
             while (!g.over() && guard++ < 400) AutoPilot.playTurn(g);
@@ -31,7 +31,7 @@ public final class ParityCheck {
         for (long seed = 1; seed <= 6; seed++) {
             boolean dem = seed % 2 == 0;
             GameSetup setup = new GameSetup(seed, dem ? Party.DEMOCRAT : Party.REPUBLICAN, dem ? "d_reyes" : "r_marsh", dem ? "r_harlan" : "d_whitfield",
-                    Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD, GameSetup.Length.FULL_TERM, false, null);
+                    Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD, GameSetup.Mode.FULL_GAME, false, null);
             GameEngine g = new GameEngine(setup);
             int guard = 0;
             while (!g.over() && guard++ < 1200) AutoPilot.playTurn(g);
@@ -55,7 +55,7 @@ public final class ParityCheck {
         }
         // the budget office's scores, on a governing economy
         GameSetup setup = new GameSetup(4, Party.DEMOCRAT, "d_reyes", "r_harlan", Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD,
-                GameSetup.Length.FULL_TERM, false, null);
+                GameSetup.Mode.FULL_GAME, false, null);
         GameEngine g = new GameEngine(setup);
         int guard = 0;
         while (!g.over() && g.president().map(x -> x.week() < 20).orElse(true) && guard++ < 600) AutoPilot.playTurn(g);

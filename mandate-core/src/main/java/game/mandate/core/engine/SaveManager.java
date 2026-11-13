@@ -129,7 +129,7 @@ public final class SaveManager {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("seed", Long.toString(s.seed())); m.put("party", s.playerParty().name()); m.put("player", s.playerCandidateId());
         m.put("opponent", s.opponentCandidateId()); m.put("scenario", s.scenario().name()); m.put("difficulty", s.difficulty().name());
-        m.put("length", s.length().name());
+        m.put("mode", s.mode().name());
         m.put("realRoster", s.realRoster());
         Candidate c = s.customCandidate();
         if (c != null) {
@@ -145,7 +145,7 @@ public final class SaveManager {
     static GameSetup setupFromJson(Map<String, Object> m) {
         return new GameSetup(Long.parseLong((String) m.get("seed")), Party.valueOf((String) m.get("party")), (String) m.get("player"),
                 (String) m.get("opponent"), Scenario.valueOf((String) m.get("scenario")), GameSetup.Difficulty.valueOf((String) m.get("difficulty")),
-                m.get("length") == null ? GameSetup.Length.FULL_TERM : GameSetup.Length.valueOf((String) m.get("length")), // saves before the slice are full-term
+                GameSetup.Mode.fromSave((String) m.get("mode"), (String) m.get("length")),
                 Boolean.TRUE.equals(m.get("realRoster")), customFromJson(m.get("custom")));
     }
 

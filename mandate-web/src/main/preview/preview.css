@@ -288,6 +288,8 @@ h1, h2, h3, h4, p { margin: 0; }
 .choice-detail { margin-left: 34px; font-size: calc(var(--s) * 13px); color: var(--muted); }
 .pill { font: 700 calc(var(--s) * 12px)/1.5 Inter; padding: 1px 8px; border-radius: 999px; background: #232c39; border: 1px solid var(--rule-strong); color: var(--text); white-space: nowrap; }
 .pill.tone-warn { border-color: var(--warn); } .pill.tone-good { border-color: var(--good); } .pill.tone-bad { border-color: var(--bad); }
+/* on a phone a long status ("Bottled up in committee in the House") wraps inside its card rather than pushing it sideways */
+@media (max-width: 640px) { .pill { display: inline-block; max-width: 100%; white-space: normal; border-radius: 10px; } }
 .dialog-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .happened { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
 .toast { position: fixed; right: 24px; bottom: 24px; max-width: 360px; background: var(--panel-2); border: 1px solid var(--rule-strong); border-left: 4px solid var(--warn);

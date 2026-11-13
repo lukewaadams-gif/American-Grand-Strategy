@@ -47,6 +47,7 @@ public record Legacy(int score, String grade, List<String> lines, List<Integer> 
     }
 
     public static Legacy score(GameEngine g) {
+        if (g.mode() == GameSetup.Mode.CAMPAIGN_ONLY) return campaign(g);
         if (g.president().isPresent() && g.hill().isPresent()) return verdict(g);
         var t = g.tuning();
         List<String> lines = new ArrayList<>();
@@ -91,6 +92,15 @@ public record Legacy(int score, String grade, List<String> lines, List<Integer> 
                 + (re ? " (+" + t.i("legacy.reelected") + ")." : ".")));
         if (re) score += t.i("legacy.reelected");
         return new Legacy(score, grade(g, score), lines);
+    }
+
+    /** Campaign Only's verdict: the campaign's grade, score (its electoral votes) and assessment. */
+    static Legacy campaign(GameEngine g) {
+        var a = g.campaignAssessment().orElseThrow();
+        List<String> lines = new ArrayList<>();
+        lines.add(a.headline());
+        lines.addAll(a.lines());
+        return new Legacy(a.electoralVotes(), a.grade(), lines);
     }
 
     /** Reads every legacy constant so a missing one fails at start-up, not at the end of a four-year game. */

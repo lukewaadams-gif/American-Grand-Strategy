@@ -68,7 +68,7 @@ class RealPeopleTest {
         for (long seed : new long[]{4, 9}) {
             boolean dem = seed % 2 == 0;
             GameSetup setup = new GameSetup(seed, dem ? Party.DEMOCRAT : Party.REPUBLICAN, dem ? "bg_shapiro" : "bg_vance", dem ? "bg_vance" : "bg_shapiro",
-                    Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD, GameSetup.Length.FULL_TERM, true, null);
+                    Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD, GameSetup.Mode.FULL_GAME, true, null);
             GameEngine g = new GameEngine(setup);
             int guard = 0;
             while (!g.over() && g.phase() != Phase.GOVERNING && guard++ < 400) AutoPilot.playTurn(g);
@@ -105,7 +105,7 @@ class RealPeopleTest {
         int found = 0;
         for (long seed = 4; seed < 40 && found == 0; seed += 2) {
             GameSetup setup = new GameSetup(seed, Party.DEMOCRAT, "bg_shapiro", "bg_vance", Scenario.BLUE_ENVIRONMENT, GameSetup.Difficulty.STORY,
-                    GameSetup.Length.FULL_TERM, true, null);
+                    GameSetup.Mode.FULL_GAME, true, null);
             GameEngine g = new GameEngine(setup);
             int guard = 0;
             while (!g.over() && g.date().isBefore(java.time.LocalDate.of(2030, 1, 1)) && guard++ < 600) AutoPilot.playTurn(g);

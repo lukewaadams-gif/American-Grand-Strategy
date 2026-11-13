@@ -72,6 +72,8 @@ export const engine = {
   /** What a new game can be: the candidates, scenarios and difficulties. */
   options(realRoster: boolean): StartOptions { return request<StartOptions>({ op: 'options', realRoster }); },
   newGame(g: NewGame): void { request({ op: 'newGame', ...g }); },
+  /** The same start again: the same seed and world. */
+  restart(): void { request({ op: 'restart' }); },
   residence(): ResidenceView { return request<ResidenceView>({ op: 'view', name: 'residence' }); },
   /** The budget office's score of moving a policy some steps from where it stands. */
   score(policy: string, steps: number): ScoreView { return request<ScoreView>({ op: 'view', name: 'score', policy, steps }); },

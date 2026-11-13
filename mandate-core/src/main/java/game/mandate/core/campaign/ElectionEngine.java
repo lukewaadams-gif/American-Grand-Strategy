@@ -466,6 +466,62 @@ public final class ElectionEngine {
      * Why the player lost, in facts the game holds: the result, the closest path to 270, how far the polls were off
      * (the hidden miss, revealed), money left unspent, the ground war in the decisive states, and the opponent's plan.
      */
+    /** A campaign's verdict (Campaign Only's end, and any 2028 campaign's): a grade from the electoral votes, and what decided it. */
+    public record Assessment(boolean won, int electoralVotes, double popularMargin, String grade, String headline, List<String> lines) {}
+
+    /** The grade a campaign's electoral votes earn, from a rout to a landslide. */
+    public static String grade(int ev) {
+        if (ev >= 375) return "A landslide";
+        if (ev >= 320) return "A decisive win";
+        if (ev >= 290) return "A clear win";
+        if (ev >= 270) return "A narrow win";
+        if (ev >= 250) return "A narrow loss";
+        if (ev >= 200) return "A clear loss";
+        return "A rout";
+    }
+
+    /** The assessment of a campaign, won or lost: the margin, the states that decided it, the polls, the money and the ground war. */
+    public Assessment assessment(ElectionState e, ElectionResult r) {
+        Party me = e.player.party();
+        int sign = me.sign(), mine = r.electoralVotes(me);
+        boolean won = r.winner() == me;
+        String grade = grade(mine);
+        String headline = Fmt.format("%s: %d electoral votes to %d, the popular vote %s by %.1f points.", grade, mine, 538 - mine,
+                r.popularMargin() * sign >= 0 ? "yours" : "theirs", Math.abs(r.popularMargin()));
+        if (!won) return new Assessment(false, mine, r.popularMargin() * sign, grade, headline, postMortem(e, r));
+        List<String> out = new ArrayList<>();
+        out.add(Fmt.format("You won %d: %d electoral votes to %d; the popular vote %s by %.1f.", r.year(), mine, 538 - mine,
+                r.popularMargin() * sign >= 0 ? "went your way" : "went against you", Math.abs(r.popularMargin())));
+        // the margin of safety: the states you won most narrowly, and how many of their votes you could have lost
+        List<UsState> held = new ArrayList<>(states.all());
+        held.removeIf(s -> r.stateMargins().get(s.code()) * sign <= 0);
+        held.sort(java.util.Comparator.comparingDouble((UsState s) -> r.stateMargins().get(s.code()) * sign));
+        int spare = mine - 270;
+        List<String> close = new ArrayList<>();
+        for (UsState s : held.subList(0, Math.min(4, held.size()))) close.add(Fmt.format("%s by %.1f", s.code(), r.stateMargins().get(s.code()) * sign));
+        out.add(Fmt.format("Your margin of safety: %d electoral votes to spare. The tipping point was %s; your closest wins were %s.", spare, r.tippingPoint(),
+                String.join(", ", close)));
+        if (!e.polls.isEmpty()) {
+            PollPoint last = e.polls.get(e.polls.size() - 1);
+            double result = r.popularMargin() * sign, miss = result - last.national();
+            out.add(Fmt.format("The final polls had you at %+.1f nationally (a %.0f%% chance); the result was %+.1f. %s", last.national(),
+                    100 * last.winChance(), result, Math.abs(miss) < 1 ? "The polls were about right." : miss < 0
+                            ? Fmt.format("The polls flattered you by %.1f points.", -miss) : Fmt.format("The polls underrated you by %.1f points.", miss)));
+        }
+        if (e.player.cash() > 20) out.add(Fmt.format("You finished with $%.0fM unspent.", e.player.cash()));
+        List<UsState> decisive = held.subList(0, Math.min(3, held.size()));
+        double myField = 0, theirField = 0, myAds = 0, theirAds = 0;
+        for (UsState s : decisive) {
+            myField += e.player.field(s.code()); theirField += e.opponent.field(s.code());
+            myAds += e.player.ads(s.code()); theirAds += e.opponent.ads(s.code());
+        }
+        if (!decisive.isEmpty())
+            out.add(Fmt.format("In %s, your field organisation stood at %.0f against their %.0f, and your ad weight at %.0f against %.0f.",
+                    String.join(", ", decisive.stream().map(UsState::code).toList()), myField, theirField, myAds, theirAds));
+        if (!e.opponentReasoning.isEmpty()) out.add("Your opponent's closing campaign: " + e.opponentOrders.describe() + ". " + e.opponentReasoning);
+        return new Assessment(true, mine, r.popularMargin() * sign, grade, headline, out);
+    }
+
     public List<String> postMortem(ElectionState e, ElectionResult r) {
         List<String> out = new ArrayList<>();
         Party me = e.player.party();

@@ -35,7 +35,7 @@ public final class NewGame {
 
     final App app;
     int step = 0;
-    GameSetup.Length length = GameSetup.Length.HUNDRED_DAYS;
+    GameSetup.Mode mode = GameSetup.Mode.FULL_GAME;
     Scenario scenario = Scenario.TOSS_UP;
     Party party = Party.DEMOCRAT;
     Pick pick = Pick.CAST;
@@ -108,12 +108,13 @@ public final class NewGame {
 
     El game() {
         Theme t = Theme.get();
-        Card c = new Card("How long a game");
-        c.with(new Choice("1", "The 2028 election and the first hundred days", "About an hour: the campaign, election night, the transition and fourteen weeks in office, "
-                + "ending with the 100-day report. Recommended for a first game.", "Recommended", t.good, e -> { length = GameSetup.Length.HUNDRED_DAYS; app.refresh(); })
-                .selected(length == GameSetup.Length.HUNDRED_DAYS));
-        c.with(new Choice("2", "The full term, through re-election in 2032", "The same start, then monthly governing, the 2030 midterms and the 2032 campaign on your record.",
-                null, null, e -> { length = GameSetup.Length.FULL_TERM; app.refresh(); }).selected(length == GameSetup.Length.FULL_TERM));
+        Card c = new Card("Which game");
+        c.with(new Choice("1", "Full Game", "The 2028 campaign; win, and you govern: the first hundred days, the 2030 midterms and re-election in 2032, "
+                + "then, if re-elected, a second term to January 2037. Lose, and the game ends on election night.", "Recommended", t.good,
+                e -> { mode = GameSetup.Mode.FULL_GAME; app.refresh(); }).selected(mode == GameSetup.Mode.FULL_GAME));
+        c.with(new Choice("2", "Campaign Only", "The 2028 campaign alone: it ends after election night, won or lost, with the campaign's assessment.",
+                null, null, e -> { mode = GameSetup.Mode.CAMPAIGN_ONLY; app.refresh(); }).selected(mode == GameSetup.Mode.CAMPAIGN_ONLY));
+        c.with(Text.faint("Governing Only and Individual Crisis are in the browser game."));
         return c;
     }
 
@@ -272,7 +273,7 @@ public final class NewGame {
     El summary() {
         Theme t = Theme.get();
         Card c = new Card("Your game");
-        c.with(line("Game", length == GameSetup.Length.HUNDRED_DAYS ? "Election and first 100 days" : "Full term to 2032"),
+        c.with(line("Game", mode == GameSetup.Mode.FULL_GAME ? "Full Game" : "Campaign Only"),
                 line("Mood", scenario.label()), line("Party", Parts.partyName(party)),
                 line("Candidate", pick == Pick.CUSTOM ? name + " (your own)" : candidateId == null ? "not chosen yet" : CandidateCatalog.load(true).get(candidateId).name()),
                 line("Opponent", opponentId == null ? "the game chooses" : CandidateCatalog.load(true).get(opponentId).name()),
@@ -291,7 +292,7 @@ public final class NewGame {
         if (me == null) return;
         List<Candidate> rivals = rivals();
         String opp = opponentId != null ? opponentId : rivals.get((int) Math.floorMod(seed, rivals.size())).id();
-        GameSetup setup = new GameSetup(seed, party, me.id(), opp, scenario, difficulty, length, pick == Pick.REAL, pick == Pick.CUSTOM ? me : null);
+        GameSetup setup = new GameSetup(seed, party, me.id(), opp, scenario, difficulty, mode, pick == Pick.REAL, pick == Pick.CUSTOM ? me : null);
         app.session.newGame(setup);
         app.startedGame();
     }

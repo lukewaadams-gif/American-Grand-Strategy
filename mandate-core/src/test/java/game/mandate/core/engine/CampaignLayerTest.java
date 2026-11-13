@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** The playable campaign: who you are, what you promise, how you run, whom you face, and what the polls tell you. */
 class CampaignLayerTest {
 
-    static GameSetup slice(long seed) { return setup(seed).withLength(GameSetup.Length.HUNDRED_DAYS); }
+    static GameSetup slice(long seed) { return setup(seed).withMode(GameSetup.Mode.FULL_GAME); }
 
     /** Plays campaign weeks with the autopilot answering events but leaving the player's orders alone. */
     static void weeks(GameEngine g, int n) {
@@ -66,7 +66,7 @@ class CampaignLayerTest {
         Set<String> realEvents = new HashSet<>(), fictionalEvents = new HashSet<>();
         for (long seed = 1; seed <= 40; seed++) {
             GameSetup real = new GameSetup(seed, Party.DEMOCRAT, "bg_buttigieg", "r_harlan", Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD,
-                    GameSetup.Length.HUNDRED_DAYS, true, null);
+                    GameSetup.Mode.FULL_GAME, true, null);
             realEvents.addAll(campaignEvents(new GameEngine(real)));
             fictionalEvents.addAll(campaignEvents(new GameEngine(slice(seed * 2))));
         }
@@ -180,7 +180,7 @@ class CampaignLayerTest {
     }
 
     private static GameSetup withDifficulty(GameSetup s, GameSetup.Difficulty d) {
-        return new GameSetup(s.seed(), s.playerParty(), s.playerCandidateId(), s.opponentCandidateId(), s.scenario(), d, s.length(), s.realRoster(), s.customCandidate());
+        return new GameSetup(s.seed(), s.playerParty(), s.playerCandidateId(), s.opponentCandidateId(), s.scenario(), d, s.mode(), s.realRoster(), s.customCandidate());
     }
 
     private static boolean wins(GameSetup s, Orders orders) {

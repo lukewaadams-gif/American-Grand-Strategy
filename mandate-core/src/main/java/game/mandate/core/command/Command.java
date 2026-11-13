@@ -76,4 +76,11 @@ public sealed interface Command {
     record TaiwanBegin(int preset) implements Command {}
     /** The player has watched a presidential election night to its end (no effect on the world; the result was fixed on Election Day). */
     record ElectionNightSeen(int year) implements Command {}
+
+    /**
+     * Individual Crisis (docs/MODES.md): from a governing presidency with no crisis under way, the game becomes this one
+     * crisis, "taiwan" or "hormuz", begun at once with a preset (0 the base case, 1 optimistic, 2 pessimistic); it ends
+     * at the crisis's outcome, with an after-action report.
+     */
+    record IndividualCrisis(String crisis, int preset) implements Command {}
 }

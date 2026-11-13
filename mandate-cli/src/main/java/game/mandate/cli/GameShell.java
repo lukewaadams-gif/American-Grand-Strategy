@@ -108,14 +108,14 @@ final class GameShell {
             List<String> options = new ArrayList<>();
             String saved = describeSave();
             if (saved != null) options.add("Continue: " + saved);
-            options.add("New game: the 2028 election and the first hundred days");
-            options.add("New game: the full term, through re-election in 2032");
+            options.add("New game: Full Game (the 2028 campaign, then the presidency: the hundred days, the midterms, re-election)");
+            options.add("New game: Campaign Only (the 2028 campaign alone, to election night)");
             options.add("Quit");
             int k = c.menu("", options, 0) - (saved == null ? -1 : 0);
             switch (k) {
                 case 0 -> resume();
-                case 1 -> newGame(GameSetup.Length.HUNDRED_DAYS);
-                case 2 -> newGame(GameSetup.Length.FULL_TERM);
+                case 1 -> newGame(GameSetup.Mode.FULL_GAME);
+                case 2 -> newGame(GameSetup.Mode.CAMPAIGN_ONLY);
                 default -> { c.out.println("Goodbye."); return; }
             }
             play();
@@ -150,7 +150,7 @@ final class GameShell {
         c.out.println("Welcome back.");
     }
 
-    private void newGame(GameSetup.Length length) {
+    private void newGame(GameSetup.Mode length) {
         long seed = fixedSeed >= 0 ? fixedSeed : (System.nanoTime() & 0xFFFFFFL);
         c.rule("A NEW CAMPAIGN");
         Party party = c.menu("Your party:", List.of("Democratic", "Republican"), 0) == 0 ? Party.DEMOCRAT : Party.REPUBLICAN;
@@ -255,7 +255,7 @@ final class GameShell {
             case TRANSITION -> transition();
             case FIRST_100_DAYS -> hundredDaysWeek();
             case GOVERNING -> {
-                if (!reportShown && g.dayHundredReport().isPresent()) { report(g.dayHundredReport().get()); reportShown = true; c.pause(); }
+                if (!reportShown && g.dayHundredReport().isPresent()) { report(g.dayHundredReport().get()); reportShown = true; if (dayHundred()) return; }
                 governingMonth();
             }
             default -> g.apply(new Command.EndTurn());
@@ -770,12 +770,31 @@ final class GameShell {
     //  Endings and replays
     // =============================================================================================
 
+    /** Day 100: the report is read, and the presidency goes on unless the player chooses otherwise. True to stop here. */
+    private boolean dayHundred() {
+        List<String> options = List.of("Keep governing: the presidency goes on",
+                "Govern the first hundred days again, from the inauguration (the same election)",
+                "Replay from the start with the same seed (the same opponent and world, a different campaign)", "Return to the menu");
+        int k = c.menu("What next?", options, 0);
+        switch (k) {
+            case 1 -> { g = g.replayFromInauguration().orElseThrow(); rewound(); c.out.println("  Back to Inauguration Day."); return true; }
+            case 2 -> { g = g.restart(); rewound(); c.out.println("  The campaign begins again."); return true; }
+            case 3 -> { toMenu = true; return true; }
+            default -> { return false; }
+        }
+    }
+
     private void ending() {
         autosave();
         g.hundredDays().ifPresent(h -> { for (; briefingsShown < h.briefings().size(); briefingsShown++) briefing(h.briefings().get(briefingsShown)); });
         g.dayHundredReport().ifPresent(r -> { if (!reportShown) { report(r); reportShown = true; } });
         boolean governed = g.state().inaugurationCommand() >= 0;
-        if (governed && g.setup().length() == GameSetup.Length.FULL_TERM) g.legacy().ifPresent(l -> {
+        if (g.mode() == GameSetup.Mode.CAMPAIGN_ONLY) g.campaignAssessment().ifPresent(a -> {
+            c.rule("THE CAMPAIGN: " + a.grade().toUpperCase(Locale.ROOT));
+            c.wrap("  ", a.headline());
+            for (String s : a.lines()) c.wrap("   - ", s);
+        });
+        else if (governed) g.legacy().ifPresent(l -> {
             c.rule(l.headline().toUpperCase(Locale.ROOT));
             for (String s : l.lines()) c.wrap("  ", s);
         });
