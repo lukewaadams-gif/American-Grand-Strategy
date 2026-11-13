@@ -1,5 +1,6 @@
 package game.mandate.core.campaign;
 
+import game.mandate.core.data.Fmt;
 import java.util.List;
 import java.util.ArrayList;
 import game.mandate.core.electorate.ElectorateModel;
@@ -307,14 +308,14 @@ public final class ElectionEngine {
         List<Mover> out = new ArrayList<>();
         double mine = b.playerMomentum() - a.playerMomentum(), theirs = b.opponentMomentum() - a.opponentMomentum();
         Issue myMessage = e.player.lastMessage(), theirMessage = e.opponent.lastMessage();
-        if (Math.abs(mine) >= 0.05) out.add(new Mover(mine, String.format("Your campaign's momentum%s: %+.1f", myMessage == null ? ""
+        if (Math.abs(mine) >= 0.05) out.add(new Mover(mine, Fmt.format("Your campaign's momentum%s: %+.1f", myMessage == null ? ""
                 : " (message: " + myMessage.label().toLowerCase() + ", week " + e.player.weeksOnMessage() + ")", mine)));
-        if (Math.abs(theirs) >= 0.05) out.add(new Mover(theirs, String.format("Your opponent's momentum%s: %+.1f", theirMessage == null ? ""
+        if (Math.abs(theirs) >= 0.05) out.add(new Mover(theirs, Fmt.format("Your opponent's momentum%s: %+.1f", theirMessage == null ? ""
                 : " (message: " + theirMessage.label().toLowerCase() + ")", theirs)));
         double news = b.campaign() - a.campaign();
-        if (Math.abs(news) >= 0.05) out.add(new Mover(news, String.format("News, debates and promises, net of fading: %+.1f", news)));
+        if (Math.abs(news) >= 0.05) out.add(new Mover(news, Fmt.format("News, debates and promises, net of fading: %+.1f", news)));
         double env = b.environment() - a.environment();
-        if (Math.abs(env) >= 0.05) out.add(new Mover(env, String.format("The national environment (approval and the economy): %+.1f", env)));
+        if (Math.abs(env) >= 0.05) out.add(new Mover(env, Fmt.format("The national environment (approval and the economy): %+.1f", env)));
         // The ground war: the biggest changes among the states within 6 points in the polls, weighted by electoral votes.
         List<UsState> close = new ArrayList<>(states.all());
         close.removeIf(s -> Math.abs(polls.get(s.code())) > 6);
@@ -322,7 +323,7 @@ public final class ElectionEngine {
         for (UsState s : close.subList(0, Math.min(3, close.size()))) {
             double d = b.local().get(s.code()) - a.local().get(s.code());
             if (Math.abs(d) >= 0.05)
-                out.add(new Mover(d * s.electoralVotes() / 20.0, String.format("Ads, field and visits in %s: %+.1f there", s.code(), d)));
+                out.add(new Mover(d * s.electoralVotes() / 20.0, Fmt.format("Ads, field and visits in %s: %+.1f there", s.code(), d)));
         }
         out.sort(java.util.Comparator.comparingDouble((Mover m) -> -Math.abs(m.size())));
         List<String> lines = new ArrayList<>();
@@ -347,7 +348,7 @@ public final class ElectionEngine {
         List<String> out = new ArrayList<>();
         Party me = e.player.party();
         int sign = me.sign(), mine = r.electoralVotes(me);
-        out.add(String.format("You lost %d: %d electoral votes to %d; the popular vote %s by %.1f.", r.year(), mine, 538 - mine,
+        out.add(Fmt.format("You lost %d: %d electoral votes to %d; the popular vote %s by %.1f.", r.year(), mine, 538 - mine,
                 r.popularMargin() * sign >= 0 ? "went your way" : "went against you", Math.abs(r.popularMargin())));
         List<UsState> lost = new ArrayList<>(states.all());
         lost.removeIf(s -> r.stateMargins().get(s.code()) * sign >= 0);
@@ -360,18 +361,18 @@ public final class ElectionEngine {
             gained += s.electoralVotes();
             double m = -r.stateMargins().get(s.code()) * sign;
             swingNeeded = Math.max(swingNeeded, m);
-            path.add(String.format("%s by %.1f", s.code(), m));
+            path.add(Fmt.format("%s by %.1f", s.code(), m));
         }
-        out.add(String.format("You were %d electoral votes short. The closest path ran through %s: about %.1f points of swing in those states.",
+        out.add(Fmt.format("You were %d electoral votes short. The closest path ran through %s: about %.1f points of swing in those states.",
                 need, String.join(", ", path), swingNeeded));
         if (!e.polls.isEmpty()) {
             PollPoint last = e.polls.get(e.polls.size() - 1);
             double result = r.popularMargin() * sign, miss = result - last.national();
-            out.add(String.format("The final polls had you at %+.1f nationally (a %.0f%% chance); the result was %+.1f. %s", last.national(),
+            out.add(Fmt.format("The final polls had you at %+.1f nationally (a %.0f%% chance); the result was %+.1f. %s", last.national(),
                     100 * last.winChance(), result, Math.abs(miss) < 1 ? "The polls were about right." : miss < 0
-                            ? String.format("The polls flattered you by %.1f points.", -miss) : String.format("The polls underrated you by %.1f points.", miss)));
+                            ? Fmt.format("The polls flattered you by %.1f points.", -miss) : Fmt.format("The polls underrated you by %.1f points.", miss)));
         }
-        if (e.player.cash() > 20) out.add(String.format("You finished with $%.0fM unspent.", e.player.cash()));
+        if (e.player.cash() > 20) out.add(Fmt.format("You finished with $%.0fM unspent.", e.player.cash()));
         List<UsState> decisive = lost.subList(0, Math.min(3, lost.size()));
         double myField = 0, theirField = 0, myAds = 0, theirAds = 0;
         for (UsState s : decisive) {
@@ -379,7 +380,7 @@ public final class ElectionEngine {
             myAds += e.player.ads(s.code()); theirAds += e.opponent.ads(s.code());
         }
         if (!decisive.isEmpty())
-            out.add(String.format("In %s, your field organisation stood at %.0f against their %.0f, and your ad weight at %.0f against %.0f.",
+            out.add(Fmt.format("In %s, your field organisation stood at %.0f against their %.0f, and your ad weight at %.0f against %.0f.",
                     String.join(", ", decisive.stream().map(UsState::code).toList()), myField, theirField, myAds, theirAds));
         if (!e.opponentReasoning.isEmpty()) out.add("Your opponent's closing campaign: " + e.opponentOrders.describe() + ". " + e.opponentReasoning);
         return out;

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>game.mandate</groupId>
+        <artifactId>mandate-parent</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>mandate-web</artifactId>
+    <name>Mandate web</name>
+    <description>The browser version: the same core compiled to JavaScript by TeaVM, with a DOM interface.</description>
+
+    <properties>
+        <teavm.version>0.16.0</teavm.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>game.mandate</groupId>
+            <artifactId>mandate-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.teavm</groupId>
+            <artifactId>teavm-classlib</artifactId>
+            <version>${teavm.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.teavm</groupId>
+            <artifactId>teavm-jso-apis</artifactId>
+            <version>${teavm.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- the page, the stylesheet and the fonts, next to the compiled script: target/site is the whole site -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>site-files</id>
+                        <phase>process-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/site</outputDirectory>
+                            <resources><resource><directory>src/main/webapp</directory></resource></resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.teavm</groupId>
+                <artifactId>teavm-maven-plugin</artifactId>
+                <version>${teavm.version}</version>
+                <executions>
+                    <execution>
+                        <id>web</id>
+                        <phase>process-classes</phase>
+                        <goals><goal>compile</goal></goals>
+                        <configuration>
+                            <mainClass>game.mandate.web.Main</mainClass>
+                            <targetDirectory>${project.build.directory}/site/js</targetDirectory>
+                            <targetFileName>mandate.js</targetFileName>
+                            <minifying>true</minifying>
+                            <optimizationLevel>ADVANCED</optimizationLevel>
+                            <debugInformationGenerated>false</debugInformationGenerated>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <!-- mvn -pl mandate-web package -Pparity: the same 40 autopilot games compiled to JavaScript, to compare with the JVM (UI_DESIGN.md) -->
+            <id>parity</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.teavm</groupId>
+                        <artifactId>teavm-maven-plugin</artifactId>
+                        <version>${teavm.version}</version>
+                        <executions>
+                            <execution>
+                                <id>parity</id>
+                                <phase>process-classes</phase>
+                                <goals><goal>compile</goal></goals>
+                                <configuration>
+                                    <mainClass>game.mandate.web.ParityCheck</mainClass>
+                                    <targetDirectory>${project.build.directory}/parity</targetDirectory>
+                                    <targetFileName>parity.js</targetFileName>
+                                    <minifying>false</minifying>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

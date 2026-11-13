@@ -1,5 +1,6 @@
 package game.mandate.core.engine;
 
+import game.mandate.core.data.Fmt;
 import game.mandate.core.ai.CampaignAi;
 import game.mandate.core.campaign.CampaignParams;
 import game.mandate.core.campaign.CampaignSide;
@@ -307,7 +308,7 @@ public final class GameEngine implements WorldView {
         electionEngine.campaignWeek(w.election, mine, theirs, w.politics.salience(), theirPosture, rng).ifPresent(forPlayer ->
                 log("Debate: you chose \"" + myPosture.label() + "\", your opponent \"" + theirPosture.get().label() + "\". "
                         + (forPlayer > 0.3 ? "You won the night" : forPlayer < -0.3 ? "Your opponent won the night" : "A draw")
-                        + String.format(" (%+.1f).", forPlayer)));
+                        + Fmt.format(" (%+.1f).", forPlayer)));
         rollEvents();
         w.clock.advance();
         LocalDate electionDay = w.phase == Phase.GENERAL_CAMPAIGN_2028 ? calendar.election2028() : calendar.election2032();
@@ -326,7 +327,7 @@ public final class GameEngine implements WorldView {
         int decision = w.ledger.decide(date(), "Election " + year);
         dispatch(decision, "Election " + year, o.congress());
         Party winner = r.winner();
-        log(String.format("Election Night %d: %s %d, %s %d. Popular vote %s%+.1f. Tipping point: %s.", year,
+        log(Fmt.format("Election Night %d: %s %d, %s %d. Popular vote %s%+.1f. Tipping point: %s.", year,
                 Party.DEMOCRAT.code(), r.demElectoralVotes(), Party.REPUBLICAN.code(), r.repElectoralVotes(),
                 r.popularMargin() >= 0 ? "D" : "R", Math.abs(r.popularMargin()), r.tippingPoint()));
         String loserId = (winner == player().party() ? opponent() : player()).candidate().id();
@@ -533,7 +534,7 @@ public final class GameEngine implements WorldView {
         economyEngine.step(w.economy, w.budget, 1.0, marketContext(), rng);
         for (int i = 0; i < calendar.fomcMeetings(from, to); i++) {
             double change = economyEngine.fedMeeting(w.economy, w.budget);
-            if (change != 0) log(String.format("The Fed %s rates to %.2f%%.", change > 0 ? "raises" : "cuts", w.economy.fedRate()));
+            if (change != 0) log(Fmt.format("The Fed %s rates to %.2f%%.", change > 0 ? "raises" : "cuts", w.economy.fedRate()));
         }
         for (int i = 0; i < CampaignCalendar.releases(from, to, true); i++) politicsEngine.onRelease(w.politics, economyEngine.jobsReport(w.economy, rng));
         for (int i = 0; i < CampaignCalendar.releases(from, to, false); i++) politicsEngine.onRelease(w.politics, economyEngine.inflationReport(w.economy, rng));
@@ -561,7 +562,7 @@ public final class GameEngine implements WorldView {
                 calendar.midterms().getYear(), rng);
         int decision = w.ledger.decide(date(), "Midterms " + calendar.midterms().getYear());
         dispatch(decision, "Midterms", result);
-        log(String.format("Midterms: your party %+d House seats, %+d Senate seats. %s.",
+        log(Fmt.format("Midterms: your party %+d House seats, %+d Senate seats. %s.",
                 congress().house(player().party()) - before, congress().senate(player().party()) - senBefore, congress()));
     }
 
@@ -645,7 +646,7 @@ public final class GameEngine implements WorldView {
         executiveEngine.spendAttention(w.government, 1);
         int decision = w.ledger.decide(date(), "Address on " + issue);
         double gain = politicsEngine.address(w.politics, player().candidate().charisma(), issue.advantageFor(player().party()), issue);
-        w.ledger.record(decision, date(), "Address", "politics", String.format("Approval +%.2f (your voters and swing voters)", gain));
+        w.ledger.record(decision, date(), "Address", "politics", Fmt.format("Approval +%.2f (your voters and swing voters)", gain));
         log("You address the nation on " + issue.label().toLowerCase() + ".");
     }
 

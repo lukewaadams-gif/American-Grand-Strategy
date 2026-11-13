@@ -64,6 +64,15 @@ public final class Fixtures {
         return m;
     }
 
+    /** Writes every moment as a save file to a directory ({@code DIR/<moment>.json}): the browser checks load them. */
+    public static void main(String[] args) throws java.io.IOException {
+        Path dir = Path.of(args.length > 0 ? args[0] : "target/moments");
+        java.nio.file.Files.createDirectories(dir);
+        Map<String, String> all = moments();
+        for (var e : all.entrySet()) java.nio.file.Files.writeString(dir.resolve(e.getKey() + ".json"), e.getValue());
+        System.out.println(all.size() + " moments written to " + dir.toAbsolutePath());
+    }
+
     /** A session over a temporary home holding one moment. */
     public static Session session(Path home, String save) {
         Session s = new Session(home);

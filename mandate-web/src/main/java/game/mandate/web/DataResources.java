@@ -1,0 +1,16 @@
+package game.mandate.web;
+
+import org.teavm.classlib.ResourceSupplier;
+import org.teavm.classlib.ResourceSupplierContext;
+
+/** Tells TeaVM to embed the core's data files, so {@code getResourceAsStream} works in the browser as on the JVM. */
+public final class DataResources implements ResourceSupplier {
+    static final String[] FILES = {"bills.csv", "blocs.csv", "cabinet.csv", "cabinet_archetypes.csv", "calendar.properties", "candidates.csv",
+            "candidates_bg.csv", "countries.csv", "electorate_cells.csv", "forces.csv", "munitions.csv", "states.csv", "tuning.properties"};
+
+    @Override public String[] supplyResources(ResourceSupplierContext context) {
+        String[] out = new String[FILES.length];
+        for (int i = 0; i < FILES.length; i++) out[i] = "data/" + FILES[i];
+        return out;
+    }
+}

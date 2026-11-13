@@ -182,13 +182,13 @@ public final class Widgets {
             Theme t = Theme.get();
             Graphics2D g = smooth(g0);
             int h = getHeight();
-            g.setColor(Theme.alpha(color, 0.20));
+            g.setColor(t.pillFill(color));
             g.fillRoundRect(0, 0, getWidth() - 1, h - 1, h, h);
-            g.setColor(Theme.alpha(color, 0.65));
+            g.setColor(Theme.alpha(color, 0.75));
             g.drawRoundRect(0, 0, getWidth() - 1, h - 1, h, h);
             g.setFont(t.bold(Theme.Size.CAPTION));
             FontMetrics fm = g.getFontMetrics();
-            g.setColor(Theme.contrast(color, t.surface) >= 4.5 ? color : t.text);
+            g.setColor(t.text);
             g.drawString(text, (getWidth() - fm.stringWidth(text)) / 2, (h - fm.getHeight()) / 2 + fm.getAscent());
             g.dispose();
         }

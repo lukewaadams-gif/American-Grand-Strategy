@@ -6,7 +6,21 @@ The first complete **vertical slice** is playable: the 2028 election, the transi
 
 The design draws on three earlier games: Battleground 2028, Resolute Desk and First Island Chain. Those repositories are kept untouched; see `docs/SOURCE_AUDIT.md`.
 
-## Play
+## Play in your browser
+
+**https://lukewaadams-gif.github.io/American-Grand-Strategy/**
+
+Nothing to install: the whole game runs in the page, in a current Chrome, Edge, Firefox or Safari on a computer (a window of 1280×720 or more). Your games are saved in your browser after every turn. **Save and load** can export a game to a file and import one, including saves from the desktop game.
+
+In the browser, single keys work the screens, since browsers keep Ctrl+1 to 8 for their tabs:
+- **1–8** switch screens, **S** opens save and load, and **,** opens settings;
+- **D** opens the decisions waiting for you;
+- **?** lists every shortcut and mechanic, and **A** shows or hides the adviser;
+- **Ctrl+Enter** ends the turn and **Ctrl+Z** undoes, as on the desktop.
+
+The browser build is the same simulation compiled to JavaScript (`mandate-web`; see UI_DESIGN.md §17). The same seed plays the same game as on the desktop: 40 of 40 autopilot games matched exactly.
+
+## Play on the desktop
 
 Requires Java 21 and Maven 3.9.
 
@@ -14,7 +28,7 @@ Requires Java 21 and Maven 3.9.
 mvn -B install
 ```
 
-This builds the code, runs the 113 tests (including the interface's automated checks), and writes the single executable `mandate-cli/target/mandate.jar`.
+This builds the code, runs the 120 tests (including the interface's automated checks), writes the single executable `mandate-cli/target/mandate.jar`, and builds the browser version into `mandate-web/target/site` (open it through any static web server). The first build downloads the TeaVM compiler from Maven Central.
 
 ```bash
 java -jar mandate-cli/target/mandate.jar
@@ -70,7 +84,7 @@ The same game also runs in a terminal: `java -jar mandate-cli/target/mandate.jar
 | [VERTICAL_SLICE.md](VERTICAL_SLICE.md) | The playable slice: the arc, how each requirement is met, evidence, known problems |
 | [PRODUCT_VISION.md](PRODUCT_VISION.md) | What the game is and is not, the pillars, the audience |
 | [FEATURE_PRIORITY.md](FEATURE_PRIORITY.md) | Every source mechanic classified A-F, feature cards, and MVP / 1.0 / expansion scope |
-| [UI_DESIGN.md](UI_DESIGN.md) | The desktop interface: the source UIs reviewed, the design system, every screen, accessibility, the advisor and tutorials, automated checks, and what needs human review |
+| [UI_DESIGN.md](UI_DESIGN.md) | The desktop and browser interfaces: the source UIs reviewed, the design system, every screen, accessibility, the advisor and tutorials, automated checks, and what needs human review |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Modules, command model, determinism, formulas, porting plan, ADRs |
 | [GAMEPLAY_DESIGN.md](GAMEPLAY_DESIGN.md) | Loop audits, the core loop, the governing prototype, mechanic change log, probe evidence, playtest plan |
 | [RISK_REGISTER.md](RISK_REGISTER.md) | Risks, scores, mitigations |
@@ -92,6 +106,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md).
 ```
 mandate-core/   simulation (no UI imports, enforced by a test)
 mandate-ui/     the desktop interface: design system, screens, automated UI checks, screenshot tool
+mandate-web/    the browser version: the same core compiled to JavaScript by TeaVM, with a DOM interface
 mandate-cli/    the executable (desktop by default), the terminal game and designer tools; builds mandate.jar
 tools/          BgExport: one-off export of Battleground 2028's electorate and roster
 docs/           audit and supporting notes

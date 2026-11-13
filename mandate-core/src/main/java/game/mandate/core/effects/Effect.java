@@ -1,5 +1,6 @@
 package game.mandate.core.effects;
 
+import game.mandate.core.data.Fmt;
 import game.mandate.core.campaign.Issue;
 import game.mandate.core.diplomacy.HotSpot;
 import game.mandate.core.politics.Coalition;
@@ -110,6 +111,6 @@ public sealed interface Effect {
     private static String signed(String label, double v) { return label + " " + fmt(v); }
 
     private static String fmt(double v) {
-        return (v >= 0 ? "+" : "") + (Math.abs(v - Math.rint(v)) < 1e-9 ? String.valueOf((long) Math.rint(v)) : String.format("%.1f", v));
+        return (v >= 0 ? "+" : "") + (Math.abs(v - Math.rint(v)) < 1e-9 ? String.valueOf((long) Math.rint(v)) : Fmt.format("%.1f", v));
     }
 }

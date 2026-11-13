@@ -1,5 +1,6 @@
 package game.mandate.core.advisor;
 
+import game.mandate.core.data.Fmt;
 import game.mandate.core.campaign.CampaignStrategy;
 import game.mandate.core.campaign.DebatePosture;
 import game.mandate.core.campaign.PollPoint;
@@ -75,14 +76,14 @@ public final class Advisor {
         if (!polls.isEmpty()) {
             PollPoint last = polls.get(polls.size() - 1);
             out.add(new Advice(Topic.CAMPAIGN, last.winChance() < 0.35 ? Tone.WARNING : Tone.INFO,
-                    String.format("You are %s by %.1f", last.national() >= 0 ? "ahead" : "behind", Math.abs(last.national())),
-                    String.format("%d electoral votes if every state poll is right; the race turns on %s.", last.electoralVotes(), last.tippingPoint()),
+                    Fmt.format("You are %s by %.1f", last.national() >= 0 ? "ahead" : "behind", Math.abs(last.national())),
+                    Fmt.format("%d electoral votes if every state poll is right; the race turns on %s.", last.electoralVotes(), last.tippingPoint()),
                     "This week's polls (a polls-only forecast gives you " + pct(last.winChance()) + ")"));
             if (polls.size() >= 4) {
                 double change = last.national() - polls.get(polls.size() - 4).national();
                 if (Math.abs(change) >= 1.0)
                     out.add(new Advice(Topic.CAMPAIGN, change < 0 ? Tone.WARNING : Tone.OPPORTUNITY,
-                            String.format("You have %s %.1f points in three weeks", change < 0 ? "lost" : "gained", Math.abs(change)),
+                            Fmt.format("You have %s %.1f points in three weeks", change < 0 ? "lost" : "gained", Math.abs(change)),
                             "Biggest recent mover: " + last.movers().get(0).toLowerCase() + ".", "The last four weekly polls"));
             }
             Map<String, Double> statePolls = g.statePolls();
@@ -92,16 +93,16 @@ public final class Advisor {
                 double m = statePolls.get(tip) * sign;
                 if (Math.abs(m) < 3)
                     out.add(new Advice(Topic.CAMPAIGN, Tone.OPPORTUNITY, tip + " is within reach either way",
-                            String.format("You poll %+.1f there. A battleground blitz concentrates rallies and money on states like it.", m), "State polls"));
+                            Fmt.format("You poll %+.1f there. A battleground blitz concentrates rallies and money on states like it.", m), "State polls"));
             }
         }
         double cash = g.player().cash();
         CampaignStrategy.Orders orders = g.election().playerOrders();
         if (weeks <= 5 && cash > 60 && orders.rate() != CampaignStrategy.SpendRate.ALL_IN)
-            out.add(new Advice(Topic.CAMPAIGN, Tone.WARNING, String.format("$%.0fM in the bank, %d weeks left", cash, weeks),
+            out.add(new Advice(Topic.CAMPAIGN, Tone.WARNING, Fmt.format("$%.0fM in the bank, %d weeks left", cash, weeks),
                     "Money left on Election Day buys nothing. Consider spending all in.", "Your war chest and the calendar"));
         else if (cash < 30)
-            out.add(new Advice(Topic.CAMPAIGN, Tone.WARNING, String.format("Down to $%.0fM", cash),
+            out.add(new Advice(Topic.CAMPAIGN, Tone.WARNING, Fmt.format("Down to $%.0fM", cash),
                     "Spending you cannot cover is scaled down. Banking money for two weeks rebuilds it.", "Your war chest"));
         if (!g.election().opponentReasoning().isEmpty())
             out.add(new Advice(Topic.CAMPAIGN, Tone.INFO, "Your opponent: " + g.election().opponentOrders().strategy().label.toLowerCase(),
@@ -142,13 +143,13 @@ public final class Advisor {
             if (chance >= 0.6 && !h.billActedThisWeek())
                 out.add(new Advice(Topic.CONGRESS, Tone.OPPORTUNITY, "The votes look there: " + pct(chance) + " in the " + (house ? "House" : "Senate"),
                         "Whip counts drift with your approval and the opposition's mood. Calling the vote now locks this in.",
-                        String.format("%s whip count", house ? "House" : "Senate")));
+                        Fmt.format("%s whip count", house ? "House" : "Senate")));
             else if (chance < 0.6) {
                 WhipRead target = ChiefOfStaff.bestTarget(h, house);
                 out.add(new Advice(Topic.CONGRESS, chance < 0.35 ? Tone.WARNING : Tone.INFO, "Short of votes: " + pct(chance) + " in the " + (house ? "House" : "Senate"),
                         target == null ? "No bloc is persuadable at the margin; the bill itself may need to change." : "The " + target.bloc() + " ("
                                 + Math.round(target.expectedYes()) + " of " + target.members() + " yes) want " + target.wants() + ".",
-                        String.format("%s whip count", house ? "House" : "Senate")));
+                        Fmt.format("%s whip count", house ? "House" : "Senate")));
                 if (h.stage() == BillStage.SENATE_FLOOR && h.canReconcile())
                     out.add(new Advice(Topic.CONGRESS, Tone.OPPORTUNITY, "Reconciliation is available", "51 votes instead of 60, at the cost of 15% of the bill and opposition goodwill.",
                             "Senate rules"));
@@ -162,7 +163,7 @@ public final class Advisor {
                         "The cabinet"));
             else if (s == SeatStatus.HEARINGS_DONE && h.confirmationExpected(p) < 53)
                 out.add(new Advice(Topic.CABINET, Tone.WARNING, h.nomineeName(p) + " may not be confirmed",
-                        String.format("The Senate count is close: about %.0f votes, 50 needed.", h.confirmationExpected(p)), "The Senate whip on the nomination"));
+                        Fmt.format("The Senate count is close: about %.0f votes, 50 needed.", h.confirmationExpected(p)), "The Senate whip on the nomination"));
         }
         if (h.crisis() == CrisisOutcome.ACTIVE && !Double.isNaN(h.intelEstimate())) {
             double e = h.intelEstimate();
@@ -170,7 +171,7 @@ public final class Advisor {
                     e > 0.65 ? "Intelligence reads their resolve as high: force is more likely to provoke than deter."
                             : e < 0.45 ? "Intelligence reads their resolve as low: a show of strength may make them stand down."
                             : "Intelligence reads their resolve as moderate: neither force nor talks is a safe bet.",
-                    String.format("Intelligence estimate %.0f%%, deterrence %.0f", 100 * e, h.deterrence())));
+                    Fmt.format("Intelligence estimate %.0f%%, deterrence %.0f", 100 * e, h.deterrence())));
         }
         if (h.challenge() != null && h.week() >= 5 && h.challengeResponse() < 0
                 && h.pending().stream().noneMatch(d -> d.kind() == Decision.Kind.ECONOMY))
@@ -180,16 +181,16 @@ public final class Advisor {
                     "The odds of each stopgap depend on the opposition's mood on the deadline.", "The budget calendar"));
         for (int w = 0; w < 2; w++)
             if (h.wingMood(w) < 40)
-                out.add(new Advice(Topic.POLITICS, Tone.WARNING, String.format("The %s are restless (%.0f)", h.wingName(w), h.wingMood(w)),
+                out.add(new Advice(Topic.POLITICS, Tone.WARNING, Fmt.format("The %s are restless (%.0f)", h.wingName(w), h.wingMood(w)),
                         "Below 32 they revolt and vote against you. Projects, appointments or a change to the bill can win them back.", "Party whip"));
         if (h.opposition() == OppositionStrategy.OBSTRUCT)
             out.add(new Advice(Topic.POLITICS, Tone.INFO, "The opposition is obstructing", "Meeting their leaders raises goodwill; a cleaner stopgap is likelier to pass.",
-                    String.format("Opposition goodwill %.0f", h.goodwill())));
+                    Fmt.format("Opposition goodwill %.0f", h.goodwill())));
         if (h.attention() > 0 && open == 0)
             out.add(new Advice(Topic.POLITICS, Tone.INFO, h.attention() + " attention left this week", "Unused attention does not carry over.", "Your schedule"));
         double start = g.state().hundredDays().startApproval();
         if (h.approval() < start - 4)
-            out.add(new Advice(Topic.POLITICS, Tone.WARNING, String.format("Approval down %.0f points since the inauguration", start - h.approval()),
+            out.add(new Advice(Topic.POLITICS, Tone.WARNING, Fmt.format("Approval down %.0f points since the inauguration", start - h.approval()),
                     "The report judges your standing against where you started.", "Weekly approval"));
     }
 
@@ -212,7 +213,7 @@ public final class Advisor {
             out.add(new Advice(Topic.CONGRESS, Tone.INFO, g.attention() + " attention this month", "Pushing a bill takes 2; an address, deterrence or diplomacy takes 1.", "Your schedule"));
         double taiwan = g.diplomacy().tension(game.mandate.core.diplomacy.HotSpot.TAIWAN_STRAIT);
         if (taiwan > 55)
-            out.add(new Advice(Topic.SECURITY, Tone.WARNING, String.format("Taiwan Strait tension %.0f", taiwan),
+            out.add(new Advice(Topic.SECURITY, Tone.WARNING, Fmt.format("Taiwan Strait tension %.0f", taiwan),
                     "Bolstering deterrence lowers the chance a crisis climbs the ladder.", "Published tension index"));
         for (String id : g.agenda()) {
             if (g.laws().contains(id)) continue;
@@ -225,6 +226,6 @@ public final class Advisor {
     public static String pct(double p) {
         if (p < 0.005) return "under 1%";
         if (p > 0.995) return "over 99%";
-        return String.format("%.0f%%", 100 * p);
+        return Fmt.format("%.0f%%", 100 * p);
     }
 }

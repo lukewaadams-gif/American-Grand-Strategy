@@ -102,20 +102,21 @@ The weekly loop is the prototype's core loop: Decision → Consequences → New 
 
 | Requirement | How it is met |
 |---|---|
-| One executable application | `mandate-cli/target/mandate.jar` (maven-shade). `java -jar` opens the desktop game (the terminal game where there is no display); designer tools are subcommands. |
+| One executable application | `mandate-cli/target/mandate.jar` (maven-shade). `java -jar` opens the desktop game (the terminal game where there is no display); designer tools are subcommands. The same game also runs in a browser (`mandate-web`, GitHub Pages; UI_DESIGN.md §17). |
 | One unified save file | `SaveManager` version 2: setup, world snapshot (including the hundred days and the report), random state and command log. The front end's tutorial progress goes in a `ui` section of the same file. Saves are written atomically after every turn. |
 | No manual state transfer | One `WorldState` from the first campaign week to day 100. The hundred days own only their process state (`HundredDaysState`). |
 | No external program launches | None; the source games are not invoked. Their data is exported once, at build time, by `tools/BgExport.java`. |
 | Working AI opposition | The adaptive campaign opponent (§2); the opposition party in Congress (strategy, committee chairs, votes); the crisis adversary |
 | Deterministic regression tests | `GoldenRegressionTest` fingerprints 6 full games, 11 slice games (each ending: loss, partial success, victory; custom and real-roster candidates) and 7 prototype probes, and checks no state leaks between games. Save and replay consistency is tested mid-campaign and mid-hundred-days. |
 
-**Tests (113):**
+**Tests (120):**
 - `HundredDaysInGameTest` (5): the slice end to end, refused actions leave no trace, the view routes through the command log, a mid-hundred-days save reproduces the future, full-term continuation.
 - `CampaignLayerTest` (8): custom candidate and save, the real roster and its events, promises, broken promises, standing orders, the opponent adapts, a credible opponent and campaign choices matter, the polls explain and the forecast discriminates.
 - `OutcomesTest` (5): the report follows its rule and strategies reach all three outcomes, the report is fixed in full-term games, post-mortems, replays, and the coach.
 - `GameShellTest` (4, in `mandate-cli`): scripted keyboard input through the real shell from the campaign to the day-100 report, Continue, the custom candidate with orders, a promise and a hand-built week, and governing again.
 - The 63 earlier tests, plus `CellElectorateTest` (8) from the electorate port. The earlier tests were adjusted only where the slice changed behaviour (§8).
-- The desktop interface: `AdvisorTest` (3, core), `ThemeTest` (5), `ScreensTest` (3, covering 51 rendered screens) and `FlowTest` (9 flows played through the buttons). See UI_DESIGN.md §13.
+- The desktop interface: `AdvisorTest` (3, core), `ThemeTest` (6), `ScreensTest` (3, covering 51 rendered screens) and `FlowTest` (9 flows played through the buttons). See UI_DESIGN.md §13.
+- `FmtTest` (6, core): the core's own formatting matches Java's, which the browser build relies on. The browser build's Playwright checks are in `mandate-web/src/test/browser` (UI_DESIGN.md §17).
 
 ## 7. Evidence from probes (not from players)
 

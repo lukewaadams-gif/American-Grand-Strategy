@@ -33,7 +33,9 @@ mandate/                      Maven multi-module, Java 21
 │   └── tutorial/             Coach: one situational lesson at a time; reads the game, never changes it
 ├── mandate-ui/               the desktop interface (Swing): kit/ (design tokens and components), screens/, App, Session,
 │                             automated UI checks and the screenshot tool; reads the core, changes it only by commands
-└── mandate-cli/              Main (desktop by default), GameShell (the terminal game), designer tools; builds mandate.jar
+├── mandate-cli/              Main (desktop by default), GameShell (the terminal game), designer tools; builds mandate.jar
+└── mandate-web/              the browser version: the same core compiled to JavaScript by TeaVM, a web kit with the desktop
+                              kit's API over the DOM, the screens ported, saves in local storage; builds target/site
 ```
 
 ## 3. One authoritative world, with owners
@@ -221,7 +223,7 @@ We **port models, not code**. The source files are monoliths with static state, 
 
 **ADR-4: The theater seam.** The presidential game talks to war only through `TheaterScenario` and `TheaterOutcome`. This keeps the base game shippable and reviewable without the operational wargame, and lets EXP-1 plug in without core changes.
 
-**ADR-5: No browser build before 1.0.** The source games' Java-to-JS translator is not in any repository. If a web demo is needed for marketing, evaluate TeaVM against `mandate-core` (pure Java, no reflection, no threads) in a post-1.0 spike.
+**ADR-5: No browser build before 1.0.** *Superseded by ADR-8.* The source games' Java-to-JS translator is not in any repository. If a web demo is needed for marketing, evaluate TeaVM against `mandate-core` (pure Java, no reflection, no threads) in a post-1.0 spike.
 
 **ADR-6: Content as CSV and properties now, JSON + schema in M2.** Balancing constants are in `tuning.properties` (done). The CSV loader is intentionally minimal. M2 introduces JSON content with a validator CLI (`mandate lint`): unknown ids, unreachable events, dominated options and missing localisation keys.
 
@@ -232,9 +234,16 @@ We **port models, not code**. The source files are monoliths with static state, 
 - **What it costs.** Swing's accessibility reaches screen readers on Windows and macOS only. There are no CSS-like stylesheets (tokens are Java). Charts and the map are our own code.
 - **The boundary is unchanged.** `mandate-ui` only reads the core and sends `Command`s, so a JavaFX front end could replace it without touching the simulation. The M4 gate decides whether the shipped game moves.
 
+
+**ADR-8: A browser build, compiled with TeaVM.** Recorded with the browser version; see UI_DESIGN.md §17.
+- **Why.** It lets anyone play the slice from a link (GitHub Pages), with no Java to install.
+- **What it is.** ADR-5 named TeaVM as the candidate, and the core met its conditions as it stood: pure Java, no reflection, no threads. The whole of `mandate-core` compiled unchanged.
+- **The interface.** It is not Swing in a browser, which needs a commercial-licensed plugin runtime. It is a port of the screens onto a web kit with the desktop kit's API, so the screens read almost line for line the same.
+- **Parity.** 40 of 40 autopilot games match the JVM. Text formatting moved into the core's own `Fmt`, because TeaVM's `String.format` is wrong after `%%` and rounds halves differently. Floating-point results can differ in the last digits (JavaScript's `exp` and `log`). Each platform replays exactly, and snapshot saves load on both.
+- **Cost.** A second interface to keep in step with the first. Every screen change now lands in two places until one interface is retired; the M4 decision (ADR-2) should choose. The script is 1.7 MB minified. The first build needs Maven Central for TeaVM.
 ## 9. Testing strategy
 
-There are 113 tests, all run on every build (`mvn verify`): 92 in the core, 17 in the interface and 4 in the shell. The table lists the main suites.
+There are 120 tests, all run on every build (`mvn verify`): 98 in the core, 18 in the desktop interface and 4 in the shell. The browser build has its own Playwright checks (`mandate-web/src/test/browser`), run on demand. The table lists the main suites.
 
 | Layer | Tests | What they protect |
 |---|---|---|
@@ -245,7 +254,9 @@ There are 113 tests, all run on every build (`mvn verify`): 92 in the core, 17 i
 | Models and rules | `ElectorateTest`, `RulesTest`, `SystemsTest`, `DeterminismTest`, `BalanceTest` (18) | 2024 reproduction, Senate classes, legislative thresholds, recession bite, war monotonic in deterrence, determinism and replay, party balance |
 | Prototype | `OpeningTermTest`, `OpeningStrategyTest` (24) | The 12-week loop's interconnections, information value, failure follow-ups, delegation and strategy non-dominance, now over the authoritative engines |
 | Advisor | `AdvisorTest` (3) | The advisor reads only what the player can see: a source scan for hidden state, invariance to the hidden resolve, a brief in every phase |
-| Interface | `ThemeTest` (5), `ScreensTest` (3), `FlowTest` (9) | AA contrast in every palette; 51 rendered screens pass the automated checks; nine flows played through the buttons (new game to election night, transition to day 100, undo, rewind, shortcuts, complexity, tips). See UI_DESIGN.md §13. `RealWindowCheck` runs the real window under Xvfb on demand. |
+| Interface | `ThemeTest` (6), `ScreensTest` (3), `FlowTest` (9) | AA contrast in every palette; 51 rendered screens pass the automated checks; nine flows played through the buttons (new game to election night, transition to day 100, undo, rewind, shortcuts, complexity, tips). See UI_DESIGN.md §13. `RealWindowCheck` runs the real window under Xvfb on demand. |
+| Formatting | `FmtTest` (6) | The core's own `String.format` gives Java's text exactly: 200,000 values and every pattern the core uses (the browser build depends on it) |
+| Browser | `flow.js`, `checks.js`, `interactions.js` (Playwright, on demand) | A whole game through the buttons; 41 views with layout checks and an axe-core WCAG 2.1 AA audit; reload, undo, shortcuts, import and export. `ParityCheck` with `-Pparity`: 40 games, JVM against JavaScript. |
 | Batch report | `mandate batch`, `mandate compare` | Balance tracking. Today: Toss-up D 51%, re-election 55% / 65%, 8.7 laws per term |
 
 ## 10. Performance budget

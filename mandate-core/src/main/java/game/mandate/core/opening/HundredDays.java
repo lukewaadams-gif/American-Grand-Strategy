@@ -1,5 +1,6 @@
 package game.mandate.core.opening;
 
+import game.mandate.core.data.Fmt;
 import game.mandate.core.congress.Bill;
 import game.mandate.core.congress.Bloc;
 import game.mandate.core.congress.Congress;
@@ -208,7 +209,7 @@ public class HundredDays {
         st.publicPressure += 1.0;
         double gain = h.politicsEngine().address(h.politics(), h.presidentCharisma(), 0, null);
         goodwill(-2);
-        consequence(String.format("You take the bill on the road. Pressure on wavering members rises; opposition leaders call it a campaign stunt (approval +%.1f among your voters).", gain));
+        consequence(Fmt.format("You take the bill on the road. Pressure on wavering members rises; opposition leaders call it a campaign stunt (approval +%.1f among your voters).", gain));
     }
 
     void callVote(boolean insist) {
@@ -218,7 +219,7 @@ public class HundredDays {
         double chance = passChance(st.stage);
         boolean refused = chance < 0.35;
         if (refused) {
-            if (!insist) throw new IllegalStateException(String.format(
+            if (!insist) throw new IllegalStateException(Fmt.format(
                     "The leader will not call a vote expected to fail (%.0f%%). Insist for 8 capital, or work the votes first.", chance * 100));
             require(capital() >= 8, "Not enough political capital to insist");
         }
@@ -303,7 +304,7 @@ public class HundredDays {
         capital(6);
         dispatch(h.congressEngine().recordLaw(h.congress(), h.policy(), h.flagship(), weekStart(st.week),
                 st.reconciliation ? LegislativeStrategy.RECONCILIATION : LegislativeStrategy.PARTY_LINE, payoff));
-        consequence(String.format("You sign the %s. Deficit %+.2f%% of GDP; implementation quality %.0f%% (Treasury).", billName(), deficit, impl * 100));
+        consequence(Fmt.format("You sign the %s. Deficit %+.2f%% of GDP; implementation quality %.0f%% (Treasury).", billName(), deficit, impl * 100));
     }
 
     // ---- cabinet ---------------------------------------------------------------------------------
@@ -625,7 +626,7 @@ public class HundredDays {
                 raise(Decision.Kind.AFTERMATH, "After the clash in the " + st.crisisKind.label,
                         "Americans are dead. The country, the markets and the other side are waiting for your next move.",
                         List.of(new Option("Retaliate and hold the line", "Deterrence +10, oil up, your hawks and base rally, swing voters worry, deficit +0.05."),
-                                new Option("Seek a ceasefire through allies", String.format("About %.0f%% to succeed (State competence). Failure looks weak.", 100 * ceasefireChance())),
+                                new Option("Seek a ceasefire through allies", Fmt.format("About %.0f%% to succeed (State competence). Failure looks weak.", 100 * ceasefireChance())),
                                 new Option("Ask Congress for an authorization", "Capital -6. Shares the decision: opposition goodwill +6 and a unity bump, but it takes time.")));
             } else {
                 reaction("The other side escalates: " + rung() + ".");
@@ -667,7 +668,7 @@ public class HundredDays {
             options.add(new Option(m.label, "Recommended by " + who + ". " + crisisPreview(m)));
         }
         raise(Decision.Kind.CRISIS, "Crisis in the " + st.crisisKind.label + ": " + rung(),
-                String.format("Intelligence rates the other side's resolve %s (%.0f%%, +/- %.0f). Deterrence %.0f.",
+                Fmt.format("Intelligence rates the other side's resolve %s (%.0f%%, +/- %.0f). Deterrence %.0f.",
                         st.intelEstimate > 0.65 ? "high" : st.intelEstimate > 0.45 ? "moderate" : "low", st.intelEstimate * 100, noise * 100, deterrence()),
                 options);
     }
@@ -694,7 +695,7 @@ public class HundredDays {
 
     private String crisisPreview(CrisisMove m) {
         return switch (m) {
-            case DE_ESCALATE -> String.format("Each attempt succeeds about %.0f%% of the time (State competence, their resolve); a deal needs the crisis back at its first rung. Failure reads as weakness.",
+            case DE_ESCALATE -> Fmt.format("Each attempt succeeds about %.0f%% of the time (State competence, their resolve); a deal needs the crisis back at its first rung. Failure reads as weakness.",
                     100 * diplomacyChance(st.intelEstimate));
             case HOLD -> "Low risk, slow pressure; markets dip.";
             case SHOW_FORCE -> "Raises deterrence; oil rises. Deters a rival with low resolve; provokes one with high resolve.";
@@ -729,7 +730,7 @@ public class HundredDays {
     private void fundingWeek() {
         if (st.week == FUNDING_DECISION_WEEK && st.fundingOffer == null) {
             List<Option> options = new ArrayList<>();
-            for (FundingOffer o : FundingOffer.values()) options.add(new Option(o.label, String.format("Passes about %.0f%% of the time while the opposition is %s.",
+            for (FundingOffer o : FundingOffer.values()) options.add(new Option(o.label, Fmt.format("Passes about %.0f%% of the time while the opposition is %s.",
                     fundingPassChance(o) * 100, opposition().name().toLowerCase())));
             raise(Decision.Kind.FUNDING, "Government funding runs out at the end of week " + FUNDING_DEADLINE_WEEK,
                     "Choose what you will send Congress. The odds are re-rolled against the opposition's mood on the deadline.", options);
@@ -813,19 +814,19 @@ public class HundredDays {
         st.stressShock *= 0.7;
         for (int i = 0; i < h.calendar().fomcMeetings(from, to); i++) {
             double change = ee.fedMeeting(h.economy(), h.budget());
-            consequence(change > 0 ? String.format("The Fed raises rates to %.2f%%, citing inflation and the deficit.", h.economy().fedRate())
-                    : change < 0 ? String.format("The Fed cuts rates to %.2f%%.", h.economy().fedRate())
-                    : String.format("The Fed holds at %.2f%%.", h.economy().fedRate()));
+            consequence(change > 0 ? Fmt.format("The Fed raises rates to %.2f%%, citing inflation and the deficit.", h.economy().fedRate())
+                    : change < 0 ? Fmt.format("The Fed cuts rates to %.2f%%.", h.economy().fedRate())
+                    : Fmt.format("The Fed holds at %.2f%%.", h.economy().fedRate()));
         }
         for (int i = 0; i < CampaignCalendar.releases(from, to, true); i++) {
             double change = ee.jobsReport(h.economy(), h.rng());
             h.politicsEngine().onRelease(h.politics(), change);
-            consequence(String.format("Jobs report: unemployment %.1f%% (was %.1f%%).", h.economy().reportedUnemployment(), h.economy().reportedUnemployment() - change));
+            consequence(Fmt.format("Jobs report: unemployment %.1f%% (was %.1f%%).", h.economy().reportedUnemployment(), h.economy().reportedUnemployment() - change));
         }
         for (int i = 0; i < CampaignCalendar.releases(from, to, false); i++) {
             double change = ee.inflationReport(h.economy(), h.rng());
             h.politicsEngine().onRelease(h.politics(), change);
-            consequence(String.format("Inflation report: %.1f%% over the year (was %.1f%%).", h.economy().reportedInflation(), h.economy().reportedInflation() - change));
+            consequence(Fmt.format("Inflation report: %.1f%% over the year (was %.1f%%).", h.economy().reportedInflation(), h.economy().reportedInflation() - change));
         }
     }
 
@@ -896,12 +897,12 @@ public class HundredDays {
     private List<String> intelligenceLines() {
         List<String> lines = new ArrayList<>();
         if (st.stage == BillStage.HOUSE_FLOOR || st.stage == BillStage.SENATE_FLOOR)
-            lines.add(String.format("Whip: %.0f%% to pass the %s (%s).", passChance(st.stage) * 100, st.stage == BillStage.HOUSE_FLOOR ? "House" : "Senate",
+            lines.add(Fmt.format("Whip: %.0f%% to pass the %s (%s).", passChance(st.stage) * 100, st.stage == BillStage.HOUSE_FLOOR ? "House" : "Senate",
                     st.stage == BillStage.SENATE_FLOOR ? senateNeeded() + " votes needed" : "218 needed"));
-        lines.add(String.format("Approval %.0f%% (your voters %.0f, swing %.0f, opposition voters %.0f). Opposition: %s.",
+        lines.add(Fmt.format("Approval %.0f%% (your voters %.0f, swing %.0f, opposition voters %.0f). Opposition: %s.",
                 approval(), h.politics().approval(Coalition.BASE), h.politics().approval(Coalition.SWING), h.politics().approval(Coalition.OPPOSITION),
                 opposition().name().toLowerCase()));
-        lines.add(String.format("Gas $%.2f, 10-year %.2f%%, mortgages %.2f%%, Fed %.2f%%, unemployment %.1f%%, inflation %.1f%%.", gas(), h.economy().tenYear(),
+        lines.add(Fmt.format("Gas $%.2f, 10-year %.2f%%, mortgages %.2f%%, Fed %.2f%%, unemployment %.1f%%, inflation %.1f%%.", gas(), h.economy().tenYear(),
                 h.economy().mortgageRate(h.economyEngine().params()), h.economy().fedRate(), h.economy().unemployment(), h.economy().inflation()));
         return lines;
     }

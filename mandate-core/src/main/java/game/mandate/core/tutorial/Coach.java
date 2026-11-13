@@ -1,5 +1,6 @@
 package game.mandate.core.tutorial;
 
+import game.mandate.core.data.Fmt;
 import game.mandate.core.campaign.PollPoint;
 import game.mandate.core.engine.GameEngine;
 import game.mandate.core.opening.Decision;
@@ -55,7 +56,7 @@ public final class Coach {
             out.add(new Lesson("campaign.event", "Something has happened. Each answer shows what it costs; a gamble can pay off or backfire.",
                     "Read the options, then choose."));
         if (g.debateThisWeek().isPresent())
-            out.add(new Lesson("campaign.debate", String.format("A debate this week. A posture that counters your opponent's usual style scores extra; your debate rating is %d of 10.",
+            out.add(new Lesson("campaign.debate", Fmt.format("A debate this week. A posture that counters your opponent's usual style scores extra; your debate rating is %d of 10.",
                     g.player().candidate().debate()), "Choose a posture before you end the week."));
         if (g.election().pledges().isEmpty() && g.phase() == Phase.GENERAL_CAMPAIGN_2028)
             out.add(new Lesson("campaign.pledge", "Promises win a little support now and become your agenda: your first promise is your flagship bill after the inauguration.",
@@ -65,19 +66,19 @@ public final class Coach {
         List<PollPoint> polls = g.polls();
         if (polls.size() >= 2) {
             PollPoint last = polls.get(polls.size() - 1);
-            out.add(new Lesson("campaign.polls", String.format("The polls have you at %+.1f with %d electoral votes (a %.0f%% chance). The biggest mover: %s. Polls carry a hidden error of a point or two, so trust trends over single weeks.",
+            out.add(new Lesson("campaign.polls", Fmt.format("The polls have you at %+.1f with %d electoral votes (a %.0f%% chance). The biggest mover: %s. Polls carry a hidden error of a point or two, so trust trends over single weeks.",
                     last.national(), last.electoralVotes(), 100 * last.winChance(), last.movers().get(0).toLowerCase()), "Check the trend before you change course."));
             if (last.national() < -2 && g.date().getMonthValue() >= 9)
-                out.add(new Lesson("campaign.behind", String.format("You trail by %.1f. The tipping point is %s: money concentrated in the closest states, or a faster spending rate, are the usual answers. Banking money only helps if you spend it later.",
+                out.add(new Lesson("campaign.behind", Fmt.format("You trail by %.1f. The tipping point is %s: money concentrated in the closest states, or a faster spending rate, are the usual answers. Banking money only helps if you spend it later.",
                         -last.national(), last.tippingPoint()), "Try a battleground blitz, or spend all in for the final weeks."));
         }
         java.time.LocalDate day = g.phase() == Phase.GENERAL_CAMPAIGN_2028 ? g.calendar().election2028() : g.calendar().election2032();
         long weeksLeft = java.time.temporal.ChronoUnit.WEEKS.between(g.date(), day);
         if (weeksLeft <= 5 && g.player().cash() > 60 && g.election().playerOrders().rate() != game.mandate.core.campaign.CampaignStrategy.SpendRate.ALL_IN)
-            out.add(new Lesson("campaign.closing", String.format("You have $%.0fM in the bank and %d weeks left. Money left on Election Day buys nothing.", g.player().cash(), weeksLeft),
+            out.add(new Lesson("campaign.closing", Fmt.format("You have $%.0fM in the bank and %d weeks left. Money left on Election Day buys nothing.", g.player().cash(), weeksLeft),
                     "Change your standing orders to spend all in."));
         if (g.player().cash() < 30)
-            out.add(new Lesson("campaign.cash", String.format("You are down to $%.0fM. Spending you cannot cover is scaled down; 'Bank it' adds fundraisers for a later push.", g.player().cash()),
+            out.add(new Lesson("campaign.cash", Fmt.format("You are down to $%.0fM. Spending you cannot cover is scaled down; 'Bank it' adds fundraisers for a later push.", g.player().cash()),
                     "Bank it for two or three weeks."));
     }
 
@@ -94,7 +95,7 @@ public final class Coach {
             }
         }
         if (hd.week() == 1)
-            out.add(new Lesson("days.week1", String.format("You have %d attention points a week. A nominee needs hearings and a Senate vote (two weeks), and the flagship needs drafting: its size and pay-for set its odds.",
+            out.add(new Lesson("days.week1", Fmt.format("You have %d attention points a week. A nominee needs hearings and a Senate vote (two weeks), and the flagship needs drafting: its size and pay-for set its odds.",
                     hd.attention()), "Nominate a Treasury secretary and draft the " + hd.billName() + "."));
         if (hd.stage() == BillStage.HOUSE_FLOOR || hd.stage() == BillStage.SENATE_FLOOR)
             out.add(new Lesson("days.whip", "The whip count says " + game.mandate.core.advisor.Advisor.pct(hd.passChance(hd.stage()))

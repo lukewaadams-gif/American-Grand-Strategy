@@ -1,5 +1,6 @@
 package game.mandate.core.game;
 
+import game.mandate.core.data.Fmt;
 import game.mandate.core.data.Json;
 import game.mandate.core.economy.EconomyState;
 import game.mandate.core.electorate.ElectionResult;
@@ -42,11 +43,11 @@ public record Legacy(int score, String grade, List<String> lines) {
         EconomyState e = g.economy().orElseThrow();
         int econ = (int) Math.round((g.startMisery() - e.misery()) * t.d("legacy.perMiseryPoint"));
         score += econ;
-        lines.add(String.format("Misery index %.1f -> %.1f (%+d).", g.startMisery(), e.misery(), econ));
+        lines.add(Fmt.format("Misery index %.1f -> %.1f (%+d).", g.startMisery(), e.misery(), econ));
 
         int app = (int) Math.round((g.approval() - t.d("legacy.approvalPivot")) * t.d("legacy.perApprovalPoint"));
         score += app;
-        lines.add(String.format("Final approval %.0f%% (%+d).", g.approval(), app));
+        lines.add(Fmt.format("Final approval %.0f%% (%+d).", g.approval(), app));
 
         if (g.war().isPresent()) {
             TheaterOutcome w = g.war().get();

@@ -1,5 +1,6 @@
 package game.mandate.core.ai;
 
+import game.mandate.core.data.Fmt;
 import game.mandate.core.campaign.CampaignSide;
 import game.mandate.core.campaign.CampaignStrategy;
 import game.mandate.core.campaign.CampaignStrategy.Orders;
@@ -42,10 +43,10 @@ public final class CampaignAi {
         LocalDate d = g.date();
         boolean late = !d.isBefore(LocalDate.of(d.getYear(), Month.SEPTEMBER, 15));
         boolean early = d.getMonth().compareTo(Month.JULY) <= 0;
-        String standing = String.format(" (It reads the polls as %s by %.1f.)", lead >= 0 ? "ahead" : "behind", Math.abs(lead));
+        String standing = Fmt.format(" (It reads the polls as %s by %.1f.)", lead >= 0 ? "ahead" : "behind", Math.abs(lead));
         if (side.cash() < 30 && !late)
             return new Adaptation(new Orders(CampaignStrategy.BANK_IT, SpendRate.CAREFUL, null),
-                    String.format("Short of money ($%.0fM), it is raising for a late push.", side.cash()) + standing);
+                    Fmt.format("Short of money ($%.0fM), it is raising for a late push.", side.cash()) + standing);
         if (late) {
             if (lead > 2.5) return new Adaptation(new Orders(CampaignStrategy.BATTLEGROUND, SpendRate.ALL_IN, null),
                     "Ahead in the final stretch, it spends everything defending its leads." + standing);

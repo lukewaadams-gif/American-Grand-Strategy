@@ -247,6 +247,8 @@ Its odds are written "over 99%" or "under 1%", never "100%".
 - **Toasts** are not announced to assistive technology; their text is also in the Timeline.
 - **The map** is navigable by keyboard, but a screen-reader user would be better served by a table view of the same states.
 
+The browser build (section 17) is built from real HTML controls, so a screen reader can read it on any platform, Linux included, and its toasts are announced. Nobody has yet tried it with one.
+
 ## 13. Automated checks
 
 `UiChecks` runs on any laid-out component tree (headless is fine) and fails:
@@ -261,7 +263,7 @@ Its odds are written "over 99%" or "under 1%", never "100%".
 |---|---|---|
 | `ScreensTest` | **51 screens**: every screen; 1280×720, 1600×900 and 1920×1080; 150% text; three palettes; three complexity levels; and the dialogs behind buttons (decisions, concessions, nominees, pushes, rewind, load, help, election night), opened by pressing the button. It also checks that the checks catch deliberately broken components. | 0 problems |
 | `FlowTest` | Nine flows played only through visible buttons:<br>• the wizard to a running campaign;<br>• a whole campaign to election night (win or lose);<br>• the transition to the 100-day report, with the checks on every week's screen;<br>• undo is exact;<br>• rewind is exact;<br>• every screen has a bound shortcut and Help lists them all;<br>• advisor panel vs banner by width;<br>• complexity changes only presentation;<br>• tips show where they belong and stay dismissed. | 9 of 9 pass |
-| `ThemeTest` | Contrast of every token pair, map labels across the ramp, minimum sizes, scaling. | 5 of 5 pass |
+| `ThemeTest` | Contrast of every token pair, text on tinted fills (pills, selected options), map labels across the ramp, minimum sizes, scaling. | 6 of 6 pass |
 | `RealWindowCheck` | The real frame under Xvfb with `java.awt.Robot`:<br>• real key presses: Tab to New game, Enter, Esc, Ctrl+6, Ctrl+4, F1, Ctrl+D, 1, Enter;<br>• Tab never lands on a hidden control;<br>• resize to 1280×720, 1920×1080 and 1440×900, with the checks after each;<br>• the minimum size holds. | 17 of 17 pass |
 
 **Running them.** The first three run with `mvn install`. The screenshots and the real-window check run on demand:
@@ -325,3 +327,51 @@ Looking at the rendered screens, not just the check results, found these. All ar
 - The tile map is a cartogram, not geography; the source games' painted maps were not ported.
 - There is no sound. The source games' audio was tied into their simulation code; see ADR-2.
 - The REELECTION_CAMPAIGN_2032 phase and the epilogue reuse the campaign and results screens. Their screenshots are not in the checked set because the slice ends at day 100.
+
+## 17. The browser build
+
+**Play it:** https://lukewaadams-gif.github.io/American-Grand-Strategy/
+
+### How it works
+
+- **The simulation.** `mandate-web` compiles the unchanged simulation (`mandate-core`) to JavaScript with TeaVM 0.16. Nothing in the core was rewritten for the browser apart from text formatting (below).
+- **The interface.** It is a port of the desktop's screens onto a small web kit (`mandate-web/…/kit`). The kit has the same component names and API as the desktop's, but builds real HTML: `<button>`s, `<table>`s, SVG charts, a `role="dialog"` for cards, and an `aria-live` region for toasts. Layout is CSS flexbox and grid. The desktop's rule that a row of cards becomes a stack below a set width is kept: a flex-basis of `calc((threshold − 100%) × 999)`.
+- **The design system.** Colours, type and spacing are the desktop's tokens. `Theme.java` writes them into the page as CSS custom properties, so one Java object drives both the stylesheet and the colours code computes (the map's ramp). The fonts are the same bundled OFL files.
+- **Saves.** They live in the browser's local storage, one key per slot plus the autosave. **Save and load** exports a game to a file and imports one. A save file is the same format on both platforms, tested both ways: desktop saves load in the browser, and the desktop loads a browser export and re-saves it byte for byte.
+- **Shortcuts.** Browsers keep Ctrl+1 to 8 (tabs), Ctrl+D (bookmark) and F1 (help), so the browser uses single keys: **1–8**, **S**, **,**, **D**, **?** and **A**. Ctrl+Enter and Ctrl+Z are the same as on the desktop. Single keys never fire while typing in a field or while a card is open; in a card, the number keys choose.
+
+### Does it play the same game?
+
+- **Outcomes.** `ParityCheck` plays 40 whole games by autopilot on the JVM and, compiled with `-Pparity`, in Node. All 40 match: electoral votes, the day-100 grade and score, the number of commands, and saves that reload exactly.
+- **Bit-level determinism.** The last digits of some floating-point numbers differ, because JavaScript's `exp` and `log` round differently from Java's. Each platform is deterministic on its own (undo and rewind replay exactly), and a snapshot save loads on either. A seed could in principle play out differently across platforms on a knife-edge, though none of the 40 did.
+- **A bug in TeaVM's `String.format`.** It loses its place after `%%`, and it rounds halves down ("1.2" where Java prints "1.3"). The first parity run crashed on a refused action whose message used `%%`. The core now formats through its own `Fmt`, which supports exactly the patterns the game uses. `FmtTest` checks it against Java's formatter on 200,000 values and every pattern in the core; the desktop's golden fingerprints did not change.
+
+### What was verified
+
+All scripts are in `mandate-web/src/test/browser`; its README says how to run them. They ran in headless Chromium.
+
+| Check | Result |
+|---|---|
+| `flow.js`: the whole game through its buttons, from the wizard through campaigns until one is won, election night, the transition and fourteen weeks to the 100-day report | Passes; no console errors. About 8 s per campaign and 9 s for the hundred days, headless. |
+| `checks.js`: 41 views loaded from real game moments.<br>• every screen at three sizes, 150% text, three palettes and three complexity levels, and the dialogs;<br>• layout and text checks of our own;<br>• an **axe-core WCAG 2.1 AA** audit of each view | 0 problems |
+| `interactions.js`: reload and Continue, undo, every shortcut, number keys in a card, importing a desktop save, exporting one, a setting surviving a reload, the Tab order | 21 of 21 pass |
+
+### What the browser checks found and fixed
+
+- **axe found contrast failures that `ThemeTest` never covered**, and they existed on the desktop too:
+  - status pills drew their text in the tone colour over a tint of itself, 2.5–4.4:1 on a selected option;
+  - the grey detail text on a selected option was 3.7:1.
+
+  Pills now take light text on an opaque tinted fill, and a selected option's detail uses the full text colour. `ThemeTest` now checks these pairs for the desktop, and axe checks them in the browser.
+- **Keyboard-only users couldn't scroll** the adviser panel or a screen with no buttons, such as Economy during the campaign. Both regions now take focus.
+- **A broken export file name.** TeaVM's minifier renamed a JavaScript bridge's parameters to one-letter names, which a local variable then overwrote, so the exported file was named "[object Blob].json". All bridge locals now have names that can't collide.
+- **Toasts** stacked four deep over the content with no way to close them. Now at most three show, and each has a Dismiss button.
+
+### Limits, and what needs a person
+
+- **Browsers.** Only Chromium has run it. Firefox and Safari need checking, especially CSS `color-mix()` (supported since 2023) and container queries.
+- **Download size.** The script is 1.7 MB minified (much less over the wire, compressed). The first load on a slow connection shows "Loading the game…" for a moment.
+- **Saves can be lost.** They stay in one browser on one device, and clearing site data or private browsing loses them. The game warns once if storage is refused; exporting is the way to keep a game.
+- **Small screens.** Below 1000 px the rail becomes a strip and the adviser a banner. It is usable at 900 px but cramped, and phones are not supported.
+- **Human review.** The browser needs the same review as the desktop (section 15): a screen reader (now possible on every platform), Firefox and Safari, and real mouse use.
+

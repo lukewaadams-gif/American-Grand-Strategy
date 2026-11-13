@@ -102,7 +102,7 @@ Estimates are in **person-weeks (pw)** for one experienced Java developer with d
 | B-48 | P3 | M | Optional one-off importer for Battleground 2028 saves (only if a migration path is wanted; the raw Java-serialization format makes it fragile) | Decision recorded |
 | B-35 | P3 | L | Command Mode (E1) | |
 | B-36 | P3 | L | Primaries (E1b) | |
-| B-37 | P3 | M | Web demo via TeaVM (ADR-5) | |
+| B-37 | P3 | M | Web demo via TeaVM (ADR-5). **Built** for the slice (`mandate-web`, ADR-8), playable on GitHub Pages | Firefox and Safari checked; one interface chosen at M4 |
 
 ## Immediate next steps (the next two weeks)
 

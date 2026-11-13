@@ -15,6 +15,7 @@
         <module>mandate-core</module>
         <module>mandate-ui</module>
         <module>mandate-cli</module>
+        <module>mandate-web</module>
     </modules>
 
     <properties>

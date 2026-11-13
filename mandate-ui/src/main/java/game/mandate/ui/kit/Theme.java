@@ -102,6 +102,12 @@ public final class Theme {
         return c;
     }
 
+    /**
+     * The opaque fill of a status pill in a tone. Pill text is always {@link #text}: the word carries the meaning and
+     * the tint and outline carry the tone, so the text reads at 4.5:1 on any background the pill sits on (tested).
+     */
+    public Color pillFill(Color tone) { return mix(sunken, tone, 0.24); }
+
     /** Status colour for a 0..1 level where higher is better. */
     public Color level(double v) { return v >= 0.6 ? good : v >= 0.35 ? warn : bad; }
 

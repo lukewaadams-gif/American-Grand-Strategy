@@ -116,9 +116,11 @@ public class Choice extends JButton implements Layouts.HeightForWidth {
             g.setFont(t.bold(Theme.Size.CAPTION));
             FontMetrics m = g.getFontMetrics();
             int tw = tagWidth(), th = m.getHeight() + t.u(1), tx = getWidth() - pad() - tw;
-            g.setColor(Theme.alpha(tagColor, 0.18));
+            g.setColor(t.pillFill(tagColor));
             g.fillRoundRect(tx, y, tw, th, th, th);
-            g.setColor(tagColor);
+            g.setColor(Theme.alpha(tagColor, 0.75));
+            g.drawRoundRect(tx, y, tw, th, th, th);
+            g.setColor(t.text);
             g.drawString(tag, tx + t.u(2), y + (th - m.getHeight()) / 2 + m.getAscent());
         }
         g.setFont(t.bold(Theme.Size.LEAD));
@@ -130,7 +132,7 @@ public class Choice extends JButton implements Layouts.HeightForWidth {
             y += t.u(1);
             g.setFont(t.ui(Theme.Size.SMALL));
             FontMetrics df = g.getFontMetrics();
-            g.setColor(t.muted);
+            g.setColor(selected ? t.text : t.muted);          // muted text falls below 4.5:1 on the selected fill
             for (String l : lines(df, detail, Math.max(1, getWidth() - x - pad()))) { g.drawString(l, x, y + df.getAscent()); y += (int) (df.getHeight() * 1.1); }
         }
         g.dispose();

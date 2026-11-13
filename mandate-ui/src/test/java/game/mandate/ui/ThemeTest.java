@@ -66,6 +66,21 @@ class ThemeTest {
         assertTrue(failures.isEmpty(), String.join("\n", failures.subList(0, Math.min(20, failures.size()))));
     }
 
+    /** Pills and selected options: the text on every tinted fill the components paint (found by the browser build's axe audit). */
+    @Test void textOnTintedFillsMeetsAa() {
+        List<String> failures = new ArrayList<>();
+        for (Theme.Palette p : Theme.Palette.values()) {
+            Theme.set(p, 1.0);
+            Theme t = Theme.get();
+            for (Color tone : List.of(t.good, t.warn, t.bad, t.info, t.accent, t.faint, t.dem, t.rep, t.tossUp))
+                need(failures, p, "pill text on a " + tone + " pill", t.text, t.pillFill(tone), 4.5);
+            need(failures, p, "text on a selected option", t.text, Theme.mix(t.surface, t.info, 0.30), 4.5);
+            need(failures, p, "text on a selected button", t.text, Theme.mix(t.surface, t.info, 0.42), 4.5);
+            need(failures, p, "muted text on a raised button", t.muted, t.raised, 4.5);
+        }
+        assertTrue(failures.isEmpty(), String.join("\n", failures));
+    }
+
     @Test void noTypeSizeBelowTwelvePoints() {
         for (Theme.Size s : Theme.Size.values()) assertTrue(s.points >= 12, s + " is " + s.points + " pt");
     }

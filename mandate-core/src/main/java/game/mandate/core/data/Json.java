@@ -72,7 +72,7 @@ public final class Json {
                 case '\r' -> b.append("\\r");
                 case '\t' -> b.append("\\t");
                 default -> {
-                    if (c < 0x20) b.append(String.format("\\u%04x", (int) c));
+                    if (c < 0x20) b.append(Fmt.format("\\u%04x", (int) c));
                     else b.append(c);
                 }
             }

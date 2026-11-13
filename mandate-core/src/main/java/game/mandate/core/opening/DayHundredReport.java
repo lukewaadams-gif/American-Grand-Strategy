@@ -1,5 +1,6 @@
 package game.mandate.core.opening;
 
+import game.mandate.core.data.Fmt;
 import game.mandate.core.data.Json;
 import game.mandate.core.opening.Types.BillStage;
 import game.mandate.core.opening.Types.CrisisOutcome;
@@ -56,7 +57,7 @@ public record DayHundredReport(Outcome outcome, int score, List<Goal> goals, Str
 
         // 1. Legislation: the flagship.
         long kept = promises.stream().filter(laws::contains).count();
-        String promiseLine = promises.isEmpty() ? "" : String.format(" Campaign promises kept: %d of %d.", kept, promises.size());
+        String promiseLine = promises.isEmpty() ? "" : Fmt.format(" Campaign promises kept: %d of %d.", kept, promises.size());
         String bill = hd.billName();
         goals.add(switch (r.billStage()) {
             case LAW -> r.policyDelivered() >= 1.7
@@ -74,7 +75,7 @@ public record DayHundredReport(Outcome outcome, int score, List<Goal> goals, Str
         int confirmed = r.confirmed();
         boolean able = r.avgCompetence() >= 70;
         goals.add(new Goal("Administration", confirmed == 3 && able ? Status.MET : confirmed >= 2 ? Status.PARTLY : Status.MISSED,
-                String.format("%d of 3 cabinet secretaries confirmed; average competence %.0f%s.", confirmed, r.avgCompetence(),
+                Fmt.format("%d of 3 cabinet secretaries confirmed; average competence %.0f%s.", confirmed, r.avgCompetence(),
                         confirmed == 3 && !able ? " (a cabinet of loyalists: confirmed, but not strong)" : "")));
 
         // 3. Economy: the challenge, judged by what it threatened (prices or jobs) since it struck, and what the answer cost in borrowing.
@@ -84,27 +85,27 @@ public record DayHundredReport(Outcome outcome, int score, List<Goal> goals, Str
         if (st.challenge == null || Double.isNaN(st.challengeStartInflation)) {
             double misery = hd.inflation() + hd.unemployment() - st.startMisery;
             econ = misery <= 0.3 ? Status.MET : misery <= 0.8 ? Status.PARTLY : Status.MISSED;
-            econWhy = String.format("The misery index %s %.1f points.", misery >= 0 ? "rose" : "fell", Math.abs(misery));
+            econWhy = Fmt.format("The misery index %s %.1f points.", misery >= 0 ? "rose" : "fell", Math.abs(misery));
         } else if (st.challenge == Types.EconomicChallenge.INFLATION_SURGE) {
             double rise = hd.inflation() - st.challengeStartInflation;
             econ = rise <= 0.20 ? Status.MET : rise <= 0.40 ? Status.PARTLY : Status.MISSED;
-            econWhy = String.format("The inflation surge: inflation %s %.2f points since it struck, to %.1f%%.", rise >= 0 ? "rose" : "fell", Math.abs(rise), hd.inflation());
+            econWhy = Fmt.format("The inflation surge: inflation %s %.2f points since it struck, to %.1f%%.", rise >= 0 ? "rose" : "fell", Math.abs(rise), hd.inflation());
         } else {
             double rise = hd.unemployment() - st.challengeStartUnemployment;
             econ = rise <= 0.12 ? Status.MET : rise <= 0.28 ? Status.PARTLY : Status.MISSED;
-            econWhy = String.format("The hiring slump: unemployment %s %.2f points since it struck, to %.1f%%.", rise >= 0 ? "rose" : "fell", Math.abs(rise), hd.unemployment());
+            econWhy = Fmt.format("The hiring slump: unemployment %s %.2f points since it struck, to %.1f%%.", rise >= 0 ? "rose" : "fell", Math.abs(rise), hd.unemployment());
         }
         if (st.challengeResponse < 0 && st.challenge != null) econWhy += " You never answered it.";
         if (borrowed > 0.6 && econ != Status.MISSED) {
             econ = econ == Status.MET ? Status.PARTLY : Status.MISSED;
-            econWhy += String.format(" Bought with borrowing: the deficit is %.2f%% of GDP higher.", borrowed);
+            econWhy += Fmt.format(" Bought with borrowing: the deficit is %.2f%% of GDP higher.", borrowed);
         }
         goals.add(new Goal("Economy", econ, econWhy));
 
         // 4. Security: the crisis.
         String where = st.crisisKind == null ? "the crisis" : "the " + st.crisisKind.label;
         goals.add(switch (r.crisis()) {
-            case BACKED_DOWN -> new Goal("Security", Status.MET, "The other side backed down in " + where + String.format("; deterrence %.0f.", r.deterrence()));
+            case BACKED_DOWN -> new Goal("Security", Status.MET, "The other side backed down in " + where + Fmt.format("; deterrence %.0f.", r.deterrence()));
             case DEAL -> new Goal("Security", Status.MET, "Diplomacy ended " + where + " with a deal.");
             case STALEMATE -> new Goal("Security", Status.PARTLY, where.substring(0, 1).toUpperCase() + where.substring(1) + " settled into a stalemate.");
             case NONE -> new Goal("Security", Status.PARTLY, "No crisis came.");
@@ -117,7 +118,7 @@ public record DayHundredReport(Outcome outcome, int score, List<Goal> goals, Str
         double start = st.startApproval, now = r.approval();
         boolean united = r.wingMoodA() >= 35 && r.wingMoodB() >= 35;
         Status standing = now >= start - 2 && united ? Status.MET : now >= start - 6 ? Status.PARTLY : Status.MISSED;
-        goals.add(new Goal("Standing", standing, String.format("Approval %.0f%% (from %.0f%%); %s; the opposition is %s. Midterm outlook: %+d House seats.",
+        goals.add(new Goal("Standing", standing, Fmt.format("Approval %.0f%% (from %.0f%%); %s; the opposition is %s. Midterm outlook: %+d House seats.",
                 now, start, united ? "your party is behind you" : "a wing of your party is in revolt", r.opposition().name().toLowerCase(), r.midtermSeatOutlook())));
 
         int score = goals.stream().mapToInt(Goal::points).sum();

@@ -1,0 +1,9 @@
+{
+  "name": "mandate-browser-checks",
+  "private": true,
+  "description": "Checks for the browser build of Mandate: a full play-through, 41 views with layout checks and an axe-core WCAG 2.1 AA audit, and browser interactions. See README.md.",
+  "devDependencies": {
+    "axe-core": "4.10.2",
+    "playwright": "1.63.0"
+  }
+}
