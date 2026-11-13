@@ -22,6 +22,11 @@ export const engine = {
     paper() { return request({ op: 'view', name: 'paper' }); },
     country() { return request({ op: 'view', name: 'country' }); },
     economy() { return request({ op: 'view', name: 'economy' }); },
+    cabinet() { return request({ op: 'view', name: 'cabinet' }); },
+    /** The budget office's score of moving a policy some steps from where it stands. */
+    score(policy, steps) { return request({ op: 'view', name: 'score', policy, steps }); },
+    /** The budget office's score of one of the game's bills. */
+    billScore(bill) { return request({ op: 'view', name: 'billScore', bill }); },
     decisions() { return request({ op: 'view', name: 'decisions' }).decisions; },
     /** Applies a command (in the save file's command format); returns the log lines it produced, newest first. */
     command(command) { return request({ op: 'command', command }).news; },

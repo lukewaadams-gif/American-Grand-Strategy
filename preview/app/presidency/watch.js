@@ -5,7 +5,7 @@
 import { h } from '../core/dom.js';
 export const SPEEDS = [{ label: 'Slow', ms: 1600 }, { label: 'Steady', ms: 800 }, { label: 'Fast', ms: 300 }];
 /** Which stops arrive with which milestone, for the ones that do not exist yet. */
-const STOP_LATER = { 3: 'Court rulings arrive with the West Wing (milestone 5)', 5: 'Storylines arrive with milestone 5', 6: 'The 2032 campaign has its own headquarters' };
+const STOP_LATER = { 3: 'Court rulings arrive with the West Wing (milestone 6)', 5: 'Storylines arrive with milestone 6', 6: 'The 2032 campaign has its own headquarters' };
 export function watchDialog(v, speed, act) {
     const w = v.watch;
     let chosen = speed;
