@@ -39,10 +39,28 @@ export const LAYERS = [
         spoken: st => `${chance(st.win)} chance for you`,
         legend: v => ({ stops: legendStops(), left: v.player.party === 'D' ? 'Them, certain' : 'You, certain', mid: '50/50', right: v.player.party === 'D' ? 'You, certain' : 'Them, certain' }),
     },
-    activity('ads', 'Ads', 'ad pressure'),
-    activity('field', 'Field', 'field organisation'),
+    activity('ads', 'Ads', 'ad money'),
+    volunteers(),
     activity('visits', 'Visits', 'candidate visits'),
 ];
+/** Battleground 2028's "Volunteers & doors": the player's shifts this week (colour) and doors knocked to date (label). */
+function volunteers() {
+    const of = (st, v) => v.field?.states.find(x => x.code === st.code);
+    const max = (v) => Math.max(1, ...(v.field?.states ?? []).map(x => x.shifts));
+    const short = (n) => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'K' : String(Math.round(n));
+    return {
+        id: 'volunteers', label: 'Volunteers', question: 'Your volunteers: shifts this week, doors knocked to date',
+        fill: (st, v) => { const f = of(st, v), t = f ? f.shifts / max(v) : 0; return t < 0.02 ? palette().toss : leanColour(sign(v) * (0.15 + 0.85 * t)); },
+        value: (st, v) => { const f = of(st, v); return f && f.doorsToDate > 0 ? short(f.doorsToDate) : ''; },
+        spoken: (st, v) => { const f = of(st, v); return f ? `${short(f.shifts)} volunteer shifts this week, ${short(f.doorsToDate)} doors knocked to date` : 'no field programme'; },
+        legend: v => {
+            const stops = [palette().toss];
+            for (let i = 1; i <= 8; i++)
+                stops.push(leanColour(sign(v) * (0.15 + 0.85 * i / 8)));
+            return { stops, left: 'No shifts', mid: '', right: 'Most shifts this week' };
+        },
+    };
+}
 export function layer(id) { return LAYERS.find(l => l.id === id) ?? LAYERS[0]; }
 const CALLOUT = new Set(CALLOUTS.map(c => c.code));
 /** The drawing is wider than the map itself: the callout column sits to the right of New England. */

@@ -308,3 +308,29 @@ h1, h2, h3, h4, p { margin: 0; }
 /* reduced motion: no transitions or entrances */
 :root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before { transition: none !important; animation: none !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; animation: none !important; } }
+
+/* the ground game */
+.big-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.big-num { display: flex; flex-direction: column; }
+.big-value { font: 700 calc(var(--s) * 24px)/1.15 Inter; font-feature-settings: "tnum"; }
+.sub-head { font: 700 calc(var(--s) * 12px)/1.3 Inter; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); margin: 16px 0 6px; }
+.fig-rows { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; margin: 0; font-size: calc(var(--s) * 13px); }
+.fig-rows dt { color: var(--muted); } .fig-rows dd { margin: 0; text-align: right; font-weight: 700; font-feature-settings: "tnum"; }
+.chart.mini { margin-top: 10px; }
+.mini-bars { width: 100%; height: auto; display: block; }
+.mini-bars .bar { fill: #7a63b8; }
+.field-table { width: 100%; border-collapse: collapse; font-size: calc(var(--s) * 13px); }
+.field-table th, .field-table td { padding: 4px 4px; border-top: 1px solid var(--rule); text-align: left; font-weight: 400; }
+.field-table thead th { font: 700 calc(var(--s) * 12px)/1.3 Inter; color: var(--faint); border-top: 0; }
+.field-table .num { text-align: right; font-feature-settings: "tnum"; }
+.field-table .pending { color: var(--accent); font-weight: 700; }
+button.link { background: none; border: 0; padding: 0; font: inherit; color: var(--text); cursor: pointer; text-align: left; text-decoration: underline;
+  text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+button.link:hover { text-decoration-color: var(--muted); }
+.stepper { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 4px 0 2px; }
+.btn.step { min-width: 32px; justify-content: center; padding: 4px 0; font-size: calc(var(--s) * 16px); }
+.step-value { min-width: calc(var(--s) * 74px); text-align: center; font: 700 calc(var(--s) * 15px)/1.2 Inter; font-feature-settings: "tnum"; }
+.step-note { font: 700 calc(var(--s) * 12px)/1.2 Inter; color: var(--accent); }
+.cost-line { font-size: calc(var(--s) * 12px); color: var(--muted); }
+.warn-line { font-size: calc(var(--s) * 12px); color: var(--warn); margin-top: 4px; }
+.state-desk .proj-meter { margin-top: 8px; }

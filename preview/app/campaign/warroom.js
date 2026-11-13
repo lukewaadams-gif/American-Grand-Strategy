@@ -5,8 +5,9 @@ import { portrait } from '../art/portrait.js';
 import { LAYERS, layer, usMap } from './map.js';
 import { pathTo270, raceTo270, trendChart } from './charts.js';
 import { quickVisit, scheduleTab } from './schedule.js';
+import { fieldDesk, fieldTab } from './field.js';
 const TABS = [
-    { id: 'schedule', label: 'Schedule', ready: true }, { id: 'money', label: 'Money', ready: false }, { id: 'field', label: 'Field', ready: false },
+    { id: 'schedule', label: 'Schedule', ready: true }, { id: 'money', label: 'Money', ready: false }, { id: 'field', label: 'Field', ready: true },
     { id: 'message', label: 'Message', ready: false }, { id: 'polls', label: 'Polls', ready: false }, { id: 'wire', label: 'Wire', ready: true },
 ];
 /** Figures shown last time, so a new week's numbers count from the old ones and the map's colours cross-fade. */
@@ -48,7 +49,8 @@ export function warRoom(v, st, act) {
                 act.setTab(ready[(k - 1 + ready.length) % ready.length].id);
             }
         }) }, t.label)));
-    const panel = st.tab === 'wire' ? wireList(v) : scheduleTab(v, sched);
+    const fieldAct = { order: act.order, open: c => { act.setDesk('field'); act.select(c); } };
+    const panel = st.tab === 'wire' ? wireList(v) : st.tab === 'field' && v.field ? fieldTab(v, fieldAct) : scheduleTab(v, sched);
     const left = h('aside', { class: 'cw-left' }, tabs, h('div', { class: 'side-panel', id: 'tab-panel', role: 'tabpanel', 'aria-labelledby': 'tab-' + st.tab, tabindex: 0 }, panel));
     // ---- the map ----------------------------------------------------------------------------------------------
     const layerTabs = h('div', { class: 'layer-tabs', role: 'group', 'aria-label': 'Map layer' }, ...LAYERS.map(l => h('button', { type: 'button', class: 'tab' + (l.id === st.layer ? ' on' : ''), 'aria-pressed': l.id === st.layer ? 'true' : 'false',
@@ -78,7 +80,7 @@ export function warRoom(v, st, act) {
     const race = h('section', { class: 'card race-card', 'aria-label': 'The race for 270' }, h('h2', null, 'The race for 270'), raceTo270(v));
     const path = h('section', { class: 'card path-card', 'aria-label': 'Path to 270' }, h('h2', null, 'Path to 270'), pathTo270(v, st.selected, c => act.select(c)));
     // ---- the right: a state, or the nation ---------------------------------------------------------------------
-    const right = h('aside', { class: 'cw-right', 'aria-label': selected ? `${selected.name} in detail` : 'The national picture' }, ...(selected ? [stateDesk(selected, v, act, sched)] : national(v, last)));
+    const right = h('aside', { class: 'cw-right', 'aria-label': selected ? `${selected.name} in detail` : 'The national picture' }, ...(selected ? [stateDesk(selected, v, st, act, sched, fieldAct)] : national(v, last)));
     return h('div', { class: 'cw', 'data-world': 'campaign' }, bar, h('main', { class: 'cw-grid', id: 'main', tabindex: -1 }, left, h('div', { class: 'cw-centre' }, mapCard, race, path), right));
 }
 function placePicked(v, slot, code, act) {
@@ -96,14 +98,21 @@ function national(v, last) {
     const movers = h('section', { class: 'card', 'aria-label': 'What moved the race' }, h('h2', null, 'What moved the race'), last && last.movers.length ? h('ul', { class: 'movers' }, ...last.movers.slice(0, 4).map(m => h('li', null, m))) : h('p', { class: 'faint' }, 'The first poll arrives after the first week.'), h('h3', null, 'Your opponent'), h('p', null, h('strong', null, v.opponentPlan)), h('p', { class: 'muted' }, v.opponentReasoning));
     return [matchup, trend, movers];
 }
-function stateDesk(x, v, act, sched) {
+function stateDesk(x, v, st, act, sched, fieldAct) {
     const duel = (label, me, them, unit) => {
         const max = Math.max(me, them, 0.01);
         return h('div', { class: 'duel', role: 'img', 'aria-label': `${label}: you ${me.toFixed(1)}${unit}, them ${them.toFixed(1)}${unit}` }, h('span', { class: 'duel-label' }, label), h('div', { class: 'duel-bars' }, h('div', { class: 'duel-bar me ' + v.player.party.toLowerCase(), style: `width:${(me / max) * 100}%` }), h('div', { class: 'duel-bar them ' + v.opponent.party.toLowerCase(), style: `width:${(them / max) * 100}%` })), h('span', { class: 'duel-nums' }, `${me.toFixed(1)} · ${them.toFixed(1)}`));
     };
-    const deskTabs = h('div', { class: 'desk-tabs', role: 'group', 'aria-label': 'State desk' }, h('button', { type: 'button', class: 'tab on', 'aria-pressed': 'true' }, 'Overview'), ...['Ads', 'Field', 'Voters'].map(t => h('button', { type: 'button', class: 'tab soon', 'aria-disabled': 'true', title: `${t}: in the next preview` }, t)));
+    const deskTab = (id, label) => h('button', { type: 'button', class: 'tab' + (id === st.desk ? ' on' : '') + (id ? '' : ' soon'),
+        'aria-pressed': id === st.desk ? 'true' : 'false', 'aria-disabled': id ? null : 'true', title: id ? null : `${label}: in the next preview`,
+        onclick: () => { if (id)
+            act.setDesk(id); } }, label);
+    const deskTabs = h('div', { class: 'desk-tabs', role: 'group', 'aria-label': 'State desk' }, deskTab('overview', 'Overview'), deskTab(null, 'Ads'), deskTab(v.field ? 'field' : null, 'Field'), deskTab(null, 'Voters'));
+    const head = h('div', { class: 'state-head' }, h('div', null, h('h3', null, x.name), h('span', { class: 'faint' }, `${x.ev} electoral votes · 2024: ${margin(x.baseline)}`)), h('button', { class: 'btn quiet close', type: 'button', onclick: () => act.select(null), 'aria-label': `Close ${x.name}`, title: 'Close (Esc)' }, '×'));
+    if (st.desk === 'field' && v.field)
+        return h('section', { class: 'card state-desk', 'aria-label': `${x.name}: field` }, head, deskTabs, ...fieldDesk(x.code, v, fieldAct));
     const send = quickVisit(v, x.code, sched);
-    return h('section', { class: 'card state-desk', 'aria-label': `${x.name} in detail` }, h('div', { class: 'state-head' }, h('div', null, h('h3', null, x.name), h('span', { class: 'faint' }, `${x.ev} electoral votes · 2024: ${margin(x.baseline)}`)), h('button', { class: 'btn quiet close', type: 'button', onclick: () => act.select(null), 'aria-label': `Close ${x.name}`, title: 'Close (Esc)' }, '×')), deskTabs, h('div', { class: 'state-figs' }, fig('Polls', margin(x.margin)), fig('Your chance', chance(x.win)), fig('Since last poll', x.change === null ? 'n/a' : signed(x.change))), h('h4', null, 'You · them'), duel('Ad money', x.adsMe, x.adsThem, 'M'), duel('Field money', x.fieldMe, x.fieldThem, 'M'), duel('Visits', x.visitsMe, x.visitsThem, ''), h('p', { class: 'hint-line' }, 'Money spent here over about the last four weeks ($M), and candidate visits still felt.'), h('h4', null, `Send ${v.player.name.split(' ').slice(-1)[0]} here`), h('div', { class: 'send-row' }, ...send.map(it => h('button', { class: 'btn small', type: 'button', title: it.disabled ?? `${it.label}, ${it.right}`,
+    return h('section', { class: 'card state-desk', 'aria-label': `${x.name} in detail` }, head, deskTabs, h('div', { class: 'state-figs' }, fig('Polls', margin(x.margin)), fig('Your chance', chance(x.win)), fig('Since last poll', x.change === null ? 'n/a' : signed(x.change))), h('h4', null, 'You · them'), duel('Ad money', x.adsMe, x.adsThem, 'M'), duel('Field money', x.fieldMe, x.fieldThem, 'M'), duel('Visits', x.visitsMe, x.visitsThem, ''), h('p', { class: 'hint-line' }, 'Money spent here over about the last four weeks ($M), and candidate visits still felt.'), h('h4', null, `Send ${v.player.name.split(' ').slice(-1)[0]} here`), h('div', { class: 'send-row' }, ...send.map(it => h('button', { class: 'btn small', type: 'button', title: it.disabled ?? `${it.label}, ${it.right}`,
         'aria-disabled': it.disabled ? 'true' : null, onclick: () => { if (!it.disabled)
             it.pick(); } }, it.label))), h('p', { class: 'hint-line' }, 'Each goes into the next free slot of the schedule.'));
 }

@@ -8,7 +8,7 @@ import { decisionCard } from './campaign/decision.js';
 import { closeMenu, menuOpen } from './core/menu.js';
 import { usePalette } from './campaign/palette.js';
 const root = document.getElementById('app');
-const state = { layer: 'margin', selected: null, tab: 'schedule', picking: null };
+const state = { layer: 'margin', selected: null, tab: 'schedule', picking: null, desk: 'overview' };
 let toastTimer = 0;
 const host = (() => {
     let scrim = null, onClose, returnTo = null;
@@ -63,6 +63,7 @@ function render() {
         setLayer: id => { state.layer = id; render(); },
         select: c => { state.selected = c; render(); },
         setTab: id => { state.tab = id; render(); document.getElementById('tab-' + id)?.focus(); },
+        setDesk: d => { state.desk = d; render(); },
         pick: slot => {
             state.picking = slot;
             render();
