@@ -44,6 +44,7 @@ export const engine = {
     country() { return request({ op: 'view', name: 'country' }); },
     economy() { return request({ op: 'view', name: 'economy' }); },
     cabinet() { return request({ op: 'view', name: 'cabinet' }); },
+    hill() { return request({ op: 'view', name: 'hill' }); },
     /** The budget office's score of moving a policy some steps from where it stands. */
     score(policy, steps) { return request({ op: 'view', name: 'score', policy, steps }); },
     /** The budget office's score of one of the game's bills. */

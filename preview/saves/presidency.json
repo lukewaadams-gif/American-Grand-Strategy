@@ -3094,6 +3094,7 @@
       "hillHours": 0.0,
       "midtermEffort": {},
       "lastWeek": [],
+      "lastVisited": [],
       "lastRaised": 0.0,
       "lastStaminaChange": 0.0
     },
@@ -3248,6 +3249,1179 @@
       },
       "moves": []
     },
+    "hill": {
+      "week": 0,
+      "congress": 121,
+      "seated": 0,
+      "nextId": 39,
+      "blocs": [{
+          "name": "Progressive Caucus",
+          "party": "DEMOCRAT",
+          "chamber": 0,
+          "seats": 95,
+          "v": [-0.65, -0.7, 0.8, 0.1, 38.0],
+          "moderate": false
+        }, {
+          "name": "Mainstream Democrats",
+          "party": "DEMOCRAT",
+          "chamber": 0,
+          "seats": 81,
+          "v": [-0.4, -0.5, 0.9, 0.3, 38.0],
+          "moderate": false
+        }, {
+          "name": "New Dems and Blue Dogs",
+          "party": "DEMOCRAT",
+          "chamber": 0,
+          "seats": 36,
+          "v": [-0.1, -0.25, 0.75, 0.6, 38.0],
+          "moderate": true
+        }, {
+          "name": "Freedom Caucus",
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "seats": 38,
+          "v": [0.8, 0.8, 0.55, 0.9, 58.0],
+          "moderate": false
+        }, {
+          "name": "Mainstream Republicans",
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "seats": 156,
+          "v": [0.55, 0.55, 0.85, 0.5, 58.0],
+          "moderate": false
+        }, {
+          "name": "Problem Solvers Republicans",
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "seats": 29,
+          "v": [0.25, 0.2, 0.75, 0.4, 58.0],
+          "moderate": true
+        }, {
+          "name": "Progressive senators",
+          "party": "DEMOCRAT",
+          "chamber": 1,
+          "seats": 13,
+          "v": [-0.7, -0.7, 0.85, 0.1, 38.0],
+          "moderate": false
+        }, {
+          "name": "Mainstream Democrats",
+          "party": "DEMOCRAT",
+          "chamber": 1,
+          "seats": 29,
+          "v": [-0.4, -0.45, 0.9, 0.3, 38.0],
+          "moderate": false
+        }, {
+          "name": "Moderate Democrats",
+          "party": "DEMOCRAT",
+          "chamber": 1,
+          "seats": 8,
+          "v": [-0.1, -0.2, 0.7, 0.5, 38.0],
+          "moderate": true
+        }, {
+          "name": "Hardliners",
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "seats": 10,
+          "v": [0.8, 0.75, 0.6, 0.85, 58.0],
+          "moderate": false
+        }, {
+          "name": "Mainstream Republicans",
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "seats": 34,
+          "v": [0.55, 0.5, 0.85, 0.5, 58.0],
+          "moderate": false
+        }, {
+          "name": "Moderate Republicans",
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "seats": 6,
+          "v": [0.2, 0.1, 0.7, 0.4, 58.0],
+          "moderate": true
+        }],
+      "members": [{
+          "id": "m1",
+          "name": "Marcus Bell",
+          "role": "Minority Leader",
+          "committee": null,
+          "state": null,
+          "price": null,
+          "party": "DEMOCRAT",
+          "chamber": 0,
+          "bloc": 1,
+          "v": [35.0, -0.4, -0.5],
+          "owes": false
+        }, {
+          "id": "m2",
+          "name": "Dale Prescott",
+          "role": "Speaker",
+          "committee": null,
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 4,
+          "v": [62.0, 0.55, 0.55],
+          "owes": false
+        }, {
+          "id": "m3",
+          "name": "Sandra Whitaker",
+          "role": "Chair",
+          "committee": "Ways and Means",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 5,
+          "v": [55.0, 0.12343475852564967, 0.20349962042656697],
+          "owes": false
+        }, {
+          "id": "m4",
+          "name": "Wes Truitt",
+          "role": "Chair",
+          "committee": "Appropriations",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 4,
+          "v": [55.0, 0.4460787787146652, 0.5734820752423987],
+          "owes": false
+        }, {
+          "id": "m5",
+          "name": "Linda Parrish",
+          "role": "Chair",
+          "committee": "Energy and Commerce",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 4,
+          "v": [55.0, 0.4544072121589417, 0.4802391096524288],
+          "owes": false
+        }, {
+          "id": "m6",
+          "name": "Lauren Ellison",
+          "role": "Chair",
+          "committee": "Financial Services",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 4,
+          "v": [55.0, 0.6088597172495245, 0.6244129864324929],
+          "owes": false
+        }, {
+          "id": "m7",
+          "name": "William Talbot",
+          "role": "Chair",
+          "committee": "Judiciary",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 4,
+          "v": [55.0, 0.584152071741985, 0.4291523338466547],
+          "owes": false
+        }, {
+          "id": "m8",
+          "name": "Maria Osgood",
+          "role": "Chair",
+          "committee": "Armed Services",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 4,
+          "v": [55.0, 0.5578766987931159, 0.5000684464925013],
+          "owes": false
+        }, {
+          "id": "m9",
+          "name": "Wes Calloway",
+          "role": "Chair",
+          "committee": "Foreign Affairs",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 4,
+          "v": [55.0, 0.5027971616175387, 0.5783667896461001],
+          "owes": false
+        }, {
+          "id": "m10",
+          "name": "Nancy Zielinski",
+          "role": "Chair",
+          "committee": "Homeland Security",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 4,
+          "v": [55.0, 0.5195853294097238, 0.5742198514209572],
+          "owes": false
+        }, {
+          "id": "m11",
+          "name": "Linda Ruiz",
+          "role": "Chair",
+          "committee": "Education and the Workforce",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 3,
+          "v": [55.0, 0.7979174221902647, 0.83423125759391],
+          "owes": false
+        }, {
+          "id": "m12",
+          "name": "Joy Castellano",
+          "role": "Chair",
+          "committee": "Agriculture",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 4,
+          "v": [55.0, 0.4567333016057843, 0.4984205917548501],
+          "owes": false
+        }, {
+          "id": "m13",
+          "name": "Sam Warrick",
+          "role": "Chair",
+          "committee": "Transportation and Infrastructure",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 4,
+          "v": [55.0, 0.6108782847529652, 0.4171038526152391],
+          "owes": false
+        }, {
+          "id": "m14",
+          "name": "Ray Delgado",
+          "role": "Chair",
+          "committee": "Oversight",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 4,
+          "v": [55.0, 0.5996800066807085, 0.4586324858742896],
+          "owes": false
+        }, {
+          "id": "m15",
+          "name": "Ruth Feldman",
+          "role": "Minority Leader",
+          "committee": null,
+          "state": null,
+          "price": null,
+          "party": "DEMOCRAT",
+          "chamber": 1,
+          "bloc": 7,
+          "v": [35.0, -0.4, -0.45],
+          "owes": false
+        }, {
+          "id": "m16",
+          "name": "Wade Calhoun",
+          "role": "Majority Leader",
+          "committee": null,
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 10,
+          "v": [62.0, 0.55, 0.5],
+          "owes": false
+        }, {
+          "id": "m17",
+          "name": "Erin Eckert",
+          "role": "Chair",
+          "committee": "Finance",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 10,
+          "v": [55.0, 0.441392696135543, 0.3919295603457732],
+          "owes": false
+        }, {
+          "id": "m18",
+          "name": "Mary Ostrander",
+          "role": "Chair",
+          "committee": "Appropriations",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 10,
+          "v": [55.0, 0.44876732670211306, 0.4226458460870312],
+          "owes": false
+        }, {
+          "id": "m19",
+          "name": "Lisa Yates",
+          "role": "Chair",
+          "committee": "Commerce",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 9,
+          "v": [55.0, 0.7731526805561505, 0.7387573318565442],
+          "owes": false
+        }, {
+          "id": "m20",
+          "name": "Michelle Ashby",
+          "role": "Chair",
+          "committee": "Banking",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 10,
+          "v": [55.0, 0.48230035927207693, 0.38804243471798855],
+          "owes": false
+        }, {
+          "id": "m21",
+          "name": "Mark Calloway",
+          "role": "Chair",
+          "committee": "Judiciary",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 10,
+          "v": [55.0, 0.6709050861877507, 0.45930567204134254],
+          "owes": false
+        }, {
+          "id": "m22",
+          "name": "Susan Montague",
+          "role": "Chair",
+          "committee": "Armed Services",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 10,
+          "v": [55.0, 0.5624180282927138, 0.38041948817531096],
+          "owes": false
+        }, {
+          "id": "m23",
+          "name": "William Brandt",
+          "role": "Chair",
+          "committee": "Foreign Relations",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 10,
+          "v": [55.0, 0.5207940806083093, 0.34371804556307184],
+          "owes": false
+        }, {
+          "id": "m24",
+          "name": "Ray Chadwick",
+          "role": "Chair",
+          "committee": "Homeland Security",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 10,
+          "v": [55.0, 0.7100734977917063, 0.44775065104141404],
+          "owes": false
+        }, {
+          "id": "m25",
+          "name": "Joy Conley",
+          "role": "Chair",
+          "committee": "Health, Education, Labor and Pensions",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 11,
+          "v": [55.0, 0.1599127040732719, 0.13281285619094374],
+          "owes": false
+        }, {
+          "id": "m26",
+          "name": "Tom Dalton",
+          "role": "Chair",
+          "committee": "Agriculture",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 10,
+          "v": [55.0, 0.4048826046337242, 0.5992042352620838],
+          "owes": false
+        }, {
+          "id": "m27",
+          "name": "Nancy Pruitt",
+          "role": "Chair",
+          "committee": "Environment and Public Works",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 10,
+          "v": [55.0, 0.5409774368985238, 0.4771049640994425],
+          "owes": false
+        }, {
+          "id": "m28",
+          "name": "Hannah Merritt",
+          "role": "Chair",
+          "committee": "Budget",
+          "state": null,
+          "price": null,
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 9,
+          "v": [55.0, 0.8703924917610681, 0.9344073744189884],
+          "owes": false
+        }, {
+          "id": "m29",
+          "name": "Ashley Voss",
+          "role": "Swing vote",
+          "committee": null,
+          "state": "DE",
+          "price": "an endorsement",
+          "party": "DEMOCRAT",
+          "chamber": 0,
+          "bloc": 2,
+          "v": [50.04494590524267, -0.15355436808857942, -0.14998685482755847],
+          "owes": false
+        }, {
+          "id": "m30",
+          "name": "Tim Winslow",
+          "role": "Swing vote",
+          "committee": null,
+          "state": "RI",
+          "price": "a project",
+          "party": "DEMOCRAT",
+          "chamber": 0,
+          "bloc": 2,
+          "v": [51.94178218437777, -0.2526609636441948, -0.24547589387519383],
+          "owes": false
+        }, {
+          "id": "m31",
+          "name": "Carlos Chadwick",
+          "role": "Swing vote",
+          "committee": null,
+          "state": "ID",
+          "price": "an endorsement",
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 5,
+          "v": [59.500726551254566, 0.12415753317270986, 0.11516243714027666],
+          "owes": false
+        }, {
+          "id": "m32",
+          "name": "Sandra Okafor",
+          "role": "Swing vote",
+          "committee": null,
+          "state": "MA",
+          "price": "a change to the bill",
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 5,
+          "v": [57.85155674417855, 0.2413126300292559, 0.23847437740267535],
+          "owes": false
+        }, {
+          "id": "m33",
+          "name": "Patricia Marsh",
+          "role": "Swing vote",
+          "committee": null,
+          "state": "AR",
+          "price": "an endorsement",
+          "party": "REPUBLICAN",
+          "chamber": 0,
+          "bloc": 3,
+          "v": [50.05405843907686, 0.7728305827049647, 0.8355192036224732],
+          "owes": false
+        }, {
+          "id": "m34",
+          "name": "Eric Hewitt",
+          "role": "Swing vote",
+          "committee": null,
+          "state": "GA",
+          "price": "an appointment",
+          "party": "DEMOCRAT",
+          "chamber": 1,
+          "bloc": 8,
+          "v": [57.967799669437696, -0.06599175657850676, -0.22929068611677583],
+          "owes": false
+        }, {
+          "id": "m35",
+          "name": "Elizabeth Ashby",
+          "role": "Swing vote",
+          "committee": null,
+          "state": "MI",
+          "price": "an appointment",
+          "party": "DEMOCRAT",
+          "chamber": 1,
+          "bloc": 8,
+          "v": [56.115856707804184, -0.13749730804314444, -0.29376600489609184],
+          "owes": false
+        }, {
+          "id": "m36",
+          "name": "Sam Bristow",
+          "role": "Swing vote",
+          "committee": null,
+          "state": "NE",
+          "price": "an endorsement",
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 11,
+          "v": [47.07024210445031, 0.23730511406236754, 0.028091422969526603],
+          "owes": false
+        }, {
+          "id": "m37",
+          "name": "Carlos McKenna",
+          "role": "Swing vote",
+          "committee": null,
+          "state": "FL",
+          "price": "an appointment",
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 11,
+          "v": [59.06778499844407, 0.21696014459112611, 0.07187613815799936],
+          "owes": false
+        }, {
+          "id": "m38",
+          "name": "Sandra Ashby",
+          "role": "Swing vote",
+          "committee": null,
+          "state": "IN",
+          "price": "a change to the bill",
+          "party": "REPUBLICAN",
+          "chamber": 1,
+          "bloc": 9,
+          "v": [57.55942363984772, 0.8558463634604834, 0.6456663647444528],
+          "owes": false
+        }],
+      "bills": [],
+      "favors": [],
+      "relations": [2.1797405096519102, 2.1797405096519102, 0.0, 0.0],
+      "counts": [4, 7, 0, 0, 0, 0, 0, -1],
+      "filibusterGone": false,
+      "delegated": false,
+      "askMember": null,
+      "askKind": null,
+      "budget": [2029, false, 0.0, 0.0, 0.0, 0.0, -1, false, 0.0, 0, 0, 44.5, -1],
+      "approps": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+      "pending": [],
+      "senate": [{
+          "state": "AZ",
+          "class": 1,
+          "holder": "Doug Barlow",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "CA",
+          "class": 1,
+          "holder": "Patricia Hendricks",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "CT",
+          "class": 1,
+          "holder": "Steven Kirby",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "DE",
+          "class": 1,
+          "holder": "Mark Winslow",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "FL",
+          "class": 1,
+          "holder": "Joy Sutherland",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "HI",
+          "class": 1,
+          "holder": "Tasha Dekker",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "IN",
+          "class": 1,
+          "holder": "Michelle Dunbar",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "MA",
+          "class": 1,
+          "holder": "Grace Garrity",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "MD",
+          "class": 1,
+          "holder": "Tom Waller",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "ME",
+          "class": 1,
+          "holder": "Lisa Marsh",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "MI",
+          "class": 1,
+          "holder": "Eric Crowley",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "MN",
+          "class": 1,
+          "holder": "Andre McBride",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "MO",
+          "class": 1,
+          "holder": "Robert Mercer",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "MS",
+          "class": 1,
+          "holder": "David Rourke",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "MT",
+          "class": 1,
+          "holder": "Mary Ambrose",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "ND",
+          "class": 1,
+          "holder": "Jennifer Holmgren",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "NE",
+          "class": 1,
+          "holder": "Wes Holloway",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "NJ",
+          "class": 1,
+          "holder": "Ashley Wendell",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "NM",
+          "class": 1,
+          "holder": "Linda Crandall",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "NV",
+          "class": 1,
+          "holder": "Karen Hollis",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "NY",
+          "class": 1,
+          "holder": "Erin Norwood",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "OH",
+          "class": 1,
+          "holder": "Wes Krueger",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "PA",
+          "class": 1,
+          "holder": "Grace Brennan",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "RI",
+          "class": 1,
+          "holder": "Linda Lyle",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "TN",
+          "class": 1,
+          "holder": "Thomas Ostrander",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "TX",
+          "class": 1,
+          "holder": "Rosa Tillman",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "UT",
+          "class": 1,
+          "holder": "Erin Novak",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "VA",
+          "class": 1,
+          "holder": "William Voss",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "VT",
+          "class": 1,
+          "holder": "Tasha O'Hara",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "WA",
+          "class": 1,
+          "holder": "Priya Webber",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "WI",
+          "class": 1,
+          "holder": "Maria Hartley",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "WV",
+          "class": 1,
+          "holder": "Diane Ruiz",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "WY",
+          "class": 1,
+          "holder": "Michelle Ellison",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "MD",
+          "class": 3,
+          "holder": "Michelle Vance-Hill",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "CA",
+          "class": 3,
+          "holder": "Brian McKenna",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "VT",
+          "class": 3,
+          "holder": "Wes Moreland",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "MA",
+          "class": 2,
+          "holder": "Nancy Okafor",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "HI",
+          "class": 3,
+          "holder": "Sam Sloane",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "DE",
+          "class": 2,
+          "holder": "Lisa Krueger",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "OR",
+          "class": 3,
+          "holder": "Daniel Brodsky",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "OR",
+          "class": 2,
+          "holder": "Daniel Mercer",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "RI",
+          "class": 2,
+          "holder": "Ashley Sinclair",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "WA",
+          "class": 3,
+          "holder": "Claire Lindqvist",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "CO",
+          "class": 3,
+          "holder": "Greg Montague",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "CO",
+          "class": 2,
+          "holder": "Michael Dalton",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "CT",
+          "class": 3,
+          "holder": "Michelle Thornton",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "IL",
+          "class": 3,
+          "holder": "Karen Vasquez",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "IL",
+          "class": 2,
+          "holder": "Tasha Sandoval",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "NJ",
+          "class": 2,
+          "holder": "Daniel Wakefield",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "NY",
+          "class": 3,
+          "holder": "Raj Hargrove",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "ME",
+          "class": 2,
+          "holder": "Tom Barlow",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "NM",
+          "class": 2,
+          "holder": "Nick Halloran",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "VA",
+          "class": 2,
+          "holder": "Greg Halvorsen",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "NH",
+          "class": 3,
+          "holder": "Susan Farrell",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "NH",
+          "class": 2,
+          "holder": "Michelle Fairbanks",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "WI",
+          "class": 3,
+          "holder": "David Iverson",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "MN",
+          "class": 2,
+          "holder": "Joy Bancroft",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "GA",
+          "class": 3,
+          "holder": "Steven Ostrander",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "GA",
+          "class": 2,
+          "holder": "Jennifer Vasquez",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "PA",
+          "class": 3,
+          "holder": "David Wyatt",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "NV",
+          "class": 3,
+          "holder": "Claire Kimball",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "MI",
+          "class": 2,
+          "holder": "Raj Langford",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "NC",
+          "class": 3,
+          "holder": "Andre Pruitt",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "NC",
+          "class": 2,
+          "holder": "Paul Lindahl",
+          "party": "DEMOCRAT"
+        }, {
+          "state": "AZ",
+          "class": 3,
+          "holder": "Cole Davenport",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "OH",
+          "class": 3,
+          "holder": "Nick Dekker",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "TX",
+          "class": 2,
+          "holder": "Linda Lindgren",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "IA",
+          "class": 3,
+          "holder": "Claire Webber",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "IA",
+          "class": 2,
+          "holder": "Carlos Cobb",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "AK",
+          "class": 3,
+          "holder": "Tom Ruiz",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "AK",
+          "class": 2,
+          "holder": "Ashley Keller",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "KS",
+          "class": 3,
+          "holder": "Rosa Chatfield",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "KS",
+          "class": 2,
+          "holder": "Andre Milburn",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "FL",
+          "class": 3,
+          "holder": "Mary Pennington",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "IN",
+          "class": 3,
+          "holder": "Mark Pemberton",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "SC",
+          "class": 3,
+          "holder": "Maria Stafford",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "SC",
+          "class": 2,
+          "holder": "Mary Norwood",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "LA",
+          "class": 3,
+          "holder": "Thomas Pemberton",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "LA",
+          "class": 2,
+          "holder": "Angela Marsh",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "MT",
+          "class": 2,
+          "holder": "Robert Hargrove",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "UT",
+          "class": 3,
+          "holder": "Priya Jardine",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "MO",
+          "class": 3,
+          "holder": "Andre Hargrove",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "NE",
+          "class": 2,
+          "holder": "Cole Kilgore",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "MS",
+          "class": 2,
+          "holder": "Maria Brennan",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "TN",
+          "class": 2,
+          "holder": "Patricia Vogel",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "KY",
+          "class": 3,
+          "holder": "Maria Stanton",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "KY",
+          "class": 2,
+          "holder": "Carlos Underwood",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "AL",
+          "class": 3,
+          "holder": "Luis Nolan",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "AL",
+          "class": 2,
+          "holder": "Karen Mercer",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "SD",
+          "class": 3,
+          "holder": "Priya Harlow",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "SD",
+          "class": 2,
+          "holder": "Daniel Moreland",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "OK",
+          "class": 3,
+          "holder": "William Nakamura",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "OK",
+          "class": 2,
+          "holder": "Susan Hargrove",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "AR",
+          "class": 3,
+          "holder": "Eric Thornton",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "AR",
+          "class": 2,
+          "holder": "Doug Calloway",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "ID",
+          "class": 3,
+          "holder": "Jason Norwood",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "ID",
+          "class": 2,
+          "holder": "Hannah Hutchins",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "ND",
+          "class": 3,
+          "holder": "Luis Emerson",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "WY",
+          "class": 2,
+          "holder": "Joy Ellison",
+          "party": "REPUBLICAN"
+        }, {
+          "state": "WV",
+          "class": 2,
+          "holder": "Cole Jardine",
+          "party": "REPUBLICAN"
+        }],
+      "houseD": {
+        "AK": 0,
+        "AL": 1,
+        "AR": 0,
+        "AZ": 3,
+        "CA": 46,
+        "CO": 6,
+        "CT": 4,
+        "DE": 1,
+        "FL": 7,
+        "GA": 7,
+        "HI": 2,
+        "IA": 1,
+        "ID": 0,
+        "IL": 12,
+        "IN": 2,
+        "KS": 1,
+        "KY": 1,
+        "LA": 1,
+        "MA": 8,
+        "MD": 7,
+        "ME": 1,
+        "MI": 6,
+        "MN": 4,
+        "MO": 1,
+        "MS": 1,
+        "MT": 0,
+        "NC": 6,
+        "ND": 0,
+        "NE": 0,
+        "NH": 1,
+        "NJ": 8,
+        "NM": 2,
+        "NV": 2,
+        "NY": 17,
+        "OH": 5,
+        "OK": 0,
+        "OR": 5,
+        "PA": 8,
+        "RI": 1,
+        "SC": 2,
+        "SD": 0,
+        "TN": 1,
+        "TX": 12,
+        "UT": 1,
+        "VA": 6,
+        "VT": 1,
+        "WA": 7,
+        "WI": 4,
+        "WV": 0,
+        "WY": 0
+      },
+      "houseSeats": {
+        "AK": 1,
+        "AL": 7,
+        "AR": 4,
+        "AZ": 9,
+        "CA": 52,
+        "CO": 8,
+        "CT": 5,
+        "DE": 1,
+        "FL": 28,
+        "GA": 14,
+        "HI": 2,
+        "IA": 4,
+        "ID": 2,
+        "IL": 17,
+        "IN": 9,
+        "KS": 4,
+        "KY": 6,
+        "LA": 6,
+        "MA": 9,
+        "MD": 8,
+        "ME": 2,
+        "MI": 13,
+        "MN": 8,
+        "MO": 8,
+        "MS": 4,
+        "MT": 2,
+        "NC": 14,
+        "ND": 1,
+        "NE": 3,
+        "NH": 2,
+        "NJ": 12,
+        "NM": 3,
+        "NV": 4,
+        "NY": 26,
+        "OH": 15,
+        "OK": 5,
+        "OR": 6,
+        "PA": 17,
+        "RI": 2,
+        "SC": 7,
+        "SD": 1,
+        "TN": 9,
+        "TX": 38,
+        "UT": 4,
+        "VA": 11,
+        "VT": 1,
+        "WA": 10,
+        "WI": 8,
+        "WV": 2,
+        "WY": 1
+      },
+      "campaign": {},
+      "races": [],
+      "raceYear": 0,
+      "lastNational": 0.0,
+      "probes": [],
+      "nextProbe": 12,
+      "impeachment": ["none", -1, 0, 0],
+      "record": ["2029-01-22: the 121st Congress is seated, House 212-223, Senate 50-50 (Democrats first)"],
+      "enacted": []
+    },
     "news": [],
     "ambientUsed": [],
     "scheduler": {
@@ -3295,6 +4469,8 @@
     "events.gaffe": "4280900692667435486",
     "events.jobs_report": "-6353165957423194993",
     "events.october_surprise": "-3422826208217606808",
+    "hill.names": "8707653435392699134",
+    "hill.seat": "-8581036755200032910",
     "polls.miss": "517374757552541013"
   }
 }
