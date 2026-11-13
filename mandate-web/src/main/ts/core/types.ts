@@ -178,3 +178,26 @@ export interface PaperView {
   numbers: { label: string; value: string }[];
 }
 export interface PaperStory { section: string | null; head: string; body: string | null; kind: string; }
+
+/** The country (the windows): approval, its history, what its target is made of, the issues, the coalitions and the states. */
+export interface CountryView {
+  date: string; approval: number;
+  history: { date: string; value: number }[];
+  /** Points: base, economy, issues, appeal, honeymoon, record, events, lasting, scandal, wear, mood; then raw, rally, target. */
+  parts: Record<string, number>;
+  floor: number; ceiling: number; mandate: number;
+  issues: IssueStanding[];
+  coalitions: { id: string; label: string; approval: number; weight: number }[];
+  states: StateStanding[];
+}
+
+export interface EconomyTile { id: string; label: string; unit: string; value: number; digits: number; upIsGood: boolean | null; yearAgo?: number; atOath?: number; }
+
+/** The briefing book: the figures, more figures, what is coming, and each figure's weekly history. */
+export interface EconomyView {
+  date: string;
+  tiles: EconomyTile[];
+  more: { label: string; value: string }[];
+  next: { what: string; date: string }[];
+  history: { dates: string[]; series: Record<string, number[]> };
+}

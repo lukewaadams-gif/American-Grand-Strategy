@@ -230,6 +230,31 @@ public final class PoliticsEngine {
     /** The wear of office: nothing for six months, then a slow slide of up to about five points in today's sorted politics. */
     public double wear(PoliticsState s) { return Math.min(9 * (1 - 0.45 * sorted()), 0.045 * Math.max(0, s.weeksGoverning - 26)); }
 
+    /**
+     * What approval's target is made of, in points, in the order the Country view shows them: the era's baseline, then
+     * each part above or below it, then the raw sum, the partisan squeeze and the rally, and the target itself.
+     */
+    public Map<String, Double> parts(PoliticsState s, OpinionInputs in) {
+        Map<String, Double> m = new java.util.LinkedHashMap<>();
+        m.put("base", p.rdEraBase());
+        m.put("economy", economyTerm(s, in));
+        m.put("issues", 1.5 * issueWeighted(s));
+        m.put("appeal", s.personal + s.difficulty);
+        m.put("honeymoon", s.honeymoon);
+        m.put("record", PERF_WEIGHT * s.perf);
+        m.put("events", s.events);
+        m.put("lasting", s.lasting);
+        m.put("scandal", -SCANDAL_WEIGHT * s.scandal);
+        m.put("wear", -wear(s));
+        m.put("mood", s.mood);
+        double raw = 0;
+        for (double v : m.values()) raw += v;
+        m.put("raw", raw);
+        m.put("rally", RALLY_WEIGHT * s.rally);
+        m.put("target", target(s, in));
+        return m;
+    }
+
     /** Where approval is heading. */
     public double target(PoliticsState s, OpinionInputs in) {
         double fundamentals = p.rdEraBase() + economyTerm(s, in) + 1.5 * issueWeighted(s) + s.personal + s.difficulty;

@@ -860,6 +860,13 @@ public final class GameEngine implements WorldView {
         return new PoliticsEngine.ApprovalStart(personal, difficulty, r.marginFor(player().party()), lean, weight, 30 + rdScale(p.policy()) * 0.2);
     }
 
+    /** What approval's target is made of, in points (Resolute Desk's model; see {@link PoliticsEngine#parts}). */
+    public Map<String, Double> approvalParts() { return politicsEngine.parts(w.politics, opinionInputs()); }
+    /** Approval's partisan floor and ceiling. */
+    public double[] approvalBounds() { return politicsEngine.bounds(); }
+    /** Consumer sentiment as Resolute Desk computes it. */
+    public double sentiment() { return politicsEngine.sentiment(w.politics, opinionInputs()); }
+
     public PresidentEngine presidentEngine() { return presidentEngine; }
     public Optional<PresidentState> president() { return Optional.ofNullable(w.president); }
     public List<News> news() { return w.news(); }

@@ -66,6 +66,8 @@ public final class EngineApi {
                 case "decisions" -> ok("decisions", decisions(need()));
                 case "presidency" -> presidency(need());
                 case "paper" -> PresidencyViews.paper(need());
+                case "country" -> PresidencyViews.country(need());
+                case "economy" -> { Map<String, Object> e = PresidencyViews.economy(need()); e.put("history", PresidencyViews.economyHistory(need())); yield e; }
                 default -> throw new IllegalArgumentException("No view called " + req.get("name"));
             };
             default -> throw new IllegalArgumentException("No op called " + op);

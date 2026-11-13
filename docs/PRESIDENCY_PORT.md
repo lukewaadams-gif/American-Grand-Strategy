@@ -11,6 +11,10 @@ This is the plan for porting Resolute Desk Version 2 (`lukewaadams-gif/resoluted
 | The first hundred days | **One loop.** Resolute Desk's systems run from the inauguration. Day 100 still produces its report card, and the 100-day game length still ends there. |
 | Order of work | Audit and export Version 2. Then the Oval Office first screen, for approval from screenshots (Q39). Then the engine and the rooms. |
 | Defaults | Real people (foreign and congressional leaders, news outlets) are fictional by default, with the real ones as an opt-in, as for candidates. Modern era only (2029–2033). Wars of choice go to the Situation Room world, which owns war (Q32). |
+| The economy (13 November 2026) | **One of this version's deep systems, moved realistically by every law.** It will be a new structural model: fiscal multipliers that depend on slack and on the Fed's reaction, crowding out through interest rates, and long-run effects on supply, with Resolute Desk's sectors on top. |
+| How laws act on it | Laws move **Resolute Desk's policy table**. Each policy level carries a full score: 10-year cost and how it is paid for, demand effects year by year, long-run effects on labour, productivity and investment, prices in the sectors it touches, and a phase-in. |
+| What the player sees | **Scores with ranges** before every vote; the range is wider where the evidence is weak. The actual effect is drawn within the range, and the briefing book shows which laws moved which numbers. |
+| Order | **The economy and the policy table come next (milestone 4)**, before Congress, so the laws Congress passes have their real effects from the start. |
 
 ## How Resolute Desk's systems map onto the engine
 
@@ -48,18 +52,22 @@ On top of that:
 
 Each milestone goes to the preview.
 
-1. **Audit and export.** Audit Version 2 into `SOURCE_AUDIT.md` (backlog B-54). Write `tools/RdExport.java`, which exports policies, bills, blocs and members, staff and cabinet pools, orders, outlets, countries, storylines and crises, with fictional stand-ins for real people.
-2. **The Oval Office first screen,** for approval from screenshots. It has:
+1. **Audit and export** (done). The audit of Version 2 is in `SOURCE_AUDIT.md` (backlog B-54). `tools/RdExport.java` exports its data, with fictional stand-ins for real people.
+2. **The Oval Office first screen** (done, approved). It has:
    - the room in SVG, ported from Resolute Desk's art and restyled;
    - the interactive desk;
    - the top bar, the week and Hill cards, and the ticker;
    - the lighting.
-3. **Weekly turns,** with the schedule, health, watch mode and approval. On screen: the calendar and The Capital Ledger.
-4. **Congress and the budget.** On screen: the Roosevelt Room.
-5. **The executive, the press and storylines.** On screen: the West Wing and the Press Briefing Room.
-6. **The economy and the policy table.** On screen: the Economy and Country views, the Cabinet Room and the Residence.
-7. **The world.** On screen: the presidency's Situation Room.
-8. **The rest.** The transition office, sound (Web Audio), the audits and the final preview.
+3. **Weekly turns,** with the schedule, health, watch mode and approval. On screen:
+   - the calendar and The Capital Ledger;
+   - the country through the windows;
+   - the briefing book's economy.
+4. **The economy and the policy table.** A new structural model, with Resolute Desk's sectors on top. Every policy level is scored, with ranges, and the effects are credited to the laws behind them. On screen: the briefing book's sectors and laws, and the Cabinet Room.
+5. **Congress and the budget.** Bills move the policy table. On screen: the Roosevelt Room.
+6. **The executive, the press and storylines.** On screen: the West Wing and the Press Briefing Room.
+7. **The Residence and the country's groups.** Approval by group from the 96-cell electorate.
+8. **The world.** On screen: the presidency's Situation Room.
+9. **The rest.** The transition office, sound (Web Audio), the audits and the final preview.
 
 ## The Oval Office (milestone 2)
 
@@ -203,6 +211,18 @@ What a slot does to opinion leaves as effects for the politics engine:
   - **Beside the page:** By the Numbers.
   - **The log in the third person.** The game's log speaks to the player, so the paper rewrites it: "You sign the …" becomes "Marsh signs the …".
   - **Not yet:** the storylines' Developing Stories panel waits for milestone 5.
+- **The country (the windows):**
+  - approval, with its weekly line inside the partisan floor and ceiling;
+  - what moves approval: its target taken apart, part by part (the economy, the issues, the honeymoon, the record, events and laws, wear, mood);
+  - approval on each issue, by how much it matters, with command of it;
+  - the three coalitions;
+  - approval by state, as a map, the warmest and coolest states, and a table of every state.
+- **The briefing book (the economy):**
+  - nine figures, each with its change on a year ago (or since the oath) and its trend over the term: growth, unemployment, inflation, gas, the Fed funds rate, the 10-year Treasury, the 30-year mortgage, the deficit and consumer sentiment;
+  - six charts over the term;
+  - the next Fed meeting, jobs report and inflation report;
+  - more figures: oil, debt, the output gap, the misery index, the last reports and the Fed's credibility.
+  - Every chart has a crosshair readout, by mouse and by arrow keys, and its numbers in a table.
 - **The top bar** shows stamina and stress as meters.
 - **The week card** shows Resolute Desk's counts (policy slots, trips, recharge), stamina after the week, sleep, and what is waiting or coming.
 - **Watch mode:**

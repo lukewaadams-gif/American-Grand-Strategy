@@ -162,6 +162,115 @@ final class PresidencyViews {
         return m;
     }
 
+    // ---- the windows: the country --------------------------------------------------------------------------------
+
+    /** The country (the windows): approval and its history, what its target is made of, the issues, the coalitions and the states. */
+    static Map<String, Object> country(GameEngine g) {
+        Map<String, Object> m = EngineApi.ok();
+        PoliticsState s = g.state().politics();
+        m.put("date", g.date().toString());
+        m.put("approval", r1(g.approval()));
+        List<Object> hist = new ArrayList<>();
+        for (var p : g.indicators()) if (!Double.isNaN(p.approval())) hist.add(Map.of("date", p.date().toString(), "value", r1(p.approval())));
+        m.put("history", hist);
+        Map<String, Object> parts = new LinkedHashMap<>();
+        g.approvalParts().forEach((k, v) -> parts.put(k, Math.round(v * 100) / 100.0));
+        m.put("parts", parts);
+        double[] b = g.approvalBounds();
+        m.put("floor", r1(b[0])); m.put("ceiling", r1(b[1]));
+        m.put("mandate", r1(s.mandate()));
+        m.put("issues", issues(g));
+        List<Object> coalitions = new ArrayList<>();
+        for (var c : game.mandate.core.politics.Coalition.values())
+            coalitions.add(Map.of("id", c.name(), "label", c.label(), "approval", r1(s.approval(c)), "weight", g.tuning().d("politics.weight." + c.name().toLowerCase())));
+        m.put("coalitions", coalitions);
+        m.put("states", states(g));
+        return m;
+    }
+
+    // ---- the briefing book: the economy ----------------------------------------------------------------------------
+
+    /** The economy (the briefing book): the figures now, a year ago and at the inauguration, their history, and the next releases. */
+    static Map<String, Object> economy(GameEngine g) {
+        Map<String, Object> m = EngineApi.ok();
+        var e = g.economy().orElseThrow();
+        var ind = g.indicators();
+        LocalDate today = g.date();
+        var yearAgo = ind.stream().filter(p -> !p.date().isAfter(today.minusWeeks(52))).reduce((a, b) -> b).orElse(null);
+        var oath = ind.isEmpty() ? null : ind.get(0);
+        double spread = g.mortgageRate() - e.tenYear();
+        List<Object> tiles = new ArrayList<>();
+        java.util.function.ToDoubleFunction<game.mandate.core.engine.IndicatorPoint> none = null;
+        tiles.add(tile("growth", "Growth", "% a year, real GDP", e.growth(), yearAgo, oath, game.mandate.core.engine.IndicatorPoint::growth, true, 1));
+        tiles.add(tile("unemployment", "Unemployment", "% of the labour force", e.unemployment(), yearAgo, oath, game.mandate.core.engine.IndicatorPoint::unemployment, false, 1));
+        tiles.add(tile("inflation", "Inflation", "% over the year", e.inflation(), yearAgo, oath, game.mandate.core.engine.IndicatorPoint::inflation, false, 1));
+        tiles.add(tile("gas", "Gas", "$ a gallon", g.gas(), yearAgo, oath, game.mandate.core.engine.IndicatorPoint::gas, false, 2));
+        tiles.add(tile("fed", "Fed funds rate", "%", e.fedRate(), yearAgo, oath, game.mandate.core.engine.IndicatorPoint::fedRate, null, 2));
+        tiles.add(tile("tenYear", "10-year Treasury", "% yield", e.tenYear(), yearAgo, oath, game.mandate.core.engine.IndicatorPoint::tenYear, null, 2));
+        tiles.add(tile("mortgage", "30-year mortgage", "% rate", g.mortgageRate(), yearAgo, oath, p -> p.tenYear() + spread, false, 2));
+        tiles.add(tile("deficit", "Deficit", "% of GDP", g.deficit(), yearAgo, oath, game.mandate.core.engine.IndicatorPoint::deficit, false, 1));
+        tiles.add(tile("sentiment", "Consumer sentiment", "index; 80 is ordinary times", g.sentiment(), null, null, none, true, 0));
+        m.put("tiles", tiles);
+        List<Object> more = new ArrayList<>();
+        more.add(Map.of("label", "Oil", "value", "$" + Math.round(e.oil()) + " a barrel"));
+        more.add(Map.of("label", "Federal debt", "value", oneDp(g.state().budget().debt()) + "% of GDP"));
+        more.add(Map.of("label", "Output gap", "value", (e.outputGap() >= 0 ? "+" : "\u2212") + oneDp(Math.abs(e.outputGap())) + "% of potential"));
+        more.add(Map.of("label", "Misery index", "value", oneDp(e.misery()) + " (unemployment plus inflation)"));
+        more.add(Map.of("label", "Last jobs report", "value", oneDp(e.reportedUnemployment()) + "% unemployment"));
+        more.add(Map.of("label", "Last inflation report", "value", oneDp(e.reportedInflation()) + "% over the year"));
+        more.add(Map.of("label", "The Fed's credibility", "value", Math.round(e.credibility() * 100) + "%" + (e.fedPressured() ? " (you leaned on it)" : "")));
+        m.put("more", more);
+        List<Object> next = new ArrayList<>();
+        g.nextFedMeeting().ifPresent(d -> next.add(Map.of("what", "The Fed meets", "date", d.toString())));
+        next.add(Map.of("what", "The jobs report", "date", nextRelease(today, true).toString()));
+        next.add(Map.of("what", "The inflation report", "date", nextRelease(today, false).toString()));
+        next.sort(Comparator.comparing(o -> (String) ((Map<?, ?>) o).get("date")));
+        m.put("next", next);
+        m.put("date", today.toString());
+        return m;
+    }
+
+    /** One figure: now, a year ago, at the inauguration, its weekly history, and whether up is good (null when it is neither). */
+    static Map<String, Object> tile(String id, String label, String unit, double now, game.mandate.core.engine.IndicatorPoint yearAgo, game.mandate.core.engine.IndicatorPoint oath,
+                                    java.util.function.ToDoubleFunction<game.mandate.core.engine.IndicatorPoint> f, Boolean upIsGood, int digits) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        double k = Math.pow(10, Math.max(digits, 1) + 1);
+        m.put("id", id); m.put("label", label); m.put("unit", unit); m.put("value", Math.round(now * k) / k); m.put("digits", digits);
+        m.put("upIsGood", upIsGood);
+        if (f != null) {
+            if (yearAgo != null) m.put("yearAgo", Math.round(f.applyAsDouble(yearAgo) * k) / k);
+            if (oath != null) m.put("atOath", Math.round(f.applyAsDouble(oath) * k) / k);
+        }
+        return m;
+    }
+
+    /** Each figure's weekly history over the term (the briefing book's charts). */
+    static Map<String, Object> economyHistory(GameEngine g) {
+        Map<String, Object> m = EngineApi.ok();
+        double spread = g.mortgageRate() - g.economy().map(e -> e.tenYear()).orElse(0.0);
+        List<Object> dates = new ArrayList<>(), growth = new ArrayList<>(), unemp = new ArrayList<>(), infl = new ArrayList<>(), gas = new ArrayList<>(),
+                fed = new ArrayList<>(), ten = new ArrayList<>(), mort = new ArrayList<>(), deficit = new ArrayList<>();
+        for (var p : g.indicators()) {
+            dates.add(p.date().toString());
+            growth.add(r2(p.growth())); unemp.add(r2(p.unemployment())); infl.add(r2(p.inflation())); gas.add(r2(p.gas()));
+            fed.add(r2(p.fedRate())); ten.add(r2(p.tenYear())); mort.add(r2(p.tenYear() + spread)); deficit.add(r2(p.deficit()));
+        }
+        m.put("dates", dates);
+        m.put("series", Map.of("growth", growth, "unemployment", unemp, "inflation", infl, "gas", gas, "fed", fed, "tenYear", ten, "mortgage", mort, "deficit", deficit));
+        return m;
+    }
+
+    static double r2(double v) { return Math.round(v * 100) / 100.0; }
+
+    /** The next jobs (first Friday) or inflation report on or after a day. */
+    static LocalDate nextRelease(LocalDate from, boolean jobs) {
+        for (LocalDate m = from.withDayOfMonth(1); ; m = m.plusMonths(1)) {
+            LocalDate r = jobs ? game.mandate.core.time.CampaignCalendar.jobsReport(m.getYear(), m.getMonth())
+                    : game.mandate.core.time.CampaignCalendar.cpiReport(m.getYear(), m.getMonth());
+            if (!r.isBefore(from)) return r;
+        }
+    }
+
     // ---- The Capital Ledger ----------------------------------------------------------------------------------------
 
     record Story(String section, String head, String body, double weight, String kind) {}
