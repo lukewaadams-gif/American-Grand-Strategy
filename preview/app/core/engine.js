@@ -50,6 +50,7 @@ export const engine = {
     press() { return request({ op: 'view', name: 'press' }); },
     terms() { return request({ op: 'view', name: 'terms' }); },
     sitRoom() { return request({ op: 'view', name: 'sitroom' }); },
+    hormuz() { return request({ op: 'view', name: 'hormuz' }); },
     foreignCountry(country) { return request({ op: 'view', name: 'foreignCountry', country }); },
     verdict() { return request({ op: 'view', name: 'verdict' }); },
     transition() { return request({ op: 'view', name: 'transition' }); },

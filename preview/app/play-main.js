@@ -94,8 +94,10 @@ function showStart() {
         catch (e) {
             toast('That file is not a saved game: ' + String(e));
         } },
-        quick: async (save) => { try {
+        quick: async (save, then) => { try {
             engine.load(await buildFile(save));
+            if (then)
+                engine.command(then);
             route();
         }
         catch (e) {

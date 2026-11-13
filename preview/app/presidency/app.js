@@ -19,6 +19,7 @@ import { rooseveltRoom } from './roosevelt.js';
 import { westWingRoom } from './westwing.js';
 import { pressRoom } from './pressroom.js';
 import { sitRoom } from './sitroom.js';
+import { hormuzRoom } from './hormuz.js';
 import { residenceRoom } from './residence.js';
 import { chime, soundMenuItem } from '../core/sound.js';
 const root = document.getElementById('app');
@@ -135,8 +136,27 @@ function endTurn() {
         beyondPreview(after);
         return;
     }
-    // Resolute Desk: the paper first, then what is waiting on the desk
-    showPaper(after.pendingDecisions > 0 ? () => openDecisions() : undefined);
+    // the Strait of Hormuz, day by day: the crisis room after each day (and after the week it began, the paper first)
+    if (after.turnUnit === 'day') {
+        if (v.turnUnit !== 'day')
+            showPaper(() => openHormuz());
+        else if (after.pendingDecisions > 0)
+            openDecisions(() => openHormuz());
+        else
+            openHormuz();
+        return;
+    }
+    // Resolute Desk: the paper first, then what is waiting on the desk (and when a crisis has just ended, its room)
+    showPaper(v.turnUnit === 'day' ? () => openHormuz() : after.pendingDecisions > 0 ? () => openDecisions() : undefined);
+}
+/** The Strait of Hormuz crisis room: its own Next day, and after the crisis its record. */
+function openHormuz() {
+    host.open(hormuzRoom({
+        view: () => engine.hormuz(),
+        order: o => command({ type: 'Hormuz', order: o }),
+        next: () => { host.close(); endTurn(); },
+        back: () => host.close(),
+    }), 'The Strait of Hormuz', render);
 }
 /** The Capital Ledger, full page; Enter or Escape goes back to the Oval Office. */
 function showPaper(after) {
@@ -216,7 +236,8 @@ function watchWeek() {
         }
         toast(`The staff decided: ${d.title}. ${pick.label}.`);
     }
-    if (!presidency({ type: 'WatchWeek' }) || !command({ type: 'EndTurn' })) {
+    const plan = v.turnUnit === 'day' ? command({ type: 'Hormuz', order: { type: 'Playbook' } }) : presidency({ type: 'WatchWeek' });
+    if (!plan || !command({ type: 'EndTurn' })) {
         stopWatching();
         return;
     }
@@ -457,7 +478,10 @@ function openSpot(id, v) {
             openPress();
             return;
         case 'globe':
-            openSitRoom();
+            if (v.hormuz)
+                openHormuz();
+            else
+                openSitRoom();
             return;
         case 'residence':
             if (!v.week) {

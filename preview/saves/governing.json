@@ -5492,7 +5492,7 @@
       "toppled": [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
       "leaders": ["Zhou Wenhai|President", "Pavel Sokolov|President", "Andriy Kovalenko|President", "Helen Ashworth|Prime Minister", "Claire Morel|President", "Jonas Ritter|Chancellor", "Chiara Benedetti|Prime Minister", "Daniel Fortier|Prime Minister", "Lucia Navarro|President", "Haruka Mori|Prime Minister", "Park Jun-ho|President", "Kim Ju-hyok|Supreme Leader", "Chen Wei-lun|President", "Arjun Mehta|Prime Minister", "Faisal Qureshi|Prime Minister", "Avi Rosen|Prime Minister", "Hossein Rahimi|Supreme Leader", "Tariq bin Nasser|Crown Prince", "Kemal Aydin|President", "Hassan Mansour|President", "Hamad bin Khalid|Emir", "Zayed bin Rashid|President", "Hashem I|King", "Haider Karim|Prime Minister", "Omar Haddad|President", "Rafael Moreira|President", "Martina Ferraro|President", "Carlos Ibarra|President", "Ernesto Valdes|President", "Ricardo Solis|President", "Marta Wisniewska|Prime Minister", "Gabor Szabo|Prime Minister", "Sofie Lund|Prime Minister", "Mikko Virtanen|President", "Jack Harrington|Prime Minister", "Ramon Delgado|President", "Budi Santoso|President", "Nguyen Van Hai|General Secretary", "Chinedu Okeke|President", "Thabo Nkosi|President"],
       "w": [32, 0, -1, 1, 2, 5, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, -1, -99, -99, -99, 2029, 0, 3],
-      "x": [0.0, 54.2334376669571, 60.76121988574373, 47.775155124361305, 31.700866397776704, 9.192113635852612, 39.40697117436049, 49.519447452591564, 36.86935083895003, 24.214864553281576, 50.32774262240833, 34.365120728919315, 42.24257810427193, 41.57073391683897, 56.79161253591373, 53.61771508475855, 66.93445595239415, 2.6, 20.0, 0.0, 0.0, 0.0],
+      "x": [0.0, 54.2334376669571, 60.76121988574373, 47.775155124361305, 31.700866397776704, 9.192113635852612, 39.40697117436049, 49.519447452591564, 36.86935083895003, 24.214864553281576, 50.32774262240833, 34.365120728919315, 42.24257810427193, 41.57073391683897, 56.79161253591373, 53.61771508475855, 66.93445595239415, 2.6, 20.0, 0.0, 0.0, 0.0, 3.517072812141324],
       "posture": [1, 1, 1],
       "cool": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       "opCool": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -6121,6 +6121,7 @@
       "done": true,
       "news": ["2028-11-07: the transition begins. Name your own people, check them, and keep the leaks down."]
     },
+    "hormuz": null,
     "news": [{
         "date": "2029-01-25",
         "kind": "INFO",
@@ -7410,6 +7411,7 @@
     "president.remarks": "-3266291788007423655",
     "president.visit.news": "2243563769573602715",
     "world.crisis": "-2113658409973454498",
+    "world.hormuz": "8771664933908494416",
     "world.mideast": "3213569349347123030",
     "world.rel": "-62800604113348657",
     "world.taiwan": "8072232445940410344",
