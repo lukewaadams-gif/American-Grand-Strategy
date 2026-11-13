@@ -1,6 +1,6 @@
 // Checks for presidency milestone 6: the West Wing and the Press Briefing Room. Each tab at 1600, 1280 and 390 wide and in
 // every palette (axe WCAG 2.1 AA, text size, no sideways scroll); hiring, a post, an order, an order on a policy from the
-// Cabinet Room, the vice president, a press conference and an address answered on the desk. Usage: node m6-west.js [out-dir] [save]
+// Cabinet Room, the vice president, a press conference and an address answered on the desk. Usage: node westwing.js [out-dir] [save]
 const { chromium } = require('playwright');
 const fs = require('fs');
 const axeSrc = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
