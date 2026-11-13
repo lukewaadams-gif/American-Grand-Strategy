@@ -20,6 +20,7 @@ import { scoreView } from './presidency/score.js';
 import { rooseveltRoom } from './presidency/roosevelt.js';
 import { westWingRoom } from './presidency/westwing.js';
 import { pressRoom } from './presidency/pressroom.js';
+import { residenceRoom } from './presidency/residence.js';
 const root = document.getElementById('app');
 const params = new URLSearchParams(location.search);
 /** A fixed hour for the light (from ?hour= or the menu); null follows the player's clock. */
@@ -265,7 +266,6 @@ function duskHour(month) {
 }
 // ---- what the room's objects and doors do in this milestone --------------------------------------------------------
 const LATER = {
-    residence: { title: 'The Residence', body: 'Family, rest and health: where stamina comes back and the president’s private life goes on.', milestone: 7, stage: 'the Residence and the voter groups' },
     globe: { title: 'The Situation Room', body: 'Forty countries, calls and summits, crises week by week, operations and covert action, and the standing deployments.', milestone: 8, stage: 'the world' },
 };
 const west = (order) => command({ type: 'WestWing', order });
@@ -406,6 +406,24 @@ function openSpot(id, v) {
             return;
         case 'press':
             openPress();
+            return;
+        case 'residence':
+            if (!v.week) {
+                toast('The Residence is yours at the inauguration.');
+                return;
+            }
+            host.open(residenceRoom({
+                view: () => engine.residence(),
+                presidency: o => { try {
+                    engine.command({ type: 'Presidency', order: o });
+                    return true;
+                }
+                catch {
+                    return false;
+                } },
+                calendar: () => { host.close(); openCalendar(); },
+                back: () => host.close(),
+            }), 'The Residence', render);
             return;
         case 'roosevelt':
             openRoosevelt();
