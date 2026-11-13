@@ -209,11 +209,8 @@ public final class PoliticsEngine {
 
     static double piEff(double infl) { return infl >= 0 ? infl : -1.2 * infl; }
 
-    /** Consumer sentiment as Resolute Desk computes it (its {@code Economy.sentiment}, without the stock market, which this game does not model). */
-    public double sentiment(PoliticsState s, OpinionInputs in) {
-        return clamp(96 - 4.5 * (in.unemployment() - p.rdURef() + 0.5) - 5.5 * (piEff(in.inflation()) - p.rdPiRef() + 0.5)
-                - 6 * (in.gas() / s.priceLevel - p.rdGasRef() + 0.1) + 1.5 * (in.growth() - 2), 45, 112);
-    }
+    /** Consumer sentiment: the economy's own figure (Resolute Desk's formula, with the stock market), passed in with the rest. */
+    public double sentiment(PoliticsState s, OpinionInputs in) { return in.confidence(); }
 
     /** The economy's part of the target: growth, jobs, prices and gas against what people expect. */
     public double economyTerm(PoliticsState s, OpinionInputs in) {

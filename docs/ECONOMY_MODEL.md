@@ -1,6 +1,6 @@
 # The economy: design note for presidency milestone 4
 
-**Status:** a draft for review. Nothing here is built yet. When it is approved, the milestone builds it in the steps at the end.
+**Status:** approved on 13 November 2026, with the recommendations on the three questions at the end: the Cabinet Room only shows the table in this milestone; the baseline is CBO's real projection; and scores show their numbers, with a one-line plain reading above them. The milestone builds it in the steps at the end.
 
 ## What was decided (13 November 2026)
 
@@ -324,6 +324,50 @@ Each becomes a test (noise and shocks off unless the test is about them).
 | A $15 federal minimum wage | Employment 0–3.7 million lower (central about 1.3 million); about a million people out of poverty | CBO's 2019 study and its 2021 update |
 | Zoning and permitting reform | Housing starts up 5–15% over five years; rent inflation down 0.5–1.5 points a year by years 3 to 5 | Moderate evidence: the range is wide |
 | Recessions | About one in six years; unemployment up 2–4 points; the Fed cutting by 2–4 points | The postwar record; Resolute Desk's shock rates |
+
+## Step 1 as built: the core model (13 November 2026)
+
+The model above is in `mandate-core/.../economy/` (`EconomyEngine`, `EconomyState`, `BudgetState`, `Program`, `FiscalClass`, `Part`), with every coefficient in `tuning.properties` under `economy.*`, `budget.*`, `markets.*` and `sectors.*`. The engine's interface is unchanged, so the hundred days, the governing week and the campaign run on it as before. The calibration tests are `EconomyModelTest`: each target is a with-and-without run on the quiet economy (no noise, no random shocks), with the Fed meeting eight times a year on monthly data.
+
+**Where the build departs from the note, and why:**
+
+| Change | Why |
+|---|---|
+| **The Fed's rule puts 1.0 on the gap**, not 0.5 (the "balanced approach" rule in the Fed's own Monetary Policy Report), and the neutral real rate is 1.0, not 0.8 | With 0.5 the Fed raised rates a quarter point against a stimulus at full employment, and output rose 0.7%, above the target. A neutral rate of 1.0 puts the long-run Fed rate at 3.0%, near CBO's projection |
+| **The Fed's gap is half the jobs report and half its staff's estimate of output against potential** | Unemployment lags the gap by about half a year, so a Fed reading only the jobs report reacted far too late |
+| **The Fed looks through three-quarters of what tariffs add to prices**, as it said it would in 2025 | Otherwise it raised rates into a one-time price jump, and a 10-point tariff cost 1.6% of output, three times the target |
+| **The 10-year has a fast "news" part** (bills under debate, new borrowing not yet in the debt, the Treasury secretary, the Fed's credibility), moving 40% of the way each week, beside the slow fundamental part (6% a week) | Markets price fiscal news within days. New borrowing is priced at 12 basis points per point of GDP when it is announced, fading over ten years as the debt itself carries it, so a permanent deficit still lands at CBO's 0.2–0.3 points after a decade |
+| **Each price part's trend adjusts 6% a week**, not 3% | Headline inflation is measured over the year from the parts' price levels, which adds the year-long averaging the 3% was standing in for |
+| **The game's own shocks** (events, wars, a bill's growth impulse) keep their push to the gap over the months they name, and six-tenths of it lingers in demand afterwards, fading as Resolute Desk's shocks do | Without it, demand snapped back within months, and a severe shock barely moved unemployment |
+| **A bare deficit from a bill or an event only adds to the debt** (fiscal class "none") until step 4 | This game's bills already carry their demand as a growth impulse; counting the deficit as demand too would count it twice. Step 4 replaces both with the policy steps each bill makes |
+| **Recessions** push demand down by 6 to 10 points of the gap's target, and the gap by another 4 to 6 over twenty weeks | Resolute Desk's recessions raise unemployment by about one point; the note's target is two to four |
+
+**What the tests measure** (targets from "Numbers the model must reproduce"):
+
+| Situation | Target | Measured |
+|---|---|---|
+| No new policy, 2029–2033 | Growth 1.7–2.0% | 1.89% on average; potential growth 1.85% |
+| | Unemployment 4.2–4.7% | 4.27–4.42% |
+| | Inflation settling at 2.2–2.6% | 2.44% |
+| | The 10-year 4.0–4.6% | 4.22% |
+| | Deficit 6–7.5% and rising | 6.5% rising to 7.25% |
+| | Debt 106–112% | 111% |
+| $300 billion of purchases in a slump, the Fed at its floor | Output up 1.0–1.6% at the peak | 1.23% |
+| The same at full employment | Output up 0.3–0.6% at the peak, fading within two years; the 10-year up | 0.56%; 0.29% below the baseline two years on; the 10-year up 0.26 |
+| A permanent deficit of 1% of GDP | The 10-year 0.2–0.3 points higher after a decade; output 0.2–0.5% lower in the long run | 0.27; potential output 0.25% lower after fifteen years, capital 0.48% lower |
+| Corporate rate from 21% to 28% (the user cost of capital 6% higher) | Output 0.2–0.6% lower in the long run | 0.37% lower after fifteen years |
+| Average tariff up 10 points | Prices 0.8–1.5% higher within a year; output 0.3–0.6% lower; farm income down | 1.0%; 0.56% at the lowest; farm income index down 7.7 |
+| Oil up $10 a barrel | Gas up about 24 cents; inflation up 0.2–0.3 points | 24.8 cents; 0.26 points |
+| Mortgage rates up 1 point | Housing starts down 8–12% within a year | 9.7% |
+| Net immigration up 1 million a year | The labour force about 0.6% higher each year; output higher over time | 0.6%; potential output 2.1% higher after five years |
+| A recession | Unemployment up 2–4 points; the Fed cutting 2–4 points | 2.3 points; 3.0 points |
+| How often | About one in six years | One in 5.3 years with Resolute Desk's odds; one in 6.1 over 14 full autopilot terms, counting the calm after each |
+
+The minimum wage and zoning targets need the policy table (step 3) and are tested there.
+
+**Over full terms** (14 autopilot terms): terms without a recession end with unemployment at 4.2–4.7% and approval at 45–51, as in milestone 3. Terms with one end at 33–42 and are lost. The autopilot president was re-elected in 4 of 14 (3 of 8 in milestone 3). It never answers a slump with stimulus; with the policy table a player can.
+
+**Saves:** a save from before the model loads with its gap, jobs, inflation, Fed rate, oil and 10-year, and the economy is rebuilt around them; an old policy deficit becomes a program the economy has already adjusted to. The browser and Java builds agree on every seed and on six full terms.
 
 ## What changes elsewhere
 

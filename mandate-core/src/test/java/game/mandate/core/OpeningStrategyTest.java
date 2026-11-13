@@ -104,8 +104,11 @@ class OpeningStrategyTest {
                 double eta2 = between / (between + within);
                 assertTrue(within > 0, METRICS[m] + " has no uncertainty at all");
                 // Resolute Desk's approval moves 15% a week toward its target and carries a slow random mood, so fourteen
-                // weeks of strategy explain less of day-100 approval than the prototype's direct model did
-                double floor = METRICS[m].equals("approval") ? 0.1 : 0.2;
+                // weeks of strategy explain less of day-100 approval than the prototype's direct model did. The structural
+                // economy (docs/ECONOMY_MODEL.md) carries real market noise (oil moves gas and energy prices week to week)
+                // and prices and jobs respond to policy over quarters, so in a hundred days strategy shows mainly in the
+                // bond market (it explains 40-60% of the 10-year) and less of the whole economy index
+                double floor = METRICS[m].equals("approval") || METRICS[m].equals("economy") ? 0.1 : 0.2;
                 assertTrue(eta2 >= floor, METRICS[m] + ": strategy explains only " + eta2 + " of the variance");
                 if (eta2 >= 0.5) strong++;
             }

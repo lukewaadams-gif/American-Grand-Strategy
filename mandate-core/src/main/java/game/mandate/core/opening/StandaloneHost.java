@@ -85,8 +85,8 @@ final class StandaloneHost implements Host {
         // an average president, a narrow win, no state map: approval starts at Resolute Desk's target
         EconomyParams ep = economyEngine.params();
         politicsEngine.beginApproval(politics, new PoliticsEngine.ApprovalStart(0, 0, 1.0, java.util.Map.of(), java.util.Map.of(), 30 + (PRESIDENT_CHARISMA - 1) * 100 / 9 * 0.2),
-                new OpinionInputs(economyEngine.gas(economy), ep.gas(ep.oilBase()), economy.inflation(), economy.unemployment(), economy.mortgageRate(ep),
-                        economy.confidence(), economy.growth()));
+                new OpinionInputs(economyEngine.gas(economy), economyEngine.normalGas(economy), economy.inflation(), economy.unemployment(), economy.mortgageRate(ep),
+                        economy.sentiment(), economy.growth()));
     }
 
     @Override public Party party() { return party; }

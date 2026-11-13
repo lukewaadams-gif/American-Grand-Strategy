@@ -220,6 +220,7 @@ public final class GameEngine implements WorldView {
      * approval carrying on from where approval stood.
      */
     private void upgradeOldSnapshot() {
+        economyEngine.upgrade(w.economy, w.budget);
         if (w.president != null || (w.phase != Phase.FIRST_100_DAYS && w.phase != Phase.GOVERNING) || !w.politics.governing()) return;
         politicsEngine.upgradeApproval(w.politics, approvalStart(), opinionInputs());
         w.president = presidentEngine.newPresident(player().candidate().id());
@@ -1025,8 +1026,8 @@ public final class GameEngine implements WorldView {
 
     private OpinionInputs opinionInputs() {
         EconomyState e = w.economy;
-        EconomyParams p = economyEngine.params();
-        return new OpinionInputs(economyEngine.gas(e), p.gas(p.oilBase()), e.inflation(), e.unemployment(), e.mortgageRate(p), e.confidence(), e.growth());
+        return new OpinionInputs(economyEngine.gas(e), economyEngine.normalGas(e), e.inflation(), e.unemployment(), e.mortgageRate(economyEngine.params()),
+                e.sentiment(), e.growth());
     }
 
     private ElectoralEnvironment environment() {

@@ -841,8 +841,8 @@ public class HundredDays {
     private void politicalReaction() {
         OppositionStrategy before = opposition();
         EconomyParams ep = h.economyEngine().params();
-        h.politicsEngine().step(h.politics(), 1.0, new OpinionInputs(gas(), ep.gas(ep.oilBase()), h.economy().inflation(), h.economy().unemployment(),
-                h.economy().mortgageRate(ep), h.economy().confidence(), h.economy().growth()), h.rng());
+        h.politicsEngine().step(h.politics(), 1.0, new OpinionInputs(gas(), h.economyEngine().normalGas(h.economy()), h.economy().inflation(), h.economy().unemployment(),
+                h.economy().mortgageRate(ep), h.economy().sentiment(), h.economy().growth()), h.rng());
         for (int w = 0; w < 2; w++) {
             if (wing(w) < 32 && !st.revolted[w] && st.week < st.weeks) {
                 st.revolted[w] = true;
