@@ -137,6 +137,7 @@ public final class EngineApi {
             v.put("trail", trail(g));
             v.put("schedule", schedule(g));
             v.put("activities", activities(g));
+            v.put("field", field(g));
         }
         v.put("news", news(g, 0));
         var result = g.phase() == Phase.REELECTION_CAMPAIGN_2032 ? g.result2032() : g.result2028();
@@ -254,6 +255,51 @@ public final class EngineApi {
             out.add(m);
         }
         return out;
+    }
+
+    // ---- the ground game (Battleground 2028's) -------------------------------------------------------------------
+
+    /** The player's field programme: totals, doors week by week, and every state's offices, organisers, volunteers and contacts. */
+    static Map<String, Object> field(GameEngine g) {
+        CampaignSide me = g.player();
+        var ce = g.campaignEngine();
+        var geo = ce.geography();
+        var o = me.orders();
+        var t = g.campaignTurn();
+        double[] value = ce.stateValue(t.polls(), t.nationalPoll(), me.party().sign(), 0);
+        double offices = 0, org = 0, party = 0, vol = 0, shifts = 0, doors = 0, calls = 0, texts = 0, rel = 0, doorsTotal = 0;
+        List<Object> states = new ArrayList<>();
+        for (int i = 0; i < geo.size(); i++) {
+            String c = geo.code(i);
+            offices += me.offices(c); org += me.organizers(c); party += me.partyOrganizers(c); vol += me.volunteers(c); shifts += me.shifts(c);
+            doors += me.doors(c); calls += me.calls(c); texts += me.texts(c); rel += me.relationalContacts(c); doorsTotal += me.doorsToDate(c);
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("code", c);
+            m.put("offices", me.offices(c)); m.put("officeOrder", o.officeOrder(i));
+            m.put("organizers", me.organizers(c)); m.put("organizerOrder", o.organizerOrder(i));
+            m.put("party", r2(me.partyOrganizers(c))); m.put("transfer", r3(o.transfer(i)));
+            m.put("volunteers", Math.round(me.volunteers(c))); m.put("shifts", Math.round(me.shifts(c)));
+            m.put("doors", Math.round(me.doors(c))); m.put("calls", Math.round(me.calls(c))); m.put("texts", Math.round(me.texts(c)));
+            m.put("relational", Math.round(me.relationalContacts(c))); m.put("doorsToDate", Math.round(me.doorsToDate(c)));
+            m.put("persuasion", r3(game.mandate.core.campaign.CampaignEngine.fieldSat(me.persuasion(c)) / 0.1));
+            m.put("gotv", r3(game.mandate.core.campaign.CampaignEngine.gotvSat(me.getOutTheVote(c)) / 0.12));
+            m.put("openCost", r3(ce.officeOpenCost(i))); m.put("officeWeek", r3(ce.officeWeek(i)));
+            m.put("organizerWeek", r3(ce.organizerWeek(i)));
+            m.put("value", r2(value[i]));
+            states.add(m);
+        }
+        Map<String, Object> f = new LinkedHashMap<>();
+        Map<String, Object> tot = new LinkedHashMap<>();
+        tot.put("offices", offices); tot.put("organizers", org); tot.put("party", r2(party)); tot.put("volunteers", Math.round(vol));
+        tot.put("shifts", Math.round(shifts)); tot.put("doors", Math.round(doors)); tot.put("calls", Math.round(calls)); tot.put("texts", Math.round(texts));
+        tot.put("relational", Math.round(rel)); tot.put("doorsToDate", Math.round(doorsTotal));
+        f.put("totals", tot);
+        f.put("hireCost", game.mandate.core.campaign.CampaignEngine.organizerHireCost());
+        List<Object> hist = new ArrayList<>();
+        for (double[] row : me.history()) hist.add(Math.round(row[3]));
+        f.put("doorsByTurn", hist);
+        f.put("states", states);
+        return f;
     }
 
     /** What waits for an answer before the turn can end: events and the week's debate, each option with its command. */

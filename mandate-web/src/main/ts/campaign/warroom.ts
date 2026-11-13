@@ -10,9 +10,11 @@ import { portrait } from '../art/portrait.js';
 import { LAYERS, layer, type LayerId, usMap } from './map.js';
 import { pathTo270, raceTo270, trendChart } from './charts.js';
 import { quickVisit, scheduleTab, type ScheduleActions } from './schedule.js';
+import { fieldDesk, fieldTab, type FieldActions } from './field.js';
 
 export type TabId = 'schedule' | 'money' | 'field' | 'message' | 'polls' | 'wire';
-export interface WarRoomState { layer: LayerId; selected: string | null; tab: TabId; picking: number | null; }
+export type DeskTab = 'overview' | 'field';
+export interface WarRoomState { layer: LayerId; selected: string | null; tab: TabId; picking: number | null; desk: DeskTab; }
 export interface WarRoomActions {
   runWeek(): void;
   openDecisions(): void;
@@ -23,10 +25,11 @@ export interface WarRoomActions {
   order(order: object): boolean;
   pick(slot: number | null): void;
   toast(text: string): void;
+  setDesk(tab: DeskTab): void;
 }
 
 const TABS: { id: TabId; label: string; ready: boolean }[] = [
-  { id: 'schedule', label: 'Schedule', ready: true }, { id: 'money', label: 'Money', ready: false }, { id: 'field', label: 'Field', ready: false },
+  { id: 'schedule', label: 'Schedule', ready: true }, { id: 'money', label: 'Money', ready: false }, { id: 'field', label: 'Field', ready: true },
   { id: 'message', label: 'Message', ready: false }, { id: 'polls', label: 'Polls', ready: false }, { id: 'wire', label: 'Wire', ready: true },
 ];
 
@@ -80,7 +83,8 @@ export function warRoom(v: CampaignView, st: WarRoomState, act: WarRoomActions):
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); act.setTab(ready[(k + 1) % ready.length]!.id); }
         if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); act.setTab(ready[(k - 1 + ready.length) % ready.length]!.id); }
       }) as EventListener }, t.label)));
-  const panel = st.tab === 'wire' ? wireList(v) : scheduleTab(v, sched);
+  const fieldAct: FieldActions = { order: act.order, open: c => { act.setDesk('field'); act.select(c); } };
+  const panel = st.tab === 'wire' ? wireList(v) : st.tab === 'field' && v.field ? fieldTab(v, fieldAct) : scheduleTab(v, sched);
   const left = h('aside', { class: 'cw-left' }, tabs,
     h('div', { class: 'side-panel', id: 'tab-panel', role: 'tabpanel', 'aria-labelledby': 'tab-' + st.tab, tabindex: 0 }, panel));
 
@@ -122,7 +126,7 @@ export function warRoom(v: CampaignView, st: WarRoomState, act: WarRoomActions):
 
   // ---- the right: a state, or the nation ---------------------------------------------------------------------
   const right = h('aside', { class: 'cw-right', 'aria-label': selected ? `${selected.name} in detail` : 'The national picture' },
-    ...(selected ? [stateDesk(selected, v, act, sched)] : national(v, last)));
+    ...(selected ? [stateDesk(selected, v, st, act, sched, fieldAct)] : national(v, last)));
 
   return h('div', { class: 'cw', 'data-world': 'campaign' },
     bar,
@@ -156,7 +160,7 @@ function national(v: CampaignView, last: CampaignView['polls'][number] | undefin
   return [matchup, trend, movers];
 }
 
-function stateDesk(x: StateView, v: CampaignView, act: WarRoomActions, sched: ScheduleActions): HTMLElement {
+function stateDesk(x: StateView, v: CampaignView, st: WarRoomState, act: WarRoomActions, sched: ScheduleActions, fieldAct: FieldActions): HTMLElement {
   const duel = (label: string, me: number, them: number, unit: string) => {
     const max = Math.max(me, them, 0.01);
     return h('div', { class: 'duel', role: 'img', 'aria-label': `${label}: you ${me.toFixed(1)}${unit}, them ${them.toFixed(1)}${unit}` },
@@ -166,14 +170,18 @@ function stateDesk(x: StateView, v: CampaignView, act: WarRoomActions, sched: Sc
         h('div', { class: 'duel-bar them ' + v.opponent.party.toLowerCase(), style: `width:${(them / max) * 100}%` })),
       h('span', { class: 'duel-nums' }, `${me.toFixed(1)} · ${them.toFixed(1)}`));
   };
+  const deskTab = (id: DeskTab | null, label: string) => h('button', { type: 'button', class: 'tab' + (id === st.desk ? ' on' : '') + (id ? '' : ' soon'),
+    'aria-pressed': id === st.desk ? 'true' : 'false', 'aria-disabled': id ? null : 'true', title: id ? null : `${label}: in the next preview`,
+    onclick: () => { if (id) act.setDesk(id); } }, label);
   const deskTabs = h('div', { class: 'desk-tabs', role: 'group', 'aria-label': 'State desk' },
-    h('button', { type: 'button', class: 'tab on', 'aria-pressed': 'true' }, 'Overview'),
-    ...['Ads', 'Field', 'Voters'].map(t => h('button', { type: 'button', class: 'tab soon', 'aria-disabled': 'true', title: `${t}: in the next preview` }, t)));
+    deskTab('overview', 'Overview'), deskTab(null, 'Ads'), deskTab(v.field ? 'field' : null, 'Field'), deskTab(null, 'Voters'));
+  const head = h('div', { class: 'state-head' },
+    h('div', null, h('h3', null, x.name), h('span', { class: 'faint' }, `${x.ev} electoral votes · 2024: ${margin(x.baseline)}`)),
+    h('button', { class: 'btn quiet close', type: 'button', onclick: () => act.select(null), 'aria-label': `Close ${x.name}`, title: 'Close (Esc)' }, '×'));
+  if (st.desk === 'field' && v.field) return h('section', { class: 'card state-desk', 'aria-label': `${x.name}: field` }, head, deskTabs, ...fieldDesk(x.code, v, fieldAct));
   const send = quickVisit(v, x.code, sched);
   return h('section', { class: 'card state-desk', 'aria-label': `${x.name} in detail` },
-    h('div', { class: 'state-head' },
-      h('div', null, h('h3', null, x.name), h('span', { class: 'faint' }, `${x.ev} electoral votes · 2024: ${margin(x.baseline)}`)),
-      h('button', { class: 'btn quiet close', type: 'button', onclick: () => act.select(null), 'aria-label': `Close ${x.name}`, title: 'Close (Esc)' }, '×')),
+    head,
     deskTabs,
     h('div', { class: 'state-figs' },
       fig('Polls', margin(x.margin)), fig('Your chance', chance(x.win)), fig('Since last poll', x.change === null ? 'n/a' : signed(x.change))),

@@ -30,7 +30,20 @@ export interface CampaignView {
   pledges: string[]; opponentPledges: string[]; pendingDecisions: number;
   polls: PollWeek[]; errorSd: number; states: StateView[]; tipping: string | null; news: NewsItem[];
   /** Present while a campaign is running. */
-  turn?: TurnInfo; staff?: Staff; trail?: Trail; schedule?: Slot[]; activities?: ActivityInfo[];
+  turn?: TurnInfo; staff?: Staff; trail?: Trail; schedule?: Slot[]; activities?: ActivityInfo[]; field?: Field;
+}
+
+/** One state's ground game. Money in $M; persuasion and gotv as a share of their ceilings (0-1). */
+export interface FieldState {
+  code: string; offices: number; officeOrder: number; organizers: number; organizerOrder: number; party: number; transfer: number;
+  volunteers: number; shifts: number; doors: number; calls: number; texts: number; relational: number; doorsToDate: number;
+  persuasion: number; gotv: number; openCost: number; officeWeek: number; organizerWeek: number; value: number;
+}
+
+export interface Field {
+  totals: { offices: number; organizers: number; party: number; volunteers: number; shifts: number; doors: number; calls: number; texts: number;
+    relational: number; doorsToDate: number };
+  hireCost: number; doorsByTurn: number[]; states: FieldState[];
 }
 
 /** A week, or (from two weeks out) a single day. */

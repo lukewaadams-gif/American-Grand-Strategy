@@ -25,8 +25,10 @@ export const KIND_COLOUR: Record<ActivityKind, string> = {
   none: '#3a4554', crowd: '#d9a441', persuade: '#3fb8a5', money: '#57c48f', media: '#a88be0', groups: '#6b9fe0', prep: '#e08a5c', rest: '#8a94a8',
 };
 
+/** Money in $M as a person reads it: "$2.5K", "$350K", "$1.2M"; nothing is "free" that costs anything. */
 export function cost(m: number): string {
   if (m <= 0) return 'free';
+  if (m < 0.01) return '$' + (m * 1000).toFixed(1).replace(/\.0$/, '') + 'K';
   return m < 1 ? '$' + Math.round(m * 1000) + 'K' : '$' + m.toFixed(1) + 'M';
 }
 

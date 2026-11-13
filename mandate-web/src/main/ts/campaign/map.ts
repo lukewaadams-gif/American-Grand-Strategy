@@ -7,7 +7,7 @@ import { s } from '../core/dom.js';
 import { chance, margin, signed } from '../core/format.js';
 import { inkOn, leanColour, legendStops, marginColour, palette } from './palette.js';
 
-export type LayerId = 'margin' | 'change' | 'win' | 'ads' | 'field' | 'visits';
+export type LayerId = 'margin' | 'change' | 'win' | 'ads' | 'volunteers' | 'visits';
 
 export interface Layer {
   id: LayerId; label: string; question: string;
@@ -20,7 +20,7 @@ export interface Layer {
 const sign = (v: CampaignView) => (v.player.party === 'D' ? 1 : -1);
 const you = (v: CampaignView, dSide: boolean) => ((v.player.party === 'D') === dSide ? 'You' : 'Them');
 
-function activity(id: 'ads' | 'field' | 'visits', label: string, unit: string): Layer {
+function activity(id: 'ads' | 'visits', label: string, unit: string): Layer {
   const me = (st: StateView) => st[(id + 'Me') as 'adsMe'], them = (st: StateView) => st[(id + 'Them') as 'adsThem'];
   const max = (v: CampaignView) => Math.max(0.01, ...v.states.map(st => Math.abs(me(st) - them(st))));
   return {
@@ -53,10 +53,28 @@ export const LAYERS: Layer[] = [
     spoken: st => `${chance(st.win)} chance for you`,
     legend: v => ({ stops: legendStops(), left: v.player.party === 'D' ? 'Them, certain' : 'You, certain', mid: '50/50', right: v.player.party === 'D' ? 'You, certain' : 'Them, certain' }),
   },
-  activity('ads', 'Ads', 'ad pressure'),
-  activity('field', 'Field', 'field organisation'),
+  activity('ads', 'Ads', 'ad money'),
+  volunteers(),
   activity('visits', 'Visits', 'candidate visits'),
 ];
+
+/** Battleground 2028's "Volunteers & doors": the player's shifts this week (colour) and doors knocked to date (label). */
+function volunteers(): Layer {
+  const of = (st: StateView, v: CampaignView) => v.field?.states.find(x => x.code === st.code);
+  const max = (v: CampaignView) => Math.max(1, ...(v.field?.states ?? []).map(x => x.shifts));
+  const short = (n: number) => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'K' : String(Math.round(n));
+  return {
+    id: 'volunteers', label: 'Volunteers', question: 'Your volunteers: shifts this week, doors knocked to date',
+    fill: (st, v) => { const f = of(st, v), t = f ? f.shifts / max(v) : 0; return t < 0.02 ? palette().toss : leanColour(sign(v) * (0.15 + 0.85 * t)); },
+    value: (st, v) => { const f = of(st, v); return f && f.doorsToDate > 0 ? short(f.doorsToDate) : ''; },
+    spoken: (st, v) => { const f = of(st, v); return f ? `${short(f.shifts)} volunteer shifts this week, ${short(f.doorsToDate)} doors knocked to date` : 'no field programme'; },
+    legend: v => {
+      const stops: string[] = [palette().toss];
+      for (let i = 1; i <= 8; i++) stops.push(leanColour(sign(v) * (0.15 + 0.85 * i / 8)));
+      return { stops, left: 'No shifts', mid: '', right: 'Most shifts this week' };
+    },
+  };
+}
 
 export function layer(id: LayerId): Layer { return LAYERS.find(l => l.id === id) ?? LAYERS[0]!; }
 

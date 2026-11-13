@@ -10,7 +10,7 @@ import { closeMenu, menuOpen } from './core/menu.js';
 import { usePalette, type PaletteName } from './campaign/palette.js';
 
 const root = document.getElementById('app')!;
-const state: WarRoomState = { layer: 'margin', selected: null, tab: 'schedule', picking: null };
+const state: WarRoomState = { layer: 'margin', selected: null, tab: 'schedule', picking: null, desk: 'overview' };
 let toastTimer = 0;
 
 const host: DialogHost = (() => {
@@ -52,6 +52,7 @@ function render(): void {
     setLayer: id => { state.layer = id; render(); },
     select: c => { state.selected = c; render(); },
     setTab: id => { state.tab = id; render(); document.getElementById('tab-' + id)?.focus(); },
+    setDesk: d => { state.desk = d; render(); },
     pick: slot => {
       state.picking = slot;
       render();
