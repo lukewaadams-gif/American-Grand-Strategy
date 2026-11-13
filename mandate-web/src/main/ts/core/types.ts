@@ -428,3 +428,41 @@ export interface HormuzView {
   invasion: { stage: number; option: number; days: number; progress: number; plans: { label: string; detail: string }[] };
   log: string[];
 }
+
+// ---- the Taiwan crisis (docs/ISLAND_CHAIN.md) ------------------------------------------------------------------------------
+/** A sea zone: the player's own forces in it, and the enemy as the player's side sees it (contacts). */
+export interface TaiwanZone {
+  id: string; name: string; lon: number; lat: number; km: number; strait: boolean;
+  own: { ships: number; groups: number; subs: number; carriers: number; amphibious: number; names: string[] };
+  enemy: { ships: number; subs: number; carriers: number; amphibious: number; contacts: number; known: number; age: number };
+  mines: number;
+}
+export interface TaiwanSector { name: string; terrain: string; prc: number; contested: boolean; lodgment: boolean }
+export interface TaiwanAlly { id: string; name: string; level: number; levelName: string; basing: boolean; overflight: boolean; belligerent: boolean;
+  attacked: boolean; sanctions: boolean; role: number; aligned: boolean }
+export interface TaiwanProgramme { id: string; name: string; pct: number; on: boolean; days: number }
+export interface TaiwanLosses { nation: string; label: string; killed: number; ships: number; carriers: number; amphibious: number; submarines: number; aircraft: number }
+export interface TaiwanView {
+  date: string; open: boolean; reason?: string;
+  active: boolean; side: 'US' | 'PRC'; standalone: boolean; phase: 'crisis' | 'war' | 'over';
+  day: number; hourOfDay: number; warDays: number; turnHours: number; year: number; preset: number; commitment: string;
+  message: string | null; outcome: string | null; endReason: string | null; status: string | null; score: number | null; grade: string | null;
+  rungs: { us: string[]; prc: string[] }; rung: { us: number; prc: number }; maxRung: number;
+  nuclear: { risk: number; crisis: boolean; us: number; prc: number; postures: string[] };
+  warning: { level: number; name: string; levels: string[]; chance: number; plans: { plan: string; share: number }[];
+    indicators: { day: number; text: string; confidence: number; cover: boolean }[] };
+  china: { plan: string; known: boolean; dDay: number; stoodDown: boolean; deterrence: number; region: number; lethality: number;
+    options: { strikeUS: boolean; strikeJapan: boolean; cyber: boolean; decapitation: boolean; penghuFirst: boolean } };
+  taiwan: { electricity: number; chips: number; will: number; command: number; throughput: number; blockade: number; blockadeName: string;
+    lng: number; coal: number; oil: number; rationing: number; mobilization: number; territory: number; plaAshore: number; rocReady: number;
+    civilians: number; asked: { mobilise: boolean; ration: boolean; disperse: boolean } };
+  sectors: TaiwanSector[]; zones: TaiwanZone[];
+  directives: { mainland: number; fleet: number; subs: number; munitions: number; air: number[]; convoys: boolean; held: string[]; preempt: boolean };
+  allies: TaiwanAlly[]; capital: number;
+  programmes: TaiwanProgramme[];
+  economy: { brent: number; lng: number; warRisk: number; equity: number; gapUS: number; gapWorld: number; chipShock: number; sanctions: number;
+    measures: string[]; support: number; approval: number | null; congress: number | null };
+  losses: TaiwanLosses[];
+  offer: { from: 'US' | 'PRC'; terms: number } | null;
+  sitrep: string[]; log: string[];
+}

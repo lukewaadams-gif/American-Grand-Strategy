@@ -753,3 +753,54 @@
 .start-crises li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
 .start-presets { display: inline-flex; flex-wrap: wrap; gap: 6px; }
 .hz .sit-ops .btn { white-space: nowrap; }
+
+/* ---- the Taiwan crisis room (docs/ISLAND_CHAIN.md) ---- */
+.tw-phase { font-weight: 600; color: var(--wh-text); }
+.tw-over p { margin: 0 0 4px; }
+.tw-offer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 10px 0; padding: 10px 14px; border: 1px solid var(--warn); border-radius: var(--r); background: rgba(232, 181, 82, 0.08); }
+.tw-offer p { margin: 0; }
+.tw-ladders { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin: 14px 0 0; }
+.tw-rungs { grid-template-columns: 1fr; gap: 4px; }
+.tw-rung { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; padding: 5px 10px; border-top-width: 1px; border-left: 4px solid rgba(255, 255, 255, 0.16); }
+.tw-rung.lit.r1, .tw-rung.lit.r2 { border-left-color: var(--warn); }
+.tw-rung.lit.r3, .tw-rung.lit.r4, .tw-rung.lit.r5, .tw-rung.lit.r6 { border-left-color: var(--bad); }
+.tw-ladder.us .tw-rung.on { background: rgba(110, 168, 254, 0.1); border-color: var(--info); }
+.hz-land.prc { fill: #3a2a2c; }
+.hz-land.roc { fill: #2c3a2e; }
+.tw-zone circle { fill: rgba(93, 120, 148, 0.08); stroke: rgba(93, 120, 148, 0.45); stroke-width: 1; stroke-dasharray: 3 3; }
+.tw-zone.strait circle { stroke: rgba(201, 210, 221, 0.6); }
+.tw-zone.hot circle { stroke: rgba(240, 127, 115, 0.6); fill: rgba(240, 127, 115, 0.06); }
+.tw-zone circle.tw-mines { fill: rgba(232, 181, 82, 0.16); stroke: var(--warn); stroke-dasharray: none; }
+.tw-chip rect { stroke: #0b1a2c; stroke-width: 1.2; }
+.tw-chip text { font: 700 13px Inter, sans-serif; text-anchor: middle; fill: #0b1a2c; }
+.tw-chip.us rect { fill: var(--info); }
+.tw-chip.prc rect { fill: var(--bad); }
+.tw-town { text-anchor: middle; }
+.hz-key.us.chip { background: var(--info); }
+.hz-key.prc.chip { background: var(--bad); }
+.tw-zones { margin: 6px 0 0; padding: 0; list-style: none; font-size: calc(var(--s) * 13px); }
+.tw-zones li { padding: 3px 0; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.tw-island { max-height: 520px; width: 100%; }
+.tw-sector { stroke: #0b1a2c; stroke-width: 1.4; }
+.tw-sector.roc, .hz-key.roc { fill: #3f7a5a; background: #3f7a5a; }
+.tw-sector.edge { fill: #7c8a4e; }
+.tw-sector.half, .hz-key.half { fill: #b08a3e; background: #b08a3e; }
+.tw-sector.prc, .hz-key.prc:not(.chip) { fill: #b5534a; background: #b5534a; }
+.tw-sector.fight { stroke: var(--warn); stroke-width: 2.4; }
+.tw-lodge, .hz-key.lodge { fill: #fff; stroke: #0b1a2c; stroke-width: 1; background: #fff; clip-path: polygon(50% 0, 62% 35%, 100% 35%, 69% 57%, 81% 100%, 50% 75%, 19% 100%, 31% 57%, 0 35%, 38% 35%); }
+.tw-warnlevels { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; margin: 0 0 10px; padding: 0; list-style: none; font-size: calc(var(--s) * 12px); font-weight: 700; text-align: center; }
+.tw-warnlevels li { padding: 5px 2px; border-radius: 3px; border: 1px solid rgba(255, 255, 255, 0.12); color: var(--wh-label); }
+.tw-warnlevels li.lit { color: var(--wh-text); border-color: var(--warn); }
+.tw-warnlevels li.lit.l3, .tw-warnlevels li.lit.l4 { border-color: var(--bad); background: rgba(240, 127, 115, 0.12); }
+.tw-allies { margin: 0 0 8px; padding: 0; list-style: none; }
+.tw-allies li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; padding: 5px 0; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.tw-dip select { max-width: 100%; }
+.tw-checks { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0; }
+.tw-check { font-size: calc(var(--s) * 13px); }
+.tw-num { width: 6em; }
+.tw-progs .hill-meter { display: block; margin-top: 4px; }
+.tw-toll { width: 100%; border-collapse: collapse; font-size: calc(var(--s) * 13px); }
+.tw-toll th, .tw-toll td { padding: 4px 6px; text-align: right; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.tw-toll th[scope="row"], .tw-toll thead th:first-child { text-align: left; }
+.tw-sub { margin: 12px 0 0; font-size: calc(var(--s) * 13px); color: var(--wh-label); text-transform: uppercase; letter-spacing: 0.06em; }
+@media (max-width: 980px) { .tw-ladders { grid-template-columns: 1fr; } }

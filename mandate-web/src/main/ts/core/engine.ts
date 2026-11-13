@@ -1,6 +1,6 @@
 // The engine: the Java simulation compiled to JavaScript (target/preview/engine/engine.js), behind one call that
 // takes and returns JSON. Everything the interface shows comes from its view models; everything it does is a command.
-import type { CabinetView, HillView, WestWingView, WwPerson, PressView, ResidenceView, TermsView, VerdictView, SitRoomView, ForeignCountryView, HormuzView, TransitionView, CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView, ScoreView } from './types.js';
+import type { CabinetView, HillView, WestWingView, WwPerson, PressView, ResidenceView, TermsView, VerdictView, SitRoomView, ForeignCountryView, HormuzView, TaiwanView, TransitionView, CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView, ScoreView } from './types.js';
 import type { NewGame, StartOptions } from '../start.js';
 
 interface EngineModule { call(request: string): string; }
@@ -56,6 +56,7 @@ export const engine = {
   terms(): TermsView { return request<TermsView>({ op: 'view', name: 'terms' }); },
   sitRoom(): SitRoomView { return request<SitRoomView>({ op: 'view', name: 'sitroom' }); },
   hormuz(): HormuzView { return request<HormuzView>({ op: 'view', name: 'hormuz' }); },
+  taiwan(): TaiwanView { return request<TaiwanView>({ op: 'view', name: 'taiwan' }); },
   foreignCountry(country: string): ForeignCountryView { return request<ForeignCountryView>({ op: 'view', name: 'foreignCountry', country }); },
   verdict(): VerdictView { return request<VerdictView>({ op: 'view', name: 'verdict' }); },
   transition(): TransitionView { return request<TransitionView>({ op: 'view', name: 'transition' }); },
