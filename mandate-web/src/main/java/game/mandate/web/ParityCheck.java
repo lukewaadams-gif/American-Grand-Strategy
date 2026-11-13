@@ -78,6 +78,23 @@ public final class ParityCheck {
                 + " hit " + h.tankersHit() + " talks " + game.mandate.core.data.Fmt.format("%.4f", h.talks()) + " spr " + game.mandate.core.data.Fmt.format("%.4f", h.sprLeft())
                 + " oil " + game.mandate.core.data.Fmt.format("%.4f", hz.state().economy().oil()) + " approval " + game.mandate.core.data.Fmt.format("%.6f", hz.state().politics().nationalApproval())
                 + " commands " + hz.history().size());
+        // the Taiwan crisis, the pessimistic case: the staff's playbook to the end, inside the presidency
+        GameEngine tw = SaveManager.load(SaveManager.save(g));
+        tw.apply(new game.mandate.core.command.Command.TaiwanBegin(2));
+        for (int t = 0; t < 1500 && tw.taiwanActive(); t++) AutoPilot.playTurn(tw);
+        var ts = tw.taiwan().orElseThrow();
+        System.out.println("taiwan " + ts.outcome() + " plan " + ts.plan() + " days " + ts.day() + " war " + game.mandate.core.data.Fmt.format("%.3f", ts.warDays())
+                + " killed " + ts.usKilled() + " km2 " + game.mandate.core.data.Fmt.format("%.3f", ts.territoryKm2()) + " elec " + game.mandate.core.data.Fmt.format("%.6f", ts.electricity())
+                + " brent " + game.mandate.core.data.Fmt.format("%.4f", ts.brent()) + " risk " + game.mandate.core.data.Fmt.format("%.4f", ts.nuclearRisk())
+                + " oil " + game.mandate.core.data.Fmt.format("%.4f", tw.state().economy().oil()) + " approval " + game.mandate.core.data.Fmt.format("%.6f", tw.state().politics().nationalApproval())
+                + " commands " + tw.history().size());
+        // Island Chain on its own: China's invasion in 2031, both sides by the computer
+        var ic = game.mandate.core.taiwan.TaiwanHarness.play(new game.mandate.core.taiwan.TaiwanEngine(),
+                game.mandate.core.taiwan.TaiwanScenario.standalone(2031, 0, "PRC").withPlan("invasion"), 7);
+        System.out.println("islandchain " + ic.outcome() + " days " + ic.day() + " war " + game.mandate.core.data.Fmt.format("%.3f", ic.warDays())
+                + " US killed " + ic.usKilled() + " US ships " + ic.losses("USA").ships() + " PRC ships " + ic.losses("CHN").ships() + " amphib " + ic.plaAmphibiousSunk()
+                + " ashore " + game.mandate.core.data.Fmt.format("%.3f", ic.plaAshore()) + " km2 " + game.mandate.core.data.Fmt.format("%.3f", ic.territoryKm2())
+                + " score " + game.mandate.core.data.Fmt.format("%.4f", ic.score(0)));
         System.out.println("ms " + (System.currentTimeMillis() - t0));
     }
 }

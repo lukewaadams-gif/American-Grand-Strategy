@@ -651,6 +651,10 @@ public final class TaiwanState {
     final List<double[]> history = new ArrayList<>();
     double reportedKia, costUS, usGapSum, brentSum, chipShockMax, equityLow = 1;
     int econDays;
+    /** What the last order did, for the crisis room (null after a turn). */
+    String message;
+    /** The hour the presidency last ran its week (economy, Fed, opinion) while the crisis paused the weeks. */
+    int tickHour;
 
     // =================================================================================================================
     //  Reading
@@ -887,6 +891,38 @@ public final class TaiwanState {
     /** Scores 0-100 (spec 8.9). */
     public double score(int side) { return side == US ? scoreUS : scorePRC; }
 
+    /** What the last order did, for the crisis room; null once a turn has been played. */
+    public String message() { return message; }
+    /** The hour the presidency last ran its week during the crisis. */
+    public int tickHour() { return tickHour; }
+    /** Whether America has asked Taipei to "mobilise", "ration" or "disperse". */
+    public boolean taiwanAsked(String what) {
+        return switch (what) {
+            case "mobilise" -> twMobiliseAsked || mobilized >= 1;
+            case "ration" -> twRationAsked;
+            case "disperse" -> twDisperseAsked;
+            default -> false;
+        };
+    }
+    /** A US pre-emptive strike is ordered and has not yet been flown. */
+    public boolean preemptOrdered() { return blueStrikeHour >= 0 && blueStrikeHour > hour; }
+    /** The economic measures in force, by their order ids (both sides'). */
+    public List<String> measuresInForce() {
+        List<String> l = new ArrayList<>();
+        for (int k = 1; k <= 3; k++) if (sanctUS >= k) l.add("sanctions" + k);
+        if (swift) l.add("swift");
+        if (freeze) l.add("freeze");
+        if (chipEmbargo) l.add("chips");
+        if (distantBlockade) l.add("distant");
+        if (sanctCN >= 1) l.add("countersanctions");
+        if (sanctCN >= 3) l.add("seize");
+        if (rareEarths) l.add("rareearths");
+        if (boycott) l.add("boycott");
+        if (treasury) l.add("treasury");
+        if (tourism) l.add("tourism");
+        return l;
+    }
+
     /** The log, newest last (the last 300 lines). */
     public List<String> log() { return Collections.unmodifiableList(log); }
     /** What happened in the last turn: alerts, sinkings, landings, entries into the war. */
@@ -961,6 +997,8 @@ public final class TaiwanState {
         List<Object> h = new ArrayList<>();
         for (double[] r : history) h.add(nums(r));
         m.put("history", h);
+        m.put("message", message);
+        m.put("tick", tickHour);
         return m;
     }
 
@@ -1008,6 +1046,8 @@ public final class TaiwanState {
         List<Object> po = Json.array(m.get("progOn"));
         s.progOn = new boolean[][]{bnums(po.get(0)), bnums(po.get(1))};
         for (Object o : Json.array(m.get("held"))) s.held.add((String) o);
+        s.message = (String) m.get("message");
+        s.tickHour = m.get("tick") == null ? 0 : Json.integer(m.get("tick"));
         for (Object o : Json.array(m.get("countries"))) s.countries.add(Country.of(o));
         for (Object o : Json.array(m.get("indUS"))) s.indicatorsUS.add(Indicator.of(o));
         for (Object o : Json.array(m.get("indPRC"))) s.indicatorsPRC.add(Indicator.of(o));

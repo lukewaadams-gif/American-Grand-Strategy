@@ -82,10 +82,10 @@ class BillsOnTheTableTest {
             GameEngine with = SaveManager.load(SaveManager.save(base)), without = SaveManager.load(SaveManager.save(base));
             with.apply(new Command.PushBill("housing", route, 20));
             if (!EngineFixtures.untilLaw(with, without, "housing")) continue;
-            for (int wk = 0; wk < 104; wk++) {
-                EngineFixtures.answerAll(with, 0); with.apply(new Command.EndTurn());
-                EngineFixtures.answerAll(without, 0); without.apply(new Command.EndTurn());
-            }
+            // two years by the calendar (a crisis plays in days or hours, so the twins can take different numbers of turns)
+            java.time.LocalDate end = with.date().plusWeeks(104);
+            for (int t = 0; t < 3000 && with.date().isBefore(end) && !with.over(); t++) { EngineFixtures.answerAll(with, 0); with.apply(new Command.EndTurn()); }
+            for (int t = 0; t < 3000 && without.date().isBefore(end) && !without.over(); t++) { EngineFixtures.answerAll(without, 0); without.apply(new Command.EndTurn()); }
             if (without.laws().contains("housing")) continue;     // the majority passed it in the twin too: no counterfactual
             assertEquals(2, with.state().policyTable().level("zoning"));
             assertTrue(with.state().economy().laws().stream().anyMatch(l -> l.id().startsWith("zoning@")));

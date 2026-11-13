@@ -37,6 +37,8 @@ public final class CommandCodec {
             case Command.Terms x -> m.put("order", game.mandate.core.terms.TermsOrder.toJson(x.order()));
             case Command.Foreign x -> m.put("order", game.mandate.core.foreign.ForeignOrder.toJson(x.order()));
             case Command.Hormuz x -> m.put("order", game.mandate.core.hormuz.HormuzOrder.toJson(x.order()));
+            case Command.Taiwan x -> m.put("order", game.mandate.core.taiwan.TaiwanOrder.toJson(x.order()));
+            case Command.TaiwanBegin x -> m.put("preset", x.preset());
             case Command.Pledge x -> m.put("bill", x.billId());
             case Command.SetAgenda x -> m.put("bills", x.billIds());
             case Command.PushBill x -> { m.put("bill", x.billId()); m.put("strategy", x.strategy().name()); m.put("capital", x.capital()); }
@@ -104,6 +106,8 @@ public final class CommandCodec {
             case "Terms" -> new Command.Terms(game.mandate.core.terms.TermsOrder.fromJson(Json.object(m.get("order"))));
             case "Foreign" -> new Command.Foreign(game.mandate.core.foreign.ForeignOrder.fromJson(Json.object(m.get("order"))));
             case "Hormuz" -> new Command.Hormuz(game.mandate.core.hormuz.HormuzOrder.fromJson(Json.object(m.get("order"))));
+            case "Taiwan" -> new Command.Taiwan(game.mandate.core.taiwan.TaiwanOrder.fromJson(Json.object(m.get("order"))));
+            case "TaiwanBegin" -> new Command.TaiwanBegin(Json.integer(m.get("preset")));
             case "Pledge" -> new Command.Pledge((String) m.get("bill"));
             case "SetAgenda" -> new Command.SetAgenda(Json.array(m.get("bills")).stream().map(o -> (String) o).toList());
             case "PushBill" -> new Command.PushBill((String) m.get("bill"), LegislativeStrategy.valueOf((String) m.get("strategy")), Json.num(m.get("capital")));

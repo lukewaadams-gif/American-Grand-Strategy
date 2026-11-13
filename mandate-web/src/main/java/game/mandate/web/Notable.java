@@ -63,6 +63,8 @@ public final class Notable {
             case Command.Terms o -> "a decision about your term";
             case Command.Foreign o -> "the Situation Room's order";
             case Command.Hormuz o -> "an order in the Strait of Hormuz";
+            case Command.Taiwan o -> "an order in the Taiwan crisis";
+            case Command.TaiwanBegin o -> "the Taiwan crisis begun";
             case Command.ChooseDebatePosture p -> "the debate approach";
             case Command.SetAgenda a -> "the agenda";
             case Command.ResolveEvent e -> "the event answer";

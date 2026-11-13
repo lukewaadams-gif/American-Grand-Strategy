@@ -63,6 +63,7 @@ public final class EngineApi {
                 game.apply(CommandCodec.fromJson(Json.object(req.get("command"))));
                 yield ok("news", news(game, before));
             }
+            case "islandChain" -> TaiwanViews.islandChain(req);
             case "view" -> switch ((String) req.get("name")) {
                 case "campaign" -> campaign(need());
                 case "decisions" -> ok("decisions", decisions(need()));
@@ -81,6 +82,7 @@ public final class EngineApi {
                 case "sitroom" -> ForeignViews.room(need());
                 case "foreignCountry" -> ForeignViews.country(need(), (String) req.get("country"));
                 case "hormuz" -> HormuzViews.room(need());
+                case "taiwan" -> TaiwanViews.room(need());
                 case "verdict" -> TermsViews.verdict(need());
                 case "transition" -> TransitionViews.view(need());
                 case "residence" -> PresidencyViews.residence(need());
@@ -212,7 +214,8 @@ public final class EngineApi {
         v.put("congress", g.congress().toString());
         // how long the End button's turn is: a week in office (an operational turn in a war), none in the other phases
         v.put("hormuz", HormuzViews.summary(g));
-        v.put("turnUnit", g.operationsActive() ? "war" : g.hormuzActive() ? "day" : switch (g.phase()) {
+        v.put("taiwan", TaiwanViews.summary(g));
+        v.put("turnUnit", g.operationsActive() || g.taiwanAtWar() && g.taiwanActive() ? "war" : g.hormuzActive() || g.taiwanActive() ? "day" : switch (g.phase()) {
             case FIRST_100_DAYS, GOVERNING -> "week";
             case TRANSITION -> "transition";
             default -> null;

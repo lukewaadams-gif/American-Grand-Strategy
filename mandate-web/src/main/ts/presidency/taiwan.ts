@@ -36,31 +36,24 @@ const ACTIONS_US: [string, string][] = [['consult', 'Consult and share intellige
 const ACTIONS_PRC: [string, string][] = [['reassure', 'Reassure and offer trade'], ['coerce', 'Economic coercion'], ['threaten', 'Threaten consequences'],
   ['support', 'Ask for support (Russia, North Korea)'], ['neutrality', 'Propose a neutrality pact'], ['influence', 'Influence operations']];
 const ROLES = ['Access', 'Basing', 'Defend itself', 'Fight'];
-const AIR: [string, number[]][] = [['Sink the fleet', [0.6, 0.1, 0.15, 0.15]], ['Balanced', [0.4, 0.15, 0.25, 0.2]], ['Taiwan’s skies', [0.25, 0.05, 0.5, 0.2]],
-  ['Guard the fleet', [0.3, 0.05, 0.2, 0.45]]];
+const AIR: [string, number[]][] = [['The staff’s mix', [0.5, 0, 0.25, 0.25]], ['Sink the fleet', [0.65, 0.05, 0.15, 0.15]], ['Hit the mainland', [0.35, 0.3, 0.2, 0.15]],
+  ['Taiwan’s skies', [0.25, 0.05, 0.5, 0.2]], ['Guard the fleet', [0.3, 0.05, 0.2, 0.45]]];
 const AIR_PARTS = ['Anti-ship strikes', 'Mainland strikes', 'Over Taiwan', 'Fleet defence'];
 const NATION_ADJ: Record<string, string> = { USA: 'American', CHN: 'Chinese', TWN: 'Taiwanese', JPN: 'Japanese', KOR: 'Korean', PHL: 'Philippine', AUS: 'Australian' };
 
 // the Western Pacific: the generated map's projection, cropped to the theatre from the Yellow Sea to Guam
-const PV = { x: 150, y: 90, w: 730, h: 630 };
+const PV = { x: 160, y: 90, w: 770, h: 640 };
 const PP = PACIFIC_PROJECTION;
 const pAt = (lon: number, lat: number): [number, number] => [(lon - PP.lon0) * PP.cos * PP.k, (PP.lat1 - lat) * PP.k];
 const PX_PER_KM = PP.k / 111.2;
 const PLACES: [string, number, number][] = [['CHINA', 113.5, 29.5], ['JAPAN', 133.5, 34.6], ['KOREA', 127.6, 37.2], ['PHILIPPINES', 122.4, 13.4],
-  ['Taiwan', 121.0, 23.7], ['Guam', 144.8, 13.4], ['Okinawa', 127.9, 26.4]];
+  ['Guam', 144.0, 12.6]];
+const STRAIT_PLACES: [string, number, number][] = [['CHINA', 118.4, 25.9], ['TAIWAN', 121.05, 23.1]];
 
-// Taiwan and its outlying islands: the bounds of the sector outlines, with a margin
-const SV = (() => {
-  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
-  for (const sec of TAIWAN_SECTORS) {
-    const n = (sec.d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
-    for (let i = 0; i + 1 < n.length; i += 2) { x0 = Math.min(x0, n[i]!); x1 = Math.max(x1, n[i]!); y0 = Math.min(y0, n[i + 1]!); y1 = Math.max(y1, n[i + 1]!); }
-  }
-  const m = 24;
-  return { x: x0 - m, y: y0 - m, w: x1 - x0 + 2 * m, h: y1 - y0 + 2 * m };
-})();
+// Taiwan, its outlying islands and the waters around it, from Kinmen to the Yonaguni Gap and the Bashi Channel
 const SP = STRAIT_PROJECTION;
 const sAt = (lon: number, lat: number): [number, number] => [(lon - SP.lon0) * SP.cos * SP.k, (SP.lat1 - lat) * SP.k];
+const SV = (() => { const [x0, y0] = sAt(117.9, 26.55), [x1, y1] = sAt(123.9, 21.2); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; })();
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 const num = (x: number) => Math.round(x).toLocaleString('en-US');
@@ -159,7 +152,19 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
   function mapCard(v: TaiwanView): HTMLElement {
     const us = v.side === 'US', own = us ? 'us' : 'prc', foe = us ? 'prc' : 'us';
     const marks: SVGElement[] = [];
+    // the waters around Taiwan, as one marker here: the map of the strait has them zone by zone
+    const near = v.zones.filter(z => z.near);
+    {
+      const [x, y] = pAt(121.4, 23.6);
+      const own = near.reduce((a, z) => a + z.own.ships + z.own.subs, 0), foe = near.reduce((a, z) => a + Math.max(z.enemy.ships + z.enemy.subs, z.enemy.contacts), 0);
+      const sure = near.every(z => z.enemy.known >= z.enemy.contacts), amph = near.some(z => z.enemy.amphibious > 0), carriers = near.some(z => z.own.carriers > 0);
+      marks.push(s('g', { class: 'tw-zone near' + (foe ? ' hot' : '') }, s('circle', { cx: String(x), cy: String(y), r: String(300 * PX_PER_KM) }),
+        s('title', null, `Around Taiwan: ${own} of your ships and submarines, ${foe} enemy (see the map of the strait)`)));
+      if (own) marks.push(chip(x - 22, y - 14, us ? 'us' : 'prc', String(own) + (carriers ? '★' : '')));
+      if (foe) marks.push(chip(x + 22, y + 14, us ? 'prc' : 'us', (sure ? '' : '~') + String(foe) + (amph ? '⚓' : '')));
+    }
     for (const z of v.zones) {
+      if (z.near) continue;
       const [x, y] = pAt(z.lon, z.lat), r = Math.max(10, Math.min(70, z.km * PX_PER_KM));
       const hasOwn = z.own.ships + z.own.subs > 0, hasFoe = z.enemy.contacts > 0;
       marks.push(s('g', { class: 'tw-zone' + (z.strait ? ' strait' : '') + (hasFoe ? ' hot' : '') },
@@ -207,6 +212,7 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
     const map = s('svg', { class: 'sit-map tw-island', viewBox: `${SV.x.toFixed(0)} ${SV.y.toFixed(0)} ${SV.w.toFixed(0)} ${SV.h.toFixed(0)}`, role: 'img',
       'aria-label': `Taiwan by sector: ${held.length ? `the PLA holds ${held.map(x => x.name).join(', ')}` : 'Taiwan holds every sector'}${fought.length ? `; fighting in ${fought.map(x => x.name).join(', ')}` : ''}.` },
       s('rect', { x: String(SV.x), y: String(SV.y), width: String(SV.w), height: String(SV.h), class: 'hz-sea' }),
+      ...v.zones.filter(z => z.near && z.id !== 'TAIWAN').map(z => { const [x, y] = sAt(z.lon, z.lat); return s('text', { x: String(x), y: String(y - 22), class: 'tw-zone-name' }, z.name.replace('Taiwan Strait ', 'Strait ')); }),
       ...TAIWAN_SECTORS.map(g => {
         const sec = v.sectors.find(x => x.name === g.name);
         const p = sec?.prc ?? 0;
@@ -222,14 +228,23 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
         cx /= n.length / 2; cy /= n.length / 2;
         return s('path', { class: 'tw-lodge', d: `M${cx} ${cy - 9}L${cx + 3} ${cy - 3}L${cx + 9} ${cy - 3}L${cx + 4} ${cy + 2}L${cx + 6} ${cy + 9}L${cx} ${cy + 5}L${cx - 6} ${cy + 9}L${cx - 4} ${cy + 2}L${cx - 9} ${cy - 3}L${cx - 3} ${cy - 3}Z` });
       }).filter((x): x is SVGPathElement => x !== null),
-      s('text', { x: String(sAt(119.2, 25.0)[0]), y: String(sAt(119.2, 25.0)[1]), class: 'hz-strait' }, 'Taiwan Strait'));
+      ...STRAIT_PLACES.map(([n, lo, la]) => { const [x, y] = sAt(lo, la); return s('text', { x: String(x), y: String(y), class: 'hz-place' }, n); }),
+      ...v.zones.filter(z => z.near && z.id !== 'TAIWAN').flatMap(z => {
+        const [x, y] = sAt(z.lon, z.lat), out: SVGElement[] = [];
+        const own = z.own.ships + z.own.subs, foe = Math.max(z.enemy.ships + z.enemy.subs, z.enemy.contacts);
+        if (own) out.push(chip(x - 18, y, us ? 'us' : 'prc', String(own) + (z.own.carriers ? '★' : '')));
+        if (foe) out.push(chip(x + 18, y, us ? 'prc' : 'us', (z.enemy.known < z.enemy.contacts ? '~' : '') + String(foe) + (z.enemy.amphibious ? '⚓' : '')));
+        if (z.mines > 0) out.push(s('circle', { class: 'tw-minefield', cx: String(x), cy: String(y + 22), r: '7' }, s('title', null, `${z.name}: about ${Math.round(z.mines)} mines`)));
+        return out;
+      }));
     const key = (cls: string, text: string) => h('li', null, h('span', { class: 'hz-key ' + cls, 'aria-hidden': 'true' }), text);
     const ask = (what: 'mobilise' | 'ration' | 'disperse', label: string) => h('button', { class: 'btn small toggle' + (t.asked[what] ? ' on' : ''), type: 'button',
       'aria-pressed': String(t.asked[what]), disabled: !live || t.asked[what], onclick: () => order({ type: 'TaiwanAsk', what }) }, label);
     return h('section', { class: 'room-card', 'aria-labelledby': 'tw-island' },
       h('h3', { class: 'room-card-title', id: 'tw-island' }, 'Taiwan'),
       map,
-      h('ul', { class: 'hz-legend' }, key('roc', 'Held by Taiwan'), key('half', 'Contested'), key('prc', 'Held by the PLA'), key('lodge', 'A lodgement')),
+      h('ul', { class: 'hz-legend' }, key('roc', 'Held by Taiwan'), key('half', 'Contested'), key('prc', 'Held by the PLA'), key('lodge', 'A lodgement'),
+        key((us ? 'us' : 'prc') + ' chip', 'Your forces'), key((us ? 'prc' : 'us') + ' chip', 'The enemy, as seen')),
       h('dl', { class: 'ww-stats' },
         h('dt', null, 'Electricity'), h('dd', null, meter(t.electricity * 100, 100, 'Taiwan’s electricity, share of normal', t.electricity < 0.6 ? 'bad' : t.electricity < 0.9 ? 'warn' : '', pct(t.electricity))),
         h('dt', null, 'Chip output'), h('dd', null, meter(t.chips * 100, 100, 'Taiwan’s chip output, share of normal', t.chips < 0.5 ? 'bad' : t.chips < 0.9 ? 'warn' : '', pct(t.chips))),
@@ -341,9 +356,11 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
   }
 
   function programmesCard(v: TaiwanView, live: boolean): HTMLElement {
+    const done = v.programmes.filter(p => p.pct >= 100);
     return h('section', { class: 'room-card', 'aria-labelledby': 'tw-prog' },
       h('h3', { class: 'room-card-title', id: 'tw-prog' }, 'Preparations'),
-      h('ul', { class: 'sit-ops tw-progs' }, ...v.programmes.map(p => h('li', null,
+      done.length ? h('p', { class: 'small' }, h('strong', null, 'Done: '), done.map(p => p.name).join(' · ')) : null,
+      h('ul', { class: 'sit-ops tw-progs' }, ...v.programmes.filter(p => p.pct < 100).map(p => h('li', null,
         h('div', null, h('strong', null, p.name), h('span', { class: 'muted small' }, ` · ${p.days} ${p.days === 1 ? 'day' : 'days'}`),
           p.pct > 0 ? meter(p.pct, 100, `${p.name}: ${Math.round(p.pct)}% done`, p.pct >= 100 ? 'good' : '', p.pct >= 100 ? 'done' : `${Math.round(p.pct)}%`) : null),
         p.pct >= 100 ? h('span', { class: 'muted small' }, 'Done')

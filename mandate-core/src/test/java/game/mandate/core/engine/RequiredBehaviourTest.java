@@ -151,13 +151,18 @@ class RequiredBehaviourTest {
         g.queueEvent(EventCatalog.escalation(Escalation.WAR));
         var war = g.pendingEvents().stream().filter(p -> p.definition().id().equals("taiwan_war")).findFirst().orElseThrow();
         g.apply(new Command.ResolveEvent(war.instanceId(), 0));          // defend Taiwan with US forces
-        assertTrue(g.operationsActive());
-        assertEquals(SimulationClock.Granularity.OPERATIONAL, g.clock().mode(), "the war is fought in operational turns");
+        assertTrue(g.taiwanActive(), "China's attack opens the Taiwan crisis, its plan fixed");
+        assertEquals(SimulationClock.Granularity.DAILY, g.clock().mode(), "the days before H-hour are crisis days");
         long turnsBefore = g.clock().turns();
+        int guard = 0;
+        while (g.taiwanActive() && !g.taiwanAtWar() && guard++ < 200) { answerAll(g, 0); g.apply(new Command.EndTurn()); }
+        assertTrue(g.taiwanAtWar(), "China attacks");
+        assertEquals(SimulationClock.Granularity.OPERATIONAL, g.clock().mode(), "the war is fought in operational turns");
         var start = g.clock().now();
         g.apply(new Command.EndTurn());
-        assertEquals(6, java.time.Duration.between(start, g.clock().now()).toHours(), "first-week operational turns are six hours");
-        while (g.operationsActive()) { answerAll(g, 0); g.apply(new Command.EndTurn()); }
+        assertTrue(java.time.Duration.between(start, g.clock().now()).toHours() <= 6, "the war's first turns are hours long");
+        while (g.taiwanActive() && guard++ < 1500) { answerAll(g, 0); g.apply(new Command.EndTurn()); }
+        assertFalse(g.taiwanActive());
         assertTrue(g.clock().turns() - turnsBefore > 10, "a war takes many operational turns");
         assertEquals(SimulationClock.Granularity.WEEKLY, g.clock().mode(), "governing resumes in weekly turns");
 
@@ -206,8 +211,9 @@ class RequiredBehaviourTest {
         g.queueEvent(EventCatalog.escalation(Escalation.WAR));
         var war = g.pendingEvents().stream().filter(p -> p.definition().id().equals("taiwan_war")).findFirst().orElseThrow();
         g.apply(new Command.ResolveEvent(war.instanceId(), 0));
-        for (int i = 0; i < 5; i++) g.apply(new Command.EndTurn());
-        assertTrue(g.operationsActive());
+        for (int i = 0; i < 400 && !g.taiwanAtWar(); i++) { answerAll(g, 0); g.apply(new Command.EndTurn()); }
+        for (int i = 0; i < 5; i++) { answerAll(g, 0); g.apply(new Command.EndTurn()); }
+        assertTrue(g.taiwanActive() && g.taiwanAtWar());
         // The war was started by a test hook, not a command, so only the snapshot path (not replay) can reproduce it.
         assertFuturesMatch(g, false);
     }

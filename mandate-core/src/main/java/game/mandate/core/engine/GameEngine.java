@@ -60,6 +60,11 @@ import game.mandate.core.hill.HillEngine;
 import game.mandate.core.terms.TermsEngine;
 import game.mandate.core.foreign.ForeignData;
 import game.mandate.core.hormuz.HormuzEngine;
+import game.mandate.core.taiwan.TaiwanEngine;
+import game.mandate.core.taiwan.TaiwanOrder;
+import game.mandate.core.taiwan.TaiwanResult;
+import game.mandate.core.taiwan.TaiwanScenario;
+import game.mandate.core.taiwan.TaiwanState;
 import game.mandate.core.hormuz.HormuzOrder;
 import game.mandate.core.hormuz.HormuzState;
 import game.mandate.core.foreign.ForeignEngine;
@@ -80,7 +85,6 @@ import game.mandate.core.military.MilitaryCatalog;
 import game.mandate.core.military.MilitaryEngine;
 import game.mandate.core.military.MilitaryParams;
 import game.mandate.core.military.TheaterOutcome;
-import game.mandate.core.military.TheaterScenario;
 import game.mandate.core.opening.Host;
 import game.mandate.core.opening.HundredDays;
 import game.mandate.core.opening.OpeningAction;
@@ -153,6 +157,7 @@ public final class GameEngine implements WorldView {
     private final TermsEngine termsEngine;
     private final ForeignEngine foreignEngine;
     private final HormuzEngine hormuzEngine = new HormuzEngine();
+    private final TaiwanEngine taiwanEngine = new TaiwanEngine();
     private final TransitionOffice transitionOffice;
     private final AmbientNews ambient;
 
@@ -317,6 +322,8 @@ public final class GameEngine implements WorldView {
             case Command.Terms c -> termsOrder(c.order());
             case Command.Foreign c -> foreignOrder(c.order());
             case Command.Hormuz c -> hormuzOrder(c.order());
+            case Command.Taiwan c -> taiwanOrder(c.order());
+            case Command.TaiwanBegin c -> beginTaiwan(c.preset());
         }
         history.add(command);
         w.commandsApplied++;
@@ -416,6 +423,7 @@ public final class GameEngine implements WorldView {
     private void endTurn() {
         if (w.scheduler.hasPending()) throw new IllegalCommandException("Decide the pending events first");
         if (w.military.operationActive()) { operationalTurn(); return; }
+        if (taiwanActive()) { taiwanTurn(); return; }
         if (hormuzActive()) { hormuzDay(); return; }
         switch (w.phase) {
             case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> campaignWeek();
@@ -918,7 +926,7 @@ public final class GameEngine implements WorldView {
         }
         if (term() == 1 && w.election.result2032() == null && (w.terms == null || TermsEngine.running(w.terms)) && !date().isBefore(calendar.reelectionStart()))
             beginReelection();
-        if (w.phase == Phase.GOVERNING) maybeHormuz();
+        if (w.phase == Phase.GOVERNING) { maybeHormuz(); maybeTaiwan(); }
     }
 
     // ---- the president's week (Resolute Desk) ---------------------------------------------------------------------
@@ -1128,8 +1136,11 @@ public final class GameEngine implements WorldView {
         for (News n : o.news()) news(n);
         for (String line : o.log()) log(line);
         followWorld();
-        // the Strait goes to war: the war is fought on the operational model, as the ladder's war always was
-        if (o.startsTaiwanWar() && !w.military.operationActive()) queueEvent(EventCatalog.escalation(Escalation.WAR));
+        // China escalates to a quarantine or a blockade: the Taiwan crisis begins. If it goes to war without a crisis first,
+        // its attack opens the crisis with the plan fixed.
+        if (o.escalatesOverTaiwan()) w.taiwanEscalated = true;
+        if (o.startsTaiwanWar() && taiwanMayBegin())
+            startTaiwan(0, "invasion", TaiwanScenario.Commitment.INTERVENE, "Chinese forces move to attack Taiwan");
     }
 
     private void foreignOrder(ForeignOrder o) {
@@ -1166,7 +1177,7 @@ public final class GameEngine implements WorldView {
 
     /** Each week the world's tensions around Iran may start a fight over the strait. */
     private void maybeHormuz() {
-        if (w.foreign == null || hormuzActive() || w.military.operationActive()) return;
+        if (w.foreign == null || hormuzActive() || taiwanActive() || w.military.operationActive()) return;
         if (w.hormuz != null) hormuzEngine.afterWeek(w.hormuz);
         if (rng.uniform("world.hormuz") < foreignEngine.hormuzChance(w.foreign))
             startHormuz(0, foreignEngine.hormuzStart(w.foreign, rng), foreignEngine.hormuzCause(w.foreign));
@@ -1185,7 +1196,11 @@ public final class GameEngine implements WorldView {
     private void hormuzDay() {
         hormuzOutcome("The Strait of Hormuz", hormuzEngine.day(w.hormuz, date(), rng), null);
         w.clock.advance();
-        if (w.hormuz.day() - w.hormuz.lastTick() >= 7 || !w.hormuz.active()) crisisWeek();
+        if (w.hormuz.day() - w.hormuz.lastTick() >= 7 || !w.hormuz.active()) {
+            int days = w.hormuz.day() - w.hormuz.lastTick();
+            hormuzEngine.ticked(w.hormuz);
+            crisisWeek(days);
+        }
         if (!w.hormuz.active()) {
             foreignEngine.hormuzEnded(w.foreign, foreignContext(), !"A stalemate".equals(w.hormuz.outcome()), w.hormuz.outcome());
             if (w.hormuz.invasion() == 3 && w.hormuz.invasionOption() == 0) {
@@ -1199,10 +1214,9 @@ public final class GameEngine implements WorldView {
         }
     }
 
-    /** The week the crisis has paused: the economy (with the strait's oil premium), the Fed and the reports, and opinion. */
-    private void crisisWeek() {
-        LocalDate to = date(), from = to.minusDays(Math.max(1, w.hormuz.day() - w.hormuz.lastTick()));
-        hormuzEngine.ticked(w.hormuz);
+    /** The week a crisis has paused: the economy (with the crisis's oil premium), the Fed and the reports, and opinion. */
+    private void crisisWeek(int days) {
+        LocalDate to = date(), from = to.minusDays(Math.max(1, days));
         economyEngine.step(w.economy, w.budget, 1.0 / EconomyEngine.WEEKS_PER_MONTH, marketContext(), rng);
         for (int i = 0; i < calendar.fomcMeetings(from, to); i++) news(Releases.fed(from, w.economy, economyEngine.fedMeeting(w.economy, w.budget)));
         politicsEngine.step(w.politics, 1.0, opinionInputs(), rng);
@@ -1227,7 +1241,7 @@ public final class GameEngine implements WorldView {
     private void hormuzOrder(HormuzOrder o) {
         if (w.phase != Phase.GOVERNING || w.foreign == null) throw new IllegalCommandException("Only in office, once the Situation Room is open");
         if (o instanceof HormuzOrder.Begin b) {
-            if (hormuzActive() || w.military.operationActive()) throw new IllegalCommandException("A crisis is already under way");
+            if (hormuzActive() || taiwanActive() || w.military.operationActive()) throw new IllegalCommandException("A crisis is already under way");
             startHormuz(Math.max(0, Math.min(2, b.preset())), 2, "the Guards seize a tanker, and Tehran threatens to close the strait");
             return;
         }
@@ -1250,6 +1264,119 @@ public final class GameEngine implements WorldView {
             throw new IllegalCommandException(e.getMessage());
         }
         hormuzOutcome("The Strait of Hormuz", out, o.getClass().getSimpleName());
+    }
+
+    // ---- the Taiwan crisis (docs/ISLAND_CHAIN.md) -----------------------------------------------------------------------
+
+    public boolean taiwanActive() { return w.taiwan != null && !w.taiwan.over(); }
+    public Optional<TaiwanState> taiwan() { return Optional.ofNullable(w.taiwan); }
+    public TaiwanEngine taiwanEngine() { return taiwanEngine; }
+    /** The war over Taiwan is being fought (the crisis has reached H-hour). */
+    public boolean taiwanAtWar() { return w.taiwan != null && w.taiwan.atWar(); }
+
+    /** Each week, China's escalation to a quarantine or a blockade of the island opens the crisis. */
+    private void maybeTaiwan() {
+        boolean escalated = w.taiwanEscalated;
+        w.taiwanEscalated = false;
+        if (w.foreign == null || !escalated || w.foreign.taiwanWar() || !taiwanMayBegin()) return;
+        startTaiwan(0, null, TaiwanScenario.Commitment.INTERVENE, w.foreign.twStage() >= 4 ? "China threatens to blockade Taiwan" : "China's coast guard and navy close in on Taiwan");
+    }
+
+    /** No other crisis is under way, a year has passed since the last over Taiwan, and Taiwan has not fallen. */
+    private boolean taiwanMayBegin() {
+        if (taiwanActive() || hormuzActive() || w.military.operationActive()) return false;
+        if (w.taiwan == null) return true;
+        TaiwanResult.Status st = TaiwanResult.status(w.taiwan.outcomeCode());
+        return st != TaiwanResult.Status.FALLEN && st != TaiwanResult.Status.NUCLEAR && !date().isBefore(w.taiwan.date().plusWeeks(52));
+    }
+
+    private void beginTaiwan(int preset) {
+        if (w.phase != Phase.GOVERNING || w.foreign == null) throw new IllegalCommandException("Only in office, once the Situation Room is open");
+        if (hormuzActive() || taiwanActive() || w.military.operationActive()) throw new IllegalCommandException("A crisis is already under way");
+        startTaiwan(Math.max(0, Math.min(2, preset)), null, TaiwanScenario.Commitment.INTERVENE, "China's coast guard and navy close in on Taiwan");
+    }
+
+    /** The crisis begins: the forces are projected to this year, and the presidency's deterrence, munitions and Japan set the start. */
+    private void startTaiwan(int preset, String plan, TaiwanScenario.Commitment commitment, String cause) {
+        int year = Math.max(2029, Math.min(2036, date().getYear()));
+        double deter = w.foreign != null ? w.foreign.deter() : w.diplomacy.deterrence();
+        double munitions = militaryEngine.munitionsIndex(w.military) / 100.0 / taiwanEngine.data().usAntiShipProjection(year);
+        TaiwanScenario sc = new TaiwanScenario(year, preset, "US", plan, deter, munitions, w.diplomacy.japanBasing(), w.diplomacy.warningMonths(), commitment,
+                cabinetCompetence(Post.DEFENSE), null);
+        w.taiwan = taiwanEngine.newCrisis(date(), sc, rng);
+        taiwanEngine.ticked(w.taiwan);
+        if (w.foreign != null && !w.foreign.taiwanWar()) foreignEngine.taiwanCrisisBegan(w.foreign, foreignContext());
+        w.clock.setMode(Granularity.DAILY);
+        news(new News(date(), News.Kind.WORLD, "CRISIS IN THE TAIWAN STRAIT", cause + ". The Situation Room watches for the signs of an attack.", 5, null));
+        log("THE TAIWAN STRAIT: " + cause + ". The clock moves to days until the crisis ends.");
+    }
+
+    /** One turn of the crisis: a day, or at war an hour, six or twelve; the presidency's week runs each seven days. */
+    private void taiwanTurn() {
+        TaiwanState s = w.taiwan;
+        int hours = Math.max(1, s.turnHours());
+        taiwanOutcome(taiwanEngine.turn(s, date(), rng), null);
+        w.clock.advanceHours(hours);
+        w.clock.setMode(s.atWar() ? Granularity.OPERATIONAL : Granularity.DAILY);
+        if (s.over()) { taiwanEnded(); return; }
+        if (s.hour() - s.tickHour() >= 168) { int days = (s.hour() - s.tickHour()) / 24; taiwanEngine.ticked(s); crisisWeek(days); }
+    }
+
+    private void taiwanOutcome(TaiwanEngine.Outcome o, String what) {
+        String cause = "The Taiwan Strait";
+        int decision = -1;
+        if (what != null) {
+            decision = w.ledger.decide(date(), cause);
+            w.ledger.record(decision, date(), cause, "taiwan", what);
+        }
+        for (Effect e : o.effects()) {
+            if (decision < 0) decision = w.ledger.decide(date(), cause);
+            dispatch(decision, cause, e);
+        }
+        for (News n : o.news()) news(n);
+        for (String line : o.log()) log(line);
+        followWorld();
+    }
+
+    private void taiwanOrder(TaiwanOrder o) {
+        if (!taiwanActive()) throw new IllegalCommandException("There is no crisis over Taiwan");
+        TaiwanEngine.Outcome out;
+        try {
+            out = taiwanEngine.apply(w.taiwan, date(), o, rng);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalCommandException(e.getMessage());
+        }
+        taiwanOutcome(out, o.getClass().getSimpleName());
+        if (w.taiwan.over()) taiwanEnded();
+    }
+
+    /** The crisis is over: the war on the record, the stockpile and the force written down, the world told, and the weeks again. */
+    private void taiwanEnded() {
+        TaiwanState s = w.taiwan;
+        crisisWeek(Math.max(1, (s.hour() - s.tickHour()) / 24));
+        taiwanEngine.ticked(s);
+        TaiwanResult r = taiwanEngine.result(s);
+        TaiwanResult.Status st = r.status() == null ? TaiwanResult.Status.STALEMATE : r.status();
+        if (s.warHours() >= 0) {
+            TheaterOutcome.TaiwanStatus ts = switch (st) {
+                case DEFENDED, DETERRED -> TheaterOutcome.TaiwanStatus.DEFENDED;
+                case FALLEN, NUCLEAR -> TheaterOutcome.TaiwanStatus.FALLEN;
+                case STALEMATE -> TheaterOutcome.TaiwanStatus.STALEMATE;
+            };
+            double after = switch (st) { case DEFENDED, DETERRED -> 75; case STALEMATE -> 45; case FALLEN -> 15; case NUCLEAR -> 5; };
+            militaryEngine.recordTaiwanWar(w.military, ts, (int) Math.ceil(s.warDays() / 7), r.usKilled(), r.shipsLost(), r.carriersLost(), r.aircraftLost(),
+                    s.usExpended(taiwanEngine.data()), after, r.outcome() + ". " + (r.reason() == null ? "" : r.reason()));
+        }
+        if (w.foreign != null) {
+            ForeignEngine.Outcome fo = ForeignEngine.Outcome.empty();
+            foreignEngine.taiwanWarOver(w.foreign, foreignContext(), st.name(), 0, fo);
+            foreignOutcome("The Taiwan Strait", fo, null);
+        }
+        w.clock.setMode(Granularity.WEEKLY);
+        w.clock.set(date().with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY)));
+        news(new News(date(), st == TaiwanResult.Status.DETERRED || st == TaiwanResult.Status.DEFENDED ? News.Kind.GOOD : News.Kind.WORLD,
+                "THE TAIWAN CRISIS ENDS: " + r.outcome().toUpperCase(java.util.Locale.ROOT), r.reason(), 5, null));
+        log("The Taiwan crisis is over: " + r.outcome() + (r.usKilled() > 0 ? ", " + r.usKilled() + " Americans killed" : "") + ". The weeks resume.");
     }
 
     // ---- terms of office (Resolute Desk's Terms and Reelection) ----------------------------------------------------
@@ -1371,7 +1498,7 @@ public final class GameEngine implements WorldView {
         base.put("laws", (double) (w.hill == null ? w.policy.laws().size() : w.hill.enacted().size()));
         base.put("court", (double) (w.westWing == null ? 0 : w.westWing.justicesAppointed()));
         base.put("deficit", economyEngine.deficit(w.economy, w.budget));
-        base.put("wars", (double) w.military.wars().size() + (w.military.operationActive() ? 1 : 0));
+        base.put("wars", (double) w.military.wars().size() + (w.military.operationActive() || taiwanAtWar() ? 1 : 0));
         TermsEngine.Outcome o = termsEngine.secondInauguration(w.terms, termsContext(), w.president.week(), base, rng);
         termsOutcome("The second inauguration", o, null);
         w.midtermsHeld = false;
@@ -1395,7 +1522,7 @@ public final class GameEngine implements WorldView {
         Map<String, Double> b = w.terms.goalBase();
         double laws = w.hill == null ? w.policy.laws().size() : w.hill.enacted().size();
         double justices = w.westWing == null ? 0 : w.westWing.justicesAppointed();
-        double wars = w.military.wars().size() + (w.military.operationActive() ? 1 : 0);
+        double wars = w.military.wars().size() + (w.military.operationActive() || taiwanAtWar() ? 1 : 0);
         TermsState.Race r = w.terms.race();
         var in = new TermsEngine.GoalInputs(laws - b.getOrDefault("laws", laws), justices - b.getOrDefault("court", justices),
                 economyEngine.deficit(w.economy, w.budget) - b.getOrDefault("deficit", 0.0), wars - b.getOrDefault("wars", wars),
@@ -1739,15 +1866,6 @@ public final class GameEngine implements WorldView {
 
     // ---- operational military turns -----------------------------------------------------------
 
-    private void startWar(TheaterScenario.Commitment commitment, int decisionId) {
-        TheaterScenario s = new TheaterScenario(w.diplomacy.deterrence(), militaryEngine.munitionsIndex(w.military), w.diplomacy.japanBasing(),
-                w.diplomacy.warningMonths(), commitment, cabinetCompetence(Post.DEFENSE));
-        militaryEngine.startOperation(w.military, s, rng);
-        w.clock.setMode(Granularity.OPERATIONAL);
-        w.ledger.record(decisionId, date(), "War", "military", "War begins: " + commitment);
-        log("WAR IN THE TAIWAN STRAIT. The clock moves to operational turns.");
-    }
-
     private void operationalTurn() {
         double hours = militaryEngine.nextTurnHours(w.military);
         Optional<TheaterOutcome> out = militaryEngine.stepOperation(w.military, rng);
@@ -1885,7 +2003,10 @@ public final class GameEngine implements WorldView {
         dispatchAll(decision, "Event " + r.event().definition().id(), r.effects());
         r.hook().ifPresent(h -> {
             if (!h.startsWith("theater:")) throw new IllegalStateException("Unknown hook " + h);
-            startWar(TheaterScenario.Commitment.valueOf(h.substring("theater:".length())), decision);
+            if (taiwanActive() || w.military.operationActive()) return;
+            // the war is fought on the Taiwan crisis engine, its plan fixed: China attacks
+            startTaiwan(0, "invasion", TaiwanScenario.Commitment.valueOf(h.substring("theater:".length())), "Chinese forces move to attack Taiwan");
+            w.ledger.record(decision, date(), "War", "taiwan", "The Taiwan crisis begins: " + h.substring("theater:".length()));
         });
     }
 
@@ -1895,9 +2016,10 @@ public final class GameEngine implements WorldView {
 
     private MarketContext marketContext() {
         double premium = Math.max(0, w.diplomacy.tension(HotSpot.MIDDLE_EAST) - middleEastPivot) * premiumPerMiddleEast + (w.hormuz == null ? 0 : w.hormuz.premium())
+                + (taiwanActive() ? Math.max(0, w.taiwan.brent() - 92) : 0)
                 + (w.diplomacy.rung() == null || w.diplomacy.warOver() ? 0 : premiumPerRung * (w.diplomacy.rung().ordinal() + 1));
         double stress = (w.diplomacy.rung() == null || w.diplomacy.warOver() ? 0 : stressPerRung * (w.diplomacy.rung().ordinal() + 1))
-                + (w.military.operationActive() ? stressWar : 0);
+                + (w.military.operationActive() || taiwanAtWar() ? stressWar : 0);
         return new MarketContext(premium, 0, cabinetCompetence(Post.TREASURY), stress);
     }
 

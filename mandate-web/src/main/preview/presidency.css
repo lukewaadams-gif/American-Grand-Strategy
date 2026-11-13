@@ -806,3 +806,6 @@
 @media (max-width: 980px) { .tw-ladders { grid-template-columns: 1fr; } }
 .ic-page { max-width: 1440px; margin: 0 auto; padding: 16px; }
 .start-ic { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.tw-zone.near circle { stroke: rgba(201, 210, 221, 0.5); fill: rgba(201, 210, 221, 0.04); }
+.tw-zone-name { fill: #9fb0c3; font: 600 13px Inter, sans-serif; text-anchor: middle; paint-order: stroke; stroke: #0b1a2c; stroke-width: 3px; }
+.tw-minefield { fill: rgba(232, 181, 82, 0.25); stroke: var(--warn); stroke-width: 1.4; }

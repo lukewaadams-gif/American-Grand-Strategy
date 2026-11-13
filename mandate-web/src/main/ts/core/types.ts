@@ -434,7 +434,7 @@ export interface HormuzView {
 // ---- the Taiwan crisis (docs/ISLAND_CHAIN.md) ------------------------------------------------------------------------------
 /** A sea zone: the player's own forces in it, and the enemy as the player's side sees it (contacts). */
 export interface TaiwanZone {
-  id: string; name: string; lon: number; lat: number; km: number; strait: boolean;
+  id: string; name: string; lon: number; lat: number; km: number; strait: boolean; near: boolean;
   own: { ships: number; groups: number; subs: number; carriers: number; amphibious: number; names: string[] };
   enemy: { ships: number; subs: number; carriers: number; amphibious: number; contacts: number; known: number; age: number };
   mines: number;

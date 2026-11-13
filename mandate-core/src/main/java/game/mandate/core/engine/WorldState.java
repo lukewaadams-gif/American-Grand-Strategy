@@ -16,6 +16,7 @@ import game.mandate.core.terms.TermsState;
 import game.mandate.core.foreign.ForeignState;
 import game.mandate.core.westwing.TransitionState;
 import game.mandate.core.hormuz.HormuzState;
+import game.mandate.core.taiwan.TaiwanState;
 import game.mandate.core.game.Legacy;
 import game.mandate.core.military.MilitaryState;
 import game.mandate.core.opening.HundredDaysState;
@@ -69,6 +70,10 @@ public final class WorldState {
     TransitionState transition;
     /** The Strait of Hormuz crisis, while it lasts and after (its record and the fading premium); null if there has been none. */
     HormuzState hormuz;
+    /** The Taiwan crisis (docs/ISLAND_CHAIN.md), while it lasts and after (its record); null if there has been none. */
+    TaiwanState taiwan;
+    /** China escalated around Taiwan this week (a quarantine or a blockade): the week's end may open the crisis. */
+    boolean taiwanEscalated;
     /** The weighed news The Capital Ledger is made from (the last 400 stories). */
     final List<News> news = new ArrayList<>();
     /** The era's stories that have already run (indexes into the ambient table). */
@@ -106,6 +111,7 @@ public final class WorldState {
     public ForeignState foreign() { return foreign; }
     public TransitionState transition() { return transition; }
     public HormuzState hormuz() { return hormuz; }
+    public TaiwanState taiwan() { return taiwan; }
     public List<News> news() { return Collections.unmodifiableList(news); }
     public Set<Integer> ambientUsed() { return Collections.unmodifiableSet(ambientUsed); }
     public EventScheduler scheduler() { return scheduler; }
@@ -132,6 +138,8 @@ public final class WorldState {
         m.put("foreign", foreign == null ? null : foreign.toJson());
         m.put("transition", transition == null ? null : transition.toJson());
         m.put("hormuz", hormuz == null ? null : hormuz.toJson());
+        m.put("taiwan", taiwan == null ? null : taiwan.toJson());
+        m.put("taiwanEscalated", taiwanEscalated);
         List<Object> ns = new ArrayList<>();
         for (News n : news) ns.add(n.toJson());
         m.put("news", ns);
@@ -166,6 +174,8 @@ public final class WorldState {
         w.foreign = m.get("foreign") == null ? null : ForeignState.fromJson(Json.object(m.get("foreign")));
         w.transition = m.get("transition") == null ? null : TransitionState.fromJson(Json.object(m.get("transition")));
         w.hormuz = m.get("hormuz") == null ? null : HormuzState.fromJson(Json.object(m.get("hormuz")));
+        w.taiwan = m.get("taiwan") == null ? null : TaiwanState.fromJson(Json.object(m.get("taiwan")));
+        w.taiwanEscalated = Boolean.TRUE.equals(m.get("taiwanEscalated"));
         if (m.get("news") != null) for (Object o : Json.array(m.get("news"))) w.news.add(News.fromJson(Json.object(o)));
         if (m.get("ambientUsed") != null) for (Object o : Json.array(m.get("ambientUsed"))) w.ambientUsed.add(Json.integer(o));
         w.scheduler = EventScheduler.fromJson(Json.object(m.get("scheduler")));

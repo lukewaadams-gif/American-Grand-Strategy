@@ -185,6 +185,40 @@ public final class MilitaryEngine {
                 o.ships, o.carriers, o.aircraft, (int) Math.round(o.munitionsUsed));
     }
 
+    /**
+     * A war fought on the Taiwan crisis engine (docs/ISLAND_CHAIN.md) has ended: it goes on the record, the American
+     * munitions it spent leave the stockpile (by this catalog's ids), and the ships and aircraft lost leave the force.
+     */
+    public TheaterOutcome recordTaiwanWar(MilitaryState s, TaiwanStatus status, int weeks, int killed, int ships, int carriers, int aircraft,
+                                          java.util.Map<String, Integer> spent, double deterrenceAfter, String summary) {
+        int fired = 0;
+        for (java.util.Map.Entry<String, Integer> e : spent.entrySet()) {
+            if (catalog.munitions().stream().noneMatch(m -> m.id().equals(e.getKey()))) continue;
+            double have = s.munitions(e.getKey()), take = Math.min(have, e.getValue());
+            s.munitions.put(e.getKey(), have - take);
+            s.expended.merge(e.getKey(), take, Double::sum);
+            fired += e.getValue();
+        }
+        loseExactly(s, "CARRIER", carriers);
+        loseExactly(s, "SURFACE", Math.max(0, ships - carriers));
+        int air = aircraft - loseExactly(s, "FIGHTER", (aircraft + 1) / 2);
+        air -= loseExactly(s, "CARRIER_AIR", air);
+        loseExactly(s, "FIGHTER", air);
+        // as the operational model counted them: surface ships apart from carriers
+        TheaterOutcome out = new TheaterOutcome(status, weeks, killed, 0, 0, 0, deterrenceAfter, summary, Math.max(0, ships - carriers), carriers, aircraft, fired);
+        s.killed += killed;
+        s.wars.add(out);
+        return out;
+    }
+
+    private int loseExactly(MilitaryState s, String id, int n) {
+        int have = s.force(id), k = Math.max(0, Math.min(n, have));
+        if (k == 0) return 0;
+        s.forces.put(id, have - k);
+        s.forcesLost.merge(id, k, Integer::sum);
+        return k;
+    }
+
     /** The transitions a finished war sends to the rest of the world. */
     public List<Effect> consequences(TheaterOutcome out) {
         List<Effect> e = new ArrayList<>();

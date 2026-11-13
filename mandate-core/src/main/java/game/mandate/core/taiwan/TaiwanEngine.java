@@ -396,6 +396,7 @@ public final class TaiwanEngine {
         if (s.over()) return out;
         Ctx c = new Ctx(s, data, rng, out, date);
         s.sitrep.clear();
+        s.message = null;
         TaiwanAir.coverage(c);
         int other = 1 - s.playerSide;
         directives(c, s.playerSide, true);
@@ -480,10 +481,19 @@ public final class TaiwanEngine {
                 if (s.over()) break;
             }
             c.log("The staff takes back every directive.");
+            s.message = "The staff takes back every directive and runs the theatre by its playbook.";
             return out;
         }
+        int before = out.log().size();
         applyOrder(c, s.playerSide, o, true);
         report(c);
+        List<String> said = new ArrayList<>();
+        for (int i = before; i < out.log().size() && said.size() < 3; i++) {
+            String line = out.log().get(i);
+            int cut = line.indexOf(":00 - ");
+            said.add(cut >= 0 ? line.substring(cut + 6) : line);
+        }
+        s.message = said.isEmpty() ? "Ordered." : String.join(" ", said);
         return out;
     }
 
@@ -750,6 +760,9 @@ public final class TaiwanEngine {
         Ctx c = new Ctx(s, data, null, Outcome.empty(), s.date());
         return TaiwanAI.playbook(c, s.playerSide, s.autoplay);
     }
+
+    /** The presidency has run its week (the economy, the Fed, opinion) while the crisis pauses the weeks. */
+    public void ticked(TaiwanState s) { s.tickHour = s.hour; }
 
     /** Both sides by the computer, ceasefire proposals included (the headless harness). */
     public void autopilot(TaiwanState s, boolean on) { s.autoplay = on; }

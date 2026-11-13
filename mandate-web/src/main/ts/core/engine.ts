@@ -59,7 +59,7 @@ export const engine = {
   taiwan(): TaiwanView { return request<TaiwanView>({ op: 'view', name: 'taiwan' }); },
   /** Island Chain on its own (docs/ISLAND_CHAIN.md): a crisis without a presidency, as America or as China. */
   islandChain: {
-    start(o: { year: number; preset: number; side: 'US' | 'PRC' }): void { request({ op: 'islandChain', action: 'start', ...o }); },
+    start(o: { year: number; preset: number; side: 'US' | 'PRC' }): void { request({ op: 'islandChain', action: 'start', seed: Math.floor(Math.random() * 1e9), ...o }); },
     view(): TaiwanView { return request<TaiwanView>({ op: 'islandChain', action: 'view' }); },
     order(order: object): void { request({ op: 'islandChain', action: 'order', order }); },
     turn(): void { request({ op: 'islandChain', action: 'turn' }); },

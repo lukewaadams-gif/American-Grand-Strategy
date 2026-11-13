@@ -31,6 +31,11 @@ public final class AutoPilot {
             g.apply(new Command.EndTurn());
             return;
         }
+        if (g.taiwanActive()) {             // the Taiwan crisis, turn by turn: the staff's playbook
+            g.apply(new Command.Taiwan(new game.mandate.core.taiwan.TaiwanOrder.Playbook()));
+            g.apply(new Command.EndTurn());
+            return;
+        }
         if (g.hormuzActive()) {             // the strait, day by day: the National Security Council's playbook
             g.apply(new Command.Hormuz(new game.mandate.core.hormuz.HormuzOrder.Playbook()));
             g.apply(new Command.EndTurn());

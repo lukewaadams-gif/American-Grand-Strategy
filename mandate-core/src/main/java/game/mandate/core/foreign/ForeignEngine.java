@@ -50,9 +50,11 @@ public final class ForeignEngine {
                           String adviserNames) {}
 
     public record Outcome(List<Effect> effects, List<News> news, List<String> log, boolean[] taiwanWar) {
-        public static Outcome empty() { return new Outcome(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new boolean[1]); }
+        public static Outcome empty() { return new Outcome(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new boolean[2]); }
         /** The Taiwan Strait has gone to war this week: the game engine opens its war. */
         public boolean startsTaiwanWar() { return taiwanWar[0]; }
+        /** China has just escalated around Taiwan to a quarantine or a blockade: the Taiwan crisis may begin. */
+        public boolean escalatesOverTaiwan() { return taiwanWar.length > 1 && taiwanWar[1]; }
     }
 
     final ForeignData data;
@@ -187,6 +189,7 @@ public final class ForeignEngine {
                 s.twStage++;
                 out.news().add(news(c, s.twStage >= 3 ? News.Kind.WORLD : News.Kind.INFO, ("China escalates around Taiwan: " + TW_STAGE[s.twStage].toLowerCase()).toUpperCase(), null, s.twStage >= 3 ? 3.5 : 2));
                 if (s.twStage == 5) { s.taiwanWar = true; out.taiwanWar()[0] = true; s.record.add(stamp(c) + "Chinese forces attacked Taiwan"); }
+                else if (s.twStage >= 3 && out.taiwanWar().length > 1) out.taiwanWar()[1] = true;
             } else if (s.twStage > 0 && s.twStage < 5 && s.twt < 26 + 12 * s.twStage && rng.uniform("world.taiwan") < 0.08) {
                 s.twStage--;
                 out.news().add(news(c, News.Kind.GOOD, "Tensions ease around Taiwan", null, 1.6));
@@ -1614,12 +1617,24 @@ public final class ForeignEngine {
     //  The Taiwan war, fought on this game's operational model
     // =========================================================================================
 
-    /** The game engine's war over Taiwan has ended: how it ended sets the Strait (Resolute Desk's tw_war outcomes). */
+    /** The Taiwan crisis (docs/ISLAND_CHAIN.md) has begun: the Strait is the crisis engine's until it ends. */
+    public void taiwanCrisisBegan(ForeignState s, Context c) {
+        s.taiwanWar = true;
+        s.record.add(stamp(c) + "China moved against Taiwan, and the crisis began");
+    }
+
+    /** The game engine's crisis or war over Taiwan has ended: how it ended sets the Strait (Resolute Desk's tw_war outcomes). */
     public void taiwanWarOver(ForeignState s, Context c, String status, int killed, Outcome out) {
         s.taiwanWar = false;
         s.kia += killed;
         int cn = data.index("CN"), tw = data.index("TW");
         switch (status) {
+            case "DETERRED" -> { s.twStage = 1; s.twt = clamp(s.twt - 25, 0, 100); s.pacific = clamp(s.pacific + 5, 0, 100); }
+            case "NUCLEAR" -> {
+                s.twStage = 4; s.twt = 95;
+                s.pacific = clamp(s.pacific - 50, 0, 100);
+                s.rel[cn] = -100; s.rel[data.index("JP")] -= 30; s.rel[data.index("KR")] -= 30;
+            }
             case "DEFENDED" -> { s.twStage = 3; s.twt = clamp(s.twt - 20, 0, 100); s.rel[cn] = clamp(s.rel[cn] - 60, -100, 100); s.pacific = clamp(s.pacific + 15, 0, 100); }
             case "STALEMATE" -> { s.twStage = 4; s.rel[cn] = clamp(s.rel[cn] - 50, -100, 100); }
             default -> {
@@ -1628,7 +1643,7 @@ public final class ForeignEngine {
                 s.rel[tw] = clamp(s.rel[tw] - 50, -100, 100); s.rel[data.index("JP")] -= 25; s.rel[data.index("KR")] -= 20;
             }
         }
-        s.record.add(stamp(c) + "the war over Taiwan ended (" + status.toLowerCase(Locale.ROOT) + ")");
+        s.record.add(stamp(c) + (status.equals("DETERRED") ? "China stood down over Taiwan" : "the war over Taiwan ended (" + status.toLowerCase(Locale.ROOT) + ")"));
     }
 
     // =========================================================================================
@@ -1642,7 +1657,7 @@ public final class ForeignEngine {
             s.brief.add((x.front < 35 ? 3 : 2) + "|" + nm.toUpperCase(Locale.ROOT) + ": " + (x.front >= 70 ? "Our forces are advancing." : x.front >= 45 ? "The front is holding." : "The enemy is gaining ground.")
                     + Fmt.format(" %,.0f Americans deployed; %,.0f killed so far. Support at home: %.0f%%.", x.troops * 1000, x.kia, x.support));
         }
-        if (s.taiwanWar) s.brief.add("3|TAIWAN: The war in the Strait goes on. Our forces are engaged.");
+        if (s.taiwanWar) s.brief.add("3|TAIWAN: The crisis in the Strait goes on; the Situation Room follows it turn by turn.");
         else if (s.twStage >= 2) s.brief.add("3|TAIWAN: The PLA is " + (s.twStage >= 3 ? "enforcing a " + TW_STAGE[s.twStage].toLowerCase(Locale.ROOT) : "drilling around the island")
                 + ". Our deterrence index is " + Math.round(s.deter) + ".");
         else if (s.twt > 45) s.brief.add("2|CHINA: Pressure on Taiwan is building: more incursions into its air-defense zone.");

@@ -70,4 +70,8 @@ public sealed interface Command {
     record Foreign(game.mandate.core.foreign.ForeignOrder order) implements Command {}
     /** The Strait of Hormuz crisis: escorts, mine clearing, strikes, envoys, oil, Israel, the message, an invasion. */
     record Hormuz(game.mandate.core.hormuz.HormuzOrder order) implements Command {}
+    /** The Taiwan crisis (docs/ISLAND_CHAIN.md): the rules of engagement, the theatre directives, the allies, sanctions, the terms. */
+    record Taiwan(game.mandate.core.taiwan.TaiwanOrder order) implements Command {}
+    /** Begins a Taiwan crisis at once (a quick start): preset 0 base case, 1 optimistic, 2 pessimistic. */
+    record TaiwanBegin(int preset) implements Command {}
 }
