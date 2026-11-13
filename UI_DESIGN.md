@@ -367,6 +367,10 @@ All scripts are in `mandate-web/src/test/browser`; its README says how to run th
 - **A broken export file name.** TeaVM's minifier renamed a JavaScript bridge's parameters to one-letter names, which a local variable then overwrote, so the exported file was named "[object Blob].json". All bridge locals now have names that can't collide.
 - **Toasts** stacked four deep over the content with no way to close them. Now at most three show, and each has a Dismiss button.
 
+### Publishing
+
+The site is the `gh-pages` branch: the contents of `mandate-web/target/site` after `mvn -B install`, plus an empty `.nojekyll`. GitHub Pages serves it when the repository's Pages source is set to that branch's root (Settings, Pages, Deploy from a branch). To update the site, rebuild, replace the branch's files with the new `target/site`, commit and push.
+
 ### Limits, and what needs a person
 
 - **Browsers.** Only Chromium has run it. Firefox and Safari need checking, especially CSS `color-mix()` (supported since 2023) and container queries.
