@@ -10117,6 +10117,8 @@
       "news": ["2028-11-07: the transition begins. Name your own people, check them, and keep the leaks down."]
     },
     "hormuz": null,
+    "taiwan": null,
+    "taiwanEscalated": false,
     "news": [{
         "date": "2030-01-13",
         "kind": "INFO",

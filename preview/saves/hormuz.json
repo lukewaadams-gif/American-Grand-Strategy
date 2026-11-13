@@ -6255,6 +6255,8 @@
       "log": ["September 3: the crisis begins: the Guards seize a tanker, and Tehran threatens to close the strait. Seizures.", "September 3: Iran climbs to mining"],
       "message": "The Strategic Petroleum Reserve releases 1.0 million barrels a day (400 million left)."
     },
+    "taiwan": null,
+    "taiwanEscalated": false,
     "news": [{
         "date": "2029-01-25",
         "kind": "INFO",
