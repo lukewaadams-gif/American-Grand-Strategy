@@ -80,7 +80,7 @@ The first screen of the presidency, for approval from screenshots (Q39). It open
 - **The room:** it darkens by a multiply blend, cool at night and warm at the ends of the day. The lamp, the picture lights and the ceiling's cove light then shine through by a screen blend. The outdoor colours are divided by the room's tint first, so the windows keep their own light.
 
 **The screen** (`presidency/oval-screen.ts`) is Resolute Desk's `Oval` screen.
-- **The top bar:** the seal, the date, approval and its change, unemployment, inflation, gas and the week of the term. Stamina and stress show empty until the weekly schedule (milestone 3) gives them values.
+- **The top bar:** the seal, the president's name, the date, approval and its change, unemployment, inflation, gas and the week of the term. Stamina and stress show empty until the weekly schedule (milestone 3) gives them values.
 - **The room's twelve hotspots:** the desk's three objects, the desk, the briefing book, today's paper, the windows, the globe and the four doors. Each is a real button laid over the picture, with Resolute Desk's gold label on hover and on focus.
 - **The cards:** "This week" (decisions waiting and what is coming: the Fed, day 100, the midterms, Election Day) and "On the Hill" (the agenda's bills and their stages, and the House and Senate).
 - **The Ledger** runs along the bottom. It has a pause button and stands still under reduced motion.

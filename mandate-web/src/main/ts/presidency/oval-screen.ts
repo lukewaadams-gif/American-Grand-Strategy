@@ -87,7 +87,8 @@ function topBar(v: PresidencyView, hd: OvalHandlers): HTMLElement {
   const turn = v.turnUnit === 'month' ? 'End month' : v.turnUnit === 'transition' ? 'To the inauguration' : 'End week';
   return h('header', { class: 'ov-bar' },
     h('div', { class: 'ov-brand' }, sealIcon(40),
-      h('div', { class: 'ov-brand-text' }, h('span', { class: 'ov-house' }, 'The White House'), h('span', { class: 'ov-date' }, dateLong(v.date)))),
+      h('div', { class: 'ov-brand-text' }, h('span', { class: 'ov-house' }, 'The White House'),
+        h('span', { class: 'ov-president' }, 'President ' + v.president.name), h('span', { class: 'ov-date' }, dateLong(v.date)))),
     h('div', { class: 'ov-stats', role: 'group', 'aria-label': 'The presidency at a glance' },
       stat('Approval', ap === null ? '—' : Math.round(ap) + '%',
         ap === null ? null : { text: (ch >= 0 ? '+' : '−') + Math.abs(ch).toFixed(1), tone: ch > 0.05 ? 'up' : ch < -0.05 ? 'down' : 'flat' }, apTone,
