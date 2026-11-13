@@ -1,7 +1,7 @@
 {
   "format": "mandate-save",
   "version": 2,
-  "rules": "62cc518d",
+  "rules": "780943b2",
   "setup": {
     "seed": "1",
     "party": "REPUBLICAN",
@@ -100,6 +100,12 @@
     }, {
       "type": "EndTurn"
     }, {
+      "type": "Presidency",
+      "order": {
+        "type": "Delegate",
+        "on": true
+      }
+    }, {
       "type": "Act",
       "action": {
         "type": "DraftBill",
@@ -196,7 +202,7 @@
       "action": {
         "type": "Decide",
         "decision": 4,
-        "option": 3
+        "option": 0
       }
     }, {
       "type": "Act",
@@ -290,6 +296,12 @@
     }, {
       "type": "EndTurn"
     }, {
+      "type": "EndTurn"
+    }, {
+      "type": "EndTurn"
+    }, {
+      "type": "EndTurn"
+    }, {
       "type": "PushBill",
       "bill": "immigration_deal",
       "strategy": "PARTY_LINE",
@@ -297,6 +309,12 @@
     }, {
       "type": "PublicAddress",
       "issue": "ECONOMY"
+    }, {
+      "type": "EndTurn"
+    }, {
+      "type": "EndTurn"
+    }, {
+      "type": "EndTurn"
     }, {
       "type": "EndTurn"
     }, {
@@ -309,61 +327,84 @@
       "issue": "ECONOMY"
     }, {
       "type": "EndTurn"
+    }, {
+      "type": "EndTurn"
+    }, {
+      "type": "EndTurn"
+    }, {
+      "type": "EndTurn"
+    }, {
+      "type": "EndTurn"
+    }, {
+      "type": "PushBill",
+      "bill": "infrastructure",
+      "strategy": "PARTY_LINE",
+      "capital": 14.869066441113178
+    }, {
+      "type": "PublicAddress",
+      "issue": "IMMIGRATION"
+    }, {
+      "type": "EndTurn"
+    }, {
+      "type": "EndTurn"
+    }, {
+      "type": "EndTurn"
+    }, {
+      "type": "EndTurn"
     }],
   "world": {
     "clock": {
-      "now": "2029-09-01T00:00",
-      "mode": "MONTHLY",
-      "turns": 47
+      "now": "2029-09-03T00:00",
+      "mode": "WEEKLY",
+      "turns": 61
     },
     "phase": "GOVERNING",
     "economy": {
-      "outputGap": -0.024183925890957244,
-      "growth": 1.6207542936370363,
-      "unemployment": 4.299871746247368,
-      "inflation": 2.4630076992584446,
-      "fedRate": 4.0,
-      "credibility": 0.8716662830840051,
-      "oil": 75.70615804070613,
-      "tenYear": 4.3248135187767875,
-      "confidence": 101.16792617841378,
+      "outputGap": 0.1046677297844247,
+      "growth": 1.9840901075205608,
+      "unemployment": 4.2792919914050955,
+      "inflation": 2.4171463170562175,
+      "fedRate": 3.75,
+      "credibility": 0.8720943613348687,
+      "oil": 77.48020374257658,
+      "tenYear": 4.239388530156653,
+      "confidence": 101.1761282236204,
       "reportedUnemployment": 4.3,
       "reportedInflation": 2.4,
       "sprRelief": 0.0,
       "fedPressured": false,
       "startMisery": 7.2,
-      "shocks": [[0.009399999999999999, -0.004166666666666667, 5.468354430379749], [0.0, 0.0, 8.0], [0.012499999999999999, 0.0, 9.0], [0.008333333333333333, -0.004166666666666667, 10.0], [-0.004166666666666667, 0.0, 11.0]]
+      "shocks": [[0.009399999999999999, -0.004166666666666667, 5.325661680092066], [0.0, 0.0, 7.857307249712317], [0.012499999999999999, 0.0, 8.087456846950522], [0.008333333333333333, -0.004166666666666667, 9.00805523590334], [-0.004166666666666667, 0.0, 9.928653624856159], [0.016666666666666666, 0.004166666666666667, 11.079401611047182]]
     },
     "budget": {
       "baselineDeficit": 6.0,
-      "policyDeficit": 0.18900000000000003,
-      "debt": 102.19873901860328
+      "policyDeficit": 0.339,
+      "debt": 102.16677598837197
     },
     "politics": {
       "governing": true,
       "presidentParty": "REPUBLICAN",
-      "level": [89.48354332832238, 53.13700716956374, 11.967488692974825],
-      "modifier": [1.4208779305323627, 1.625648066619001, 0.7736229472363365],
-      "record": [3.0, 2.3039999999999994, 0.0],
-      "honeymoon": 0.041376399334279945,
+      "level": [91.93519184235747, 57.48647241252618, 16.234331109269124],
+      "record": [3.0, 2.9039999999999995, 0.0],
+      "honeymoon": 2.3608363186017716,
       "salience": {
-        "ECONOMY": 0.20765523650436477,
-        "COST_OF_LIVING": 0.1773654044003241,
-        "HEALTHCARE": 0.1,
-        "IMMIGRATION": 0.10730940312414942,
+        "ECONOMY": 0.19491443312498105,
+        "COST_OF_LIVING": 0.29399280636257247,
+        "HEALTHCARE": 0.10067656735884754,
+        "IMMIGRATION": 0.11381308072108198,
         "ABORTION": 0.07,
         "CRIME": 0.06,
-        "CLIMATE_ENERGY": 0.06,
-        "CHINA": 0.0398165641377395,
-        "AI_TECH": 0.05386437013275094,
+        "CLIMATE_ENERGY": 0.06150987682049204,
+        "CHINA": 0.04164655941826143,
+        "AI_TECH": 0.0544477915729291,
         "DEMOCRACY": 0.07,
-        "EDUCATION": 0.03
+        "EDUCATION": 0.030511564859682067
       },
-      "capital": 15.269528415996541,
-      "goodwill": -14.957149763953062,
-      "opposition": "OBSTRUCT",
-      "recentAddresses": 0.04870944253944377,
-      "weeksGoverning": 31.571428571428577,
+      "capital": 8.021829288626547,
+      "goodwill": -2.797189088303767,
+      "opposition": "SELECTIVE",
+      "recentAddresses": 0.06458663940429688,
+      "weeksGoverning": 32.0,
       "parties": [{
           "party": "DEMOCRAT",
           "wing0": 60.0,
@@ -371,8 +412,8 @@
           "leader": "d_whitfield"
         }, {
           "party": "REPUBLICAN",
-          "wing0": 67.97414474807077,
-          "wing1": 61.66287430164054,
+          "wing0": 69.98325097859517,
+          "wing1": 60.87568619198442,
           "leader": "r_marsh"
         }],
       "roles": {
@@ -384,6 +425,226 @@
         "r_marsh": "PRESIDENT",
         "r_benton": "CANDIDATE",
         "r_harlan": "CANDIDATE"
+      },
+      "rd": {
+        "approval": 55.24134319435517,
+        "perf": 1.0866447605159282,
+        "scandal": 0.0,
+        "rally": 0.19107658228490004,
+        "mood": -3.5765410952118435,
+        "lasting": 1.9773600000000002,
+        "events": 2.023850494668915,
+        "priceLevel": 1.1181590808978648,
+        "personal": -0.13333333333333328,
+        "difficulty": 0.0,
+        "mandate": 2.1797405096519102,
+        "groupAdj": [0.23660864877087012, -0.009156578480502152, 0.061466343183271495],
+        "offset": 0.11292858318483923,
+        "stateOffset": 0.09402229481514188,
+        "issueAdj": {
+          "ECONOMY": 0.33680246898144484,
+          "COST_OF_LIVING": 0.7083285888815569,
+          "HEALTHCARE": 0.24820693292882454,
+          "IMMIGRATION": 0.2909181814414714,
+          "ABORTION": 0.09260937327924175,
+          "CRIME": 0.0171592233015374,
+          "CLIMATE_ENERGY": 0.01664444660249128,
+          "CHINA": 0.0,
+          "AI_TECH": 0.0,
+          "DEMOCRACY": 0.09586557286526136,
+          "EDUCATION": 0.0
+        },
+        "command": {
+          "ECONOMY": 94.92154029023419,
+          "COST_OF_LIVING": 100.0,
+          "HEALTHCARE": 88.90756437095114,
+          "IMMIGRATION": 91.73355719739773,
+          "ABORTION": 60.00077890469015,
+          "CRIME": 46.45454545454545,
+          "CLIMATE_ENERGY": 46.45454545454545,
+          "CHINA": 43.333333333333336,
+          "AI_TECH": 43.333333333333336,
+          "DEMOCRACY": 60.00077890469015,
+          "EDUCATION": 43.333333333333336
+        },
+        "issueApproval": {
+          "ECONOMY": 59.71882004206423,
+          "COST_OF_LIVING": 57.133852785957224,
+          "HEALTHCARE": 57.790473500908504,
+          "IMMIGRATION": 58.07435820801696,
+          "ABORTION": 56.01181184365974,
+          "CRIME": 55.16816190574313,
+          "CLIMATE_ENERGY": 55.16610279894695,
+          "CHINA": 54.9746765276885,
+          "AI_TECH": 54.9746765276885,
+          "DEMOCRACY": 56.02483664200382,
+          "EDUCATION": 54.9746765276885
+        },
+        "stateLean": {
+          "AK": 13.317446177113682,
+          "AL": 29.123326800096113,
+          "AR": 33.63777689982415,
+          "AZ": 6.055356034161816,
+          "CA": -26.628192722851807,
+          "CO": -14.49030883248059,
+          "CT": -13.74701901612972,
+          "DC": -85.41958046230067,
+          "DE": -17.975473162329436,
+          "FL": 14.946391516038371,
+          "GA": 1.299333242608005,
+          "HI": -22.007943447503422,
+          "IA": 11.151519958064636,
+          "ID": 36.87041016896175,
+          "IL": -12.705348147112097,
+          "IN": 16.20339619258554,
+          "KS": 14.685869715399727,
+          "KY": 27.871374107175566,
+          "LA": 19.764019371129034,
+          "MA": -22.222245456875008,
+          "MD": -32.05883544589905,
+          "ME": -7.008721412429923,
+          "MI": 2.927567085479938,
+          "MN": -0.081936119109419,
+          "MO": 20.73348370717851,
+          "MS": 23.068794373688565,
+          "MT": 19.980290272726926,
+          "NC": 4.51044650891551,
+          "ND": 36.90672168984312,
+          "NE": 21.85841106330119,
+          "NH": -0.8469945442923487,
+          "NJ": -9.833484309231121,
+          "NM": -3.9060274735161835,
+          "NV": 2.183185366755563,
+          "NY": -8.899903244189197,
+          "OH": 8.965070689290869,
+          "OK": 32.68306156611368,
+          "OR": -15.692456046225436,
+          "PA": 1.6880024410990435,
+          "RI": -15.329404524785527,
+          "SC": 16.55423843775662,
+          "SD": 32.57231104201056,
+          "TN": 23.724784819676827,
+          "TX": 9.895383173906621,
+          "UT": 20.498972203401184,
+          "VA": -2.3619297665004444,
+          "VT": -25.30461662623305,
+          "WA": -14.50072593020228,
+          "WI": -0.785605981126217,
+          "WV": 42.7348560654535,
+          "WY": 42.32879777517878
+        },
+        "stateWeight": {
+          "AK": 1.0,
+          "AL": 7.0,
+          "AR": 4.0,
+          "AZ": 9.0,
+          "CA": 52.0,
+          "CO": 8.0,
+          "CT": 5.0,
+          "DC": 1.0,
+          "DE": 1.0,
+          "FL": 28.0,
+          "GA": 14.0,
+          "HI": 2.0,
+          "IA": 4.0,
+          "ID": 2.0,
+          "IL": 17.0,
+          "IN": 9.0,
+          "KS": 4.0,
+          "KY": 6.0,
+          "LA": 6.0,
+          "MA": 9.0,
+          "MD": 8.0,
+          "ME": 2.0,
+          "MI": 13.0,
+          "MN": 8.0,
+          "MO": 8.0,
+          "MS": 4.0,
+          "MT": 2.0,
+          "NC": 14.0,
+          "ND": 1.0,
+          "NE": 3.0,
+          "NH": 2.0,
+          "NJ": 12.0,
+          "NM": 3.0,
+          "NV": 4.0,
+          "NY": 26.0,
+          "OH": 15.0,
+          "OK": 5.0,
+          "OR": 6.0,
+          "PA": 17.0,
+          "RI": 2.0,
+          "SC": 7.0,
+          "SD": 1.0,
+          "TN": 9.0,
+          "TX": 38.0,
+          "UT": 4.0,
+          "VA": 11.0,
+          "VT": 1.0,
+          "WA": 10.0,
+          "WI": 8.0,
+          "WV": 2.0,
+          "WY": 1.0
+        },
+        "stateBump": {
+          "CA": 15.081084397344942,
+          "NY": 2.0057965724828053,
+          "TX": 0.082240342332871,
+          "VA": 0.12534726769222831
+        },
+        "stateApproval": {
+          "AK": 60.945557919850145,
+          "AL": 70.67797673958518,
+          "AR": 73.3221451902686,
+          "AZ": 56.2882031240569,
+          "CA": 57.05266447642475,
+          "CO": 42.841645425342854,
+          "CT": 43.32890001392005,
+          "DC": 3.7788429046848293,
+          "DE": 40.561851144506775,
+          "FL": 61.97703238911216,
+          "GA": 53.19729980368878,
+          "HI": 37.93812287377934,
+          "IA": 59.56596183060996,
+          "ID": 75.17111225578786,
+          "IL": 44.0122094059499,
+          "IN": 62.769156263644696,
+          "KS": 61.812434769287904,
+          "KY": 69.9326772887374,
+          "LA": 64.99329357414187,
+          "MA": 37.799225048086925,
+          "MD": 31.505078790355867,
+          "ME": 47.75381861567497,
+          "MI": 54.258321221348204,
+          "MN": 52.29527486990029,
+          "MO": 65.59348874026423,
+          "MS": 67.02911331930268,
+          "MT": 65.12739468949306,
+          "NC": 55.287067163012296,
+          "ND": 75.19165972557302,
+          "NE": 66.28686558248621,
+          "NH": 51.794990953458495,
+          "NJ": 45.89798351988332,
+          "NM": 49.79080825775107,
+          "NV": 53.77358172278915,
+          "NY": 49.514365991177314,
+          "OH": 58.16473198048264,
+          "OK": 72.76881405399345,
+          "OR": 42.054277485005294,
+          "PA": 53.450809283292344,
+          "RI": 42.29196756488317,
+          "SC": 62.98962443034101,
+          "SD": 72.7044172667911,
+          "TN": 67.42969358573251,
+          "TX": 58.88145552035989,
+          "UT": 65.44852383550291,
+          "VA": 50.99109665681192,
+          "VT": 35.8086440138951,
+          "WA": 42.83481877194254,
+          "WI": 51.835150149626344,
+          "WV": 78.42218023589966,
+          "WY": 78.20158387919622
+        }
       }
     },
     "congress": {
@@ -408,22 +669,27 @@
           "payoff": 1.0
         }, {
           "bill": "ai_safety",
-          "date": "2029-05-01",
+          "date": "2029-04-30",
           "route": "PARTY_LINE",
           "payoff": 1.0
         }, {
           "bill": "chips_china",
-          "date": "2029-06-01",
+          "date": "2029-05-07",
           "route": "PARTY_LINE",
           "payoff": 1.0
         }, {
           "bill": "immigration_deal",
-          "date": "2029-07-01",
+          "date": "2029-06-04",
           "route": "PARTY_LINE",
           "payoff": 1.0
         }, {
           "bill": "social_security",
-          "date": "2029-08-01",
+          "date": "2029-07-02",
+          "route": "PARTY_LINE",
+          "payoff": 1.0
+        }, {
+          "bill": "infrastructure",
+          "date": "2029-08-06",
           "route": "PARTY_LINE",
           "payoff": 1.0
         }],
@@ -463,21 +729,21 @@
     },
     "diplomacy": {
       "tension": {
-        "TAIWAN_STRAIT": 23.431392061153833,
-        "MIDDLE_EAST": 50.14041394094809,
-        "EASTERN_EUROPE": 39.39685205660076
+        "TAIWAN_STRAIT": 28.948947059078098,
+        "MIDDLE_EAST": 43.637011507258656,
+        "EASTERN_EUROPE": 42.85532007092768
       },
       "relations": {
-        "CHN": -26.125721984623173,
+        "CHN": -27.92757677477573,
         "TWN": 70.0,
-        "JPN": 74.5157152480779,
-        "IRN": -72.67672038741412,
+        "JPN": 74.74094709684697,
+        "IRN": -72.00507746065716,
         "ISR": 70.0,
-        "RUS": -56.6743105860645,
+        "RUS": -56.482086877362924,
         "UKR": 65.0,
-        "EUR": 69.44571843101075
+        "EUR": 69.41368114622715
       },
-      "deterrence": 51.0,
+      "deterrence": 41.0,
       "japanBasing": true,
       "rung": null,
       "monthsSinceBlockade": -1,
@@ -494,21 +760,21 @@
         "BOMBER": 4
       },
       "munitions": {
-        "LRASM": 644.0,
-        "MST": 98.0,
-        "NSM": 350.0,
-        "HARPOON": 728.0,
-        "MK48": 856.0,
-        "JASSM_ER": 2915.0,
-        "JASSM": 1105.0,
-        "TLAM": 1432.0,
-        "PRSM": 650.0,
-        "SM6": 752.0,
-        "SM2": 1270.0,
-        "SM3": 168.0,
-        "ESSM": 1105.0,
-        "PAC3": 1175.0,
-        "THAAD": 314.0
+        "LRASM": 656.0,
+        "MST": 102.0,
+        "NSM": 360.0,
+        "HARPOON": 732.0,
+        "MK48": 864.0,
+        "JASSM_ER": 2960.0,
+        "JASSM": 1120.0,
+        "TLAM": 1448.0,
+        "PRSM": 700.0,
+        "SM6": 768.0,
+        "SM2": 1280.0,
+        "SM3": 172.0,
+        "ESSM": 1120.0,
+        "PAC3": 1220.0,
+        "THAAD": 322.0
       },
       "forcesLost": {},
       "expended": {},
@@ -2972,91 +3238,91 @@
     "hundredDays": {
       "week": 15,
       "weeks": 14,
-      "log": ["Week 1. Diane Marsh takes the oath with House D 212-R 223, Senate D 50-R 50. Approval 51%.", "Week 1: You send Congress the Build More Homes Act (medium, paid for by cut spending elsewhere).", "Week 1: You nominate Helen Strand (an expert) for Treasury secretary. Hearings next week, a Senate vote the week after.", "Week 1: You nominate Lucia Moreno (an expert) for Secretary of State. Hearings next week, a Senate vote the week after.", "Week 2: You nominate Adm. Carla Benson (ret.) (an expert) for Defense secretary. Hearings next week, a Senate vote the week after.", "Week 2: The committee reports the bill to the House floor.", "Week 2: Hearings for Helen Strand (Treasury secretary): a steady performance.", "Week 2: Hearings for Lucia Moreno (Secretary of State): a steady performance.", "Week 2: The Fed holds at 3.75%.", "Week 2: Jobs report: unemployment 4.4% (was 4.4%).", "Week 2: Opposition leaders shift to cooperate: they will deal.", "Week 3: The House passes the Build More Homes Act, 267-168.", "Week 3: The Senate confirms Helen Strand as Treasury secretary, 58-42.", "Week 3: Hearings for Adm. Carla Benson (ret.) (Defense secretary): a steady performance.", "Week 3: The Senate confirms Lucia Moreno as Secretary of State, 61-39.", "Week 4: The Senate passes the Build More Homes Act, 63-37.", "Week 4: You sign the Build More Homes Act. Deficit +0.04% of GDP; implementation quality 94% (Treasury).", "Week 4: The Senate confirms Adm. Carla Benson (ret.) as Defense secretary, 56-44.", "Week 4: Inflation report: 2.7% over the year (was 2.8%).", "Week 5: CRISIS: Harassment of tankers gives way to tanker seized in the Strait of Hormuz.", "Week 5: ECONOMY: An inflation surge. Shipping disruptions and a cold snap push prices up: the next inflation report will run hot.", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "Week 5: The back channel goes quiet. Tehran reads hesitation.", "Week 5: The other side holds its ground: Tanker seized.", "Decision: An inflation surge -> Suspend tariffs and the gas tax", "Week 5: You suspend tariffs and the gas tax. Prices at the pump and in the shops ease.", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "Week 6: You coordinate sanctions and warnings with allies. Markets dip.", "Week 6: The other side holds its ground: Tanker seized.", "Decision: Government funding runs out at the end of week 8 -> A defense plus-up deal", "Week 6: Your stopgap offer: a defense plus-up deal.", "Week 6: You release oil from the Strategic Petroleum Reserve. Gas prices should ease; hawks warn the reserve is for emergencies.", "Week 6: Jobs report: unemployment 4.3% (was 4.4%).", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "Week 7: The back channel goes quiet. Tehran reads hesitation.", "Week 7: The other side escalates: Mines reported.", "Decision: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel", "Week 8: Diplomacy lowers the temperature: Tanker seized.", "Week 8: The other side holds its ground: Tanker seized.", "Week 8: Inflation report: 2.8% over the year (was 2.7%).", "Week 9: Congress passes the stopgap. The government stays open.", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "Week 9: You coordinate sanctions and warnings with allies. Markets dip.", "Week 9: The other side holds its ground: Tanker seized.", "Week 9: The Fed holds at 3.75%.", "Week 10: The Strait of Hormuz crisis settles into a tense stalemate.", "Week 11: Jobs report: unemployment 4.3% (was 4.3%).", "Week 12: Inflation report: 3.0% over the year (was 2.8%)."],
+      "log": ["Week 1. Diane Marsh takes the oath with House D 212-R 223, Senate D 50-R 50. Approval 51%.", "Week 1: You send Congress the Build More Homes Act (medium, paid for by cut spending elsewhere).", "Week 1: You nominate Helen Strand (an expert) for Treasury secretary. Hearings next week, a Senate vote the week after.", "Week 1: You nominate Lucia Moreno (an expert) for Secretary of State. Hearings next week, a Senate vote the week after.", "Week 2: You nominate Adm. Carla Benson (ret.) (an expert) for Defense secretary. Hearings next week, a Senate vote the week after.", "Week 2: The committee reports the bill to the House floor.", "Week 2: Hearings for Helen Strand (Treasury secretary): a steady performance.", "Week 2: Hearings for Lucia Moreno (Secretary of State): a steady performance.", "Week 2: The Fed holds at 3.75%.", "Week 2: Jobs report: unemployment 4.4% (was 4.4%).", "Week 2: Opposition leaders shift to cooperate: they will deal.", "Week 3: The House passes the Build More Homes Act, 267-168.", "Week 3: The Senate confirms Helen Strand as Treasury secretary, 58-42.", "Week 3: Hearings for Adm. Carla Benson (ret.) (Defense secretary): a steady performance.", "Week 3: The Senate confirms Lucia Moreno as Secretary of State, 61-39.", "Week 4: The Senate passes the Build More Homes Act, 63-37.", "Week 4: You sign the Build More Homes Act. Deficit +0.04% of GDP; implementation quality 94% (Treasury).", "Week 4: The Senate confirms Adm. Carla Benson (ret.) as Defense secretary, 56-44.", "Week 4: Inflation report: 2.7% over the year (was 2.8%).", "Week 5: CRISIS: Harassment of tankers gives way to tanker seized in the Strait of Hormuz.", "Week 5: ECONOMY: An inflation surge. Shipping disruptions and a cold snap push prices up: the next inflation report will run hot.", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "Week 5: The back channel goes quiet. Tehran reads hesitation.", "Week 5: The other side holds its ground: Tanker seized.", "Decision: An inflation surge -> Suspend tariffs and the gas tax", "Week 5: You suspend tariffs and the gas tax. Prices at the pump and in the shops ease.", "Week 5: Opposition leaders shift to selective: they will pick their fights.", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "Week 6: You coordinate sanctions and warnings with allies. Markets dip.", "Week 6: The other side holds its ground: Tanker seized.", "Decision: Government funding runs out at the end of week 8 -> A clean stopgap", "Week 6: Your stopgap offer: a clean stopgap.", "Week 6: You release oil from the Strategic Petroleum Reserve. Gas prices should ease; hawks warn the reserve is for emergencies.", "Week 6: Jobs report: unemployment 4.3% (was 4.4%).", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "Week 7: The back channel goes quiet. Tehran reads hesitation.", "Week 7: The other side escalates: Mines reported.", "Week 7: Opposition leaders shift to cooperate: they will deal.", "Decision: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel", "Week 8: Diplomacy lowers the temperature: Tanker seized.", "Week 8: The other side holds its ground: Tanker seized.", "Week 8: Inflation report: 2.8% over the year (was 2.7%).", "Week 9: Congress passes the stopgap. The government stays open.", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "Week 9: You coordinate sanctions and warnings with allies. Markets dip.", "Week 9: The other side holds its ground: Tanker seized.", "Week 9: The Fed holds at 3.75%.", "Week 10: The Strait of Hormuz crisis settles into a tense stalemate.", "Week 11: Jobs report: unemployment 4.3% (was 4.3%).", "Week 12: Inflation report: 3.0% over the year (was 2.8%)."],
       "briefings": [{
           "week": 1,
           "headline": "You nominate Lucia Moreno (an expert) for Secretary of State. Hearings next week, a Senate vote the week after.",
           "consequences": ["You send Congress the Build More Homes Act (medium, paid for by cut spending elsewhere).", "You nominate Helen Strand (an expert) for Treasury secretary. Hearings next week, a Senate vote the week after.", "You nominate Lucia Moreno (an expert) for Secretary of State. Hearings next week, a Senate vote the week after."],
           "reactions": [],
-          "intelligence": ["Approval 51% (your voters 84, swing 55, opposition voters 13). Opposition: selective.", "Gas $3.23, 10-year 4.15%, mortgages 6.05%, Fed 3.75%, unemployment 4.4%, inflation 2.8%."]
+          "intelligence": ["Approval 52% (your voters 86, swing 54, opposition voters 15). Opposition: selective.", "Gas $3.23, 10-year 4.15%, mortgages 6.05%, Fed 3.75%, unemployment 4.4%, inflation 2.8%."]
         }, {
           "week": 2,
           "headline": "Jobs report: unemployment 4.4% (was 4.4%).",
           "consequences": ["You nominate Adm. Carla Benson (ret.) (an expert) for Defense secretary. Hearings next week, a Senate vote the week after.", "The committee reports the bill to the House floor.", "Hearings for Helen Strand (Treasury secretary): a steady performance.", "Hearings for Lucia Moreno (Secretary of State): a steady performance.", "The Fed holds at 3.75%.", "Jobs report: unemployment 4.4% (was 4.4%)."],
           "reactions": ["Opposition leaders shift to cooperate: they will deal."],
-          "intelligence": ["Whip: 100% to pass the House (218 needed).", "Approval 51% (your voters 84, swing 56, opposition voters 12). Opposition: cooperate.", "Gas $3.23, 10-year 4.12%, mortgages 6.02%, Fed 3.75%, unemployment 4.4%, inflation 2.7%."]
+          "intelligence": ["Whip: 100% to pass the House (218 needed).", "Approval 51% (your voters 86, swing 53, opposition voters 15). Opposition: cooperate.", "Gas $3.23, 10-year 4.12%, mortgages 6.02%, Fed 3.75%, unemployment 4.4%, inflation 2.7%."]
         }, {
           "week": 3,
           "headline": "The Senate confirms Lucia Moreno as Secretary of State, 61-39.",
           "consequences": ["The House passes the Build More Homes Act, 267-168.", "The Senate confirms Helen Strand as Treasury secretary, 58-42.", "Hearings for Adm. Carla Benson (ret.) (Defense secretary): a steady performance.", "The Senate confirms Lucia Moreno as Secretary of State, 61-39."],
           "reactions": [],
-          "intelligence": ["Whip: 92% to pass the Senate (60 votes needed).", "Approval 51% (your voters 83, swing 55, opposition voters 13). Opposition: cooperate.", "Gas $3.22, 10-year 4.14%, mortgages 6.04%, Fed 3.75%, unemployment 4.4%, inflation 2.7%."]
+          "intelligence": ["Whip: 91% to pass the Senate (60 votes needed).", "Approval 51% (your voters 85, swing 52, opposition voters 14). Opposition: cooperate.", "Gas $3.22, 10-year 4.14%, mortgages 6.04%, Fed 3.75%, unemployment 4.4%, inflation 2.7%."]
         }, {
           "week": 4,
           "headline": "Inflation report: 2.7% over the year (was 2.8%).",
           "consequences": ["The Senate passes the Build More Homes Act, 63-37.", "You sign the Build More Homes Act. Deficit +0.04% of GDP; implementation quality 94% (Treasury).", "The Senate confirms Adm. Carla Benson (ret.) as Defense secretary, 56-44.", "Inflation report: 2.7% over the year (was 2.8%)."],
           "reactions": [],
-          "intelligence": ["Approval 52% (your voters 86, swing 56, opposition voters 14). Opposition: cooperate.", "Gas $3.26, 10-year 4.12%, mortgages 6.02%, Fed 3.75%, unemployment 4.4%, inflation 2.7%."]
+          "intelligence": ["Approval 50% (your voters 89, swing 48, opposition voters 12). Opposition: cooperate.", "Gas $3.26, 10-year 4.12%, mortgages 6.02%, Fed 3.75%, unemployment 4.4%, inflation 2.7%."]
         }, {
           "week": 5,
           "headline": "CRISIS: Harassment of tankers gives way to tanker seized in the Strait of Hormuz.",
           "consequences": ["The back channel goes quiet. Tehran reads hesitation.", "You suspend tariffs and the gas tax. Prices at the pump and in the shops ease."],
-          "reactions": ["CRISIS: Harassment of tankers gives way to tanker seized in the Strait of Hormuz.", "ECONOMY: An inflation surge. Shipping disruptions and a cold snap push prices up: the next inflation report will run hot.", "The other side holds its ground: Tanker seized."],
-          "intelligence": ["Approval 52% (your voters 87, swing 56, opposition voters 14). Opposition: cooperate.", "Gas $3.45, 10-year 4.08%, mortgages 5.98%, Fed 3.75%, unemployment 4.3%, inflation 2.8%."]
+          "reactions": ["CRISIS: Harassment of tankers gives way to tanker seized in the Strait of Hormuz.", "ECONOMY: An inflation surge. Shipping disruptions and a cold snap push prices up: the next inflation report will run hot.", "The other side holds its ground: Tanker seized.", "Opposition leaders shift to selective: they will pick their fights."],
+          "intelligence": ["Approval 51% (your voters 90, swing 49, opposition voters 13). Opposition: selective.", "Gas $3.45, 10-year 4.08%, mortgages 5.98%, Fed 3.75%, unemployment 4.3%, inflation 2.8%."]
         }, {
           "week": 6,
           "headline": "Jobs report: unemployment 4.3% (was 4.4%).",
-          "consequences": ["You coordinate sanctions and warnings with allies. Markets dip.", "Your stopgap offer: a defense plus-up deal.", "You release oil from the Strategic Petroleum Reserve. Gas prices should ease; hawks warn the reserve is for emergencies.", "Jobs report: unemployment 4.3% (was 4.4%)."],
+          "consequences": ["You coordinate sanctions and warnings with allies. Markets dip.", "Your stopgap offer: a clean stopgap.", "You release oil from the Strategic Petroleum Reserve. Gas prices should ease; hawks warn the reserve is for emergencies.", "Jobs report: unemployment 4.3% (was 4.4%)."],
           "reactions": ["The other side holds its ground: Tanker seized."],
-          "intelligence": ["Approval 52% (your voters 87, swing 56, opposition voters 13). Opposition: cooperate.", "Gas $3.45, 10-year 4.04%, mortgages 5.94%, Fed 3.75%, unemployment 4.3%, inflation 2.8%."]
+          "intelligence": ["Approval 51% (your voters 90, swing 50, opposition voters 13). Opposition: selective.", "Gas $3.45, 10-year 4.03%, mortgages 5.93%, Fed 3.75%, unemployment 4.3%, inflation 2.8%."]
         }, {
           "week": 7,
           "headline": "The back channel goes quiet. Tehran reads hesitation.",
           "consequences": ["The back channel goes quiet. Tehran reads hesitation."],
-          "reactions": ["The other side escalates: Mines reported."],
-          "intelligence": ["Approval 52% (your voters 87, swing 55, opposition voters 14). Opposition: cooperate.", "Gas $3.46, 10-year 4.07%, mortgages 5.97%, Fed 3.75%, unemployment 4.3%, inflation 2.8%."]
+          "reactions": ["The other side escalates: Mines reported.", "Opposition leaders shift to cooperate: they will deal."],
+          "intelligence": ["Approval 52% (your voters 91, swing 52, opposition voters 14). Opposition: cooperate.", "Gas $3.46, 10-year 4.05%, mortgages 5.95%, Fed 3.75%, unemployment 4.3%, inflation 2.8%."]
         }, {
           "week": 8,
           "headline": "Inflation report: 2.8% over the year (was 2.7%).",
           "consequences": ["Diplomacy lowers the temperature: Tanker seized.", "Inflation report: 2.8% over the year (was 2.7%)."],
           "reactions": ["The other side holds its ground: Tanker seized."],
-          "intelligence": ["Approval 52% (your voters 87, swing 54, opposition voters 15). Opposition: cooperate.", "Gas $3.45, 10-year 4.07%, mortgages 5.97%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
+          "intelligence": ["Approval 52% (your voters 91, swing 52, opposition voters 14). Opposition: cooperate.", "Gas $3.45, 10-year 4.05%, mortgages 5.95%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
         }, {
           "week": 9,
           "headline": "The Fed holds at 3.75%.",
           "consequences": ["Congress passes the stopgap. The government stays open.", "You coordinate sanctions and warnings with allies. Markets dip.", "The Fed holds at 3.75%."],
           "reactions": ["The other side holds its ground: Tanker seized."],
-          "intelligence": ["Approval 52% (your voters 87, swing 53, opposition voters 14). Opposition: cooperate.", "Gas $3.44, 10-year 4.08%, mortgages 5.98%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
+          "intelligence": ["Approval 52% (your voters 91, swing 52, opposition voters 14). Opposition: cooperate.", "Gas $3.44, 10-year 4.06%, mortgages 5.96%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
         }, {
           "week": 10,
           "headline": "The Strait of Hormuz crisis settles into a tense stalemate.",
           "consequences": ["The Strait of Hormuz crisis settles into a tense stalemate."],
           "reactions": [],
-          "intelligence": ["Approval 51% (your voters 87, swing 52, opposition voters 14). Opposition: cooperate.", "Gas $3.30, 10-year 4.08%, mortgages 5.98%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
+          "intelligence": ["Approval 52% (your voters 91, swing 51, opposition voters 15). Opposition: cooperate.", "Gas $3.30, 10-year 4.05%, mortgages 5.95%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
         }, {
           "week": 11,
           "headline": "Jobs report: unemployment 4.3% (was 4.3%).",
           "consequences": ["Jobs report: unemployment 4.3% (was 4.3%)."],
           "reactions": [],
-          "intelligence": ["Approval 51% (your voters 87, swing 53, opposition voters 14). Opposition: cooperate.", "Gas $3.20, 10-year 4.09%, mortgages 5.99%, Fed 3.75%, unemployment 4.3%, inflation 3.0%."]
+          "intelligence": ["Approval 52% (your voters 91, swing 51, opposition voters 15). Opposition: cooperate.", "Gas $3.20, 10-year 4.06%, mortgages 5.96%, Fed 3.75%, unemployment 4.3%, inflation 3.0%."]
         }, {
           "week": 12,
           "headline": "Inflation report: 3.0% over the year (was 2.8%).",
           "consequences": ["Inflation report: 3.0% over the year (was 2.8%)."],
           "reactions": [],
-          "intelligence": ["Approval 51% (your voters 86, swing 52, opposition voters 14). Opposition: cooperate.", "Gas $3.18, 10-year 4.12%, mortgages 6.02%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
+          "intelligence": ["Approval 52% (your voters 91, swing 51, opposition voters 14). Opposition: cooperate.", "Gas $3.18, 10-year 4.09%, mortgages 5.99%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
         }, {
           "week": 13,
           "headline": "A quiet week in Washington.",
           "consequences": [],
           "reactions": [],
-          "intelligence": ["Approval 51% (your voters 86, swing 51, opposition voters 15). Opposition: cooperate.", "Gas $3.22, 10-year 4.11%, mortgages 6.01%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
+          "intelligence": ["Approval 52% (your voters 91, swing 50, opposition voters 14). Opposition: cooperate.", "Gas $3.22, 10-year 4.08%, mortgages 5.98%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
         }, {
           "week": 14,
           "headline": "A quiet week in Washington.",
           "consequences": [],
           "reactions": [],
-          "intelligence": ["Approval 50% (your voters 86, swing 51, opposition voters 14). Opposition: cooperate.", "Gas $3.22, 10-year 4.15%, mortgages 6.05%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
+          "intelligence": ["Approval 52% (your voters 91, swing 51, opposition voters 15). Opposition: cooperate.", "Gas $3.22, 10-year 4.12%, mortgages 6.02%, Fed 3.75%, unemployment 4.3%, inflation 2.9%."]
         }],
       "pending": [],
       "weekConsequences": [],
@@ -3085,8 +3351,8 @@
       "escalation": 1,
       "crisisWeeks": 6,
       "intelEstimate": 0.5683716480974754,
-      "lastEscalationRisk": 0.24887775854271535,
-      "fundingOffer": "DEFENSE_DEAL",
+      "lastEscalationRisk": 0.29887775854271537,
+      "fundingOffer": "CLEAN",
       "shutdown": false,
       "fundingResolved": true,
       "shutdownWeeks": 0,
@@ -3095,35 +3361,603 @@
       "challengeResponse": 2,
       "challengeStartInflation": 2.7121494982413927,
       "challengeStartUnemployment": 4.356702992805684,
-      "startApproval": 51.166000000000004,
+      "startApproval": 51.043329154275995,
       "startMisery": 7.2,
       "startDeficit": 0.0,
-      "approvalByWeek": [51.166000000000004, 50.90989455058901, 50.760740976710906, 50.699438540572004, 51.69127269738314, 52.271094039975516, 51.978517453512026, 51.94091981281024, 52.19152171154581, 51.563995363840135, 50.959991599578615, 51.20557983354718, 50.75633759542547, 50.805664801866364, 50.44759455304349],
+      "approvalByWeek": [51.043329154275995, 51.91526927217433, 51.1679807826516, 50.57202240268704, 49.79149034887523, 50.77474570706333, 51.033176464428344, 52.46565656533951, 52.198667530563945, 52.415731146886046, 52.280620047818786, 52.308583767615865, 51.84935522151859, 51.54896496815758, 52.390714077652554],
       "finalReport": {
         "outcome": "VICTORY",
         "score": 9,
         "headline": "A commanding start: legislation, administration, economy, standing delivered.",
-        "goals": [["Legislation", "MET", "You signed the Build More Homes Act in week 4. Campaign promises kept: 1 of 2."], ["Administration", "MET", "3 of 3 cabinet secretaries confirmed; average competence 85."], ["Economy", "MET", "The inflation surge: inflation rose 0.15 points since it struck, to 2.9%."], ["Security", "PARTLY", "The Strait of Hormuz settled into a stalemate."], ["Standing", "MET", "Approval 50% (from 51%); your party is behind you; the opposition is cooperate. Midterm outlook: -13 House seats."]],
-        "decisions": ["Week 1: You send Congress the Build More Homes Act (medium, paid for by cut spending elsewhere).", "Week 1: You nominate Helen Strand (an expert) for Treasury secretary. Hearings next week, a Senate vote the week after.", "Week 1: You nominate Lucia Moreno (an expert) for Secretary of State. Hearings next week, a Senate vote the week after.", "Week 2: You nominate Adm. Carla Benson (ret.) (an expert) for Defense secretary. Hearings next week, a Senate vote the week after.", "Week 4: You sign the Build More Homes Act. Deficit +0.04% of GDP; implementation quality 94% (Treasury).", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "Decision: An inflation surge -> Suspend tariffs and the gas tax", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "Decision: Government funding runs out at the end of week 8 -> A defense plus-up deal", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "Decision: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies"],
-        "approvalByWeek": [51.166000000000004, 50.90989455058901, 50.760740976710906, 50.699438540572004, 51.69127269738314, 52.271094039975516, 51.978517453512026, 51.94091981281024, 52.19152171154581, 51.563995363840135, 50.959991599578615, 51.20557983354718, 50.75633759542547, 50.805664801866364, 50.44759455304349],
-        "startApproval": 51.166000000000004,
-        "approval": 50.44759455304349
+        "goals": [["Legislation", "MET", "You signed the Build More Homes Act in week 4. Campaign promises kept: 1 of 2."], ["Administration", "MET", "3 of 3 cabinet secretaries confirmed; average competence 85."], ["Economy", "MET", "The inflation surge: inflation rose 0.15 points since it struck, to 2.9%."], ["Security", "PARTLY", "The Strait of Hormuz settled into a stalemate."], ["Standing", "MET", "Approval 52% (from 51%); your party is behind you; the opposition is cooperate. Midterm outlook: -6 House seats."]],
+        "decisions": ["Week 1: You send Congress the Build More Homes Act (medium, paid for by cut spending elsewhere).", "Week 1: You nominate Helen Strand (an expert) for Treasury secretary. Hearings next week, a Senate vote the week after.", "Week 1: You nominate Lucia Moreno (an expert) for Secretary of State. Hearings next week, a Senate vote the week after.", "Week 2: You nominate Adm. Carla Benson (ret.) (an expert) for Defense secretary. Hearings next week, a Senate vote the week after.", "Week 4: You sign the Build More Homes Act. Deficit +0.04% of GDP; implementation quality 94% (Treasury).", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "Decision: An inflation surge -> Suspend tariffs and the gas tax", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "Decision: Government funding runs out at the end of week 8 -> A clean stopgap", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "Decision: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel", "Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies"],
+        "approvalByWeek": [51.043329154275995, 51.91526927217433, 51.1679807826516, 50.57202240268704, 49.79149034887523, 50.77474570706333, 51.033176464428344, 52.46565656533951, 52.198667530563945, 52.415731146886046, 52.280620047818786, 52.308583767615865, 51.84935522151859, 51.54896496815758, 52.390714077652554],
+        "startApproval": 51.043329154275995,
+        "approval": 52.390714077652554
       }
     },
+    "president": {
+      "act": ["POLICY", "CEREMONY", "FREE", "POLICY", "REMARKS", "FREE", "POLICY", "TRIP", "FREE", "POLICY", "TRIP", "FREE", "POLICY", "CEREMONY", "FAMILY", "EXERCISE", "FAMILY", "REST", "REST", "FAMILY", "FREE"],
+      "arg": ["COST_OF_LIVING", null, null, "IMMIGRATION", "COST_OF_LIVING", null, "ECONOMY", "NY", null, "HEALTHCARE", "CA", null, "COST_OF_LIVING", null, null, null, null, null, null, null, null],
+      "stamina": 43.47586675375573,
+      "sleep": 6.971428571428571,
+      "stress": 25.73294106403872,
+      "health": 100.0,
+      "fitness": 74.40000000000003,
+      "sick": 0,
+      "location": "CA",
+      "age": 61,
+      "week": 32,
+      "lastCabinet": 28,
+      "delegate": true,
+      "plan": {
+        "preset": 0,
+        "priorities": [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+        "stops": [false, false, true, false, false, false, false]
+      },
+      "warChest": 0.0,
+      "hill": 75.71428571428562,
+      "hillHours": 2.5,
+      "midtermEffort": {},
+      "lastWeek": ["5 policy meetings", "a trip to California", "2.5 hours on the Hill"],
+      "lastRaised": 0.0,
+      "lastStaminaChange": -2.6838967988164484
+    },
+    "news": [{
+        "date": "2029-01-25",
+        "kind": "INFO",
+        "head": "Marsh visits New York",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-01-28",
+        "kind": "INFO",
+        "head": "A film made entirely by AI wins audiences, and an argument",
+        "body": "A feature made with AI from script to score is a box-office hit. The actors' and writers' guilds are furious.",
+        "weight": 0.8778033564301824,
+        "section": "Culture"
+      }, {
+        "date": "2029-01-28",
+        "kind": "INFO",
+        "head": "The Super Bowl is the most-watched broadcast of the year",
+        "body": "Parties across the country, and advertisers paying record sums for a few seconds of airtime.",
+        "weight": 0.6420377929980905,
+        "section": "Sports"
+      }, {
+        "date": "2029-02-01",
+        "kind": "INFO",
+        "head": "Marsh visits New York",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-02-04",
+        "kind": "INFO",
+        "head": "A small town in Louisiana loses its last factory",
+        "body": "The plant that employed half the town is closing. The mayor says they'll find a way to start over.",
+        "weight": 0.6923107022593857,
+        "section": "Daily life"
+      }, {
+        "date": "2029-02-04",
+        "kind": "INFO",
+        "head": "Teenagers and their phones: a debate in every household",
+        "body": "Schools in South Dakota are banning phones in class, and parents are trading tips on screen time.",
+        "weight": 0.5086639507062662,
+        "section": "Daily life"
+      }, {
+        "date": "2029-02-11",
+        "kind": "INFO",
+        "head": "Drones deliver groceries and prescriptions in the suburbs",
+        "body": "Packages are arriving by air in under thirty minutes in a growing number of towns.",
+        "weight": 0.7326214508611886,
+        "section": "Daily life"
+      }, {
+        "date": "2029-02-11",
+        "kind": "INFO",
+        "head": "Rural hospitals in Hawaii are closing",
+        "body": "Three hospitals have shut their doors in two years. Patients must drive hours for care.",
+        "weight": 0.7835243600817052,
+        "section": "Health"
+      }, {
+        "date": "2029-02-18",
+        "kind": "INFO",
+        "head": "Bitter cold grips the northern states",
+        "body": "Temperatures fell below zero from Montana to Maine. Shelters opened extra beds.",
+        "weight": 0.8466136765752731,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-02-18",
+        "kind": "INFO",
+        "head": "Air taxis lift off in three cities",
+        "body": "Electric air taxis are flying paying passengers between downtown and the airport in a few big cities.",
+        "weight": 0.5354932278601133,
+        "section": "Daily life"
+      }, {
+        "date": "2029-02-25",
+        "kind": "INFO",
+        "head": "AI chatbots move into offices and classrooms",
+        "body": "Companies are using AI to write code and answer customers. Schools are rewriting their rules on homework.",
+        "weight": 0.5044051122678531,
+        "section": "Technology"
+      }, {
+        "date": "2029-02-25",
+        "kind": "INFO",
+        "head": "Astronauts return to the moon",
+        "body": "For the first time in more than half a century, Americans have walked on the lunar surface, near its south pole.",
+        "weight": 0.5331740317830405,
+        "section": "Science"
+      }, {
+        "date": "2029-03-01",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-03-04",
+        "kind": "INFO",
+        "head": "Self-driving trucks begin hauling freight on the interstates",
+        "body": "The first driverless trucks are running on highways in the Southwest. The Teamsters say they're a threat to millions of jobs.",
+        "weight": 0.6844886469580245,
+        "section": "Technology"
+      }, {
+        "date": "2029-03-04",
+        "kind": "INFO",
+        "head": "A new bridge opens in Arizona",
+        "body": "The span replaces a ferry that has run for more than eighty years. Hundreds walked across on opening day.",
+        "weight": 0.7030183305313387,
+        "section": "Daily life"
+      }, {
+        "date": "2029-03-08",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-03-11",
+        "kind": "INFO",
+        "head": "A county fair in Georgia draws record crowds",
+        "body": "Prize hogs, pie contests and a Ferris wheel. Organizers say it was the best fair in memory.",
+        "weight": 0.6705009892073636,
+        "section": "Daily life"
+      }, {
+        "date": "2029-03-11",
+        "kind": "INFO",
+        "head": "Veterans return to a quieter country",
+        "body": "With no war on, veterans in New Jersey are going back to school and starting businesses.",
+        "weight": 0.7788324533510089,
+        "section": "Daily life"
+      }, {
+        "date": "2029-03-14",
+        "kind": "INFO",
+        "head": "Marsh visits Virginia",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-03-15",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-03-18",
+        "kind": "ECON",
+        "head": "A trillion-dollar company that didn't exist ten years ago",
+        "body": "An AI firm founded in a rented office is now worth more than most countries' entire stock markets.",
+        "weight": 0.6449393264060915,
+        "section": "Business"
+      }, {
+        "date": "2029-03-18",
+        "kind": "INFO",
+        "head": "Spring floods along the rivers of Maine",
+        "body": "Melting snow and heavy rain have pushed rivers over their banks. Families are moving to higher ground.",
+        "weight": 0.658088687931816,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-03-22",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-03-25",
+        "kind": "INFO",
+        "head": "A community in Minnesota rallies after a flood",
+        "body": "Volunteers are filling sandbags and gutting homes. Churches are serving meals around the clock.",
+        "weight": 0.6126929483582572,
+        "section": "Daily life"
+      }, {
+        "date": "2029-03-25",
+        "kind": "INFO",
+        "head": "Astronomers report a new comet",
+        "body": "The comet may be visible to the naked eye next month if it survives its pass near the sun.",
+        "weight": 0.5135069965912082,
+        "section": "Science"
+      }, {
+        "date": "2029-03-29",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-04-01",
+        "kind": "INFO",
+        "head": "March Madness: an underdog shocks a top seed",
+        "body": "Office pools across the country were busted when a small school knocked off one of the favorites.",
+        "weight": 0.7267013040509386,
+        "section": "Sports"
+      }, {
+        "date": "2029-04-05",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-04-08",
+        "kind": "ECON",
+        "head": "Rents climb out of reach in Delaware",
+        "body": "Rents in the state's biggest city are up by a quarter in two years. Young people are moving back in with their parents.",
+        "weight": 0.832561302951836,
+        "section": "The economy"
+      }, {
+        "date": "2029-04-08",
+        "kind": "ECON",
+        "head": "The deficit worries Wall Street",
+        "body": "Bond traders say the government is borrowing too much. Interest rates are creeping up.",
+        "weight": 0.7734020262639087,
+        "section": "The economy"
+      }, {
+        "date": "2029-04-15",
+        "kind": "ECON",
+        "head": "Sports betting apps are everywhere",
+        "body": "Millions of Americans now bet on games from their phones. Counselors say calls to gambling hotlines are up.",
+        "weight": 0.7323252236153575,
+        "section": "Business"
+      }, {
+        "date": "2029-04-22",
+        "kind": "INFO",
+        "head": "A long-unsolved case is cracked in Nevada",
+        "body": "Detectives say new evidence led them to a suspect decades after the crime.",
+        "weight": 0.7446617961832889,
+        "section": "Crime and the courts"
+      }, {
+        "date": "2029-04-22",
+        "kind": "INFO",
+        "head": "Opening day: baseball is back",
+        "body": "Fans filled ballparks across the country. Even in the cold, the stands were full.",
+        "weight": 0.7773128311909661,
+        "section": "Sports"
+      }, {
+        "date": "2029-04-29",
+        "kind": "ECON",
+        "head": "Wages are rising for the lowest-paid workers",
+        "body": "With jobs plentiful, workers are switching employers for better pay, and wages at the bottom are climbing fastest.",
+        "weight": 0.6162317872706697,
+        "section": "The economy"
+      }, {
+        "date": "2029-04-29",
+        "kind": "ECON",
+        "head": "Data centers strain the grid in Maryland",
+        "body": "A new AI campus will use as much power as a city of a million people. Utilities are asking customers to pay for new power plants.",
+        "weight": 0.8718433101611576,
+        "section": "Business"
+      }, {
+        "date": "2029-05-06",
+        "kind": "INFO",
+        "head": "An earthquake rattles California",
+        "body": "The quake knocked items off shelves across the region but caused little serious damage.",
+        "weight": 0.8832945365943536,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-05-06",
+        "kind": "INFO",
+        "head": "A hometown hero from South Dakota retires",
+        "body": "After eighteen seasons, the beloved veteran played his last game before a standing ovation.",
+        "weight": 0.6368298891680292,
+        "section": "Sports"
+      }, {
+        "date": "2029-05-13",
+        "kind": "INFO",
+        "head": "The Kentucky Derby draws a record crowd",
+        "body": "A long shot came from behind to win the run for the roses at Churchill Downs.",
+        "weight": 0.5519760553709767,
+        "section": "Sports"
+      }, {
+        "date": "2029-05-20",
+        "kind": "INFO",
+        "head": "Tornadoes rip through Oklahoma",
+        "body": "A line of storms spun up several tornadoes overnight, flattening homes and barns.",
+        "weight": 0.5117161792268837,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-05-20",
+        "kind": "INFO",
+        "head": "A fusion company puts power on the grid",
+        "body": "A startup's pilot plant has delivered electricity to the grid for the first time. It will be years before fusion power is cheap.",
+        "weight": 0.782090431605897,
+        "section": "Science"
+      }, {
+        "date": "2029-05-23",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-05-27",
+        "kind": "INFO",
+        "head": "A jury acquits in a case that gripped Idaho",
+        "body": "After three weeks of testimony, the jury deliberated for two days. The defendant wept as the verdict was read.",
+        "weight": 0.7800460778622953,
+        "section": "Crime and the courts"
+      }, {
+        "date": "2029-05-27",
+        "kind": "INFO",
+        "head": "A singer from Nebraska has the number one song in the country",
+        "body": "The young singer recorded it in a small studio. Now it's on every radio.",
+        "weight": 0.8510659819504963,
+        "section": "Culture"
+      }, {
+        "date": "2029-06-03",
+        "kind": "ECON",
+        "head": "A new shopping center opens outside Indiana's biggest city",
+        "body": "The developer says it will be the region's largest, with department stores and hundreds of shops.",
+        "weight": 0.7895933230457923,
+        "section": "Business"
+      }, {
+        "date": "2029-06-03",
+        "kind": "INFO",
+        "head": "Wildfire smoke blankets the West",
+        "body": "Air quality alerts are in effect from Seattle to Denver as fires burn across the region.",
+        "weight": 0.6758114457558005,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-06-07",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-06-10",
+        "kind": "INFO",
+        "head": "A new generation of weight-loss drugs becomes a pill",
+        "body": "Millions of Americans are taking the drugs, and food companies are reporting a drop in snack sales.",
+        "weight": 0.5180919383259787,
+        "section": "Health"
+      }, {
+        "date": "2029-06-10",
+        "kind": "INFO",
+        "head": "A meteor lights up the night sky over Arkansas",
+        "body": "Hundreds of people reported seeing a fireball streak across the sky. Some heard a sonic boom.",
+        "weight": 0.5793278898782492,
+        "section": "Science"
+      }, {
+        "date": "2029-06-14",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-06-17",
+        "kind": "INFO",
+        "head": "A streaming series becomes a sensation",
+        "body": "Everyone seems to be talking about the same show, and the actors are suddenly famous.",
+        "weight": 0.523215325032917,
+        "section": "Culture"
+      }, {
+        "date": "2029-06-17",
+        "kind": "INFO",
+        "head": "AI tutors in every classroom",
+        "body": "School districts are giving every student an AI tutor. Test scores in some districts are up; teachers' unions want limits.",
+        "weight": 0.8942838140355072,
+        "section": "Technology"
+      }, {
+        "date": "2029-06-24",
+        "kind": "INFO",
+        "head": "Drought dries up wells in Utah",
+        "body": "Farmers are hauling water to their livestock, and towns are banning lawn watering.",
+        "weight": 0.7248011591363975,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-06-27",
+        "kind": "INFO",
+        "head": "Marsh visits New York",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-06-28",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-07-01",
+        "kind": "INFO",
+        "head": "A spelling bee champion from Utah",
+        "body": "An eighth-grader won the national spelling bee in Washington, spelling a word most adults have never heard.",
+        "weight": 0.6827931844232844,
+        "section": "Daily life"
+      }, {
+        "date": "2029-07-01",
+        "kind": "INFO",
+        "head": "A hurricane makes landfall on the Gulf Coast",
+        "body": "The storm pushed a surge into coastal towns and knocked out power to hundreds of thousands.",
+        "weight": 0.6061214748682775,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-07-05",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-07-08",
+        "kind": "INFO",
+        "head": "A heat dome bakes the South",
+        "body": "Cities from Phoenix to Atlanta are setting records, and cooling centers are full.",
+        "weight": 0.6962824157196059,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-07-08",
+        "kind": "INFO",
+        "head": "A beloved ballpark will be torn down",
+        "body": "The team will move to a new stadium next year. Fans are lining up for one last look.",
+        "weight": 0.8156804760491005,
+        "section": "Sports"
+      }, {
+        "date": "2029-07-15",
+        "kind": "INFO",
+        "head": "Scientists in Oklahoma report a promising cancer treatment",
+        "body": "Early trials show tumors shrinking in some patients. Researchers caution that more study is needed.",
+        "weight": 0.783281068971865,
+        "section": "Science"
+      }, {
+        "date": "2029-07-15",
+        "kind": "INFO",
+        "head": "A tech company opens a giant campus in Kentucky",
+        "body": "The company says it will hire thousands. Local officials offered millions in tax breaks to win it.",
+        "weight": 0.7862763973061475,
+        "section": "Technology"
+      }, {
+        "date": "2029-07-19",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-07-22",
+        "kind": "INFO",
+        "head": "A rookie throws a no-hitter",
+        "body": "The young pitcher, called up from the minors only last month, didn't allow a hit.",
+        "weight": 0.6361794492867444,
+        "section": "Sports"
+      }, {
+        "date": "2029-07-22",
+        "kind": "INFO",
+        "head": "A centenarian in Washington recalls a century of change",
+        "body": "She remembers the first automobile in her town. Her advice for a long life: keep busy and stay curious.",
+        "weight": 0.5854286949914105,
+        "section": "Daily life"
+      }, {
+        "date": "2029-07-29",
+        "kind": "INFO",
+        "head": "An awards show draws a huge audience",
+        "body": "Hollywood's biggest night ended with a surprise winner for best picture.",
+        "weight": 0.5867810787209808,
+        "section": "Culture"
+      }, {
+        "date": "2029-07-29",
+        "kind": "INFO",
+        "head": "A heat wave scorches Arizona",
+        "body": "Temperatures above 100 for a week. Officials are urging people to check on elderly neighbors.",
+        "weight": 0.8024205023245254,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-08-05",
+        "kind": "INFO",
+        "head": "A hurricane brushes the Carolinas",
+        "body": "Coastal towns are cleaning up after a storm that flooded streets and tore off roofs.",
+        "weight": 0.5340119720638693,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-08-05",
+        "kind": "INFO",
+        "head": "A novel about a family from Washington tops the bestseller lists",
+        "body": "Readers say the story of three generations rings true. Hollywood has bought the rights.",
+        "weight": 0.5390301225964896,
+        "section": "Culture"
+      }, {
+        "date": "2029-08-12",
+        "kind": "INFO",
+        "head": "Wildfires force evacuations in the West",
+        "body": "Firefighters are battling blazes in several states. Whole towns have been told to leave.",
+        "weight": 0.8262635262853517,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-08-12",
+        "kind": "INFO",
+        "head": "A museum in Nebraska unveils a newly discovered painting",
+        "body": "Experts say the work, found in an attic, is by an American master.",
+        "weight": 0.675523137043677,
+        "section": "Culture"
+      }, {
+        "date": "2029-08-19",
+        "kind": "INFO",
+        "head": "A new hospital opens in North Carolina",
+        "body": "The hospital will serve a rural region where the nearest emergency room was more than an hour away.",
+        "weight": 0.5485879414192424,
+        "section": "Health"
+      }, {
+        "date": "2029-08-19",
+        "kind": "INFO",
+        "head": "A summer blockbuster breaks box-office records",
+        "body": "Audiences are lining up for the season's biggest picture. Theater owners say it's their best weekend in years.",
+        "weight": 0.6749734284080116,
+        "section": "Culture"
+      }, {
+        "date": "2029-08-23",
+        "kind": "INFO",
+        "head": "Marsh visits California",
+        "body": null,
+        "weight": 0.4,
+        "section": null
+      }, {
+        "date": "2029-08-26",
+        "kind": "INFO",
+        "head": "A town in Washington celebrates its centennial",
+        "body": "Parades, fireworks and a time capsule mark a hundred years since the town was founded.",
+        "weight": 0.5328445312479797,
+        "section": "Daily life"
+      }, {
+        "date": "2029-08-26",
+        "kind": "ECON",
+        "head": "A downtown in Vermont comes back to life",
+        "body": "Old warehouses are now apartments, restaurants and breweries.",
+        "weight": 0.7808446573126151,
+        "section": "Business"
+      }, {
+        "date": "2029-09-02",
+        "kind": "INFO",
+        "head": "An early frost hits the orchards of Nevada",
+        "body": "Growers say they lost much of the apple crop in a single night.",
+        "weight": 0.769757921914739,
+        "section": "Weather and the land"
+      }, {
+        "date": "2029-09-02",
+        "kind": "INFO",
+        "head": "Harvest time in Georgia",
+        "body": "Combines are working through the night to bring in the crop before the weather turns.",
+        "weight": 0.5473203990091065,
+        "section": "Weather and the land"
+      }],
+    "ambientUsed": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 17, 18, 24, 32, 45, 50, 51, 56, 62, 63, 64, 65, 66, 67, 68, 70, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 83, 85, 86, 88, 91, 92, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109],
     "scheduler": {
-      "pending": [],
-      "fired": ["jobs_report", "october_surprise"],
-      "nextId": 3
+      "pending": [[3, "hurricane"]],
+      "fired": ["hurricane", "jobs_report", "october_surprise"],
+      "nextId": 4
     },
     "ledger": {
-      "decisions": [[1, "2028-07-17", "Promise: Build More Homes Act"], [2, "2028-07-17", "Promise: AI Safety Standards Act"], [3, "2028-10-29", "October surprise: Attack the source"], [4, "2028-11-04", "A weak jobs report: Pivot your message to the economy"], [5, "2028-11-07", "Election 2028"], [6, "2028-12-09", "Agenda: housing, ai_safety, chips_china"], [7, "2029-01-20", "Inauguration"], [8, "2029-01-22", "100 days, week 1: DraftBill"], [9, "2029-01-22", "100 days, week 1: Nominate"], [10, "2029-01-22", "100 days, week 1: Nominate"], [11, "2029-01-29", "100 days, week 2: Nominate"], [12, "2029-02-05", "100 days, week 3: CallVote"], [13, "2029-02-05", "100 days, week 3: the week's events"], [14, "2029-02-12", "100 days, week 4: CallVote"], [15, "2029-02-12", "100 days, week 4: the week's events"], [16, "2029-02-19", "100 days, week 5: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel"], [17, "2029-02-19", "100 days, week 5: An inflation surge -> Suspend tariffs and the gas tax"], [18, "2029-02-26", "100 days, week 6: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies"], [19, "2029-02-26", "100 days, week 6: Government funding runs out at the end of week 8 -> A defense plus-up deal"], [20, "2029-02-26", "100 days, week 6: ReleaseOilReserve"], [21, "2029-03-05", "100 days, week 7: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel"], [22, "2029-03-12", "100 days, week 8: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel"], [23, "2029-03-19", "100 days, week 9: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies"], [24, "2029-03-19", "100 days, week 10: the week's events"], [25, "2029-05-01", "Push ai_safety (PARTY_LINE, capital 25.0)"], [26, "2029-05-01", "Address on ECONOMY"], [27, "2029-06-01", "Push chips_china (PARTY_LINE, capital 25.0)"], [28, "2029-06-01", "Address on ECONOMY"], [29, "2029-07-01", "Push immigration_deal (PARTY_LINE, capital 25.0)"], [30, "2029-07-01", "Address on ECONOMY"], [31, "2029-08-01", "Push social_security (PARTY_LINE, capital 25.0)"], [32, "2029-08-01", "Address on ECONOMY"]],
-      "consequences": [[1, "2028-07-17", "Promise housing", "election", "National polls (you) +0.4"], [1, "2028-07-17", "Promise housing", "politics", "Cost of living matters more to voters"], [2, "2028-07-17", "Promise ai_safety", "election", "National polls (you) +0.2"], [2, "2028-07-17", "Promise ai_safety", "politics", "AI and jobs matters more to voters"], [3, "2028-10-29", "Event october_surprise", "election", "National polls (you) -0.6"], [3, "2028-10-29", "Event october_surprise", "election", "Campaign cash ($M) +8"], [4, "2028-11-04", "Event jobs_report", "politics", "The economy matters more to voters"], [5, "2028-11-07", "Election 2028", "congress", "Congress: House D 212, Senate D 50"], [7, "2029-01-20", "Inauguration", "executive+politics", "A Republican president takes office (302 electoral votes)"], [8, "2029-01-22", "100 days, week 1: DraftBill", "politics", "Base wing mood +3"], [8, "2029-01-22", "100 days, week 1: DraftBill", "politics", "Moderate wing mood +4"], [9, "2029-01-22", "100 days, week 1: Nominate", "politics", "Moderate wing mood +2"], [9, "2029-01-22", "100 days, week 1: Nominate", "politics", "Opposition goodwill +2"], [10, "2029-01-22", "100 days, week 1: Nominate", "politics", "Moderate wing mood +2"], [10, "2029-01-22", "100 days, week 1: Nominate", "politics", "Opposition goodwill +2"], [11, "2029-01-29", "100 days, week 2: Nominate", "politics", "Moderate wing mood +2"], [11, "2029-01-29", "100 days, week 2: Nominate", "politics", "Opposition goodwill +2"], [12, "2029-02-05", "100 days, week 3: CallVote", "politics", "Political capital +4"], [13, "2029-02-05", "100 days, week 3: the week's events", "politics", "Political capital +2"], [13, "2029-02-05", "100 days, week 3: the week's events", "politics", "Political capital +2"], [14, "2029-02-12", "100 days, week 4: CallVote", "politics", "Political capital +4"], [14, "2029-02-12", "100 days, week 4: CallVote", "economy", "Deficit (% of GDP) +0.0"], [14, "2029-02-12", "100 days, week 4: CallVote", "economy", "Economy: growth +0.1, inflation -0.1 over 12 months"], [14, "2029-02-12", "100 days, week 4: CallVote", "politics", "Your voters approval +4"], [14, "2029-02-12", "100 days, week 4: CallVote", "politics", "Swing voters approval +0.8"], [14, "2029-02-12", "100 days, week 4: CallVote", "politics", "Your voters approval (lasting) +3"], [14, "2029-02-12", "100 days, week 4: CallVote", "politics", "Swing voters approval (lasting) +0.7"], [14, "2029-02-12", "100 days, week 4: CallVote", "politics", "Opposition voters approval +1"], [14, "2029-02-12", "100 days, week 4: CallVote", "politics", "Political capital +6"], [14, "2029-02-12", "100 days, week 4: CallVote", "politics", "Cost of living matters less to voters"], [15, "2029-02-12", "100 days, week 4: the week's events", "politics", "Political capital +2"], [15, "2029-02-12", "100 days, week 5: An inflation surge", "economy", "Economy: growth +0, inflation +1.6 over 2 months"], [16, "2029-02-19", "100 days, week 5: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "diplomacy", "Deterrence in the Pacific -3"], [16, "2029-02-19", "100 days, week 5: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "politics", "Base wing mood +2"], [16, "2029-02-19", "100 days, week 5: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "politics", "Moderate wing mood -2"], [17, "2029-02-19", "100 days, week 5: An inflation surge -> Suspend tariffs and the gas tax", "economy", "Deficit (% of GDP) +0.1"], [17, "2029-02-19", "100 days, week 5: An inflation surge -> Suspend tariffs and the gas tax", "economy", "Economy: growth +0.1, inflation -0.6 over 3 months"], [17, "2029-02-19", "100 days, week 5: An inflation surge -> Suspend tariffs and the gas tax", "politics", "Moderate wing mood +2"], [17, "2029-02-19", "100 days, week 5: An inflation surge -> Suspend tariffs and the gas tax", "politics", "Base wing mood -2"], [18, "2029-02-26", "100 days, week 6: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "diplomacy", "Deterrence in the Pacific +2"], [19, "2029-02-26", "100 days, week 6: Government funding runs out at the end of week 8 -> A defense plus-up deal", "diplomacy", "Deterrence in the Pacific +10"], [19, "2029-02-26", "100 days, week 6: Government funding runs out at the end of week 8 -> A defense plus-up deal", "economy", "Deficit (% of GDP) +0.1"], [19, "2029-02-26", "100 days, week 6: Government funding runs out at the end of week 8 -> A defense plus-up deal", "politics", "Base wing mood -3"], [19, "2029-02-26", "100 days, week 6: Government funding runs out at the end of week 8 -> A defense plus-up deal", "politics", "Moderate wing mood +3"], [19, "2029-02-26", "100 days, week 6: Government funding runs out at the end of week 8 -> A defense plus-up deal", "politics", "Opposition goodwill +3"], [20, "2029-02-26", "100 days, week 6: ReleaseOilReserve", "economy", "Oil price ($) -8"], [20, "2029-02-26", "100 days, week 6: ReleaseOilReserve", "diplomacy", "Deterrence in the Pacific -2"], [21, "2029-03-05", "100 days, week 7: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "diplomacy", "Deterrence in the Pacific -3"], [21, "2029-03-05", "100 days, week 7: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "politics", "Base wing mood +2"], [21, "2029-03-05", "100 days, week 7: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "politics", "Moderate wing mood -2"], [22, "2029-03-12", "100 days, week 8: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel", "politics", "Base wing mood +2"], [22, "2029-03-12", "100 days, week 8: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel", "politics", "Moderate wing mood -2"], [23, "2029-03-19", "100 days, week 9: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "diplomacy", "Deterrence in the Pacific +2"], [24, "2029-03-19", "100 days, week 10: the week's events", "diplomacy", "Deterrence in the Pacific -5"], [24, "2029-03-19", "100 days, week 10: the week's events", "politics", "Swing voters approval -1"], [24, "2029-03-19", "100 days, week 10: the week's events", "politics", "Swing voters approval (lasting) -0.5"], [24, "2029-03-19", "100 days, week 10: the week's events", "diplomacy", "Middle East tension +4"], [25, "2029-05-01", "Push ai_safety", "politics", "Political capital -25"], [25, "2029-05-01", "Law ai_safety", "politics", "Opposition goodwill -2"], [25, "2029-05-01", "Law ai_safety", "politics", "Approval +3"], [25, "2029-05-01", "Law ai_safety", "politics", "Swing voters approval (lasting) +0.9"], [25, "2029-05-01", "Law ai_safety", "economy", "Economy: growth +0, inflation +0 over 12 months"], [25, "2029-05-01", "Law ai_safety", "economy", "Deficit (% of GDP) +0.0"], [25, "2029-05-01", "Law ai_safety", "politics", "AI and jobs matters less to voters"], [25, "2029-05-01", "Law ai_safety", "politics", "Political capital +5"], [25, "2029-05-01", "Law ai_safety", "politics", "Base wing mood +3"], [26, "2029-05-01", "Address", "politics", "Approval +0.71 (your voters and swing voters)"], [27, "2029-06-01", "Push chips_china", "politics", "Political capital -25"], [27, "2029-06-01", "Law chips_china", "politics", "Opposition goodwill -2"], [27, "2029-06-01", "Law chips_china", "politics", "Approval +3"], [27, "2029-06-01", "Law chips_china", "politics", "Swing voters approval (lasting) +0.9"], [27, "2029-06-01", "Law chips_china", "economy", "Economy: growth +0.2, inflation +0 over 12 months"], [27, "2029-06-01", "Law chips_china", "economy", "Deficit (% of GDP) +0.1"], [27, "2029-06-01", "Law chips_china", "politics", "China matters less to voters"], [27, "2029-06-01", "Law chips_china", "politics", "Political capital +5"], [27, "2029-06-01", "Law chips_china", "politics", "Base wing mood +3"], [28, "2029-06-01", "Address", "politics", "Approval +0.69 (your voters and swing voters)"], [29, "2029-07-01", "Push immigration_deal", "politics", "Political capital -25"], [29, "2029-07-01", "Law immigration_deal", "politics", "Opposition goodwill -2"], [29, "2029-07-01", "Law immigration_deal", "politics", "Approval +1"], [29, "2029-07-01", "Law immigration_deal", "politics", "Swing voters approval (lasting) +0.3"], [29, "2029-07-01", "Law immigration_deal", "economy", "Economy: growth +0.1, inflation -0.1 over 12 months"], [29, "2029-07-01", "Law immigration_deal", "economy", "Deficit (% of GDP) +0.0"], [29, "2029-07-01", "Law immigration_deal", "politics", "Immigration matters less to voters"], [29, "2029-07-01", "Law immigration_deal", "politics", "Political capital +5"], [29, "2029-07-01", "Law immigration_deal", "politics", "Base wing mood +3"], [30, "2029-07-01", "Address", "politics", "Approval +0.68 (your voters and swing voters)"], [31, "2029-08-01", "Push social_security", "politics", "Political capital -25"], [31, "2029-08-01", "Law social_security", "politics", "Opposition goodwill -2"], [31, "2029-08-01", "Law social_security", "politics", "Approval +0"], [31, "2029-08-01", "Law social_security", "politics", "Swing voters approval (lasting) +0"], [31, "2029-08-01", "Law social_security", "economy", "Economy: growth -0.1, inflation +0 over 12 months"], [31, "2029-08-01", "Law social_security", "economy", "Deficit (% of GDP) -0.1"], [31, "2029-08-01", "Law social_security", "politics", "The economy matters less to voters"], [31, "2029-08-01", "Law social_security", "politics", "Political capital +5"], [31, "2029-08-01", "Law social_security", "politics", "Base wing mood +3"], [32, "2029-08-01", "Address", "politics", "Approval +0.69 (your voters and swing voters)"]],
-      "nextId": 33
+      "decisions": [[1, "2028-07-17", "Promise: Build More Homes Act"], [2, "2028-07-17", "Promise: AI Safety Standards Act"], [3, "2028-10-29", "October surprise: Attack the source"], [4, "2028-11-04", "A weak jobs report: Pivot your message to the economy"], [5, "2028-11-07", "Election 2028"], [6, "2028-12-09", "Agenda: housing, ai_safety, chips_china"], [7, "2029-01-20", "Inauguration"], [8, "2029-01-22", "100 days, week 1: DraftBill"], [9, "2029-01-22", "100 days, week 1: Nominate"], [10, "2029-01-22", "100 days, week 1: Nominate"], [11, "2029-01-22", "The president's week"], [12, "2029-01-29", "In the news: A film made entirely by AI wins audiences, and an argument"], [13, "2029-01-29", "In the news: The Super Bowl is the most-watched broadcast of the year"], [14, "2029-01-29", "100 days, week 2: Nominate"], [15, "2029-01-29", "The president's week"], [16, "2029-02-05", "In the news: A small town in Louisiana loses its last factory"], [17, "2029-02-05", "In the news: Teenagers and their phones: a debate in every household"], [18, "2029-02-05", "100 days, week 3: CallVote"], [19, "2029-02-05", "The president's week"], [20, "2029-02-05", "100 days, week 3: the week's events"], [21, "2029-02-12", "In the news: Drones deliver groceries and prescriptions in the suburbs"], [22, "2029-02-12", "In the news: Rural hospitals in Hawaii are closing"], [23, "2029-02-12", "100 days, week 4: CallVote"], [24, "2029-02-12", "The president's week"], [25, "2029-02-12", "100 days, week 4: the week's events"], [26, "2029-02-19", "In the news: Bitter cold grips the northern states"], [27, "2029-02-19", "In the news: Air taxis lift off in three cities"], [28, "2029-02-19", "100 days, week 5: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel"], [29, "2029-02-19", "100 days, week 5: An inflation surge -> Suspend tariffs and the gas tax"], [30, "2029-02-19", "The president's week"], [31, "2029-02-26", "In the news: AI chatbots move into offices and classrooms"], [32, "2029-02-26", "In the news: Astronauts return to the moon"], [33, "2029-02-26", "100 days, week 6: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies"], [34, "2029-02-26", "100 days, week 6: ReleaseOilReserve"], [35, "2029-02-26", "The president's week"], [36, "2029-03-05", "In the news: Self-driving trucks begin hauling freight on the interstates"], [37, "2029-03-05", "In the news: A new bridge opens in Arizona"], [38, "2029-03-05", "100 days, week 7: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel"], [39, "2029-03-05", "The president's week"], [40, "2029-03-12", "In the news: A county fair in Georgia draws record crowds"], [41, "2029-03-12", "In the news: Veterans return to a quieter country"], [42, "2029-03-12", "100 days, week 8: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel"], [43, "2029-03-12", "The president's week"], [44, "2029-03-19", "In the news: A trillion-dollar company that didn't exist ten years ago"], [45, "2029-03-19", "In the news: Spring floods along the rivers of Maine"], [46, "2029-03-19", "100 days, week 9: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies"], [47, "2029-03-19", "The president's week"], [48, "2029-03-19", "100 days, week 10: the week's events"], [49, "2029-03-26", "In the news: A community in Minnesota rallies after a flood"], [50, "2029-03-26", "In the news: Astronomers report a new comet"], [51, "2029-03-26", "The president's week"], [52, "2029-04-02", "In the news: March Madness: an underdog shocks a top seed"], [53, "2029-04-02", "The president's week"], [54, "2029-04-09", "In the news: Rents climb out of reach in Delaware"], [55, "2029-04-09", "In the news: The deficit worries Wall Street"], [56, "2029-04-09", "The president's week"], [57, "2029-04-16", "In the news: Sports betting apps are everywhere"], [58, "2029-04-16", "The president's week"], [59, "2029-04-23", "In the news: A long-unsolved case is cracked in Nevada"], [60, "2029-04-23", "In the news: Opening day: baseball is back"], [61, "2029-04-23", "The president's week"], [62, "2029-04-30", "In the news: Wages are rising for the lowest-paid workers"], [63, "2029-04-30", "In the news: Data centers strain the grid in Maryland"], [64, "2029-04-30", "Push ai_safety (PARTY_LINE, capital 25.0)"], [65, "2029-04-30", "Address on ECONOMY"], [66, "2029-04-30", "The president's week"], [67, "2029-05-07", "In the news: An earthquake rattles California"], [68, "2029-05-07", "In the news: A hometown hero from South Dakota retires"], [69, "2029-05-07", "Push chips_china (PARTY_LINE, capital 25.0)"], [70, "2029-05-07", "Address on ECONOMY"], [71, "2029-05-07", "The president's week"], [72, "2029-05-14", "In the news: The Kentucky Derby draws a record crowd"], [73, "2029-05-14", "The president's week"], [74, "2029-05-21", "In the news: Tornadoes rip through Oklahoma"], [75, "2029-05-21", "In the news: A fusion company puts power on the grid"], [76, "2029-05-21", "The president's week"], [77, "2029-05-28", "In the news: A jury acquits in a case that gripped Idaho"], [78, "2029-05-28", "In the news: A singer from Nebraska has the number one song in the country"], [79, "2029-05-28", "The president's week"], [80, "2029-06-04", "In the news: A new shopping center opens outside Indiana's biggest city"], [81, "2029-06-04", "In the news: Wildfire smoke blankets the West"], [82, "2029-06-04", "Push immigration_deal (PARTY_LINE, capital 25.0)"], [83, "2029-06-04", "Address on ECONOMY"], [84, "2029-06-04", "The president's week"], [85, "2029-06-11", "In the news: A new generation of weight-loss drugs becomes a pill"], [86, "2029-06-11", "In the news: A meteor lights up the night sky over Arkansas"], [87, "2029-06-11", "The president's week"], [88, "2029-06-18", "In the news: A streaming series becomes a sensation"], [89, "2029-06-18", "In the news: AI tutors in every classroom"], [90, "2029-06-18", "The president's week"], [91, "2029-06-25", "In the news: Drought dries up wells in Utah"], [92, "2029-06-25", "The president's week"], [93, "2029-07-02", "In the news: A spelling bee champion from Utah"], [94, "2029-07-02", "In the news: A hurricane makes landfall on the Gulf Coast"], [95, "2029-07-02", "Push social_security (PARTY_LINE, capital 25.0)"], [96, "2029-07-02", "Address on ECONOMY"], [97, "2029-07-02", "The president's week"], [98, "2029-07-09", "In the news: A heat dome bakes the South"], [99, "2029-07-09", "In the news: A beloved ballpark will be torn down"], [100, "2029-07-09", "The president's week"], [101, "2029-07-16", "In the news: Scientists in Oklahoma report a promising cancer treatment"], [102, "2029-07-16", "In the news: A tech company opens a giant campus in Kentucky"], [103, "2029-07-16", "The president's week"], [104, "2029-07-23", "In the news: A rookie throws a no-hitter"], [105, "2029-07-23", "In the news: A centenarian in Washington recalls a century of change"], [106, "2029-07-23", "The president's week"], [107, "2029-07-30", "In the news: An awards show draws a huge audience"], [108, "2029-07-30", "In the news: A heat wave scorches Arizona"], [109, "2029-07-30", "The president's week"], [110, "2029-08-06", "In the news: A hurricane brushes the Carolinas"], [111, "2029-08-06", "In the news: A novel about a family from Washington tops the bestseller lists"], [112, "2029-08-06", "Push infrastructure (PARTY_LINE, capital 14.869066441113178)"], [113, "2029-08-06", "Address on IMMIGRATION"], [114, "2029-08-06", "The president's week"], [115, "2029-08-13", "In the news: Wildfires force evacuations in the West"], [116, "2029-08-13", "In the news: A museum in Nebraska unveils a newly discovered painting"], [117, "2029-08-13", "The president's week"], [118, "2029-08-20", "In the news: A new hospital opens in North Carolina"], [119, "2029-08-20", "In the news: A summer blockbuster breaks box-office records"], [120, "2029-08-20", "The president's week"], [121, "2029-08-27", "In the news: A town in Washington celebrates its centennial"], [122, "2029-08-27", "In the news: A downtown in Vermont comes back to life"], [123, "2029-08-27", "The president's week"], [124, "2029-09-03", "In the news: An early frost hits the orchards of Nevada"], [125, "2029-09-03", "In the news: Harvest time in Georgia"]],
+      "consequences": [[1, "2028-07-17", "Promise housing", "election", "National polls (you) +0.4"], [1, "2028-07-17", "Promise housing", "politics", "Cost of living matters more to voters"], [2, "2028-07-17", "Promise ai_safety", "election", "National polls (you) +0.2"], [2, "2028-07-17", "Promise ai_safety", "politics", "AI and jobs matters more to voters"], [3, "2028-10-29", "Event october_surprise", "election", "National polls (you) -0.6"], [3, "2028-10-29", "Event october_surprise", "election", "Campaign cash ($M) +8"], [4, "2028-11-04", "Event jobs_report", "politics", "The economy matters more to voters"], [5, "2028-11-07", "Election 2028", "congress", "Congress: House D 212, Senate D 50"], [7, "2029-01-20", "Inauguration", "executive+politics", "A Republican president takes office (302 electoral votes)"], [8, "2029-01-22", "100 days, week 1: DraftBill", "politics", "Base wing mood +3"], [8, "2029-01-22", "100 days, week 1: DraftBill", "politics", "Moderate wing mood +4"], [9, "2029-01-22", "100 days, week 1: Nominate", "politics", "Moderate wing mood +2"], [9, "2029-01-22", "100 days, week 1: Nominate", "politics", "Opposition goodwill +2"], [10, "2029-01-22", "100 days, week 1: Nominate", "politics", "Moderate wing mood +2"], [10, "2029-01-22", "100 days, week 1: Nominate", "politics", "Opposition goodwill +2"], [11, "2029-01-22", "The president's week", "politics", "Policy time on health care"], [11, "2029-01-22", "The president's week", "politics", "Policy time on immigration"], [11, "2029-01-22", "The president's week", "politics", "Policy time on the economy"], [11, "2029-01-22", "The president's week", "politics", "Policy time on cost of living (x2)"], [11, "2029-01-22", "The president's week", "politics", "Performance +0.1"], [11, "2029-01-22", "The president's week", "politics", "Standing in NY +1.7"], [14, "2029-01-29", "100 days, week 2: Nominate", "politics", "Moderate wing mood +2"], [14, "2029-01-29", "100 days, week 2: Nominate", "politics", "Opposition goodwill +2"], [15, "2029-01-29", "The president's week", "politics", "Policy time on health care"], [15, "2029-01-29", "The president's week", "politics", "Policy time on immigration"], [15, "2029-01-29", "The president's week", "politics", "Policy time on the economy"], [15, "2029-01-29", "The president's week", "politics", "Policy time on cost of living (x2)"], [15, "2029-01-29", "The president's week", "politics", "Remarks on cost of living"], [15, "2029-01-29", "The president's week", "politics", "Performance +0.1"], [15, "2029-01-29", "The president's week", "politics", "Standing in NY +1.7"], [18, "2029-02-05", "100 days, week 3: CallVote", "politics", "Political capital +4"], [19, "2029-02-05", "The president's week", "politics", "Policy time on health care"], [19, "2029-02-05", "The president's week", "politics", "Policy time on immigration"], [19, "2029-02-05", "The president's week", "politics", "Policy time on the economy"], [19, "2029-02-05", "The president's week", "politics", "Policy time on cost of living (x2)"], [19, "2029-02-05", "The president's week", "politics", "Remarks on cost of living"], [19, "2029-02-05", "The president's week", "politics", "Performance +0.1"], [19, "2029-02-05", "The president's week", "politics", "Standing in NY +3.5"], [20, "2029-02-05", "100 days, week 3: the week's events", "politics", "Political capital +2"], [20, "2029-02-05", "100 days, week 3: the week's events", "politics", "Political capital +2"], [22, "2029-02-12", "In the news", "politics", "Health care matters more to voters"], [23, "2029-02-12", "100 days, week 4: CallVote", "politics", "Political capital +4"], [23, "2029-02-12", "100 days, week 4: CallVote", "economy", "Deficit (% of GDP) +0.0"], [23, "2029-02-12", "100 days, week 4: CallVote", "economy", "Economy: growth +0.1, inflation -0.1 over 12 months"], [23, "2029-02-12", "100 days, week 4: CallVote", "politics", "Your voters approval +4"], [23, "2029-02-12", "100 days, week 4: CallVote", "politics", "Swing voters approval +0.8"], [23, "2029-02-12", "100 days, week 4: CallVote", "politics", "Your voters approval (lasting) +3"], [23, "2029-02-12", "100 days, week 4: CallVote", "politics", "Swing voters approval (lasting) +0.7"], [23, "2029-02-12", "100 days, week 4: CallVote", "politics", "Opposition voters approval +1"], [23, "2029-02-12", "100 days, week 4: CallVote", "politics", "Political capital +6"], [23, "2029-02-12", "100 days, week 4: CallVote", "politics", "Cost of living matters less to voters"], [24, "2029-02-12", "The president's week", "politics", "Policy time on health care"], [24, "2029-02-12", "The president's week", "politics", "Policy time on immigration"], [24, "2029-02-12", "The president's week", "politics", "Policy time on the economy"], [24, "2029-02-12", "The president's week", "politics", "Policy time on cost of living (x2)"], [24, "2029-02-12", "The president's week", "politics", "Remarks on cost of living"], [24, "2029-02-12", "The president's week", "politics", "Performance +0.1"], [24, "2029-02-12", "The president's week", "politics", "Standing in TX +1.7"], [25, "2029-02-12", "100 days, week 4: the week's events", "politics", "Political capital +2"], [25, "2029-02-12", "100 days, week 5: An inflation surge", "economy", "Economy: growth +0, inflation +1.6 over 2 months"], [28, "2029-02-19", "100 days, week 5: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "diplomacy", "Deterrence in the Pacific -3"], [28, "2029-02-19", "100 days, week 5: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "politics", "Base wing mood +2"], [28, "2029-02-19", "100 days, week 5: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "politics", "Moderate wing mood -2"], [29, "2029-02-19", "100 days, week 5: An inflation surge -> Suspend tariffs and the gas tax", "economy", "Deficit (% of GDP) +0.1"], [29, "2029-02-19", "100 days, week 5: An inflation surge -> Suspend tariffs and the gas tax", "economy", "Economy: growth +0.1, inflation -0.6 over 3 months"], [29, "2029-02-19", "100 days, week 5: An inflation surge -> Suspend tariffs and the gas tax", "politics", "Moderate wing mood +2"], [29, "2029-02-19", "100 days, week 5: An inflation surge -> Suspend tariffs and the gas tax", "politics", "Base wing mood -2"], [30, "2029-02-19", "The president's week", "politics", "Policy time on health care"], [30, "2029-02-19", "The president's week", "politics", "Policy time on immigration"], [30, "2029-02-19", "The president's week", "politics", "Policy time on the economy"], [30, "2029-02-19", "The president's week", "politics", "Policy time on cost of living (x2)"], [30, "2029-02-19", "The president's week", "politics", "Remarks on cost of living"], [30, "2029-02-19", "The president's week", "politics", "Performance +0.1"], [30, "2029-02-19", "The president's week", "politics", "Standing in NY +1.7"], [31, "2029-02-26", "In the news", "politics", "AI and jobs matters more to voters"], [32, "2029-02-26", "In the news", "politics", "Rally around the flag +0.5"], [33, "2029-02-26", "100 days, week 6: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "diplomacy", "Deterrence in the Pacific +2"], [34, "2029-02-26", "100 days, week 6: ReleaseOilReserve", "economy", "Oil price ($) -8"], [34, "2029-02-26", "100 days, week 6: ReleaseOilReserve", "diplomacy", "Deterrence in the Pacific -2"], [35, "2029-02-26", "The president's week", "politics", "Policy time on health care"], [35, "2029-02-26", "The president's week", "politics", "Policy time on immigration"], [35, "2029-02-26", "The president's week", "politics", "Policy time on the economy"], [35, "2029-02-26", "The president's week", "politics", "Policy time on cost of living (x2)"], [35, "2029-02-26", "The president's week", "politics", "Remarks on cost of living"], [35, "2029-02-26", "The president's week", "politics", "Performance +0.1"], [35, "2029-02-26", "The president's week", "politics", "Standing in CA +1.7"], [36, "2029-03-05", "In the news", "politics", "The economy matters more to voters"], [38, "2029-03-05", "100 days, week 7: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "diplomacy", "Deterrence in the Pacific -3"], [38, "2029-03-05", "100 days, week 7: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "politics", "Base wing mood +2"], [38, "2029-03-05", "100 days, week 7: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "politics", "Moderate wing mood -2"], [39, "2029-03-05", "The president's week", "politics", "Policy time on health care"], [39, "2029-03-05", "The president's week", "politics", "Policy time on immigration"], [39, "2029-03-05", "The president's week", "politics", "Policy time on the economy"], [39, "2029-03-05", "The president's week", "politics", "Policy time on cost of living (x2)"], [39, "2029-03-05", "The president's week", "politics", "Remarks on cost of living"], [39, "2029-03-05", "The president's week", "politics", "Performance +0.1"], [39, "2029-03-05", "The president's week", "politics", "Standing in CA +1.7"], [42, "2029-03-12", "100 days, week 8: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel", "politics", "Base wing mood +2"], [42, "2029-03-12", "100 days, week 8: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel", "politics", "Moderate wing mood -2"], [43, "2029-03-12", "The president's week", "politics", "Policy time on health care"], [43, "2029-03-12", "The president's week", "politics", "Policy time on immigration"], [43, "2029-03-12", "The president's week", "politics", "Policy time on the economy"], [43, "2029-03-12", "The president's week", "politics", "Policy time on cost of living (x2)"], [43, "2029-03-12", "The president's week", "politics", "Performance +0.1"], [43, "2029-03-12", "The president's week", "politics", "Standing in VA +1.7"], [43, "2029-03-12", "The president's week", "politics", "Standing in CA +1.7"], [46, "2029-03-19", "100 days, week 9: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "diplomacy", "Deterrence in the Pacific +2"], [47, "2029-03-19", "The president's week", "politics", "Policy time on health care"], [47, "2029-03-19", "The president's week", "politics", "Policy time on immigration"], [47, "2029-03-19", "The president's week", "politics", "Policy time on the economy"], [47, "2029-03-19", "The president's week", "politics", "Policy time on cost of living (x2)"], [47, "2029-03-19", "The president's week", "politics", "Remarks on cost of living"], [47, "2029-03-19", "The president's week", "politics", "Performance +0.1"], [47, "2029-03-19", "The president's week", "politics", "Standing in CA +1.7"], [48, "2029-03-19", "100 days, week 10: the week's events", "diplomacy", "Deterrence in the Pacific -5"], [48, "2029-03-19", "100 days, week 10: the week's events", "politics", "Swing voters approval -1"], [48, "2029-03-19", "100 days, week 10: the week's events", "politics", "Swing voters approval (lasting) -0.5"], [48, "2029-03-19", "100 days, week 10: the week's events", "diplomacy", "Middle East tension +4"], [51, "2029-03-26", "The president's week", "politics", "Policy time on health care"], [51, "2029-03-26", "The president's week", "politics", "Policy time on immigration"], [51, "2029-03-26", "The president's week", "politics", "Policy time on the economy"], [51, "2029-03-26", "The president's week", "politics", "Policy time on cost of living (x2)"], [51, "2029-03-26", "The president's week", "politics", "Remarks on cost of living"], [51, "2029-03-26", "The president's week", "politics", "Performance +0.1"], [51, "2029-03-26", "The president's week", "politics", "Standing in CA +1.7"], [53, "2029-04-02", "The president's week", "politics", "Policy time on health care"], [53, "2029-04-02", "The president's week", "politics", "Policy time on immigration"], [53, "2029-04-02", "The president's week", "politics", "Policy time on the economy"], [53, "2029-04-02", "The president's week", "politics", "Policy time on cost of living (x2)"], [53, "2029-04-02", "The president's week", "politics", "Remarks on cost of living"], [53, "2029-04-02", "The president's week", "politics", "Performance +0.1"], [53, "2029-04-02", "The president's week", "politics", "Standing in CA +1.7"], [54, "2029-04-09", "In the news", "politics", "Cost of living matters more to voters"], [55, "2029-04-09", "In the news", "politics", "The economy matters more to voters"], [56, "2029-04-09", "The president's week", "politics", "Policy time on health care"], [56, "2029-04-09", "The president's week", "politics", "Policy time on immigration"], [56, "2029-04-09", "The president's week", "politics", "Policy time on the economy"], [56, "2029-04-09", "The president's week", "politics", "Policy time on cost of living (x2)"], [56, "2029-04-09", "The president's week", "politics", "Remarks on cost of living"], [56, "2029-04-09", "The president's week", "politics", "Performance +0.1"], [56, "2029-04-09", "The president's week", "politics", "Standing in CA +1.7"], [58, "2029-04-16", "The president's week", "politics", "Policy time on health care"], [58, "2029-04-16", "The president's week", "politics", "Policy time on immigration"], [58, "2029-04-16", "The president's week", "politics", "Policy time on the economy"], [58, "2029-04-16", "The president's week", "politics", "Policy time on cost of living (x2)"], [58, "2029-04-16", "The president's week", "politics", "Remarks on cost of living"], [58, "2029-04-16", "The president's week", "politics", "Performance +0.1"], [58, "2029-04-16", "The president's week", "politics", "Standing in CA +3.5"], [61, "2029-04-23", "The president's week", "politics", "Policy time on health care"], [61, "2029-04-23", "The president's week", "politics", "Policy time on immigration"], [61, "2029-04-23", "The president's week", "politics", "Policy time on the economy"], [61, "2029-04-23", "The president's week", "politics", "Policy time on cost of living (x2)"], [61, "2029-04-23", "The president's week", "politics", "Remarks on cost of living"], [61, "2029-04-23", "The president's week", "politics", "Performance +0.1"], [61, "2029-04-23", "The president's week", "politics", "Standing in CA +1.7"], [63, "2029-04-30", "In the news", "politics", "Climate and energy matters more to voters"], [64, "2029-04-30", "Push ai_safety", "politics", "Political capital -25"], [64, "2029-04-30", "Law ai_safety", "politics", "Opposition goodwill -2"], [64, "2029-04-30", "Law ai_safety", "politics", "Approval +3"], [64, "2029-04-30", "Law ai_safety", "politics", "Swing voters approval (lasting) +0.9"], [64, "2029-04-30", "Law ai_safety", "economy", "Economy: growth +0, inflation +0 over 12 months"], [64, "2029-04-30", "Law ai_safety", "economy", "Deficit (% of GDP) +0.0"], [64, "2029-04-30", "Law ai_safety", "politics", "AI and jobs matters less to voters"], [64, "2029-04-30", "Law ai_safety", "politics", "Political capital +5"], [64, "2029-04-30", "Law ai_safety", "politics", "Base wing mood +3"], [65, "2029-04-30", "Address", "politics", "Approval +0.71 (your voters and swing voters)"], [66, "2029-04-30", "The president's week", "politics", "Policy time on health care"], [66, "2029-04-30", "The president's week", "politics", "Policy time on immigration"], [66, "2029-04-30", "The president's week", "politics", "Policy time on the economy"], [66, "2029-04-30", "The president's week", "politics", "Policy time on cost of living (x2)"], [66, "2029-04-30", "The president's week", "politics", "Performance +0.1"], [66, "2029-04-30", "The president's week", "politics", "Standing in CA +1.7"], [69, "2029-05-07", "Push chips_china", "politics", "Political capital -25"], [69, "2029-05-07", "Law chips_china", "politics", "Opposition goodwill -2"], [69, "2029-05-07", "Law chips_china", "politics", "Approval +3"], [69, "2029-05-07", "Law chips_china", "politics", "Swing voters approval (lasting) +0.9"], [69, "2029-05-07", "Law chips_china", "economy", "Economy: growth +0.2, inflation +0 over 12 months"], [69, "2029-05-07", "Law chips_china", "economy", "Deficit (% of GDP) +0.1"], [69, "2029-05-07", "Law chips_china", "politics", "China matters less to voters"], [69, "2029-05-07", "Law chips_china", "politics", "Political capital +5"], [69, "2029-05-07", "Law chips_china", "politics", "Base wing mood +3"], [70, "2029-05-07", "Address", "politics", "Approval +0.50 (your voters and swing voters)"], [71, "2029-05-07", "The president's week", "politics", "Policy time on health care"], [71, "2029-05-07", "The president's week", "politics", "Policy time on immigration"], [71, "2029-05-07", "The president's week", "politics", "Policy time on the economy"], [71, "2029-05-07", "The president's week", "politics", "Policy time on cost of living (x5)"], [73, "2029-05-14", "The president's week", "politics", "Policy time on health care"], [73, "2029-05-14", "The president's week", "politics", "Policy time on immigration"], [73, "2029-05-14", "The president's week", "politics", "Policy time on the economy"], [73, "2029-05-14", "The president's week", "politics", "Policy time on cost of living (x2)"], [73, "2029-05-14", "The president's week", "politics", "Remarks on cost of living"], [73, "2029-05-14", "The president's week", "politics", "Performance +0.1"], [73, "2029-05-14", "The president's week", "politics", "Standing in CA +1.7"], [76, "2029-05-21", "The president's week", "politics", "Policy time on health care"], [76, "2029-05-21", "The president's week", "politics", "Policy time on immigration"], [76, "2029-05-21", "The president's week", "politics", "Policy time on the economy"], [76, "2029-05-21", "The president's week", "politics", "Policy time on cost of living (x2)"], [76, "2029-05-21", "The president's week", "politics", "Remarks on cost of living"], [76, "2029-05-21", "The president's week", "politics", "Performance +0.1"], [76, "2029-05-21", "The president's week", "politics", "Standing in CA +3.5"], [79, "2029-05-28", "The president's week", "politics", "Policy time on health care"], [79, "2029-05-28", "The president's week", "politics", "Policy time on immigration"], [79, "2029-05-28", "The president's week", "politics", "Policy time on the economy"], [79, "2029-05-28", "The president's week", "politics", "Policy time on cost of living (x2)"], [79, "2029-05-28", "The president's week", "politics", "Remarks on cost of living"], [79, "2029-05-28", "The president's week", "politics", "Performance +0.1"], [79, "2029-05-28", "The president's week", "politics", "Standing in CA +1.7"], [82, "2029-06-04", "Push immigration_deal", "politics", "Political capital -25"], [82, "2029-06-04", "Law immigration_deal", "politics", "Opposition goodwill -2"], [82, "2029-06-04", "Law immigration_deal", "politics", "Approval +1"], [82, "2029-06-04", "Law immigration_deal", "politics", "Swing voters approval (lasting) +0.3"], [82, "2029-06-04", "Law immigration_deal", "economy", "Economy: growth +0.1, inflation -0.1 over 12 months"], [82, "2029-06-04", "Law immigration_deal", "economy", "Deficit (% of GDP) +0.0"], [82, "2029-06-04", "Law immigration_deal", "politics", "Immigration matters less to voters"], [82, "2029-06-04", "Law immigration_deal", "politics", "Political capital +5"], [82, "2029-06-04", "Law immigration_deal", "politics", "Base wing mood +3"], [83, "2029-06-04", "Address", "politics", "Approval +0.67 (your voters and swing voters)"], [84, "2029-06-04", "The president's week", "politics", "Policy time on abortion"], [84, "2029-06-04", "The president's week", "politics", "Policy time on immigration"], [84, "2029-06-04", "The president's week", "politics", "Policy time on the economy"], [84, "2029-06-04", "The president's week", "politics", "Policy time on cost of living (x2)"], [84, "2029-06-04", "The president's week", "politics", "Remarks on cost of living"], [84, "2029-06-04", "The president's week", "politics", "Performance +0.1"], [84, "2029-06-04", "The president's week", "politics", "Standing in CA +1.7"], [87, "2029-06-11", "The president's week", "politics", "Policy time on abortion"], [87, "2029-06-11", "The president's week", "politics", "Policy time on democracy and corruption"], [87, "2029-06-11", "The president's week", "politics", "Policy time on the economy"], [87, "2029-06-11", "The president's week", "politics", "Policy time on cost of living (x2)"], [87, "2029-06-11", "The president's week", "politics", "Remarks on cost of living"], [87, "2029-06-11", "The president's week", "politics", "Performance +0.1"], [87, "2029-06-11", "The president's week", "politics", "Standing in CA +1.7"], [89, "2029-06-18", "In the news", "politics", "Education matters more to voters"], [90, "2029-06-18", "The president's week", "politics", "Policy time on abortion"], [90, "2029-06-18", "The president's week", "politics", "Policy time on democracy and corruption"], [90, "2029-06-18", "The president's week", "politics", "Policy time on the economy"], [90, "2029-06-18", "The president's week", "politics", "Policy time on cost of living (x2)"], [90, "2029-06-18", "The president's week", "politics", "Performance +0.1"], [90, "2029-06-18", "The president's week", "politics", "Standing in CA +1.7"], [92, "2029-06-25", "The president's week", "politics", "Policy time on immigration"], [92, "2029-06-25", "The president's week", "politics", "Policy time on health care"], [92, "2029-06-25", "The president's week", "politics", "Policy time on the economy"], [92, "2029-06-25", "The president's week", "politics", "Policy time on cost of living (x2)"], [92, "2029-06-25", "The president's week", "politics", "Remarks on cost of living"], [92, "2029-06-25", "The president's week", "politics", "Performance +0.1"], [92, "2029-06-25", "The president's week", "politics", "Standing in NY +1.7"], [92, "2029-06-25", "The president's week", "politics", "Standing in CA +1.7"], [95, "2029-07-02", "Push social_security", "politics", "Political capital -25"], [95, "2029-07-02", "Law social_security", "politics", "Opposition goodwill -2"], [95, "2029-07-02", "Law social_security", "politics", "Approval +0"], [95, "2029-07-02", "Law social_security", "politics", "Swing voters approval (lasting) +0"], [95, "2029-07-02", "Law social_security", "economy", "Economy: growth -0.1, inflation +0 over 12 months"], [95, "2029-07-02", "Law social_security", "economy", "Deficit (% of GDP) -0.1"], [95, "2029-07-02", "Law social_security", "politics", "The economy matters less to voters"], [95, "2029-07-02", "Law social_security", "politics", "Political capital +5"], [95, "2029-07-02", "Law social_security", "politics", "Base wing mood +3"], [96, "2029-07-02", "Address", "politics", "Approval +0.68 (your voters and swing voters)"], [97, "2029-07-02", "The president's week", "politics", "Policy time on health care"], [97, "2029-07-02", "The president's week", "politics", "Policy time on immigration"], [97, "2029-07-02", "The president's week", "politics", "Policy time on the economy"], [97, "2029-07-02", "The president's week", "politics", "Policy time on cost of living (x2)"], [97, "2029-07-02", "The president's week", "politics", "Remarks on cost of living"], [97, "2029-07-02", "The president's week", "politics", "Performance +0.1"], [97, "2029-07-02", "The president's week", "politics", "Standing in CA +1.7"], [98, "2029-07-09", "In the news", "politics", "Climate and energy matters more to voters"], [100, "2029-07-09", "The president's week", "politics", "Policy time on abortion"], [100, "2029-07-09", "The president's week", "politics", "Policy time on democracy and corruption"], [100, "2029-07-09", "The president's week", "politics", "Policy time on the economy"], [100, "2029-07-09", "The president's week", "politics", "Policy time on cost of living (x2)"], [100, "2029-07-09", "The president's week", "politics", "Remarks on cost of living"], [100, "2029-07-09", "The president's week", "politics", "Performance +0.1"], [100, "2029-07-09", "The president's week", "politics", "Standing in CA +1.7"], [103, "2029-07-16", "The president's week", "politics", "Policy time on climate and energy"], [103, "2029-07-16", "The president's week", "politics", "Policy time on democracy and corruption"], [103, "2029-07-16", "The president's week", "politics", "Policy time on the economy"], [103, "2029-07-16", "The president's week", "politics", "Policy time on cost of living (x2)"], [103, "2029-07-16", "The president's week", "politics", "Remarks on cost of living"], [103, "2029-07-16", "The president's week", "politics", "Performance +0.1"], [103, "2029-07-16", "The president's week", "politics", "Standing in CA +1.7"], [106, "2029-07-23", "The president's week", "politics", "Policy time on crime and safety"], [106, "2029-07-23", "The president's week", "politics", "Policy time on democracy and corruption"], [106, "2029-07-23", "The president's week", "politics", "Policy time on abortion"], [106, "2029-07-23", "The president's week", "politics", "Policy time on cost of living (x2)"], [106, "2029-07-23", "The president's week", "politics", "Remarks on cost of living"], [106, "2029-07-23", "The president's week", "politics", "Performance +0.1"], [106, "2029-07-23", "The president's week", "politics", "Standing in CA +1.7"], [109, "2029-07-30", "The president's week", "politics", "Policy time on health care"], [109, "2029-07-30", "The president's week", "politics", "Policy time on immigration"], [109, "2029-07-30", "The president's week", "politics", "Policy time on the economy"], [109, "2029-07-30", "The president's week", "politics", "Policy time on cost of living (x2)"], [109, "2029-07-30", "The president's week", "politics", "Remarks on cost of living"], [109, "2029-07-30", "The president's week", "politics", "Performance +0.1"], [109, "2029-07-30", "The president's week", "politics", "Standing in NY +1.7"], [109, "2029-07-30", "The president's week", "politics", "Standing in CA +1.7"], [112, "2029-08-06", "Push infrastructure", "politics", "Political capital -14.9"], [112, "2029-08-06", "Law infrastructure", "politics", "Opposition goodwill -2"], [112, "2029-08-06", "Law infrastructure", "politics", "Approval +2"], [112, "2029-08-06", "Law infrastructure", "politics", "Swing voters approval (lasting) +0.6"], [112, "2029-08-06", "Law infrastructure", "economy", "Economy: growth +0.2, inflation +0.1 over 12 months"], [112, "2029-08-06", "Law infrastructure", "economy", "Deficit (% of GDP) +0.2"], [112, "2029-08-06", "Law infrastructure", "politics", "The economy matters less to voters"], [112, "2029-08-06", "Law infrastructure", "politics", "Political capital +5"], [112, "2029-08-06", "Law infrastructure", "politics", "Base wing mood +3"], [113, "2029-08-06", "Address", "politics", "Approval +0.84 (your voters and swing voters)"], [114, "2029-08-06", "The president's week", "politics", "Policy time on health care"], [114, "2029-08-06", "The president's week", "politics", "Policy time on immigration"], [114, "2029-08-06", "The president's week", "politics", "Policy time on the economy"], [114, "2029-08-06", "The president's week", "politics", "Policy time on cost of living (x2)"], [114, "2029-08-06", "The president's week", "politics", "Performance +0.1"], [114, "2029-08-06", "The president's week", "politics", "Standing in CA +1.7"], [117, "2029-08-13", "The president's week", "politics", "Policy time on health care"], [117, "2029-08-13", "The president's week", "politics", "Policy time on immigration"], [117, "2029-08-13", "The president's week", "politics", "Policy time on the economy"], [117, "2029-08-13", "The president's week", "politics", "Policy time on cost of living (x2)"], [117, "2029-08-13", "The president's week", "politics", "Remarks on cost of living"], [117, "2029-08-13", "The president's week", "politics", "Performance +0.1"], [117, "2029-08-13", "The president's week", "politics", "Standing in CA +1.7"], [120, "2029-08-20", "The president's week", "politics", "Policy time on abortion"], [120, "2029-08-20", "The president's week", "politics", "Policy time on immigration"], [120, "2029-08-20", "The president's week", "politics", "Policy time on the economy"], [120, "2029-08-20", "The president's week", "politics", "Policy time on cost of living (x2)"], [120, "2029-08-20", "The president's week", "politics", "Remarks on cost of living"], [120, "2029-08-20", "The president's week", "politics", "Performance +0.1"], [120, "2029-08-20", "The president's week", "politics", "Standing in CA +1.7"], [123, "2029-08-27", "The president's week", "politics", "Policy time on democracy and corruption"], [123, "2029-08-27", "The president's week", "politics", "Policy time on immigration"], [123, "2029-08-27", "The president's week", "politics", "Policy time on the economy"], [123, "2029-08-27", "The president's week", "politics", "Policy time on cost of living (x2)"], [123, "2029-08-27", "The president's week", "politics", "Remarks on cost of living"], [123, "2029-08-27", "The president's week", "politics", "Performance +0.1"], [123, "2029-08-27", "The president's week", "politics", "Standing in CA +1.7"]],
+      "nextId": 126
     },
-    "log": ["2028-07-17  The general election begins: Diane Marsh (R) vs Thomas Whitfield (D).", "2028-07-17  Your opponent's campaign: Ground game, steady spending, message chosen weekly. Early in the race, it is building field offices that pay off in November. (It reads the polls as ahead by 1.7.)", "2028-07-17  You promise to pass the Build More Homes Act.", "2028-07-17  You promise to pass the AI Safety Standards Act.", "2028-07-17  PODCAST: Diane Marsh on a top long-form talk show: 15.5M views, good reviews. 24,774 new donors ($0.16M).", "2028-07-17  PODCAST: Diane Marsh on a working-class comedy podcast: 22.9M views, good reviews. 34,349 new donors ($0.22M).", "2028-07-24  PODCAST: Diane Marsh on an influencer stunt show: 29.2M views, rave reviews. 59,935 new donors ($0.38M).", "2028-07-31  PODCAST: Diane Marsh on a comedy roundtable: 8.9M views, mixed reviews. 7,226 new donors ($0.05M).", "2028-08-07  Your opponent's campaign: Battleground blitz, steady spending, message chosen weekly. In a close race, it concentrates on the battlegrounds. (It reads the polls as ahead by 0.3.)", "2028-08-07  PODCAST: Diane Marsh on a sports and culture interview show: 5.5M views, rave reviews. 10,607 new donors ($0.07M).", "2028-08-07  GAFFE: Thomas Whitfield mangles the price of groceries in Michigan.", "2028-08-14  RALLY: A sparse crowd of 5,320 in Georgia; reporters notice the empty seats.", "2028-08-14  PODCAST: Diane Marsh on a science and technology marathon: 6.1M views, good reviews. 7,274 new donors ($0.05M).", "2028-08-21  PODCAST: Diane Marsh on an influencer talk show: 5.8M views, mixed reviews. 4,647 new donors ($0.03M).", "2028-08-21  GAFFE: Thomas Whitfield makes an off-colour joke that goes viral for the wrong reasons.", "2028-08-21  GAFFE: Thomas Whitfield snaps at a voter's question on camera in Minnesota.", "2028-09-04  RALLY: A sparse crowd of 5,100 in Georgia; reporters notice the empty seats.", "2028-09-18  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 1.5.)", "2028-09-18  PODCAST: Diane Marsh on a football and family podcast: 3.7M views, mixed reviews. 3,041 new donors ($0.02M).", "2028-09-18  RALLY: A sparse crowd of 5,010 in Arizona; reporters notice the empty seats.", "2028-09-25  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (+0.1).", "2028-09-25  PODCAST: Diane Marsh on a relationships show: 6.2M views, mixed reviews. 4,382 new donors ($0.03M).", "2028-09-25  RALLY: A sparse crowd of 4,760 in North Carolina; reporters notice the empty seats.", "2028-10-02  PODCAST: Diane Marsh on a business and self-improvement show: 6.1M views, an awkward hour. 1,556 new donors ($0.01M).", "2028-10-09  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (+0.1).", "2028-10-09  PODCAST: Diane Marsh on a veterans and security podcast: 5.3M views, mixed reviews. 4,969 new donors ($0.03M).", "2028-10-09  RALLY: A sparse crowd of 4,620 in Wisconsin; reporters notice the empty seats.", "2028-10-09  GAFFE: Thomas Whitfield snaps at a voter's question on camera in North Carolina.", "2028-10-16  VIRAL: a clip from the sports and beer show racks up millions of views.", "2028-10-16  PODCAST: Diane Marsh on a sports and beer show: 4.1M views, rave reviews. 8,350 new donors ($0.05M).", "2028-10-16  PODCAST: Diane Marsh on a hip-hop morning show: 3.7M views, mixed reviews. 1,717 new donors ($0.01M).", "2028-10-23  Two weeks to go. From now on every day counts: each turn is one day until Election Day.", "2028-10-23  Your opponent's campaign: Air war, all in spending, message chosen weekly. Behind with weeks to go, it floods the air with ads to change the race. (It reads the polls as behind by 2.7.)", "2028-10-23  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (-0.2).", "2028-10-24  PODCAST: Diane Marsh on a tech investors' podcast: 1.6M views, rave reviews. 3,295 new donors ($0.02M).", "2028-10-28  EVENT: October surprise", "2028-10-29  October surprise: Attack the source", "2028-10-30  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 2.4.)", "2028-11-03  PODCAST: Diane Marsh on a conservative talk show: 876K views, good reviews. 1,174 new donors ($0.01M).", "2028-11-03  EVENT: A weak jobs report", "2028-11-04  A weak jobs report: Pivot your message to the economy", "2028-11-06  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 2.3.)", "2028-11-07  Election Night 2028: D 236, R 302. Popular vote R+0.3. Tipping point: PA.", "2028-11-07  You won. House D 212-R 223, Senate D 50-R 50. Choose your agenda.", "2029-01-20  Inauguration Day. Diane Marsh takes the oath with 302 electoral votes and House D 212-R 223, Senate D 50-R 50. Approval 51%, political capital 56.", "2029-01-22  The first hundred days begin. Your flagship: the Build More Homes Act.", "2029-01-22  Week 1: You send Congress the Build More Homes Act (medium, paid for by cut spending elsewhere).", "2029-01-22  Week 1: You nominate Helen Strand (an expert) for Treasury secretary. Hearings next week, a Senate vote the week after.", "2029-01-22  Week 1: You nominate Lucia Moreno (an expert) for Secretary of State. Hearings next week, a Senate vote the week after.", "2029-01-29  Week 2: You nominate Adm. Carla Benson (ret.) (an expert) for Defense secretary. Hearings next week, a Senate vote the week after.", "2029-01-29  Week 2: The committee reports the bill to the House floor.", "2029-01-29  Week 2: Hearings for Helen Strand (Treasury secretary): a steady performance.", "2029-01-29  Week 2: Hearings for Lucia Moreno (Secretary of State): a steady performance.", "2029-01-29  Week 2: The Fed holds at 3.75%.", "2029-01-29  Week 2: Jobs report: unemployment 4.4% (was 4.4%).", "2029-01-29  Week 2: Opposition leaders shift to cooperate: they will deal.", "2029-02-05  Week 3: The House passes the Build More Homes Act, 267-168.", "2029-02-05  Week 3: The Senate confirms Helen Strand as Treasury secretary, 58-42.", "2029-02-05  Week 3: Hearings for Adm. Carla Benson (ret.) (Defense secretary): a steady performance.", "2029-02-05  Week 3: The Senate confirms Lucia Moreno as Secretary of State, 61-39.", "2029-02-12  Week 4: The Senate passes the Build More Homes Act, 63-37.", "2029-02-12  Week 4: You sign the Build More Homes Act. Deficit +0.04% of GDP; implementation quality 94% (Treasury).", "2029-02-12  Week 4: The Senate confirms Adm. Carla Benson (ret.) as Defense secretary, 56-44.", "2029-02-12  Week 4: Inflation report: 2.7% over the year (was 2.8%).", "2029-02-12  Week 5: CRISIS: Harassment of tankers gives way to tanker seized in the Strait of Hormuz.", "2029-02-12  Week 5: ECONOMY: An inflation surge. Shipping disruptions and a cold snap push prices up: the next inflation report will run hot.", "2029-02-19  Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "2029-02-19  Week 5: The back channel goes quiet. Tehran reads hesitation.", "2029-02-19  Week 5: The other side holds its ground: Tanker seized.", "2029-02-19  Decision: An inflation surge -> Suspend tariffs and the gas tax", "2029-02-19  Week 5: You suspend tariffs and the gas tax. Prices at the pump and in the shops ease.", "2029-02-26  Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "2029-02-26  Week 6: You coordinate sanctions and warnings with allies. Markets dip.", "2029-02-26  Week 6: The other side holds its ground: Tanker seized.", "2029-02-26  Decision: Government funding runs out at the end of week 8 -> A defense plus-up deal", "2029-02-26  Week 6: Your stopgap offer: a defense plus-up deal.", "2029-02-26  Week 6: You release oil from the Strategic Petroleum Reserve. Gas prices should ease; hawks warn the reserve is for emergencies.", "2029-02-26  Week 6: Jobs report: unemployment 4.3% (was 4.4%).", "2029-03-05  Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "2029-03-05  Week 7: The back channel goes quiet. Tehran reads hesitation.", "2029-03-05  Week 7: The other side escalates: Mines reported.", "2029-03-12  Decision: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel", "2029-03-12  Week 8: Diplomacy lowers the temperature: Tanker seized.", "2029-03-12  Week 8: The other side holds its ground: Tanker seized.", "2029-03-12  Week 8: Inflation report: 2.8% over the year (was 2.7%).", "2029-03-12  Week 9: Congress passes the stopgap. The government stays open.", "2029-03-19  Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "2029-03-19  Week 9: You coordinate sanctions and warnings with allies. Markets dip.", "2029-03-19  Week 9: The other side holds its ground: Tanker seized.", "2029-03-19  Week 9: The Fed holds at 3.75%.", "2029-03-19  Week 10: The Strait of Hormuz crisis settles into a tense stalemate.", "2029-04-02  Week 11: Jobs report: unemployment 4.3% (was 4.3%).", "2029-04-09  Week 12: Inflation report: 3.0% over the year (was 2.8%).", "2029-04-30  Day 100: Victory (9 of 10). A commanding start: legislation, administration, economy, standing delivered.", "2029-05-01  AI Safety Standards Act (Party line): Passed the House 372-63 and the Senate 89-11.", "2029-05-01  Signed into law: AI Safety Standards Act.", "2029-05-01  You address the nation on the economy.", "2029-05-01  The Fed raises rates to 4.00%.", "2029-06-01  Chips and China Act (Party line): Passed the House 302-133 and the Senate 69-31.", "2029-06-01  Signed into law: Chips and China Act.", "2029-06-01  You address the nation on the economy.", "2029-07-01  Comprehensive Immigration Compromise (Party line): Passed the House 310-125 and the Senate 71-29.", "2029-07-01  Signed into law: Comprehensive Immigration Compromise.", "2029-07-01  You address the nation on the economy.", "2029-08-01  Social Security Solvency Deal (Party line): Passed the House 305-130 and the Senate 71-29.", "2029-08-01  Signed into law: Social Security Solvency Deal.", "2029-08-01  You address the nation on the economy."],
+    "log": ["2028-07-17  The general election begins: Diane Marsh (R) vs Thomas Whitfield (D).", "2028-07-17  Your opponent's campaign: Ground game, steady spending, message chosen weekly. Early in the race, it is building field offices that pay off in November. (It reads the polls as ahead by 1.7.)", "2028-07-17  You promise to pass the Build More Homes Act.", "2028-07-17  You promise to pass the AI Safety Standards Act.", "2028-07-17  PODCAST: Diane Marsh on a top long-form talk show: 15.5M views, good reviews. 24,774 new donors ($0.16M).", "2028-07-17  PODCAST: Diane Marsh on a working-class comedy podcast: 22.9M views, good reviews. 34,349 new donors ($0.22M).", "2028-07-24  PODCAST: Diane Marsh on an influencer stunt show: 29.2M views, rave reviews. 59,935 new donors ($0.38M).", "2028-07-31  PODCAST: Diane Marsh on a comedy roundtable: 8.9M views, mixed reviews. 7,226 new donors ($0.05M).", "2028-08-07  Your opponent's campaign: Battleground blitz, steady spending, message chosen weekly. In a close race, it concentrates on the battlegrounds. (It reads the polls as ahead by 0.3.)", "2028-08-07  PODCAST: Diane Marsh on a sports and culture interview show: 5.5M views, rave reviews. 10,607 new donors ($0.07M).", "2028-08-07  GAFFE: Thomas Whitfield mangles the price of groceries in Michigan.", "2028-08-14  RALLY: A sparse crowd of 5,320 in Georgia; reporters notice the empty seats.", "2028-08-14  PODCAST: Diane Marsh on a science and technology marathon: 6.1M views, good reviews. 7,274 new donors ($0.05M).", "2028-08-21  PODCAST: Diane Marsh on an influencer talk show: 5.8M views, mixed reviews. 4,647 new donors ($0.03M).", "2028-08-21  GAFFE: Thomas Whitfield makes an off-colour joke that goes viral for the wrong reasons.", "2028-08-21  GAFFE: Thomas Whitfield snaps at a voter's question on camera in Minnesota.", "2028-09-04  RALLY: A sparse crowd of 5,100 in Georgia; reporters notice the empty seats.", "2028-09-18  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 1.5.)", "2028-09-18  PODCAST: Diane Marsh on a football and family podcast: 3.7M views, mixed reviews. 3,041 new donors ($0.02M).", "2028-09-18  RALLY: A sparse crowd of 5,010 in Arizona; reporters notice the empty seats.", "2028-09-25  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (+0.1).", "2028-09-25  PODCAST: Diane Marsh on a relationships show: 6.2M views, mixed reviews. 4,382 new donors ($0.03M).", "2028-09-25  RALLY: A sparse crowd of 4,760 in North Carolina; reporters notice the empty seats.", "2028-10-02  PODCAST: Diane Marsh on a business and self-improvement show: 6.1M views, an awkward hour. 1,556 new donors ($0.01M).", "2028-10-09  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (+0.1).", "2028-10-09  PODCAST: Diane Marsh on a veterans and security podcast: 5.3M views, mixed reviews. 4,969 new donors ($0.03M).", "2028-10-09  RALLY: A sparse crowd of 4,620 in Wisconsin; reporters notice the empty seats.", "2028-10-09  GAFFE: Thomas Whitfield snaps at a voter's question on camera in North Carolina.", "2028-10-16  VIRAL: a clip from the sports and beer show racks up millions of views.", "2028-10-16  PODCAST: Diane Marsh on a sports and beer show: 4.1M views, rave reviews. 8,350 new donors ($0.05M).", "2028-10-16  PODCAST: Diane Marsh on a hip-hop morning show: 3.7M views, mixed reviews. 1,717 new donors ($0.01M).", "2028-10-23  Two weeks to go. From now on every day counts: each turn is one day until Election Day.", "2028-10-23  Your opponent's campaign: Air war, all in spending, message chosen weekly. Behind with weeks to go, it floods the air with ads to change the race. (It reads the polls as behind by 2.7.)", "2028-10-23  Debate: you chose \"Stay safe, avoid mistakes\", your opponent \"Stay safe, avoid mistakes\". A draw (-0.2).", "2028-10-24  PODCAST: Diane Marsh on a tech investors' podcast: 1.6M views, rave reviews. 3,295 new donors ($0.02M).", "2028-10-28  EVENT: October surprise", "2028-10-29  October surprise: Attack the source", "2028-10-30  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 2.4.)", "2028-11-03  PODCAST: Diane Marsh on a conservative talk show: 876K views, good reviews. 1,174 new donors ($0.01M).", "2028-11-03  EVENT: A weak jobs report", "2028-11-04  A weak jobs report: Pivot your message to the economy", "2028-11-06  Your opponent's campaign: Battleground blitz, all in spending, message chosen weekly. In a close race at the end, it puts everything into the tipping-point states. (It reads the polls as behind by 2.3.)", "2028-11-07  Election Night 2028: D 236, R 302. Popular vote R+0.3. Tipping point: PA.", "2028-11-07  You won. House D 212-R 223, Senate D 50-R 50. Choose your agenda.", "2029-01-20  Inauguration Day. Diane Marsh takes the oath with 302 electoral votes and House D 212-R 223, Senate D 50-R 50. Approval 51%, political capital 56.", "2029-01-22  The first hundred days begin. Your flagship: the Build More Homes Act.", "2029-01-22  Week 1: You send Congress the Build More Homes Act (medium, paid for by cut spending elsewhere).", "2029-01-22  Week 1: You nominate Helen Strand (an expert) for Treasury secretary. Hearings next week, a Senate vote the week after.", "2029-01-22  Week 1: You nominate Lucia Moreno (an expert) for Secretary of State. Hearings next week, a Senate vote the week after.", "2029-01-29  Week 2: You nominate Adm. Carla Benson (ret.) (an expert) for Defense secretary. Hearings next week, a Senate vote the week after.", "2029-01-29  Week 2: The committee reports the bill to the House floor.", "2029-01-29  Week 2: Hearings for Helen Strand (Treasury secretary): a steady performance.", "2029-01-29  Week 2: Hearings for Lucia Moreno (Secretary of State): a steady performance.", "2029-01-29  Week 2: The Fed holds at 3.75%.", "2029-01-29  Week 2: Jobs report: unemployment 4.4% (was 4.4%).", "2029-01-29  Week 2: Opposition leaders shift to cooperate: they will deal.", "2029-02-05  Week 3: The House passes the Build More Homes Act, 267-168.", "2029-02-05  Week 3: The Senate confirms Helen Strand as Treasury secretary, 58-42.", "2029-02-05  Week 3: Hearings for Adm. Carla Benson (ret.) (Defense secretary): a steady performance.", "2029-02-05  Week 3: The Senate confirms Lucia Moreno as Secretary of State, 61-39.", "2029-02-12  Week 4: The Senate passes the Build More Homes Act, 63-37.", "2029-02-12  Week 4: You sign the Build More Homes Act. Deficit +0.04% of GDP; implementation quality 94% (Treasury).", "2029-02-12  Week 4: The Senate confirms Adm. Carla Benson (ret.) as Defense secretary, 56-44.", "2029-02-12  Week 4: Inflation report: 2.7% over the year (was 2.8%).", "2029-02-12  Week 5: CRISIS: Harassment of tankers gives way to tanker seized in the Strait of Hormuz.", "2029-02-12  Week 5: ECONOMY: An inflation surge. Shipping disruptions and a cold snap push prices up: the next inflation report will run hot.", "2029-02-19  Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "2029-02-19  Week 5: The back channel goes quiet. Tehran reads hesitation.", "2029-02-19  Week 5: The other side holds its ground: Tanker seized.", "2029-02-19  Decision: An inflation surge -> Suspend tariffs and the gas tax", "2029-02-19  Week 5: You suspend tariffs and the gas tax. Prices at the pump and in the shops ease.", "2029-02-19  Week 5: Opposition leaders shift to selective: they will pick their fights.", "2029-02-26  Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "2029-02-26  Week 6: You coordinate sanctions and warnings with allies. Markets dip.", "2029-02-26  Week 6: The other side holds its ground: Tanker seized.", "2029-02-26  Decision: Government funding runs out at the end of week 8 -> A clean stopgap", "2029-02-26  Week 6: Your stopgap offer: a clean stopgap.", "2029-02-26  Week 6: You release oil from the Strategic Petroleum Reserve. Gas prices should ease; hawks warn the reserve is for emergencies.", "2029-02-26  Week 6: Jobs report: unemployment 4.3% (was 4.4%).", "2029-03-05  Decision: Crisis in the Strait of Hormuz: Tanker seized -> Quiet diplomacy through a back channel", "2029-03-05  Week 7: The back channel goes quiet. Tehran reads hesitation.", "2029-03-05  Week 7: The other side escalates: Mines reported.", "2029-03-05  Week 7: Opposition leaders shift to cooperate: they will deal.", "2029-03-12  Decision: Crisis in the Strait of Hormuz: Mines reported -> Quiet diplomacy through a back channel", "2029-03-12  Week 8: Diplomacy lowers the temperature: Tanker seized.", "2029-03-12  Week 8: The other side holds its ground: Tanker seized.", "2029-03-12  Week 8: Inflation report: 2.8% over the year (was 2.7%).", "2029-03-12  Week 9: Congress passes the stopgap. The government stays open.", "2029-03-19  Decision: Crisis in the Strait of Hormuz: Tanker seized -> Sanctions and warnings with allies", "2029-03-19  Week 9: You coordinate sanctions and warnings with allies. Markets dip.", "2029-03-19  Week 9: The other side holds its ground: Tanker seized.", "2029-03-19  Week 9: The Fed holds at 3.75%.", "2029-03-19  Week 10: The Strait of Hormuz crisis settles into a tense stalemate.", "2029-04-02  Week 11: Jobs report: unemployment 4.3% (was 4.3%).", "2029-04-09  Week 12: Inflation report: 3.0% over the year (was 2.8%).", "2029-04-30  Day 100: Victory (9 of 10). A commanding start: legislation, administration, economy, standing delivered.", "2029-04-30  AI Safety Standards Act (Party line): Passed the House 375-60 and the Senate 90-10.", "2029-04-30  Signed into law: AI Safety Standards Act.", "2029-04-30  You address the nation on the economy.", "2029-04-30  The Fed raises rates to 4.00%.", "2029-05-07  Chips and China Act (Party line): Passed the House 358-77 and the Senate 83-17.", "2029-05-07  Signed into law: Chips and China Act.", "2029-05-07  You address the nation on the economy.", "2029-06-04  Comprehensive Immigration Compromise (Party line): Passed the House 312-123 and the Senate 72-28.", "2029-06-04  Signed into law: Comprehensive Immigration Compromise.", "2029-06-04  You address the nation on the economy.", "2029-07-02  Social Security Solvency Deal (Party line): Passed the House 308-127 and the Senate 71-29.", "2029-07-02  Signed into law: Social Security Solvency Deal.", "2029-07-02  You address the nation on the economy.", "2029-07-23  The Fed cuts rates to 3.75%.", "2029-08-06  Infrastructure Renewal (Party line): Passed the House 285-150 and the Senate 65-35.", "2029-08-06  Signed into law: Infrastructure Renewal.", "2029-08-06  You address the nation on immigration.", "2029-08-27  EVENT: A major hurricane"],
     "indicators": [{
         "date": "2029-01-20",
-        "approval": 51.166000000000004,
+        "approval": 51.043329154275995,
         "unemployment": 4.4,
         "inflation": 2.8,
         "growth": 1.9,
@@ -3134,7 +3968,7 @@
         "deterrence": 50.0
       }, {
         "date": "2029-01-29",
-        "approval": 50.90989455058901,
+        "approval": 51.91526927217433,
         "unemployment": 4.388035985422896,
         "inflation": 2.785167687394195,
         "growth": 1.5780472903559548,
@@ -3145,7 +3979,7 @@
         "deterrence": 50.0
       }, {
         "date": "2029-02-05",
-        "approval": 50.760740976710906,
+        "approval": 51.1679807826516,
         "unemployment": 4.376887684795685,
         "inflation": 2.7316981034036116,
         "growth": 1.609453357770684,
@@ -3156,7 +3990,7 @@
         "deterrence": 50.0
       }, {
         "date": "2029-02-12",
-        "approval": 50.699438540572004,
+        "approval": 50.57202240268704,
         "unemployment": 4.367080723020641,
         "inflation": 2.736114636439254,
         "growth": 1.588840105807535,
@@ -3167,7 +4001,7 @@
         "deterrence": 50.0
       }, {
         "date": "2029-02-19",
-        "approval": 51.69127269738314,
+        "approval": 49.79149034887523,
         "unemployment": 4.356702992805684,
         "inflation": 2.7121494982413927,
         "growth": 1.722677280331021,
@@ -3178,7 +4012,7 @@
         "deterrence": 50.0
       }, {
         "date": "2029-02-26",
-        "approval": 52.271094039975516,
+        "approval": 50.77474570706333,
         "unemployment": 4.347098076596794,
         "inflation": 2.75461493351229,
         "growth": 1.7378566131716857,
@@ -3189,155 +4023,311 @@
         "deterrence": 47.0
       }, {
         "date": "2029-03-05",
-        "approval": 51.978517453512026,
+        "approval": 51.033176464428344,
         "unemployment": 4.33733912183335,
         "inflation": 2.805456710084098,
         "growth": 1.825470580418805,
         "gas": 3.4525252591229307,
-        "tenYear": 4.042448141100565,
+        "tenYear": 4.033448141100565,
         "fed": 3.75,
-        "deficit": 6.302614919333447,
-        "deterrence": 57.0
+        "deficit": 6.252614919333447,
+        "deterrence": 47.0
       }, {
         "date": "2029-03-12",
-        "approval": 51.94091981281024,
+        "approval": 52.46565656533951,
         "unemployment": 4.32877837727594,
         "inflation": 2.8426865867111575,
         "growth": 1.7938692998794077,
         "gas": 3.4600559649737654,
-        "tenYear": 4.069095464165925,
+        "tenYear": 4.053795464165925,
         "fed": 3.75,
-        "deficit": 6.306970835471353,
-        "deterrence": 54.0
+        "deficit": 6.256970835471353,
+        "deterrence": 44.0
       }, {
         "date": "2029-03-19",
-        "approval": 52.19152171154581,
+        "approval": 52.198667530563945,
         "unemployment": 4.320563920873808,
         "inflation": 2.8941324564083577,
         "growth": 1.8285057873446982,
         "gas": 3.451091540723259,
-        "tenYear": 4.073636268510551,
+        "tenYear": 4.053926268510551,
         "fed": 3.75,
-        "deficit": 6.303637424804416,
-        "deterrence": 54.0
+        "deficit": 6.253637424804416,
+        "deterrence": 44.0
       }, {
         "date": "2029-03-26",
-        "approval": 51.563995363840135,
+        "approval": 52.415731146886046,
         "unemployment": 4.313200755866521,
         "inflation": 2.929921672206169,
         "growth": 1.8158002352592744,
         "gas": 3.4389684734871704,
-        "tenYear": 4.083093052658115,
+        "tenYear": 4.060296052658114,
         "fed": 3.75,
-        "deficit": 6.305707352838883,
-        "deterrence": 51.0
+        "deficit": 6.255707352838884,
+        "deterrence": 41.0
       }, {
         "date": "2029-04-02",
-        "approval": 50.959991599578615,
+        "approval": 52.280620047818786,
         "unemployment": 4.306505994318674,
         "inflation": 2.9457792819524027,
         "growth": 1.8137249650431788,
         "gas": 3.3013457347024877,
-        "tenYear": 4.075744760430507,
+        "tenYear": 4.050786860430507,
         "fed": 3.75,
-        "deficit": 6.306601811208037,
-        "deterrence": 51.0
+        "deficit": 6.2566018112080375,
+        "deterrence": 41.0
       }, {
         "date": "2029-04-09",
-        "approval": 51.20557983354718,
+        "approval": 52.308583767615865,
         "unemployment": 4.298521837258563,
         "inflation": 2.9561580177046984,
         "growth": 1.9732815191466035,
         "gas": 3.2008567828610044,
-        "tenYear": 4.089406936408897,
+        "tenYear": 4.062936406408897,
         "fed": 3.75,
-        "deficit": 6.288157296313485,
-        "deterrence": 51.0
+        "deficit": 6.238157296313485,
+        "deterrence": 41.0
       }, {
         "date": "2029-04-16",
-        "approval": 50.75633759542547,
+        "approval": 51.84935522151859,
         "unemployment": 4.29119273196462,
         "inflation": 2.938089836165083,
         "growth": 1.9663976479778438,
         "gas": 3.1791112112426863,
-        "tenYear": 4.1217441700827395,
+        "tenYear": 4.0942147990827396,
         "fed": 3.75,
-        "deficit": 6.288419427465457,
-        "deterrence": 51.0
+        "deficit": 6.238419427465457,
+        "deterrence": 41.0
       }, {
         "date": "2029-04-23",
-        "approval": 50.805664801866364,
+        "approval": 51.54896496815758,
         "unemployment": 4.286700065382488,
         "inflation": 2.918216537387527,
         "growth": 1.7706604884035797,
         "gas": 3.221154686306006,
-        "tenYear": 4.107972977980944,
+        "tenYear": 4.079702418280945,
         "fed": 3.75,
-        "deficit": 6.311348946569402,
-        "deterrence": 51.0
+        "deficit": 6.261348946569402,
+        "deterrence": 41.0
       }, {
         "date": "2029-04-30",
-        "approval": 50.44759455304349,
+        "approval": 52.390714077652554,
         "unemployment": 4.282444780792903,
         "inflation": 2.866002431760955,
         "growth": 1.7888380678709157,
         "gas": 3.219175665550649,
-        "tenYear": 4.1521580337679875,
+        "tenYear": 4.123368641977988,
         "fed": 3.75,
-        "deficit": 6.310164487448681,
-        "deterrence": 51.0
+        "deficit": 6.260164487448681,
+        "deterrence": 41.0
       }, {
-        "date": "2029-06-01",
-        "approval": 51.600559827633155,
-        "unemployment": 4.271649359111656,
-        "inflation": 2.7271762017537005,
-        "growth": 1.7341019556358135,
-        "gas": 3.2956060412694126,
-        "tenYear": 4.061703361180622,
+        "date": "2029-05-07",
+        "approval": 52.8467404082949,
+        "unemployment": 4.279119687281664,
+        "inflation": 2.8262099150965057,
+        "growth": 1.745535169830631,
+        "gas": 3.2560266261025914,
+        "tenYear": 4.0815586062912,
         "fed": 4.0,
-        "deficit": 6.416168033484331,
-        "deterrence": 51.0
+        "deficit": 6.361202666790803,
+        "deterrence": 41.0
       }, {
-        "date": "2029-07-01",
-        "approval": 53.95647587784996,
-        "unemployment": 4.285594730336377,
-        "inflation": 2.5851080132904727,
-        "growth": 1.345533138694989,
-        "gas": 3.156764211612452,
-        "tenYear": 4.276828102372054,
+        "date": "2029-05-14",
+        "approval": 53.14210633916121,
+        "unemployment": 4.278504353857358,
+        "inflation": 2.758222967374878,
+        "growth": 1.5479365052707243,
+        "gas": 3.2072707499790836,
+        "tenYear": 4.152733643812698,
         "fed": 4.0,
-        "deficit": 6.57350714388858,
-        "deterrence": 51.0
+        "deficit": 6.486049475509503,
+        "deterrence": 41.0
       }, {
-        "date": "2029-08-01",
-        "approval": 52.84633191579078,
-        "unemployment": 4.294634510519606,
-        "inflation": 2.516909112300559,
-        "growth": 1.4985894475027415,
-        "gas": 3.247892510661281,
-        "tenYear": 4.33248073206365,
+        "date": "2029-05-21",
+        "approval": 53.76275220796094,
+        "unemployment": 4.2777575747034255,
+        "inflation": 2.7199602505653413,
+        "growth": 1.5857453369761523,
+        "gas": 3.2332226235957533,
+        "tenYear": 4.203362559419292,
         "fed": 4.0,
-        "deficit": 6.601581864757713,
-        "deterrence": 51.0
+        "deficit": 6.484222897886774,
+        "deterrence": 41.0
       }, {
-        "date": "2029-09-01",
-        "approval": 51.545423004679755,
-        "unemployment": 4.299871746247368,
-        "inflation": 2.4630076992584446,
-        "growth": 1.6207542936370363,
-        "gas": 3.230507030038006,
-        "tenYear": 4.3248135187767875,
+        "date": "2029-05-28",
+        "approval": 53.73904392314202,
+        "unemployment": 4.2769769728009654,
+        "inflation": 2.7031550187072164,
+        "growth": 1.6137344954236303,
+        "gas": 3.235702903636741,
+        "tenYear": 4.253722461036869,
         "fed": 4.0,
-        "deficit": 6.498673570356383,
-        "deterrence": 51.0
+        "deficit": 6.483282138484242,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-06-04",
+        "approval": 55.18335619973073,
+        "unemployment": 4.276008703458078,
+        "inflation": 2.666214466495895,
+        "growth": 1.6531980207052346,
+        "gas": 3.214537938622782,
+        "tenYear": 4.29580870343896,
+        "fed": 4.0,
+        "deficit": 6.480752637233525,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-06-11",
+        "approval": 54.971568912229095,
+        "unemployment": 4.27527803969122,
+        "inflation": 2.6829858073505615,
+        "growth": 1.6553362901634447,
+        "gas": 3.2230019743015728,
+        "tenYear": 4.329870050206745,
+        "fed": 4.0,
+        "deficit": 6.512389965509116,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-06-18",
+        "approval": 54.843061450029666,
+        "unemployment": 4.275828342816216,
+        "inflation": 2.652873300197126,
+        "growth": 1.5673035403531634,
+        "gas": 3.241281265605794,
+        "tenYear": 4.262941279459355,
+        "fed": 4.0,
+        "deficit": 6.524808580887425,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-06-25",
+        "approval": 54.58760364001263,
+        "unemployment": 4.276511657747926,
+        "inflation": 2.609485672351385,
+        "growth": 1.5736659748182948,
+        "gas": 3.2045024809173293,
+        "tenYear": 4.3037299795976445,
+        "fed": 4.0,
+        "deficit": 6.526599031582132,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-07-02",
+        "approval": 54.54066725020201,
+        "unemployment": 4.275849205888496,
+        "inflation": 2.5595959784694773,
+        "growth": 1.7040895192187195,
+        "gas": 3.193139347051596,
+        "tenYear": 4.281969718301355,
+        "fed": 4.0,
+        "deficit": 6.513484750754222,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-07-09",
+        "approval": 55.53107862876442,
+        "unemployment": 4.2769193343146865,
+        "inflation": 2.5322737453157753,
+        "growth": 1.5741939970495693,
+        "gas": 3.2290614196116416,
+        "tenYear": 4.2712645752626415,
+        "fed": 4.0,
+        "deficit": 6.430542281365612,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-07-16",
+        "approval": 56.06980004978192,
+        "unemployment": 4.275663353521172,
+        "inflation": 2.517191818450438,
+        "growth": 1.785103981573876,
+        "gas": 3.224346249192294,
+        "tenYear": 4.229339577091112,
+        "fed": 4.0,
+        "deficit": 6.4077859559481976,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-07-23",
+        "approval": 56.60945737485686,
+        "unemployment": 4.2747631720096,
+        "inflation": 2.4972454699251636,
+        "growth": 1.770694362809216,
+        "gas": 3.23340702976573,
+        "tenYear": 4.188894096164105,
+        "fed": 4.0,
+        "deficit": 6.410392904121327,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-07-30",
+        "approval": 55.622011988615874,
+        "unemployment": 4.275453416320775,
+        "inflation": 2.498822519136004,
+        "growth": 1.6501705324616986,
+        "gas": 3.2697303531525015,
+        "tenYear": 4.237506055986746,
+        "fed": 3.75,
+        "deficit": 6.350817235346227,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-08-06",
+        "approval": 55.21910214604875,
+        "unemployment": 4.2777022403240945,
+        "inflation": 2.480808129288954,
+        "growth": 1.5294425023132512,
+        "gas": 3.265888310863902,
+        "tenYear": 4.208949426167429,
+        "fed": 3.75,
+        "deficit": 6.367190635877935,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-08-13",
+        "approval": 54.63806574183097,
+        "unemployment": 4.279999642000314,
+        "inflation": 2.473931046923345,
+        "growth": 1.5340406670082143,
+        "gas": 3.2140134535139215,
+        "tenYear": 4.188323825266815,
+        "fed": 3.75,
+        "deficit": 6.569482808990173,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-08-20",
+        "approval": 55.152545273196836,
+        "unemployment": 4.281326854020864,
+        "inflation": 2.4501006131572116,
+        "growth": 1.6243815010589853,
+        "gas": 3.2037562821545453,
+        "tenYear": 4.218658868885846,
+        "fed": 3.75,
+        "deficit": 6.561472296151694,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-08-27",
+        "approval": 55.404631563147966,
+        "unemployment": 4.2819976460214555,
+        "inflation": 2.4268531046146182,
+        "growth": 1.6888176765830605,
+        "gas": 3.2496466438107166,
+        "tenYear": 4.221164232349301,
+        "fed": 3.75,
+        "deficit": 6.555870719768869,
+        "deterrence": 41.0
+      }, {
+        "date": "2029-09-03",
+        "approval": 55.24134319435517,
+        "unemployment": 4.2792919914050955,
+        "inflation": 2.4171463170562175,
+        "growth": 1.9840901075205608,
+        "gas": 3.275745195435703,
+        "tenYear": 4.239388530156653,
+        "fed": 3.75,
+        "deficit": 6.52213290808623,
+        "deterrence": 41.0
       }],
     "midtermsHeld": false,
     "inaugurationCommand": 37,
     "legacy": null,
-    "commandsApplied": 79
+    "commandsApplied": 96
   },
   "random": {
     "ai.debate": "-4448743184875940781",
+    "approval": "7422657096895501624",
+    "approval.mood": "7210219983567782655",
     "budget.deadline": "-1908971224944867277",
     "cabinet.hearing": "6211156237008561087",
     "cabinet.vote": "8584896531217574921",
@@ -3345,7 +4335,7 @@
     "campaign.gaffe": "3284177989463137243",
     "campaign.rally": "-953859294825040804",
     "campaign.show": "6230029283699916856",
-    "congress": "5477639341042773897",
+    "congress": "-4259733602793087011",
     "congress.committee": "-7275261553472946669",
     "congress.elections": "8692547188332793820",
     "crisis.adversary": "-3176128037747445134",
@@ -3356,26 +4346,32 @@
     "crisis.resolve": "-8364783049227236378",
     "crisis.week": "-1940141322374852065",
     "debate": "-9138735735504360003",
-    "economy.bonds": "-2161606135534346961",
+    "economy.bonds": "3463759552452833147",
     "economy.challenge": "4418223146392418725",
-    "economy.noise": "6100939945131249193",
-    "economy.oil": "-7904469180345423026",
-    "economy.recession": "-410230333856237293",
+    "economy.noise": "-1095072752603942207",
+    "economy.oil": "-2279103492358242918",
+    "economy.recession": "-6820919526717423047",
     "economy.release": "4347805137740122706",
     "election": "-2457694228642142859",
-    "events.ai_layoffs": "-1647813039899347322",
+    "events.ai_layoffs": "-8058502232760533076",
     "events.gaffe": "4280900692667435486",
-    "events.hurricane": "-7751380764663981452",
+    "events.hurricane": "8004019619596062387",
     "events.jobs_report": "-6353165957423194993",
     "events.october_surprise": "-3422826208217606808",
-    "events.oil_spike": "1705360952586802289",
-    "events.scandal": "-4116983251357952082",
-    "events.scotus": "-1607295453377171208",
-    "opinion": "8126451579993862051",
-    "opposition.mood": "-8989652639281551257",
+    "events.oil_spike": "-4705328240274383465",
+    "events.scandal": "7919071629490413780",
+    "events.scotus": "-8017984646238356962",
+    "news.ambient": "5350495834622672931",
+    "news.ambient.pick": "3468580746067152965",
+    "news.ambient.place": "-3721314786745326930",
+    "news.ambient.weight": "2044461801332601080",
+    "opposition.mood": "-3364286951294371149",
     "polls.miss": "517374757552541013",
-    "world.EASTERN_EUROPE": "2638080328283584889",
-    "world.MIDDLE_EAST": "-5086053264982895538",
-    "world.TAIWAN_STRAIT": "7828291947397881951"
+    "president.illness": "55621980304513046",
+    "president.remarks": "1088393776929421699",
+    "president.visit.news": "6598249334510448069",
+    "world.EASTERN_EUROPE": "6992765893220430243",
+    "world.MIDDLE_EAST": "-731367700046050184",
+    "world.TAIWAN_STRAIT": "-6263766561374824311"
   }
 }

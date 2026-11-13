@@ -20,6 +20,7 @@ export function decisionCard(d, n, total, host, choose, after) {
 }
 function whatHappened(choice, news, host, after) {
     const lines = news.map(n => n.text).filter(t => !t.startsWith('Decision: '));
-    const go = h('button', { class: 'btn primary', type: 'button', onclick: () => { host.close(); after(); } }, 'Continue');
+    // closing the dialog runs `after` (it is the dialog's onClose), so Continue only closes it
+    const go = h('button', { class: 'btn primary', type: 'button', onclick: () => host.close() }, 'Continue');
     host.open(h('div', { class: 'dialog-card' }, h('div', { class: 'eyebrow' }, 'What happened'), h('h2', { class: 'dialog-title' }, 'You chose: ' + choice), lines.length ? h('ul', { class: 'happened' }, ...lines.map(l => h('li', null, l))) : h('p', { class: 'muted' }, 'The choice is recorded; its effects arrive as the week resolves.'), h('div', { class: 'dialog-foot' }, go)), 'What happened', after);
 }
