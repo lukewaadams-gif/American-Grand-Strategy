@@ -22,6 +22,7 @@ import { westWingRoom } from './westwing.js';
 import { pressRoom } from './pressroom.js';
 import { sitRoom } from './sitroom.js';
 import { hormuzRoom } from './hormuz.js';
+import { taiwanRoom } from './taiwan.js';
 import { residenceRoom } from './residence.js';
 import { chime, soundMenuItem } from '../core/sound.js';
 import type { MenuItem } from '../core/menu.js';
@@ -115,15 +116,27 @@ function endTurn(): void {
   render();
   const after = engine.presidency();
   if (!after.turnUnit) { beyondPreview(after); return; }
-  // the Strait of Hormuz, day by day: the crisis room after each day (and after the week it began, the paper first)
-  if (after.turnUnit === 'day') {
-    if (v.turnUnit !== 'day') showPaper(() => openHormuz());
-    else if (after.pendingDecisions > 0) openDecisions(() => openHormuz());
-    else openHormuz();
+  // a crisis, day by day (or hour by hour at war): the crisis room after each turn (and after the week it began, the paper first)
+  const crisis = (x: typeof v) => (x.turnUnit === 'day' || x.turnUnit === 'war') && !!(x.taiwan || x.hormuz);
+  if (crisis(after)) {
+    const room = after.taiwan ? openTaiwan : openHormuz;
+    if (!crisis(v)) showPaper(() => room());
+    else if (after.pendingDecisions > 0) openDecisions(() => room());
+    else room();
     return;
   }
   // Resolute Desk: the paper first, then what is waiting on the desk (and when a crisis has just ended, its room)
-  showPaper(v.turnUnit === 'day' ? () => openHormuz() : after.pendingDecisions > 0 ? () => openDecisions() : undefined);
+  showPaper(crisis(v) ? () => (v.taiwan ? openTaiwan() : openHormuz()) : after.pendingDecisions > 0 ? () => openDecisions() : undefined);
+}
+
+/** The Taiwan crisis room: its own Next day (or hours, at war), and after the crisis its record. */
+function openTaiwan(): void {
+  host.open(taiwanRoom({
+    view: () => engine.taiwan(),
+    order: o => command({ type: 'Taiwan', order: o }),
+    next: () => { host.close(); endTurn(); },
+    back: () => host.close(),
+  }), 'The Taiwan Strait', render);
 }
 
 /** The Strait of Hormuz crisis room: its own Next day, and after the crisis its record. */
@@ -201,7 +214,8 @@ function watchWeek(): void {
     if (!command(pick.command)) { stopWatching(); return; }
     toast(`The staff decided: ${d.title}. ${pick.label}.`);
   }
-  const plan = v.turnUnit === 'day' ? command({ type: 'Hormuz', order: { type: 'Playbook' } }) : presidency({ type: 'WatchWeek' });
+  const plan = v.turnUnit === 'day' || v.turnUnit === 'war' ? command(v.taiwan ? { type: 'Taiwan', order: { type: 'Playbook' } } : { type: 'Hormuz', order: { type: 'Playbook' } })
+    : presidency({ type: 'WatchWeek' });
   if (!plan || !command({ type: 'EndTurn' })) { stopWatching(); return; }
   const after = engine.presidency();
   const w = after.week;
@@ -424,7 +438,7 @@ function openSpot(id: SpotId, v: PresidencyView): void {
       openPress();
       return;
     case 'globe':
-      if (v.hormuz) openHormuz(); else openSitRoom();
+      if (v.taiwan) openTaiwan(); else if (v.hormuz) openHormuz(); else openSitRoom();
       return;
     case 'residence':
       if (!v.week) { toast('The Residence is yours at the inauguration.'); return; }

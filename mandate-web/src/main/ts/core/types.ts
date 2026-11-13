@@ -128,6 +128,8 @@ export interface PresidencyView {
   turnUnit: 'week' | 'war' | 'day' | 'transition' | null;
   /** The Strait of Hormuz crisis, while it lasts. */
   hormuz?: { day: number; rung: number; rungName: string; flow: number; normal: number; premium: number; killed: number; settled: boolean } | null;
+  taiwan?: { day: number; phase: 'crisis' | 'war' | 'over'; hourOfDay: number; turnHours: number; chinaRung: number; chinaRungName: string; usRung: number;
+    warning: string; chance: number; electricity: number; killed: number; territory: number; outcome: string | null } | null;
   upcoming: { date: string; what: string }[];
   bills: PresidencyBill[];
   news: NewsItem[];

@@ -93,7 +93,8 @@ function topBar(v: PresidencyView, hd: OvalHandlers): HTMLElement {
   const ap = v.approval, ch = v.approvalChange ?? 0;
   const apTone = ap === null ? '' : ap >= 50 ? 'good' : ap >= 42 ? '' : 'bad';
   const term = v.termWeek > 0 ? `Week ${v.termWeek}` : 'Before the oath';
-  const turn = v.turnUnit === 'war' ? 'Next turn' : v.turnUnit === 'day' ? 'Next day' : v.turnUnit === 'transition' ? 'To the inauguration' : 'End week';
+  const hours = v.taiwan?.turnHours ?? 6;
+  const turn = v.turnUnit === 'war' ? (hours === 1 ? 'Next hour' : `Next ${hours} hours`) : v.turnUnit === 'day' ? 'Next day' : v.turnUnit === 'transition' ? 'To the inauguration' : 'End week';
   const wk = v.week;
   return h('header', { class: 'ov-bar' },
     h('div', { class: 'ov-brand' }, sealIcon(40),
@@ -116,12 +117,30 @@ function topBar(v: PresidencyView, hd: OvalHandlers): HTMLElement {
       h('button', { class: 'btn quiet', type: 'button', 'aria-haspopup': 'menu', onclick: (e: Event) => hd.menu(e.currentTarget as HTMLElement) }, 'Menu'),
       h('button', { class: 'btn quiet', type: 'button', onclick: () => hd.save(), title: 'Download this game as a save file' }, 'Save'),
       hd.watching ? h('button', { class: 'btn primary ov-end', type: 'button', onclick: () => hd.stopWatching(), title: 'Take the controls back (Escape)' }, 'Watching… stop')
-        : v.turnUnit ? h('button', { class: 'btn primary ov-end', type: 'button', onclick: () => hd.endTurn(), title: `Play out the ${v.turnUnit === 'transition' ? 'transition' : v.turnUnit === 'day' ? 'day' : 'week'} (Ctrl+Enter)` },
+        : v.turnUnit ? h('button', { class: 'btn primary ov-end', type: 'button', onclick: () => hd.endTurn(), title: `Play out the ${v.turnUnit === 'transition' ? 'transition' : v.turnUnit === 'day' ? 'day' : v.turnUnit === 'war' ? 'turn' : 'week'} (Ctrl+Enter)` },
           turn, h('span', { class: 'ov-end-arrow', 'aria-hidden': 'true' }, '›')) : null));
+}
+
+/** While the Taiwan crisis lasts, its line in place of the week's plan. */
+function taiwanCard(v: PresidencyView, hd: OvalHandlers): HTMLElement {
+  const c = v.taiwan!;
+  const war = c.phase === 'war';
+  return h('section', { class: 'ov-card ov-week ov-crisis', 'aria-labelledby': 'ov-crisis-title' },
+    h('h2', { class: 'ov-card-title', id: 'ov-crisis-title' }, 'The Taiwan Strait'),
+    h('p', { class: 'ov-card-line' }, h('strong', { class: war || c.chinaRung >= 3 ? 'bad' : c.chinaRung >= 1 ? 'warn' : '' },
+      war ? `War, ${String(c.hourOfDay).padStart(2, '0')}:00` : `Day ${c.day}: ${c.chinaRungName.toLowerCase()}`),
+      war ? '' : ` · warning ${c.warning.toLowerCase()}`),
+    h('p', { class: 'ov-card-line' }, war ? `Taiwan’s electricity at ${Math.round(c.electricity * 100)}%${c.territory > 0 ? `; the PLA holds ${c.territory.toLocaleString('en-US')} km²` : ''}.`
+      : `The analysts give a ${Math.round(c.chance * 100)}% chance of Chinese military action within 30 days.`),
+    c.killed ? h('p', { class: 'ov-card-line warn' }, `${c.killed.toLocaleString('en-US')} Americans killed.`) : null,
+    v.pendingDecisions ? h('p', { class: 'ov-card-line warn' }, `${v.pendingDecisions} ${v.pendingDecisions === 1 ? 'decision' : 'decisions'} waiting on the desk.`) : null,
+    h('p', { class: 'ov-card-line quiet' }, war ? `The weeks wait until the war ends: each turn is ${c.turnHours === 1 ? 'an hour' : c.turnHours + ' hours'}.` : 'The weeks wait until the crisis ends: each turn is a day.'),
+    h('button', { class: 'btn primary', type: 'button', onclick: () => hd.spot('globe') }, 'To the crisis room'));
 }
 
 /** While the Strait of Hormuz crisis lasts, the days are the crisis's: its line in place of the week's plan. */
 function crisisCard(v: PresidencyView, hd: OvalHandlers): HTMLElement {
+  if (v.taiwan) return taiwanCard(v, hd);
   const c = v.hormuz!;
   return h('section', { class: 'ov-card ov-week ov-crisis', 'aria-labelledby': 'ov-crisis-title' },
     h('h2', { class: 'ov-card-title', id: 'ov-crisis-title' }, 'The Strait of Hormuz'),
@@ -235,7 +254,7 @@ export function ovalScreen(v: PresidencyView, light: Light, hd: OvalHandlers): {
     topBar(v, hd),
     h('main', { class: 'ov-main', id: 'main' },
       h('h1', { class: 'sr' }, `The Oval Office, ${dateLong(v.date)}. President ${v.president.name}.`),
-      h('div', { class: 'ov-frame', 'data-light': light.label }, stage, h('div', { class: 'ov-cards' }, v.hormuz ? crisisCard(v, hd) : weekCard(v, hd), hillCard(v, hd)))),
+      h('div', { class: 'ov-frame', 'data-light': light.label }, stage, h('div', { class: 'ov-cards' }, v.hormuz || v.taiwan ? crisisCard(v, hd) : weekCard(v, hd), hillCard(v, hd)))),
     ledger(v));
   return { el, room };
 }
