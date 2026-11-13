@@ -31,6 +31,10 @@ public final class AutoPilot {
             g.apply(new Command.EndTurn());
             return;
         }
+        // in office, the chief of staff writes the president's week (Resolute Desk's delegated calendar)
+        if ((g.phase() == game.mandate.core.time.Phase.FIRST_100_DAYS || g.phase() == game.mandate.core.time.Phase.GOVERNING)
+                && g.president().map(p -> !p.delegated()).orElse(false))
+            g.apply(new Command.Presidency(new game.mandate.core.presidency.PresidencyOrder.Delegate(true)));
         switch (g.phase()) {
             case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> {
                 if (g.phase() == game.mandate.core.time.Phase.GENERAL_CAMPAIGN_2028 && g.election().pledges().isEmpty())
@@ -80,6 +84,9 @@ public final class AutoPilot {
                 case Effect.CoalitionApproval c -> c.points() * 0.34;
                 case Effect.Goodwill gw -> gw.delta() / 10;
                 case Effect.WingMood m -> m.delta() / 10;
+                case Effect.Performance p -> p.points() * 1.6;
+                case Effect.Rally r -> r.points() * 1.6;
+                case Effect.Scandal s -> -s.points() * 1.2;
                 default -> 0;
             };
         }

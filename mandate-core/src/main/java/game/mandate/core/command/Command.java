@@ -57,4 +57,7 @@ public sealed interface Command {
 
     /** Resolve the turn. Refused while events are pending. */
     record EndTurn() implements Command {}
+
+    /** In office: one change to the president's week or to the watch plan. */
+    record Presidency(game.mandate.core.presidency.PresidencyOrder order) implements Command {}
 }

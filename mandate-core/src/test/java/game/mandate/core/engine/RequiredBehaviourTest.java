@@ -85,7 +85,7 @@ class RequiredBehaviourTest {
             GameEngine withLaw = SaveManager.load(SaveManager.save(base)), without = SaveManager.load(SaveManager.save(base));
             withLaw.apply(new Command.PushBill(bill, route, 20));
             if (!withLaw.laws().contains(bill)) continue;
-            for (int m = 0; m < 6; m++) {
+            for (int wk = 0; wk < 26; wk++) {            // six months of weekly turns
                 answerAll(withLaw, 0); withLaw.apply(new Command.EndTurn());
                 answerAll(without, 0); without.apply(new Command.EndTurn());
             }
@@ -153,7 +153,7 @@ class RequiredBehaviourTest {
         assertEquals(6, java.time.Duration.between(start, g.clock().now()).toHours(), "first-week operational turns are six hours");
         while (g.operationsActive()) { answerAll(g, 0); g.apply(new Command.EndTurn()); }
         assertTrue(g.clock().turns() - turnsBefore > 10, "a war takes many operational turns");
-        assertEquals(SimulationClock.Granularity.MONTHLY, g.clock().mode(), "governing resumes in monthly turns");
+        assertEquals(SimulationClock.Granularity.WEEKLY, g.clock().mode(), "governing resumes in weekly turns");
 
         TheaterOutcome out = g.war().orElseThrow();
         var m = g.state().military();

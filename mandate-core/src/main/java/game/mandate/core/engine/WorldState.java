@@ -13,7 +13,9 @@ import game.mandate.core.executive.GovernmentState;
 import game.mandate.core.game.Legacy;
 import game.mandate.core.military.MilitaryState;
 import game.mandate.core.opening.HundredDaysState;
+import game.mandate.core.news.News;
 import game.mandate.core.politics.PoliticsState;
+import game.mandate.core.presidency.PresidentState;
 import game.mandate.core.time.Phase;
 import game.mandate.core.time.SimulationClock;
 
@@ -22,6 +24,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * The single authoritative, persistent state of a game. It is a composition of domain states, each owned by one
@@ -42,6 +46,12 @@ public final class WorldState {
     ElectionState election;
     /** The first hundred days' process state; null before the inauguration. */
     HundredDaysState hundredDays;
+    /** The president's week, health and watch plan; null before the inauguration. */
+    PresidentState president;
+    /** The weighed news The Capital Ledger is made from (the last 400 stories). */
+    final List<News> news = new ArrayList<>();
+    /** The era's stories that have already run (indexes into the ambient table). */
+    final TreeSet<Integer> ambientUsed = new TreeSet<>();
     EventScheduler scheduler;
     ConsequenceLedger ledger;
     final List<String> log = new ArrayList<>();
@@ -67,6 +77,9 @@ public final class WorldState {
     public MilitaryState military() { return military; }
     public ElectionState election() { return election; }
     public HundredDaysState hundredDays() { return hundredDays; }
+    public PresidentState president() { return president; }
+    public List<News> news() { return Collections.unmodifiableList(news); }
+    public Set<Integer> ambientUsed() { return Collections.unmodifiableSet(ambientUsed); }
     public EventScheduler scheduler() { return scheduler; }
     public ConsequenceLedger ledger() { return ledger; }
     public List<String> log() { return Collections.unmodifiableList(log); }
@@ -83,6 +96,11 @@ public final class WorldState {
         m.put("congress", congress.toJson()); m.put("policy", policy.toJson()); m.put("government", government.toJson());
         m.put("diplomacy", diplomacy.toJson()); m.put("military", military.toJson()); m.put("election", election.toJson());
         m.put("hundredDays", hundredDays == null ? null : hundredDays.toJson());
+        m.put("president", president == null ? null : president.toJson());
+        List<Object> ns = new ArrayList<>();
+        for (News n : news) ns.add(n.toJson());
+        m.put("news", ns);
+        m.put("ambientUsed", new ArrayList<Object>(ambientUsed));
         m.put("scheduler", scheduler.toJson()); m.put("ledger", ledger.toJson()); m.put("log", new ArrayList<>(log));
         List<Object> ind = new ArrayList<>();
         for (IndicatorPoint p : indicators) ind.add(p.toJson());
@@ -105,6 +123,9 @@ public final class WorldState {
         w.military = MilitaryState.fromJson(Json.object(m.get("military")));
         w.election = ElectionState.fromJson(Json.object(m.get("election")), candidates);
         w.hundredDays = m.get("hundredDays") == null ? null : HundredDaysState.fromJson(Json.object(m.get("hundredDays")));
+        w.president = m.get("president") == null ? null : PresidentState.fromJson(Json.object(m.get("president")));
+        if (m.get("news") != null) for (Object o : Json.array(m.get("news"))) w.news.add(News.fromJson(Json.object(o)));
+        if (m.get("ambientUsed") != null) for (Object o : Json.array(m.get("ambientUsed"))) w.ambientUsed.add(Json.integer(o));
         w.scheduler = EventScheduler.fromJson(Json.object(m.get("scheduler")));
         w.ledger = ConsequenceLedger.fromJson(Json.object(m.get("ledger")));
         for (Object o : Json.array(m.get("log"))) w.log.add((String) o);

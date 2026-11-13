@@ -775,6 +775,13 @@ public class HundredDays {
     //  The week's resolution: consequences -> new information -> political reaction
     // =============================================================================================
 
+    /** Why the week cannot end yet (an open question the chief of staff will not settle), or null. Changes nothing. */
+    public String endWeekBlocker() {
+        if (over()) return "The hundred days are over";
+        for (Decision d : st.pending) if (!ChiefOfStaff.handles(d.kind(), st.delegated)) return "Decide the open questions first: " + d.title();
+        return null;
+    }
+
     private void endWeek() {
         for (Decision d : st.pending) require(ChiefOfStaff.handles(d.kind(), st.delegated), "Decide the open questions first: " + d.title());
         ChiefOfStaff.act(this, st.delegated);

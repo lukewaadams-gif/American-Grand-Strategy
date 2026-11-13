@@ -6,11 +6,14 @@ import game.mandate.core.effects.Effect;
 import game.mandate.core.rng.DeterministicRandomManager;
 import game.mandate.core.state.Party;
 
+import java.util.Map;
+
 /**
  * The shared political system: the single authority for national approval, coalition opinion, issue salience,
- * political capital, party wings and the opposition's strategy. The coalition model comes from the 12-week
- * prototype (it replaced Resolute Desk's top-down national approval, whose group breakdown was display-only);
- * the polarised band is kept by clamping each coalition.
+ * political capital, party wings and the opposition's strategy. National approval is Resolute Desk Version 2's
+ * ({@code opinion/Approval.java}): a weekly target built from the era, the economy, the issues, the president's appeal,
+ * the honeymoon, the record, scandal, the wear of office and the public mood, squeezed by partisanship. The three
+ * coalitions of the prototype and the fifty states are its breakdown, solved so they add up to the national number.
  */
 public final class PoliticsEngine {
     private final PoliticsParams p;
@@ -30,29 +33,36 @@ public final class PoliticsEngine {
 
     // ---- national approval ---------------------------------------------------------------------
 
+    /** National approval: Resolute Desk's number, which the coalitions and the states break down. */
     public double approval(PoliticsState s) {
         if (!s.governing) return Double.NaN;
-        double a = 0;
-        for (Coalition c : Coalition.values()) a += p.weights()[c.ordinal()] * s.level[c.ordinal()];
-        return a;
-    }
-
-    /** Economic sentiment: one number for how the economy feels to voters (0 = the reference economy). */
-    public double economicSentiment(OpinionInputs in) {
-        return -p.econGas() * (in.gas() - in.referenceGas()) - p.econInflation() * (in.inflation() - p.refInflation())
-                - p.econUnemployment() * (in.unemployment() - p.refUnemployment()) - p.econMortgage() * (in.mortgage() - p.refMortgage())
-                + p.econConfidence() * (in.confidence() - 100) + p.econGrowth() * (in.growth() - p.refGrowth());
+        return s.approval;
     }
 
     // ---- transitions ---------------------------------------------------------------------------
 
     public boolean apply(PoliticsState s, Effect e) {
         switch (e) {
-            case Effect.Approval x -> { for (int i = 0; i < 3; i++) s.modifier[i] += x.points(); }
-            case Effect.CoalitionApproval x -> {
-                if (x.lasting()) s.record[x.coalition().ordinal()] += x.points();
-                else s.modifier[x.coalition().ordinal()] += x.points();
+            // an event that moves approval moves where it is heading, for as long as this game's events were tuned to last
+            case Effect.Approval x -> s.events += x.points();
+            case Effect.CoalitionApproval x -> coalitionEffect(s, x);
+            case Effect.IssueWork x -> {
+                for (int k = 0; k < x.slots(); k++) {
+                    double cmd = s.command(x.issue()), adj = s.standing(x.issue());
+                    s.command.put(x.issue(), Math.min(100, cmd + 5 * x.quality() * (1 - cmd / 110)));
+                    s.issueAdj.put(x.issue(), Math.min(1.5, adj + 0.02 * x.quality() * (1 - adj / 1.5)));
+                }
             }
+            case Effect.Remarks x -> {
+                bumpSalience(s, x.issue(), 0.16 * x.issue().baseSalience());   // Resolute Desk's +0.08 on a base of 0.5
+                double adj = s.standing(x.issue());
+                s.issueAdj.put(x.issue(), clamp(adj + x.push() * (1 - Math.abs(adj) / 1.5) + x.luck(), -1.5, 1.5));
+            }
+            case Effect.IssueCommand x -> s.command.put(x.issue(), Math.min(100, s.command(x.issue()) + x.points()));
+            case Effect.Performance x -> s.perf += x.points();
+            case Effect.StateStanding x -> s.stateBump.merge(x.state(), x.points(), Double::sum);
+            case Effect.Rally x -> s.rally += x.points();
+            case Effect.Scandal x -> s.scandal += x.points();
             case Effect.Capital x -> s.capital = Math.max(0, Math.min(p.capitalCap(), s.capital + x.points()));
             case Effect.Salience x -> bumpSalience(s, x.issue(), x.delta());
             case Effect.Goodwill x -> s.goodwill = clamp(s.goodwill + x.delta(), -50, 50);
@@ -71,9 +81,7 @@ public final class PoliticsEngine {
     private void inaugurate(PoliticsState s, Effect.PresidentInaugurated x) {
         s.governing = true;
         s.presidentParty = x.party();
-        for (int i = 0; i < 3; i++) { s.level[i] = p.start()[i]; s.modifier[i] = 0; s.record[i] = 0; }
-        s.level[Coalition.SWING.ordinal()] += p.mandatePerElectoralVote() * (x.electoralVotes() - 270);
-        s.honeymoon = p.honeymoonStart();
+        for (int i = 0; i < 3; i++) { s.level[i] = p.start()[i]; s.record[i] = 0; s.groupAdj[i] = 0; }
         s.capital = p.capitalStart() + p.capitalPerElectoralVote() * (x.electoralVotes() - 270);
         s.weeksGoverning = 0;
         s.parties.get(x.party()).leaderId = x.candidateId();
@@ -99,29 +107,17 @@ public final class PoliticsEngine {
 
     // ---- the step ------------------------------------------------------------------------------
 
-    /** Advance public opinion by {@code weeks}. The same equations serve weekly and monthly turns. */
+    /**
+     * Advance public opinion by {@code weeks}. Salience, the wings, goodwill and capital move as before; national approval
+     * moves by Resolute Desk's weekly equations, once a week, and the coalitions and the states follow as its breakdown.
+     */
     public void step(PoliticsState s, double weeks, OpinionInputs in, DeterministicRandomManager rng) {
         double months = weeks / 4.345;
         for (Issue i : Issue.values())
             s.salience.merge(i, 0.0, (old, z) -> old + (1 - Math.pow(1 - p.salienceReversionPerMonth(), months)) * (i.baseSalience() - old));
         if (!s.governing) return;
         s.weeksGoverning += weeks;
-        double decayH = Math.pow(p.honeymoonDecayPerWeek(), weeks), decayM = Math.pow(p.modifierDecayPerWeek(), weeks);
-        s.honeymoon *= decayH;
-        for (int i = 0; i < 3; i++) s.modifier[i] *= decayM;
-
-        PartyState mine = s.parties.get(s.presidentParty);
-        double econ = economicSentiment(in);
-        double[] target = {
-                p.baseLevel() + (mine.averageMood() - p.moodStart()) * p.baseMood() + p.baseEcon() * econ,
-                p.swingLevel() + s.honeymoon + econ + p.swingGoodwill() * s.goodwill,
-                p.oppLevel() + p.oppGoodwill() * s.goodwill + p.oppEcon() * econ};
-        double adjust = 1 - Math.pow(1 - p.adjustPerWeek(), weeks);
-        for (int i = 0; i < 3; i++) {
-            double t = clamp(target[i] + s.modifier[i] + s.record[i], p.floor()[i], p.ceiling()[i]);
-            s.level[i] += adjust * (t - s.level[i]) + p.noisePerWeek()[i] * Math.sqrt(weeks) * rng.gaussian("opinion");
-            s.level[i] = clamp(s.level[i], p.floor()[i], p.ceiling()[i]);
-        }
+        for (int k = 0, n = Math.max(1, (int) Math.round(weeks)); k < n; k++) approvalWeek(s, in, rng);
 
         for (PartyState ps : s.parties.values())
             for (int w = 0; w < 2; w++) ps.wingMood[w] = clamp(ps.wingMood[w] + (1 - Math.pow(1 - p.moodDriftPerWeek(), weeks)) * (p.moodStart() - ps.wingMood[w]), 0, 100);
@@ -133,6 +129,174 @@ public final class PoliticsEngine {
         updateOpposition(s);
     }
 
+    // ---- Resolute Desk's approval (opinion/Approval.java) -------------------------------------------------------------
+
+    /** How much each kind of event moves the target, and how fast each fades a week (Resolute Desk's constants). */
+    public static final double PERF_WEIGHT = 1.6, SCANDAL_WEIGHT = 1.2, RALLY_WEIGHT = 1.6;
+    static final double HONEYMOON_FADE = 0.975, RALLY_FADE = 0.965, PERF_FADE = 0.96, SCANDAL_FADE = 0.975, MOOD_FADE = 0.97, MOOD_STEP = 0.45;
+    static final double PULL = 0.15, NOISE = 0.55, FLOOR_DEPTH = 16;
+
+    /** What the approval model needs from the inauguration: the president's appeal, the difficulty, the margin, and the states. */
+    public record ApprovalStart(double personal, double difficulty, double popularMargin, Map<String, Double> stateLean, Map<String, Double> stateWeight,
+                                double commandStart) {}
+
+    /** Starts approval at its target, with the honeymoon the mandate earns (Resolute Desk's {@code Approval.init}). */
+    public void beginApproval(PoliticsState s, ApprovalStart a, OpinionInputs in) {
+        s.personal = a.personal();
+        s.difficulty = a.difficulty();
+        s.mandate = clamp(2 + 0.55 * a.popularMargin(), 0.5, 15);
+        s.honeymoon = 4 + 0.6 * s.mandate;
+        s.priceLevel = p.rdPriceLevel();
+        s.perf = s.scandal = s.rally = s.mood = s.lasting = s.events = 0;
+        for (Issue i : Issue.values()) { s.issueAdj.put(i, 0.0); s.command.put(i, a.commandStart()); }
+        s.stateLean.clear(); s.stateLean.putAll(a.stateLean());
+        s.stateWeight.clear(); s.stateWeight.putAll(a.stateWeight());
+        s.stateBump.clear();
+        s.approval = target(s, in);
+        issues(s, in);
+        breakdown(s);
+        states(s);
+    }
+
+    private void approvalWeek(PoliticsState s, OpinionInputs in, DeterministicRandomManager rng) {
+        s.mood = s.mood * MOOD_FADE + rng.gaussian("approval.mood") * MOOD_STEP;
+        double t = target(s, in);
+        s.approval = clamp(s.approval + (t - s.approval) * PULL + rng.gaussian("approval") * NOISE, 4, 96);
+        s.honeymoon *= HONEYMOON_FADE;
+        s.rally *= RALLY_FADE;
+        s.perf *= PERF_FADE;
+        s.scandal *= SCANDAL_FADE;
+        s.events *= p.eventFadePerWeek();
+        for (Issue i : Issue.values()) s.issueAdj.merge(i, 0.0, (v, z) -> v * 0.97);
+        s.stateBump.replaceAll((k, v) -> v * 0.9);
+        for (int c = 0; c < 3; c++) s.groupAdj[c] *= 0.99;
+        s.priceLevel *= Math.pow(1 + in.inflation() / 100, 1.0 / 52);
+        issues(s, in);
+        breakdown(s);
+        states(s);
+    }
+
+    /** How sorted the era's politics are, from 0 to 1. */
+    double sorted() { return clamp((p.rdPolarization() - 0.5) / 0.5, 0, 1); }
+
+    /** The partisan floor and ceiling: about 34 and 66 for 2029. */
+    public double[] bounds() { double so = sorted(); return new double[]{30 + 6 * so, 72 - 8 * so}; }
+
+    /** Squeezes a raw target into the range partisanship allows; a rally passes through the ceiling. */
+    double squash(double raw, double rally) {
+        double[] b = bounds();
+        double x = raw;
+        if (raw < b[0]) x = b[0] - FLOOR_DEPTH * (1 - Math.exp(-0.3 * (b[0] - raw) / FLOOR_DEPTH));
+        else if (raw > b[1]) x = b[1] + (raw - b[1]) * 0.35;
+        x += rally * (1 - Math.max(0, x - 50) / 100);
+        if (x > 86) x = 86 + (x - 86) * 0.45;
+        if (x < 14) x = 14 - (14 - x) * 0.45;
+        return clamp(x, 4, 96);
+    }
+
+    static double piEff(double infl) { return infl >= 0 ? infl : -1.2 * infl; }
+
+    /** Consumer sentiment as Resolute Desk computes it (its {@code Economy.sentiment}, without the stock market, which this game does not model). */
+    public double sentiment(PoliticsState s, OpinionInputs in) {
+        return clamp(96 - 4.5 * (in.unemployment() - p.rdURef() + 0.5) - 5.5 * (piEff(in.inflation()) - p.rdPiRef() + 0.5)
+                - 6 * (in.gas() / s.priceLevel - p.rdGasRef() + 0.1) + 1.5 * (in.growth() - 2), 45, 112);
+    }
+
+    /** The economy's part of the target: growth, jobs, prices and gas against what people expect. */
+    public double economyTerm(PoliticsState s, OpinionInputs in) {
+        return 1.2 * (in.growth() - 2) - 2.4 * (in.unemployment() - p.rdURef()) - 2.0 * (piEff(in.inflation()) - p.rdPiRef())
+                - 3.0 * (in.gas() / s.priceLevel - p.rdGasRef()) + 0.08 * (sentiment(s, in) - 80);
+    }
+
+    double issueWeighted(PoliticsState s) {
+        double v = 0, w = 0;
+        for (Issue i : Issue.values()) { double sal = s.salience(i); v += sal * s.standing(i); w += sal; }
+        return w > 0 ? v / w : 0;
+    }
+
+    /** The wear of office: nothing for six months, then a slow slide of up to about five points in today's sorted politics. */
+    public double wear(PoliticsState s) { return Math.min(9 * (1 - 0.45 * sorted()), 0.045 * Math.max(0, s.weeksGoverning - 26)); }
+
+    /** Where approval is heading. */
+    public double target(PoliticsState s, OpinionInputs in) {
+        double fundamentals = p.rdEraBase() + economyTerm(s, in) + 1.5 * issueWeighted(s) + s.personal + s.difficulty;
+        double events = s.honeymoon + PERF_WEIGHT * s.perf - SCANDAL_WEIGHT * s.scandal - wear(s) + s.mood + s.lasting + s.events;
+        return squash(fundamentals + events, RALLY_WEIGHT * s.rally);
+    }
+
+    /** Approval on each issue: the national number, standing and command on it, and for the economy and prices, how they feel. */
+    void issues(PoliticsState s, OpinionInputs in) {
+        for (Issue i : Issue.values()) {
+            double v = s.approval + 4 * s.standing(i) + (s.command(i) - 50) * 0.04;
+            if (i == Issue.ECONOMY) v += 1.6 * (in.growth() - 2) - 1.5 * (in.unemployment() - p.rdURef()) + 0.08 * (sentiment(s, in) - 80);
+            if (i == Issue.COST_OF_LIVING) v += -2.5 * (piEff(in.inflation()) - p.rdPiRef()) - 5 * (in.gas() / s.priceLevel - p.rdGasRef()) - 4;
+            s.issueApproval.put(i, clamp(v, 10, 88));
+        }
+    }
+
+    /** The three coalitions, shifted together (by bisection on one offset) so their weighted sum is the national number. */
+    void breakdown(PoliticsState s) {
+        double lo = -8, hi = 8, off = 0;
+        for (int it = 0; it < 40; it++) {
+            off = (lo + hi) / 2;
+            if (coalitionSum(s, off) < s.approval) lo = off; else hi = off;
+        }
+        s.offset = off;
+        for (int c = 0; c < 3; c++) s.level[c] = coalitionLevel(s, c, off);
+    }
+
+    private double coalitionLevel(PoliticsState s, int c, double off) {
+        double bias = logit(p.start()[c] / 100);
+        return clamp(100 * logistic(bias + off + s.groupAdj[c]) + s.record[c], p.floor()[c], p.ceiling()[c]);
+    }
+
+    private double coalitionSum(PoliticsState s, double off) {
+        double a = 0;
+        for (int c = 0; c < 3; c++) a += p.weights()[c] * coalitionLevel(s, c, off);
+        return a;
+    }
+
+    /** Approval in each state: its lean toward the president's party, the president's standing there, and one national offset (Resolute Desk's {@code cells}, by state). */
+    void states(PoliticsState s) {
+        if (s.stateLean.isEmpty()) return;
+        double k = 0.8 + 0.6 * p.rdPolarization(), lo = -6, hi = 6, off = s.stateOffset;
+        for (int it = 0; it < 40; it++) {
+            double v = stateSum(s, k, off);
+            if (Math.abs(v - s.approval / 100) < 0.0005) break;
+            if (v < s.approval / 100) lo = off; else hi = off;
+            off = (lo + hi) / 2;
+        }
+        s.stateOffset = off;
+        for (String st : s.stateLean.keySet()) s.stateApproval.put(st, 100 * logistic(stateLogit(s, st, k, off)));
+    }
+
+    private double stateLogit(PoliticsState s, String st, double k, double off) {
+        return k * logit(clamp(0.5 + s.stateLean.get(st) / 200, 0.02, 0.98)) + off + 0.06 * s.stateStanding(st);
+    }
+
+    private double stateSum(PoliticsState s, double k, double off) {
+        double num = 0, den = 0;
+        for (Map.Entry<String, Double> e : s.stateLean.entrySet()) {
+            double w = s.stateWeight.getOrDefault(e.getKey(), 1.0);
+            num += w * logistic(stateLogit(s, e.getKey(), k, off));
+            den += w;
+        }
+        return den > 0 ? num / den : 0.5;
+    }
+
+    /** An event aimed at one coalition: the nation feels its share through the record; the coalition moves against the others. */
+    private void coalitionEffect(PoliticsState s, Effect.CoalitionApproval x) {
+        int c = x.coalition().ordinal();
+        double w = p.weights()[c];
+        if (x.lasting()) { s.lasting += w * x.points(); s.record[c] += x.points(); return; }
+        s.events += w * x.points();
+        double pc = clamp(s.level[c] / 100, 0.05, 0.95);
+        s.groupAdj[c] += x.points() / (100 * pc * (1 - pc));
+    }
+
+    static double logistic(double x) { return 1 / (1 + Math.exp(-x)); }
+    static double logit(double p) { return Math.log(p / (1 - p)); }
+
     /** RD's opposition strategy rule with hysteresis (from the prototype). */
     void updateOpposition(PoliticsState s) {
         double score = s.goodwill + p.oppSwingWeight() * (s.level[Coalition.SWING.ordinal()] - 50) + p.oppOffset()
@@ -142,10 +306,11 @@ public final class PoliticsEngine {
         s.opposition = score > coop ? OppositionStrategy.COOPERATE : score < obstruct ? OppositionStrategy.OBSTRUCT : OppositionStrategy.SELECTIVE;
     }
 
-    /** A data release moves swing voters by how much the number changed (prototype mechanic). */
-    public void onRelease(PoliticsState s, double change) {
-        if (s.governing) s.modifier[Coalition.SWING.ordinal()] -= p.releaseReaction() * change;
-    }
+    /**
+     * A data release. The prototype moved swing voters by how much the number changed; Resolute Desk's approval reads the
+     * economy itself every week, so the release no longer moves it separately (the headline still runs).
+     */
+    public void onRelease(PoliticsState s, double change) { }
 
     /**
      * The bully pulpit with diminishing returns: each recent address is worth half the one before.
@@ -154,8 +319,7 @@ public final class PoliticsEngine {
     public double address(PoliticsState s, double charisma, double issueAdvantage, Issue issue) {
         double gain = Math.max(0.05, (p.addressBase() + p.addressCharisma() * charisma + p.addressAdvantage() * issueAdvantage) * Math.pow(0.5, s.recentAddresses));
         s.recentAddresses++;
-        s.modifier[Coalition.BASE.ordinal()] += gain;
-        s.modifier[Coalition.SWING.ordinal()] += gain;
+        s.events += gain * (p.weights()[Coalition.BASE.ordinal()] + p.weights()[Coalition.SWING.ordinal()]);
         if (issue != null) bumpSalience(s, issue, p.addressSalience());
         return gain;
     }

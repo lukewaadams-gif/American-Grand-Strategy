@@ -17,6 +17,28 @@ import java.util.List;
 public final class Csv {
     private Csv() {}
 
+    /**
+     * A tab-separated table exported from a source game ({@code data/rd/*.tsv}): '#' lines are comments and the first
+     * other line is the header, which is skipped. Fields may contain commas.
+     */
+    public static List<String[]> readTsv(String path) {
+        InputStream in = Csv.class.getResourceAsStream(path);
+        if (in == null) throw new IllegalStateException("Missing content resource " + path);
+        List<String[]> rows = new ArrayList<>();
+        boolean header = true;
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = r.readLine()) != null) {
+                if (line.trim().isEmpty() || line.startsWith("#")) continue;
+                if (header) { header = false; continue; }
+                rows.add(line.split("\t", -1));
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return rows;
+    }
+
     public static List<String[]> readResource(String path) {
         InputStream in = Csv.class.getResourceAsStream(path);
         if (in == null) throw new IllegalStateException("Missing content resource " + path);

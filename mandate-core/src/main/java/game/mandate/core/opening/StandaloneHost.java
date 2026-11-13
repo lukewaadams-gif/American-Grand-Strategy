@@ -15,6 +15,7 @@ import game.mandate.core.diplomacy.DiplomacyState;
 import game.mandate.core.economy.BudgetState;
 import game.mandate.core.economy.EconomyEngine;
 import game.mandate.core.economy.EconomyParams;
+import game.mandate.core.politics.OpinionInputs;
 import game.mandate.core.economy.EconomyState;
 import game.mandate.core.effects.Effect;
 import game.mandate.core.electorate.StateCatalog;
@@ -81,6 +82,11 @@ final class StandaloneHost implements Host {
         executiveEngine.apply(government, oath, start);
         politicsEngine.apply(politics, oath);
         politicsEngine.setInitialTerms(politics, congress.congress().unified(party));
+        // an average president, a narrow win, no state map: approval starts at Resolute Desk's target
+        EconomyParams ep = economyEngine.params();
+        politicsEngine.beginApproval(politics, new PoliticsEngine.ApprovalStart(0, 0, 1.0, java.util.Map.of(), java.util.Map.of(), 30 + (PRESIDENT_CHARISMA - 1) * 100 / 9 * 0.2),
+                new OpinionInputs(economyEngine.gas(economy), ep.gas(ep.oilBase()), economy.inflation(), economy.unemployment(), economy.mortgageRate(ep),
+                        economy.confidence(), economy.growth()));
     }
 
     @Override public Party party() { return party; }
@@ -116,6 +122,13 @@ final class StandaloneHost implements Host {
             case Effect.Salience x -> politicsEngine.apply(politics, x);
             case Effect.Goodwill x -> politicsEngine.apply(politics, x);
             case Effect.WingMood x -> politicsEngine.apply(politics, x);
+            case Effect.IssueWork x -> politicsEngine.apply(politics, x);
+            case Effect.Remarks x -> politicsEngine.apply(politics, x);
+            case Effect.IssueCommand x -> politicsEngine.apply(politics, x);
+            case Effect.Performance x -> politicsEngine.apply(politics, x);
+            case Effect.StateStanding x -> politicsEngine.apply(politics, x);
+            case Effect.Rally x -> politicsEngine.apply(politics, x);
+            case Effect.Scandal x -> politicsEngine.apply(politics, x);
             case Effect.EconomyShock x -> economyEngine.apply(economy, budget, x);
             case Effect.Deficit x -> economyEngine.apply(economy, budget, x);
             case Effect.FedPressure x -> economyEngine.apply(economy, budget, x);

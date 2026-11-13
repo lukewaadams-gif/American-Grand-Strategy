@@ -37,6 +37,7 @@ import game.mandate.core.economy.MarketContext;
 import game.mandate.core.effects.Effect;
 import game.mandate.core.electorate.ElectionResult;
 import game.mandate.core.electorate.StateCatalog;
+import game.mandate.core.electorate.UsState;
 import game.mandate.core.events.DecisionResolver;
 import game.mandate.core.events.EventCatalog;
 import game.mandate.core.events.EventDefinition;
@@ -58,12 +59,18 @@ import game.mandate.core.opening.Host;
 import game.mandate.core.opening.HundredDays;
 import game.mandate.core.opening.OpeningAction;
 import game.mandate.core.opening.DayHundredReport;
+import game.mandate.core.news.AmbientNews;
+import game.mandate.core.news.News;
 import game.mandate.core.politics.Coalition;
 import game.mandate.core.politics.OpinionInputs;
 import game.mandate.core.politics.PoliticsEngine;
 import game.mandate.core.politics.PoliticsParams;
 import game.mandate.core.politics.PoliticsState;
 import game.mandate.core.politics.Role;
+import game.mandate.core.presidency.PresidencyOrder;
+import game.mandate.core.presidency.PresidentEngine;
+import game.mandate.core.presidency.PresidentState;
+import game.mandate.core.presidency.WeekContext;
 import game.mandate.core.rng.DeterministicRandomManager;
 import game.mandate.core.state.Party;
 import game.mandate.core.time.CampaignCalendar;
@@ -79,6 +86,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 
 /**
  * The game engine: owns turn order, routes every state transition to the engine that owns the state it changes,
@@ -107,6 +115,8 @@ public final class GameEngine implements WorldView {
     private final MilitaryEngine militaryEngine;
     private final ElectionEngine electionEngine;
     private final DecisionResolver decisions = new DecisionResolver();
+    private final PresidentEngine presidentEngine;
+    private final AmbientNews ambient;
 
     private final double premiumPerMiddleEast, middleEastPivot, premiumPerRung, stressPerRung, stressWar;
     private final double deterrenceOrder, munitionsOrder, tensionOrder, deficitOrder;
@@ -136,6 +146,8 @@ public final class GameEngine implements WorldView {
         this.diplomacyEngine = new DiplomacyEngine(tuning, Country.load());
         this.militaryEngine = new MilitaryEngine(MilitaryParams.from(tuning), MilitaryCatalog.load());
         this.electionEngine = new ElectionEngine(states, candidates, CampaignParams.from(tuning));
+        this.presidentEngine = new PresidentEngine(states);
+        this.ambient = new AmbientNews();
         premiumPerMiddleEast = tuning.d("markets.premium.middleEast");
         middleEastPivot = tuning.d("markets.premium.middleEastPivot");
         premiumPerRung = tuning.d("markets.premium.taiwanRung");
@@ -231,6 +243,7 @@ public final class GameEngine implements WorldView {
             case Command.ResolveEvent c -> resolveEvent(c.instanceId(), c.optionIndex());
             case Command.Act c -> act(c.action());
             case Command.EndTurn c -> endTurn();
+            case Command.Presidency c -> presidencyOrder(c.order());
         }
         history.add(command);
         w.commandsApplied++;
@@ -266,6 +279,13 @@ public final class GameEngine implements WorldView {
             case Effect.WarEnded x -> owner = diplomacyEngine.apply(w.diplomacy, x) ? "diplomacy" : "none";
             case Effect.Munitions x -> owner = militaryEngine.apply(w.military, x) ? "military" : "none";
             case Effect.CongressElected x -> owner = congressEngine.apply(w.congress, x) ? "congress" : "none";
+            case Effect.IssueWork x -> owner = governing && politicsEngine.apply(w.politics, x) ? "politics" : "none";
+            case Effect.Remarks x -> owner = governing && politicsEngine.apply(w.politics, x) ? "politics" : "none";
+            case Effect.IssueCommand x -> owner = governing && politicsEngine.apply(w.politics, x) ? "politics" : "none";
+            case Effect.Performance x -> owner = governing && politicsEngine.apply(w.politics, x) ? "politics" : "none";
+            case Effect.StateStanding x -> owner = governing && politicsEngine.apply(w.politics, x) ? "politics" : "none";
+            case Effect.Rally x -> owner = governing && politicsEngine.apply(w.politics, x) ? "politics" : "none";
+            case Effect.Scandal x -> owner = governing && politicsEngine.apply(w.politics, x) ? "politics" : "none";
             case Effect.PresidentInaugurated x -> {
                 executiveEngine.apply(w.government, x, date());
                 politicsEngine.apply(w.politics, x);
@@ -290,7 +310,7 @@ public final class GameEngine implements WorldView {
             case GENERAL_CAMPAIGN_2028, REELECTION_CAMPAIGN_2032 -> campaignWeek();
             case TRANSITION -> beginTerm();
             case FIRST_100_DAYS -> act(new OpeningAction.EndWeek());
-            case GOVERNING -> governingMonth();
+            case GOVERNING -> governingWeek();
             case EPILOGUE -> w.phase = Phase.GAME_OVER;
             case GAME_OVER -> throw new IllegalCommandException("The game is over");
         }
@@ -556,6 +576,7 @@ public final class GameEngine implements WorldView {
         int decision = w.ledger.decide(date(), "Inauguration");
         dispatch(decision, "Inauguration", new Effect.PresidentInaugurated(player().candidate().id(), player().party(), myEv));
         politicsEngine.setInitialTerms(w.politics, unifiedGovernment());
+        politicsEngine.beginApproval(w.politics, approvalStart(), opinionInputs());
         // Each campaign promise left off the agenda costs the president's base wing (the wings exist once there is a president).
         for (String promised : brokenPromises())
             dispatch(decision, "Broken promise " + promised, new Effect.WingMood(0, electionEngine.brokenPledgeMood()));
@@ -565,6 +586,8 @@ public final class GameEngine implements WorldView {
         recordIndicators();
         w.clock.set(hundredDaysStart());
         w.hundredDays = HundredDays.begin(host);
+        w.president = presidentEngine.newPresident(player().candidate().id());
+        presidentEngine.firstWeek(w.president, weekContext());
         log("The first hundred days begin. Your flagship: the " + host.flagship().name() + ".");
     }
 
@@ -582,6 +605,11 @@ public final class GameEngine implements WorldView {
         if (w.phase != Phase.FIRST_100_DAYS) throw new IllegalCommandException("Only during the first hundred days");
         int logged = w.hundredDays.log().size();
         host.decision = -1;
+        if (a instanceof OpeningAction.EndWeek) {
+            String blocked = new HundredDays(host, w.hundredDays).endWeekBlocker();
+            if (blocked != null) throw new IllegalCommandException(blocked);
+            presidentWeek();          // the week's slots play out first, as in Resolute Desk; then the economy and opinion
+        }
         try {
             new HundredDays(host, w.hundredDays).apply(a);
         } catch (IllegalStateException | IllegalArgumentException refused) {
@@ -591,6 +619,7 @@ public final class GameEngine implements WorldView {
         if (a instanceof OpeningAction.EndWeek) {
             w.clock.advance();
             recordIndicators();
+            afterWeek();
             if (w.hundredDays.week() > w.hundredDays.weeks()) endHundredDays();
         }
     }
@@ -607,8 +636,7 @@ public final class GameEngine implements WorldView {
         for (String line : executiveEngine.formCabinet(w.government, w.congress.congress(), congressEngine.votes(), w.politics.opposition(),
                 w.politics.party(player().party()).wingMood(1), rng)) log(line);
         w.phase = Phase.GOVERNING;
-        w.clock.set(date().withDayOfMonth(1).plusMonths(1));
-        w.clock.setMode(Granularity.MONTHLY);
+        w.clock.setMode(Granularity.WEEKLY);       // Resolute Desk's weeks go on through the term
         executiveEngine.newTurn(w.government);
         // The world did not stand still: the flashpoints drift for the months the hundred days covered. (During the
         // hundred days their own crisis is the foreign-policy story, so standing escalations wait until now.)
@@ -685,12 +713,16 @@ public final class GameEngine implements WorldView {
         }
     }
 
-    private void governingMonth() {
-        LocalDate from = date(), to = from.plusMonths(1);
-        double weeks = ChronoUnit.DAYS.between(from, to) / 7.0;
+    /**
+     * A week in office (Resolute Desk's {@code Week.resolve} order): the president's slots, then the economy (stepped a
+     * week, with the Fed's meetings and the data releases that fall in it), then opinion; the world and the military
+     * move on the first week of each month, as before; then events, at their monthly odds spread over the weeks.
+     */
+    private void governingWeek() {
+        LocalDate from = date(), to = from.plusWeeks(1);
+        presidentWeek();
 
-        // 1. The economy, which reads diplomacy (oil risk) and the executive (Treasury) through a context.
-        economyEngine.step(w.economy, w.budget, 1.0, marketContext(), rng);
+        economyEngine.step(w.economy, w.budget, 1.0 / EconomyEngine.WEEKS_PER_MONTH, marketContext(), rng);
         for (int i = 0; i < calendar.fomcMeetings(from, to); i++) {
             double change = economyEngine.fedMeeting(w.economy, w.budget);
             if (change != 0) log(Fmt.format("The Fed %s rates to %.2f%%.", change > 0 ? "raises" : "cuts", w.economy.fedRate()));
@@ -698,21 +730,122 @@ public final class GameEngine implements WorldView {
         for (int i = 0; i < CampaignCalendar.releases(from, to, true); i++) politicsEngine.onRelease(w.politics, economyEngine.jobsReport(w.economy, rng));
         for (int i = 0; i < CampaignCalendar.releases(from, to, false); i++) politicsEngine.onRelease(w.politics, economyEngine.inflationReport(w.economy, rng));
 
-        // 2. Public opinion, which reads the economy.
-        politicsEngine.step(w.politics, weeks, opinionInputs(), rng);
+        politicsEngine.step(w.politics, 1.0, opinionInputs(), rng);
 
-        // 3. The world and the military.
-        for (Escalation e : diplomacyEngine.stepMonth(w.diplomacy, rng)) queueEvent(EventCatalog.escalation(e));
-        militaryEngine.stepMonth(w.military);
+        boolean newMonth = to.getMonthValue() != from.getMonthValue();
+        if (newMonth) {
+            for (Escalation e : diplomacyEngine.stepMonth(w.diplomacy, rng)) queueEvent(EventCatalog.escalation(e));
+            militaryEngine.stepMonth(w.military);
+        }
 
         rollEvents();
         w.clock.advance();
         recordIndicators();
-        executiveEngine.newTurn(w.government);
+        if (newMonth) executiveEngine.newTurn(w.government);    // the old governing actions keep their monthly attention until Congress and the West Wing replace them
+        afterWeek();
 
         if (!w.midtermsHeld && !date().isBefore(calendar.midterms())) holdMidterms();
         if (!date().isBefore(calendar.reelectionStart())) beginReelection();
     }
+
+    // ---- the president's week (Resolute Desk) ---------------------------------------------------------------------
+
+    private void presidentWeek() {
+        PresidentEngine.Outcome out = presidentEngine.resolve(w.president, weekContext(), date(), rng);
+        int decision = w.ledger.decide(date(), "The president's week");
+        dispatchAll(decision, "The president's week", out.effects());
+        for (News n : out.news()) news(n);
+    }
+
+    /** After a week: the era's news, then the chief of staff writes the next week if the calendar is delegated. */
+    private void afterWeek() {
+        LocalDate weekAgo = date().minusDays(7);
+        double busy = 0;
+        for (News n : w.news) if (n.section() == null && !n.date().isBefore(weekAgo)) busy += n.weight();
+        for (String line : w.log) if (line.length() > 12 && line.substring(0, 10).compareTo(weekAgo.toString()) >= 0) busy += 0.5;
+        List<String> places = states.all().stream().map(UsState::name).filter(n -> !n.equals("District of Columbia")).toList();
+        for (AmbientNews.Run r : ambient.week(w.ambientUsed, busy, date().minusDays(1), this::newsVariable, places, rng)) {
+            news(r.news());
+            int decision = w.ledger.decide(date(), "In the news: " + r.news().head());
+            dispatchAll(decision, "In the news", r.effects());
+        }
+        presidentEngine.afterWeek(w.president, weekContext());
+    }
+
+    /** The state of the country for an era story's conditions (Resolute Desk's {@code Stories.var}); NaN for what this game does not model. */
+    private double newsVariable(String k) {
+        EconomyState e = w.economy;
+        return switch (k) {
+            case "unemp" -> e.unemployment();
+            case "gdp" -> e.growth();
+            case "fed" -> e.fedRate();
+            case "deficit" -> economyEngine.deficit(e, w.budget);
+            case "month" -> date().getMonthValue();
+            case "ai" -> 1;
+            case "wars" -> w.military.operationActive() ? 1 : 0;
+            case "kia" -> war().map(o -> (double) o.usKilled()).orElse(0.0);
+            case "sent" -> politicsEngine.sentiment(w.politics, opinionInputs());
+            case "uchg" -> w.indicators.size() > 26 ? e.unemployment() - w.indicators.get(w.indicators.size() - 27).unemployment() : 0;
+            case "tw" -> w.president == null ? 0 : w.president.week();
+            case "dem" -> player().party() == Party.DEMOCRAT ? 1 : 0;
+            case "elect" -> date().getYear() % 4 == 0 ? 1 : 0;
+            case "midterm" -> date().getYear() % 4 == 2 ? 1 : 0;
+            case "mortgage" -> e.mortgageRate(economyEngine.params());
+            case "mkt" -> 0;
+            default -> Double.NaN;
+        };
+    }
+
+    private void news(News n) {
+        w.news.add(n);
+        if (w.news.size() > 400) w.news.remove(0);
+        if (n.section() == null && n.weight() >= 0.6) log(n.head());
+    }
+
+    private void presidencyOrder(PresidencyOrder o) {
+        if (w.president == null || (w.phase != Phase.FIRST_100_DAYS && w.phase != Phase.GOVERNING)) throw new IllegalCommandException("Only in office");
+        try {
+            presidentEngine.apply(w.president, o, weekContext());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalCommandException(e.getMessage());
+        }
+    }
+
+    /** What the president's week reads: the president's gifts on Resolute Desk's scale, approval, the issues and the states. */
+    public WeekContext weekContext() {
+        Candidate p = player().candidate();
+        String last = p.name().substring(p.name().lastIndexOf(' ') + 1);
+        return new WeekContext(last, rdScale((p.charisma() + p.policy()) / 2.0), rdScale(p.charisma()), rdScale(p.fundraising()), 60,
+                approval(), w.politics.salience(), w.politics.issueApproval(), w.politics.stateApproval(), midtermSeason(), 0.6);
+    }
+
+    /** A 1-10 rating on Resolute Desk's 0-100 scale (as the campaign port maps Battleground 2028's). */
+    static double rdScale(double r) { return (r - 1) * 100 / 9; }
+
+    /** The hundred days before the midterms: campaign stops for the party's candidates. */
+    public boolean midtermSeason() {
+        return !w.midtermsHeld && !date().isBefore(calendar.midterms().minusDays(100)) && date().isBefore(calendar.midterms());
+    }
+
+    /** What the approval model needs at the inauguration (Resolute Desk's {@code Approval.init}). */
+    private PoliticsEngine.ApprovalStart approvalStart() {
+        Candidate p = player().candidate();
+        int sign = player().party().sign();
+        ElectionResult r = w.election.result2028();
+        Map<String, Double> lean = new TreeMap<>(), weight = new TreeMap<>();
+        for (UsState u : states.all()) {
+            lean.put(u.code(), r.stateMargins().getOrDefault(u.code(), u.baselineMargin()) * sign);
+            weight.put(u.code(), u.voteWeight());
+        }
+        // Resolute Desk's personal term: crossover appeal and scandal baggage at its neutral values (60, 40), charm from charisma
+        double personal = (rdScale(p.charisma()) - 60) * 0.03;
+        double difficulty = switch (setup.difficulty()) { case STORY -> 2; case STANDARD -> 0; case HARD -> -2; };
+        return new PoliticsEngine.ApprovalStart(personal, difficulty, r.marginFor(player().party()), lean, weight, 30 + rdScale(p.policy()) * 0.2);
+    }
+
+    public PresidentEngine presidentEngine() { return presidentEngine; }
+    public Optional<PresidentState> president() { return Optional.ofNullable(w.president); }
+    public List<News> news() { return w.news(); }
 
     private void holdMidterms() {
         w.midtermsHeld = true;
@@ -754,7 +887,7 @@ public final class GameEngine implements WorldView {
         Optional<TheaterOutcome> out = militaryEngine.stepOperation(w.military, rng);
         w.clock.advanceHours(hours);
         out.ifPresent(o -> {
-            w.clock.setMode(Granularity.MONTHLY);
+            w.clock.setMode(Granularity.WEEKLY);
             int decision = w.ledger.decide(date(), "War ends: " + o.status());
             dispatchAll(decision, "War", militaryEngine.consequences(o));
             log("WAR ENDS: " + o.summary() + (o.usKilled() > 0 ? " " + o.usKilled() + " Americans killed; " + o.shipsLost() + " ships, "
@@ -833,7 +966,8 @@ public final class GameEngine implements WorldView {
     // =========================================================================================
 
     private void rollEvents() {
-        double turnShare = w.clock.mode() == Granularity.DAILY ? 1.0 / 7 : 1.0;
+        // event odds are per campaign week, or per month in office: a day of the final stretch and a week in office take their share
+        double turnShare = w.clock.mode() == Granularity.DAILY ? 1.0 / 7 : w.phase == Phase.GOVERNING ? 1.0 / EconomyEngine.WEEKS_PER_MONTH : 1.0;
         for (PendingEvent p : w.scheduler.roll(eventDefinitions, w.phase, this, rng, turnShare)) log("EVENT: " + p.definition().title());
     }
 

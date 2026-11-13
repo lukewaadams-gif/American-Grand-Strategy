@@ -108,6 +108,43 @@ public sealed interface Effect {
         public String describe() { return "A " + party.adjective() + " president takes office (" + electoralVotes + " electoral votes)"; }
     }
 
+    // ---- the president's week (Resolute Desk): what each slot does to opinion ---------------------------------------
+
+    /** Policy time on an issue, {@code slots} times this week: command of the issue and standing on it grow, saturating. */
+    record IssueWork(Issue issue, double quality, int slots) implements Effect {
+        public String describe() { return "Policy time on " + issue.label().toLowerCase() + (slots > 1 ? " (x" + slots + ")" : ""); }
+    }
+
+    /** White House remarks on an issue: it matters more, standing on it moves by {@code push} (plus the day's luck). */
+    record Remarks(Issue issue, double push, double luck) implements Effect {
+        public String describe() { return "Remarks on " + issue.label().toLowerCase(); }
+    }
+
+    /** Command of an issue, in points (working late on the top issue). */
+    record IssueCommand(Issue issue, double points) implements Effect {
+        public String describe() { return signed("Command of " + issue.label().toLowerCase(), points); }
+    }
+
+    /** The president's record of wins and missteps (Resolute Desk's {@code perf}): moves approval's target by 1.6 a point, fading. */
+    record Performance(double points) implements Effect {
+        public String describe() { return signed("Performance", points); }
+    }
+
+    /** Standing in one state (Resolute Desk's {@code stateBump}), from a visit or a campaign stop; fades 10% a week. */
+    record StateStanding(String state, double points) implements Effect {
+        public String describe() { return signed("Standing in " + state, points); }
+    }
+
+    /** A rally around the flag (passes through approval's partisan ceiling), fading. */
+    record Rally(double points) implements Effect {
+        public String describe() { return signed("Rally around the flag", points); }
+    }
+
+    /** Scandal, weighing on approval's target by 1.2 a point, fading. */
+    record Scandal(double points) implements Effect {
+        public String describe() { return signed("Scandal", points); }
+    }
+
     private static String signed(String label, double v) { return label + " " + fmt(v); }
 
     private static String fmt(double v) {

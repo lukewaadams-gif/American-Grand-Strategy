@@ -100,18 +100,18 @@ class HundredDaysInGameTest {
     }
 
     @Test
-    void aFullTermGoesOnToMonthlyGoverningWithTheCabinetFilled() {
+    void aFullTermGoesOnInWeeklyTurnsWithTheCabinetFilled() {
         GameEngine g = inaugurated(5, GameSetup.Length.FULL_TERM);
         playUntil(g, x -> x.phase() != Phase.FIRST_100_DAYS);
         assertEquals(Phase.GOVERNING, g.phase());
-        assertEquals(LocalDate.of(2029, 5, 1), g.date());
-        assertEquals(Granularity.MONTHLY, g.clock().mode());
+        assertEquals(LocalDate.of(2029, 4, 30), g.date());          // the Monday after the fourteenth week
+        assertEquals(Granularity.WEEKLY, g.clock().mode());
         for (Post p : Post.values()) {
             SeatStatus s = g.state().government().seat(p).status();
             assertTrue(s == SeatStatus.CONFIRMED || s == SeatStatus.ACTING, p + " " + s);
             assertNotNull(g.state().government().seat(p).name());
         }
         AutoPilot.playTurn(g);
-        assertEquals(LocalDate.of(2029, 6, 1), g.date());
+        assertEquals(LocalDate.of(2029, 5, 7), g.date());
     }
 }

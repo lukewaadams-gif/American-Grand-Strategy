@@ -63,7 +63,7 @@ public final class Fixtures {
             GameEngine g = until(new GameEngine(setup(seed, GameSetup.Length.HUNDRED_DAYS)), x -> x.phase() != Phase.GENERAL_CAMPAIGN_2028);
             if (g.result2028().get().winner() != g.player().party()) { m.put("lost", SaveManager.save(g)); break; }
         }
-        m.put("governing", SaveManager.save(won(GameSetup.Length.FULL_TERM, g -> g.phase() == Phase.GOVERNING && g.indicators().size() > 18)));
+        m.put("governing", SaveManager.save(won(GameSetup.Length.FULL_TERM, g -> g.phase() == Phase.GOVERNING && g.indicators().size() > 18 && g.attention() >= 2)));
         return m;
     }
 

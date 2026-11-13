@@ -27,6 +27,24 @@ public final class ParityCheck {
             System.out.println("seed " + seed + " ev " + g.result2028().map(r -> r.demElectoralVotes() + "-" + r.repElectoralVotes()).orElse("-")
                     + " report " + g.dayHundredReport().map(r -> r.outcome() + "/" + r.score()).orElse("-") + " commands " + g.history().size() + " reload " + reload);
         }
+        // full terms: the president's weeks, weekly governing and Resolute Desk's approval, to the 2032 election
+        for (long seed = 1; seed <= 6; seed++) {
+            boolean dem = seed % 2 == 0;
+            GameSetup setup = new GameSetup(seed, dem ? Party.DEMOCRAT : Party.REPUBLICAN, dem ? "d_reyes" : "r_marsh", dem ? "r_harlan" : "d_whitfield",
+                    Scenario.TOSS_UP, GameSetup.Difficulty.STANDARD, GameSetup.Length.FULL_TERM, false, null);
+            GameEngine g = new GameEngine(setup);
+            int guard = 0;
+            while (!g.over() && guard++ < 1200) AutoPilot.playTurn(g);
+            // the world's numbers, rounded (a save's text formats doubles a little differently in each runtime)
+            var p = g.president();
+            System.out.println("term " + seed + " 2032 " + g.result2032().map(r -> r.demElectoralVotes() + "-" + r.repElectoralVotes()).orElse("-")
+                    + " weeks " + p.map(x -> x.week()).orElse(0) + " laws " + g.laws().size() + " commands " + g.history().size()
+                    + " approval " + game.mandate.core.data.Fmt.format("%.6f", g.state().politics().nationalApproval())
+                    + " stamina " + p.map(x -> game.mandate.core.data.Fmt.format("%.6f", x.stamina())).orElse("-")
+                    + " health " + p.map(x -> game.mandate.core.data.Fmt.format("%.6f", x.health())).orElse("-")
+                    + " chest " + p.map(x -> game.mandate.core.data.Fmt.format("%.6f", x.warChest())).orElse("-")
+                    + " news " + g.news().size() + " unemployment " + game.mandate.core.data.Fmt.format("%.6f", g.state().economy().unemployment()));
+        }
         System.out.println("ms " + (System.currentTimeMillis() - t0));
     }
 }
