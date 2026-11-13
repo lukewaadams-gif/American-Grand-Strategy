@@ -1,6 +1,6 @@
 // The preview of the new interface: the campaign's war room, live over the real engine. It opens a real
 // mid-campaign save (week 9 of 16) and plays from there; the rest of the game's screens follow in later stages.
-import { engine, Refused, start } from './core/engine.js';
+import { buildFile, engine, Refused, start } from './core/engine.js';
 import { h } from './core/dom.js';
 import { day, signed } from './core/format.js';
 import { cost } from './campaign/schedule.js';
@@ -189,8 +189,12 @@ async function boot() {
     if (params.get('size'))
         document.documentElement.style.setProperty('--s', params.get('size'));
     await start();
-    saveText = await (await fetch(params.get('save') ?? 'saves/campaign.json')).text();
+    saveText = await buildFile(params.get('save') ?? 'saves/campaign.json');
     engine.load(saveText);
     render();
 }
-boot().catch(e => { root.replaceChildren(h('p', { class: 'boot-error', role: 'alert' }, 'The game could not start: ' + String(e))); console.error(e); });
+boot().catch(e => {
+    root.replaceChildren(h('p', { class: 'boot-error', role: 'alert' }, 'The game could not start: ' + String(e)
+        + '. Reloading the page past the cache (Ctrl+Shift+R, or Cmd+Shift+R on a Mac) fetches the latest version.'));
+    console.error(e);
+});

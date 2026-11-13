@@ -1,8 +1,29 @@
 let mod = null;
-/** Loads the engine module once. */
+/** The site's build (version.json), so the engine and the saves always come from the same one; empty if there is none. */
+let build = '';
+/** A URL for this build's copy of a file, so a browser's cached copy from an earlier build is never used with this one. */
+function versioned(url) { return build ? url + (url.includes('?') ? '&' : '?') + 'v=' + build : url; }
+/**
+ * Loads the engine module once. It asks the server which build it has (past the browser's cache) and loads that
+ * build's engine: an engine kept from an earlier visit cannot read a newer build's saves.
+ */
 export async function start(url = new URL('../../engine/engine.js', import.meta.url).href) {
-    if (!mod)
-        mod = (await import(url));
+    if (mod)
+        return;
+    try {
+        const r = await fetch(new URL('../../version.json', import.meta.url).href, { cache: 'no-cache' });
+        if (r.ok)
+            build = (await r.json()).build ?? '';
+    }
+    catch { /* a build without version.json: load as before */ }
+    mod = (await import(versioned(url)));
+}
+/** A file of this build (a sample save), fetched past any stale copy in the browser's cache. */
+export async function buildFile(path) {
+    const r = await fetch(versioned(path), { cache: 'no-cache' });
+    if (!r.ok)
+        throw new Error(`Could not load ${path} (${r.status})`);
+    return r.text();
 }
 export class Refused extends Error {
 }
