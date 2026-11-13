@@ -233,7 +233,7 @@ Choices made while building overnight that we had not discussed. Each was made i
 
 ## The front page (13 November 2026)
 
-1. **The site's front page is the game's title screen,** run from `preview/`: New Game, Continue, Start at a moment. A choice made there is handed to the game's page (`preview/index.html`) through the tab's session storage, once; a reload of the game's page does not repeat it.
+1. **The site's front page becomes the game's title screen** once approved (it is in `preview/` now), run from `preview/`: New Game, Continue, Start at a moment. A choice made there is handed to the game's page (`preview/index.html`) through the tab's session storage, once; a reload of the game's page does not repeat it.
 2. **The setup is one choice per step,** with Back and Next, instead of every option on one page. For a campaign or a presidency: the game, your side (party and cast), your candidate, your opponent, the country, then a face-off. For a crisis: the game, the crisis, how it starts, then a briefing. The defaults are the Full Game, the Democrats, real people, a toss-up country and standard difficulty, so Next all the way through starts a game.
 3. **Real people are the default cast.** The candidate step shows the real 2028 field with each candidate's ratings (the game's judgement, labelled as such). The fictional cast is one choice away, on the side step.
-4. **The earlier playable slice moved to `classic/`,** unchanged, and the title screen links it at its foot. Moving it back to the root is a matter of moving those files back and removing the new `index.html`.
+4. **The earlier playable slice moves to `classic/`** at the same time, unchanged, and the title screen links it at its foot. Moving it back to the root is a matter of moving those files back and removing the new `index.html`. `front.js` tests that layout locally (port 8767).
