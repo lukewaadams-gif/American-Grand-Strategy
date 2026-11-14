@@ -241,7 +241,7 @@ export function taiwanRoom(act) {
     function programmesCard(v, live) {
         const done = v.programmes.filter(p => p.pct >= 100);
         return h('section', { class: 'room-card', 'aria-labelledby': 'tw-prog' }, h('h3', { class: 'room-card-title', id: 'tw-prog' }, 'Preparations'), done.length ? h('p', { class: 'small' }, h('strong', null, 'Done: '), done.map(p => p.name).join(' · ')) : null, h('ul', { class: 'sit-ops tw-progs' }, ...v.programmes.filter(p => p.pct < 100).map(p => h('li', null, h('div', null, h('strong', null, p.name), h('span', { class: 'muted small' }, ` · ${p.days} ${p.days === 1 ? 'day' : 'days'}`), p.pct > 0 ? meter(p.pct, 100, `${p.name}: ${Math.round(p.pct)}% done`, p.pct >= 100 ? 'good' : '', p.pct >= 100 ? 'done' : `${Math.round(p.pct)}%`) : null), p.pct >= 100 ? h('span', { class: 'muted small' }, 'Done')
-            : h('button', { class: 'btn small toggle' + (p.on ? ' on' : ''), type: 'button', 'aria-pressed': String(p.on), disabled: !live, onclick: () => order({ type: 'Programme', id: p.id, run: !p.on }) }, p.on ? 'Under way' : 'Start')))), h('p', { class: 'muted small' }, v.side === 'US' ? 'Each preparation deters, and each is seen in Beijing: some calm the crisis, some make China hurry.'
+            : h('button', { class: 'btn small toggle' + (p.on ? ' on' : ''), type: 'button', 'aria-pressed': String(p.on), disabled: !live, onclick: () => order({ type: 'Programme', id: p.id, run: !p.on }) }, p.on ? 'Under way' : 'Start')))), h('p', { class: 'muted small' }, v.side === 'US' ? 'Your staff starts the routine preparations; the major ones wait for clearer warning, or for your order. Each preparation deters, and each is seen in Beijing: some calm the crisis, some make China hurry.'
             : 'Each preparation can be seen. Exercise cover hides some of them; what is seen raises America’s warning.'));
     }
     function economyCard(v, live) {
@@ -251,7 +251,7 @@ export function taiwanRoom(act) {
             return h('li', null, h('strong', null, label), on ? h('span', { class: 'muted small' }, 'In force')
                 : heavy ? grave('m-' + id, 'Impose', { type: 'Economic', measure: id }, !live)
                     : h('button', { class: 'btn small', type: 'button', disabled: !live, onclick: () => order({ type: 'Economic', measure: id }) }, 'Impose'));
-        })), h('p', { class: 'muted small' }, 'Sanctions deter before a war and punish during one, but every measure costs America and its allies too.'));
+        })), h('p', { class: 'muted small' }, 'Sanctions deter before a war and punish during one, but every measure costs America and its allies too. Against a blockade, sanctions shared with allies (ask them under Diplomacy) weigh on Beijing at home, and may make it lift the blockade.'));
     }
     function nuclearCard(v, live) {
         const n = v.nuclear, mine = v.side === 'US' ? n.us : n.prc, other = v.side === 'US' ? n.prc : n.us;
