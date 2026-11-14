@@ -29,7 +29,7 @@ export function westWingRoom(act, first = 'Staff') {
         const v = act.view();
         const keep = document.activeElement instanceof HTMLElement && root.contains(document.activeElement)
             ? document.activeElement.getAttribute('aria-label') ?? document.activeElement.textContent : null;
-        const top = h('div', { class: 'room-top' }, h('div', null, h('div', { class: 'eyebrow' }, 'Down the hall'), h('h2', { class: 'dialog-title' }, 'The West Wing'), h('p', { class: 'muted' }, 'Week of ' + day(v.date, true))), h('div', { class: 'cab-buttons' }, h('button', { class: 'btn', type: 'button', onclick: act.cabinetRoom }, 'The Cabinet Room: the policy table'), h('button', { class: 'btn primary', type: 'button', onclick: act.back }, 'Back to the Oval Office')));
+        const top = h('div', { class: 'room-top' }, h('div', null, h('div', { class: 'eyebrow' }, 'Down the hall'), h('h2', { class: 'dialog-title' }, 'The West Wing'), h('p', { class: 'muted' }, 'Week of ' + day(v.date, true))), h('div', { class: 'cab-buttons' }, h('button', { class: 'btn', type: 'button', onclick: act.cabinetRoom }, 'The Cabinet Room: the policy table'), h('button', { class: 'btn primary', type: 'button', onclick: act.back }, act.backLabel ?? 'Back to the Oval Office')));
         if (!v.staff) {
             root.replaceChildren(top, h('p', null, v.reason ?? ''));
             return;

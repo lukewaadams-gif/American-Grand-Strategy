@@ -24,7 +24,7 @@ export function pressRoom(act, first = 'The press') {
     }
     function draw() {
         const v = act.view();
-        const top = h('div', { class: 'room-top' }, h('div', null, h('div', { class: 'eyebrow' }, 'Down the hall'), h('h2', { class: 'dialog-title' }, 'The Press Briefing Room'), h('p', { class: 'muted' }, 'Week of ' + day(v.date, true))), h('button', { class: 'btn primary', type: 'button', onclick: act.back }, 'Back to the Oval Office'));
+        const top = h('div', { class: 'room-top' }, h('div', null, h('div', { class: 'eyebrow' }, 'Down the hall'), h('h2', { class: 'dialog-title' }, 'The Press Briefing Room'), h('p', { class: 'muted' }, 'Week of ' + day(v.date, true))), h('button', { class: 'btn primary', type: 'button', onclick: act.back }, act.backLabel ?? 'Back to the Oval Office'));
         if (!v.outlets) {
             root.replaceChildren(top, h('p', null, v.reason ?? ''));
             return;

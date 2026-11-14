@@ -59,7 +59,7 @@ function route() {
     }
     if (CAMPAIGN.includes(phase)) {
         body('');
-        mountCampaign({ onElectionOver: route, restart: showStart });
+        mountCampaign({ onElectionOver: route, onLeave: route, restart: showStart });
     }
     else if (phase === 'TRANSITION') {
         body('presidency');

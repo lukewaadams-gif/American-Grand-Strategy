@@ -24,6 +24,7 @@ import { taiwanRoom } from './taiwan.js';
 import { residenceRoom } from './residence.js';
 import { chime, soundMenuItem } from '../core/sound.js';
 import { dayHundredReport } from './day-hundred.js';
+import { ISSUES } from '../core/issues.js';
 const root = document.getElementById('app');
 const params = new URLSearchParams(location.search);
 /** A fixed hour for the light (from ?hour= or the menu); null follows the player's clock. */
@@ -379,12 +380,6 @@ function duskHour(month) {
 // ---- what the room's objects and doors do in this milestone --------------------------------------------------------
 const LATER = {};
 const west = (order) => command({ type: 'WestWing', order });
-const ISSUES = [
-    { id: 'ECONOMY', label: 'The economy' }, { id: 'COST_OF_LIVING', label: 'Cost of living' }, { id: 'HEALTHCARE', label: 'Health care' },
-    { id: 'IMMIGRATION', label: 'Immigration' }, { id: 'ABORTION', label: 'Abortion' }, { id: 'CRIME', label: 'Crime and safety' },
-    { id: 'CLIMATE_ENERGY', label: 'Climate and energy' }, { id: 'CHINA', label: 'China' }, { id: 'AI_TECH', label: 'AI and jobs' },
-    { id: 'DEMOCRACY', label: 'Democracy and corruption' }, { id: 'EDUCATION', label: 'Education' }
-];
 /** The West Wing: the staff, the cabinet, the vice president, orders and rules, the courts and oversight; the Cabinet Room down the hall. */
 function westWing(tab) {
     host.open(westWingRoom({

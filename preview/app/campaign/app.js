@@ -11,6 +11,11 @@ import { decisionCard } from './decision.js';
 import { host, toast } from '../core/dialog.js';
 import { closeMenu, menuOpen } from '../core/menu.js';
 import { adStudio } from './studio.js';
+import { rooseveltRoom } from '../presidency/roosevelt.js';
+import { westWingRoom } from '../presidency/westwing.js';
+import { sitRoom } from '../presidency/sitroom.js';
+import { pressRoom } from '../presidency/pressroom.js';
+import { ISSUES } from '../core/issues.js';
 const root = document.getElementById('app');
 let hostOpts = {};
 let active = false;
@@ -28,7 +33,7 @@ export function mountCampaign(opts = {}) {
 export function unmountCampaign() { active = false; }
 const state = { layer: 'margin', selected: null, tab: 'schedule', picking: null, desk: 'overview', digest: null };
 // keys 1-6 switch the left panel's tabs (as in Battleground 2028), when no dialog or menu is open and focus is not in a field
-const TAB_KEYS = { '1': 'schedule', '2': 'money', '3': 'field', '6': 'wire' };
+const TAB_KEYS = { '1': 'schedule', '2': 'money', '3': 'field', '4': 'message', '5': 'polls', '6': 'wire' };
 function render() {
     let v;
     try {
@@ -47,7 +52,20 @@ function render() {
     const focusKey = document.activeElement?.getAttribute('aria-label') ?? null;
     const scroll = document.getElementById('main')?.scrollTop ?? 0;
     root.replaceChildren(warRoom(v, state, {
-        runWeek, openDecisions, toast, order,
+        runWeek, openDecisions: () => openDecisions(), toast, order, openQuestions, openRoom,
+        pledge: id => { try {
+            engine.command({ type: 'Pledge', bill: id });
+        }
+        catch (e) {
+            toast(e instanceof Refused ? e.message : String(e));
+            return false;
+        } render(); return true; },
+        voters: code => { try {
+            return engine.voters(code);
+        }
+        catch {
+            return null;
+        } },
         setLayer: id => { state.layer = id; render(); },
         select: c => { state.selected = c; render(); },
         setTab: id => { state.tab = id; render(); document.getElementById('tab-' + id)?.focus(); },
@@ -103,22 +121,65 @@ function openStudio() {
     if (key)
         [...document.querySelectorAll('.studio button')].find(b => (b.getAttribute('aria-label') ?? b.textContent) === key)?.focus();
 }
+/** The questions the week cannot run without (an event, the week's debate), one after another. */
 function openDecisions(after = render) {
-    const ds = engine.decisions();
+    const ds = engine.decisions().filter(d => d.blocking !== false);
     if (!ds.length) {
         after();
         return;
     }
-    decisionCard(ds[0], 1, ds.length, host, command => {
+    decisionCard(ds[0], 1, ds.length, host, choose, () => { render(); if (engine.decisions().some(d => d.blocking !== false))
+        openDecisions(after); });
+}
+function choose(command) {
+    try {
+        return engine.command(command);
+    }
+    catch (e) {
+        toast(e instanceof Refused ? e.message : String(e));
+        return null;
+    }
+}
+/** Running for re-election: the White House's questions, each with a deadline. "Decide later" moves on to the next, and
+ *  what is left the staff answer when it is due. */
+function openQuestions(skip = 0) {
+    const ds = engine.decisions().filter(d => d.blocking === false);
+    if (skip >= ds.length) {
+        render();
+        return;
+    }
+    let answered = false;
+    decisionCard(ds[skip], skip + 1, ds.length, host, command => {
+        const r = choose(command);
+        if (r !== null)
+            answered = true;
+        return r;
+    }, () => { render(); openQuestions(answered ? skip : skip + 1); });
+}
+/** The White House's rooms, opened over the war room while running for re-election. */
+function openRoom(room) {
+    const send = (type) => (order) => {
         try {
-            return engine.command(command);
+            engine.command({ type, order });
         }
         catch (e) {
             toast(e instanceof Refused ? e.message : String(e));
-            return null;
+            return false;
         }
-    }, () => { render(); if (engine.decisions().length)
-        openDecisions(after); });
+        return true;
+    };
+    const decide = () => { host.close(); openQuestions(); };
+    const back = () => host.close(), backLabel = 'Back to the war room';
+    if (room === 'congress')
+        host.open(rooseveltRoom({ view: () => engine.hill(), order: send('Hill'), decide, back, backLabel }), 'The Roosevelt Room', render);
+    else if (room === 'westwing')
+        host.open(westWingRoom({ view: () => engine.westWing(), options: (kind, index) => engine.westWingOptions(kind, index),
+            order: send('WestWing'), decide, cabinetRoom: () => toast('The Cabinet Room is in the Oval Office’s West Wing, after the campaign.'), back, backLabel, issues: ISSUES }), 'The West Wing', render);
+    else if (room === 'sitroom')
+        host.open(sitRoom({ view: () => engine.sitRoom(), country: code => engine.foreignCountry(code), order: send('Foreign'), decide, back, backLabel }), 'The Situation Room', render);
+    else
+        host.open(pressRoom({ view: () => engine.press(), order: send('WestWing'), decide, back, backLabel, terms: () => engine.terms(),
+            termsOrder: o => send('Terms')(o) }, 'The press'), 'The Press Briefing Room', render);
 }
 function runWeek() {
     const v = engine.campaign();
@@ -138,6 +199,12 @@ function runWeek() {
     }
     state.picking = null;
     const after = engine.campaign();
+    // a crisis began in the week: it is fought from the Oval Office, and the war room waits for it
+    if (after.crisis && hostOpts.onLeave) {
+        const go = hostOpts.onLeave;
+        go();
+        return;
+    }
     // Election Day: no digest of a day that ended the campaign; election night comes next
     state.digest = after.phase === v.phase ? digestOf(v, after, news) : null;
     render();
