@@ -16,6 +16,7 @@ import { takeLaunch } from './core/launch.js';
 import { taiwanRoom } from './presidency/taiwan.js';
 import { electionNight } from './presidency/election-night.js';
 import { soundMenuItem } from './core/sound.js';
+import { startTutorial, tutorialProgress } from './tutorial/tutorial.js';
 const root = document.getElementById('app');
 const params = new URLSearchParams(location.search);
 const CAMPAIGN = ['GENERAL_CAMPAIGN_2028', 'REELECTION_CAMPAIGN_2032'], OFFICE = ['FIRST_100_DAYS', 'GOVERNING'];
@@ -136,6 +137,11 @@ const startActions = {
         toast(e instanceof Refused ? e.message : String(e));
         showStart();
     } },
+    tutorial: () => { void startTutorial({ refresh: route, done: keep => { if (keep)
+            route();
+        else
+            showStart(); } }); },
+    tutorialChapter: () => tutorialProgress(),
 };
 function showStart() {
     leave();
@@ -158,6 +164,9 @@ function launch(l) {
             return;
         case 'islandChain':
             startActions.islandChain(l.options);
+            return;
+        case 'tutorial':
+            startActions.tutorial();
             return;
     }
 }
