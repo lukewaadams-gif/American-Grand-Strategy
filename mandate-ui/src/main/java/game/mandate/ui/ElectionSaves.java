@@ -69,16 +69,26 @@ public final class ElectionSaves {
         }
         // the races to succeed the president, on their nights: 2036 after two terms, and 2032 when the president did not run
         // (the lifecycle run's games: LifecycleTest.setup(0, 1) and setup(9, 10))
-        write(out, "night2036", SaveManager.save(toNight(new GameSetup(1, game.mandate.core.state.Party.DEMOCRAT, "bg_shapiro", "bg_vance",
-                game.mandate.core.game.Scenario.values()[0], GameSetup.Difficulty.values()[0], GameSetup.Mode.FULL_GAME, true, null), 2036)));
-        write(out, "night2032-successor", SaveManager.save(toNight(new GameSetup(10, game.mandate.core.state.Party.DEMOCRAT, "bg_shapiro", "bg_vance",
-                game.mandate.core.game.Scenario.values()[0], GameSetup.Difficulty.values()[0], GameSetup.Mode.GOVERNING_ONLY, true, null), 2032)));
+        write(out, "night2036", SaveManager.save(firstNight(1, GameSetup.Mode.FULL_GAME, 2036)));
+        write(out, "night2032-successor", SaveManager.save(firstNight(10, GameSetup.Mode.GOVERNING_ONLY, 2032)));
         // the last week of the first hundred days
         GameEngine d = Fixtures.won(GameSetup.Mode.FULL_GAME, x -> x.phase() == Phase.FIRST_100_DAYS && x.hundredDays().map(h -> h.week() >= 14).orElse(false));
         write(out, "day100-eve", SaveManager.save(d));
     }
 
     /** The game played by the staff until that year's election night is waiting to be watched. */
+    /** The first game from this seed on (Shapiro against Vance) whose night of that year is a race to succeed the president. */
+    static GameEngine firstNight(long fromSeed, GameSetup.Mode mode, int year) {
+        for (long seed = fromSeed; seed < fromSeed + 30; seed++) {
+            try {
+                GameEngine g = toNight(new GameSetup(seed, game.mandate.core.state.Party.DEMOCRAT, "bg_shapiro", "bg_vance",
+                        game.mandate.core.game.Scenario.values()[0], GameSetup.Difficulty.values()[0], mode, true, null), year);
+                if (g.electionKind(year).equals("succession")) return g;
+            } catch (IllegalStateException e) { /* not this game: the next */ }
+        }
+        throw new IllegalStateException("no " + year + " succession night in thirty games");
+    }
+
     static GameEngine toNight(GameSetup s, int year) {
         GameEngine g = GameEngine.start(s);
         int guard = 0;

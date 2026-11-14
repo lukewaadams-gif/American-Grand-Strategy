@@ -49,6 +49,10 @@ public sealed interface CampaignOrder {
     record Headquarters(int tier) implements CampaignOrder {}
     /** The message issue; null lets the staff choose each week. */
     record Message(Issue issue) implements CampaignOrder {}
+    /** The national message's tone: positive, contrast (the baseline) or an attack. */
+    record MessageTone(Tone tone) implements CampaignOrder {}
+    /** Commission an internal poll of a state (its code) or of the nation ("US"): this week, more accurate than the public polls, at a cost. */
+    record InternalPoll(String state) implements CampaignOrder {}
     /** Pulls all TV (local and national) and/or all digital. */
     record PullAds(boolean tv, boolean digital) implements CampaignOrder {}
     /** Ad Studio: produce an ad. {@code tone} 0 positive, 1 contrast, 2 attack; {@code group} a voter group or -1 for everyone. */
@@ -76,6 +80,8 @@ public sealed interface CampaignOrder {
             case RedBox x -> { m.put("state", x.state()); m.put("on", x.on()); }
             case Headquarters x -> m.put("tier", x.tier());
             case Message x -> m.put("issue", x.issue() == null ? null : x.issue().name());
+            case MessageTone x -> m.put("tone", x.tone().name());
+            case InternalPoll x -> m.put("state", x.state());
             case PullAds x -> { m.put("tv", x.tv()); m.put("digital", x.digital()); }
             case ProduceAd x -> { m.put("tone", x.tone()); m.put("issue", x.issue().name()); m.put("group", x.group()); m.put("messenger", x.messenger().name()); }
             case TestAd x -> m.put("index", x.index());
@@ -103,6 +109,8 @@ public sealed interface CampaignOrder {
             case "RedBox" -> new RedBox((String) m.get("state"), (Boolean) m.get("on"));
             case "Headquarters" -> new Headquarters(Json.integer(m.get("tier")));
             case "Message" -> new Message(m.get("issue") == null ? null : Issue.valueOf((String) m.get("issue")));
+            case "MessageTone" -> new MessageTone(Tone.valueOf((String) m.get("tone")));
+            case "InternalPoll" -> new InternalPoll((String) m.get("state"));
             case "PullAds" -> new PullAds((Boolean) m.get("tv"), (Boolean) m.get("digital"));
             case "ProduceAd" -> new ProduceAd(Json.integer(m.get("tone")), Issue.valueOf((String) m.get("issue")), Json.integer(m.get("group")),
                     Messenger.valueOf((String) m.get("messenger")));

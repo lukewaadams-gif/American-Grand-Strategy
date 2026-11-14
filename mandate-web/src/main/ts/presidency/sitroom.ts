@@ -15,6 +15,8 @@ export interface SitActions {
   /** Opens the desk: the questions the world put there. */
   decide(): void;
   back(): void;
+  /** The exit button's words (the Oval Office's by default; the war room says its own). */
+  backLabel?: string;
 }
 
 const TABS = ['The world', 'Daily brief', 'Hot spots', 'Operations', 'Trade', 'Alliances', 'Wars', 'Statecraft'] as const;
@@ -54,7 +56,7 @@ export function sitRoom(act: SitActions, first: Tab = 'The world'): HTMLElement 
       h('div', null, h('div', { class: 'eyebrow' }, 'Below the West Wing'), h('h2', { class: 'dialog-title' }, 'The Situation Room'),
         h('p', { class: 'muted' }, 'Week of ' + day(v.date, true) + (v.defcon !== undefined ? ' · ' : ''),
           v.defcon !== undefined ? h('span', { class: 'sit-defcon d' + v.defcon }, 'DEFCON ' + v.defcon) : null)),
-      h('button', { class: 'btn primary', type: 'button', onclick: act.back }, 'Back to the Oval Office'));
+      h('button', { class: 'btn primary', type: 'button', onclick: act.back }, act.backLabel ?? 'Back to the Oval Office'));
     if (!v.countries) { root.replaceChildren(top, h('p', null, v.reason ?? '')); return; }
     const nav = h('nav', { class: 'cab-tabs', 'aria-label': 'The Situation Room' }, ...TABS.map(t =>
       h('button', { class: 'btn small toggle' + (t === tab ? ' on' : ''), type: 'button', 'aria-pressed': String(t === tab), onclick: () => { tab = t; arming = null; draw(); } }, t)));

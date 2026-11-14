@@ -11,6 +11,8 @@ export interface PressActions {
   /** Opens the desk: the questions a press conference or a speech puts there. */
   decide(): void;
   back(): void;
+  /** The exit button's words (the Oval Office's by default; the war room says its own). */
+  backLabel?: string;
   /** Terms of office: the race to succeed the president, the legacy goals (milestone 9). */
   terms?(): TermsView;
   termsOrder?(o: object): boolean;
@@ -42,7 +44,7 @@ export function pressRoom(act: PressActions, first: Tab = 'The press'): HTMLElem
     const top = h('div', { class: 'room-top' },
       h('div', null, h('div', { class: 'eyebrow' }, 'Down the hall'), h('h2', { class: 'dialog-title' }, 'The Press Briefing Room'),
         h('p', { class: 'muted' }, 'Week of ' + day(v.date, true))),
-      h('button', { class: 'btn primary', type: 'button', onclick: act.back }, 'Back to the Oval Office'));
+      h('button', { class: 'btn primary', type: 'button', onclick: act.back }, act.backLabel ?? 'Back to the Oval Office'));
     if (!v.outlets) { root.replaceChildren(top, h('p', null, v.reason ?? '')); return; }
     const nav = h('nav', { class: 'cab-tabs', 'aria-label': 'The Press Briefing Room' }, ...TABS.map(t =>
       h('button', { class: 'btn small toggle' + (t === tab ? ' on' : ''), type: 'button', 'aria-pressed': String(t === tab), onclick: () => { tab = t; draw(); } }, t)));

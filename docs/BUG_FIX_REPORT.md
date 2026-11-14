@@ -184,6 +184,17 @@ The same path hit the 2032 re-election, in both outcomes.
   - `modes.js`.
 - **Remaining (fixed 14 November 2026, T-02 below):** no line of play found in the tests made Taiwan fall in Individual Crisis. Taiwan's outcome depended on the preset and not on the president's orders.
 
+## T-03: the 2032 campaign paused the presidency (owner's request, 14 November 2026; medium): fixed
+
+- **What happened:** for the fifteen weeks of the re-election campaign, Congress, the West Wing, the world and the president's approval stood still. Only the economy moved (B-08). The race therefore read an approval frozen at the campaign's start.
+- **Fix:** each campaign week runs the presidency's weekly systems (`GameEngine.campaignOffice`). The rooms' orders are accepted while running for re-election (`GameEngine.inOffice`). The war room shows a White House card: the record, its weight and the campaign's, the questions waiting, and the rooms. A re-election counts the campaign at 0.6 (`election.incumbent.campaign`).
+- **Found on the way:** the war room reopened the first question after "Decide later". With non-blocking questions this trapped the player. It now asks only the blocking ones before a turn, and steps through the rest.
+- **Tests:**
+  - `ReelectionOfficeTest`;
+  - `LifecycleTest` (160 games);
+  - `office2032.js`;
+  - `RecordBalanceRun`: the record explains 69% of the race.
+
 ## T-02: Taiwan's outcome did not turn on the president's orders (owner's request, 14 November 2026; medium): fixed
 
 - **What happened:** in Individual Crisis, the staff left alone never lost on the base case. The pessimistic case ended in part whatever was done. Staying "diplomatic only" was overruled when China struck American forces. A ceasefire Washington accepted as its support collapsed counted as an end in part. Every crisis from the sample save was the same crisis.

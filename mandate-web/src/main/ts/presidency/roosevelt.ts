@@ -16,6 +16,8 @@ export interface HillActions {
   /** Opens what is waiting on the desk. */
   decide(): void;
   back(): void;
+  /** The exit button's words (the Oval Office's by default; the war room says its own). */
+  backLabel?: string;
 }
 
 const TABS = ['The Hill', 'Bills', 'Members', 'The budget', 'Elections', 'Favours and probes'] as const;
@@ -46,7 +48,7 @@ export function rooseveltRoom(act: HillActions, first: Tab = 'The Hill'): HTMLEl
     const top = h('div', { class: 'room-top' },
       h('div', null, h('div', { class: 'eyebrow' }, 'Across the hall'), h('h2', { class: 'dialog-title' }, 'The Roosevelt Room'),
         h('p', { class: 'muted' }, (v.congress ? v.congress + ', week of ' : 'Week of ') + day(v.date, true))),
-      h('button', { class: 'btn primary', type: 'button', onclick: act.back }, 'Back to the Oval Office'));
+      h('button', { class: 'btn primary', type: 'button', onclick: act.back }, act.backLabel ?? 'Back to the Oval Office'));
     if (!v.blocs) {
       root.replaceChildren(top, h('p', null, v.reason ?? 'Congress is not in session.'));
       return;

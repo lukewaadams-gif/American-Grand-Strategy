@@ -25,7 +25,7 @@ import static game.mandate.core.foreign.ForeignData.*;
 final class ForeignViews {
     private ForeignViews() {}
 
-    static boolean open(GameEngine g) { return g.foreign().isPresent() && g.phase() == Phase.GOVERNING; }
+    static boolean open(GameEngine g) { return g.foreign().isPresent() && g.inOffice(); }
 
     static long r(double v) { return Math.round(v); }
 

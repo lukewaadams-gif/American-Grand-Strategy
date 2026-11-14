@@ -40,7 +40,7 @@ function route(): void {
   if (night) { body('presidency'); showElectionNight(night); return; }
   // a crisis that runs on into the 2032 campaign is fought from the Oval Office; the war room waits for it to end
   if (CAMPAIGN.includes(phase) && crisis) { body('presidency'); mountPresidency({ onLeave: route, restart: showStart, restartLabel: 'Back to the start', menuItems: gameMenu }); return; }
-  if (CAMPAIGN.includes(phase)) { body(''); mountCampaign({ onElectionOver: route, restart: showStart }); }
+  if (CAMPAIGN.includes(phase)) { body(''); mountCampaign({ onElectionOver: route, onLeave: route, restart: showStart }); }
   else if (phase === 'TRANSITION') { body('presidency'); showTransition(); }
   else if (OFFICE.includes(phase)) { body('presidency'); mountPresidency({ onLeave: route, restart: showStart, restartLabel: 'Back to the start', menuItems: gameMenu }); }
   else { body('presidency'); showEnd(); }

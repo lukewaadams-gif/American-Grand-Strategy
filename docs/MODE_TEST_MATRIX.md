@@ -23,11 +23,13 @@ Also tested on every path: removal from office (impeached and convicted), which 
 |---|---|---|---|
 | A | `ModesTest.campaignOnlyEndsOnElectionNightWonOrLost` (loss branch); `LifecycleTest.bothModesRunOnePresidencyToItsEnd`; `ElectionDayTest` | The 2028 night pending; the campaign's verdict, not a presidency's (B-07); no president | 13 Nov 2026, M8 code |
 | B, C, D | `LifecycleTest.bothModesRunOnePresidencyToItsEnd` (16 games in the build; `-Dmandate.lifecycleGames=160` for the full run) | End dates; the 2030 and 2034 midterms; no third term; every election night, the successor's included; the economy stepped once a week; the clock never going back; the verdict's ten measures | 13 Nov 2026, M8 code (16 games); the 160-game run on M7 code (docs/SECOND_TERM_VALIDATION.md) |
+| B, C, D | `ReelectionOfficeTest`; `RecordBalanceRun` (off by default) | The presidency (Congress, the West Wing, the world, opinion) moving on through the 2032 campaign, the save replaying it; the race following the record | 14 Nov 2026 |
 | B, C, D | `LifecycleTest.aCrisisDoesNotMoveTheMidterms`; `aCrisisDoesNotMoveTheReelectionCampaignOrElectionDay`; `theSuccessorsNightIsAnElectionNightAndSurvivesAReload` | The calendar kept in a crisis (B-02); an ended game takes no turns (B-03); the 2036 night (B-04, B-05) | 13 Nov 2026, M8 code |
 | E, F | `ModesTest.campaignOnlyEndsOnElectionNightWonOrLost` | Both outcomes end the game; the assessment; the verdict's grade | 13 Nov 2026, M8 code |
 | G | `ModesTest.governingOnlyOpensOnElectionNightWithTheChosenAdministration` (both parties; a toss-up and an unfavourable mood); `governingOnlyGoesOnThroughTheSamePresidencyAsTheFullGame`; `LifecycleTest` (every other game is Governing Only) | The chosen president-elect elected; the 2028 night first; exact replay; the same presidency to its end | 13 Nov 2026, M8 code |
 | H | `ModesTest.anIndividualCrisisEndsAtItsOutcomeWithAnAfterActionReport`; `anIndividualCrisisBeginsOnlyFromAGoverningPresidency`; `CrisisAccountingTest`; `TaiwanOutcomeTest` | Hormuz won, lost and ended in part; Taiwan won and lost by the president's orders, each crisis seeded and replayed; the report saved; the crisis's costs ended with it (E-06) | 14 Nov 2026 |
 | All | `ModesTest.anOlderSaveOfTheHundredDaysSliceLoadsAsTheFullGame`; `OlderSavesTest` | Saves from before this round load, play on and save again (E-08) | 13 Nov 2026, M8 code |
+| A, E, F | `WarRoomDeskTest` | Internal polls (paid, once a week, saved), the message's tone, a state's voters adding up to its poll | 14 Nov 2026 |
 | All | `DeterminismTest`; `GoldenRegressionTest` | The same seed gives the same world; the golden fingerprints | 13 Nov 2026, M8 code |
 
 **Variety in `LifecycleTest`'s games.** These vary by the game's index:
@@ -46,6 +48,8 @@ The seed is the index plus one.
 | A | `election.js` (eve2028-lose) | Run the day to the vote, the broadcast, then the campaign's end page |
 | B | `election.js` (eve2032-lose, night2032-lose) | The 2032 loss's night and the Oval Office after it; resuming after a reload |
 | C | `election.js` (night2032-successor) | A 2032 night without the president: "The White House changes hands" or "Your party keeps it" |
+| A, E, F | `warroom.js` | The war room's Message and Polls tabs and the Voters desk |
+| B, D | `office2032.js` | The war room's White House card in 2032: the record, the questions, the four rooms |
 | D | `election.js` (eve2032-win, night2036); `terms.js` | Four more years, the second term's theme, the race to succeed, the 2036 night, the verdict at the handoff |
 | E, F | `modes.js` (eve2028-campaign-win, eve2028-campaign-lose) | The night, the campaign's end (the assessment, the vote, every state), the night again, the replay |
 | G | `modes.js` | Governing Only from the title screen's setup to the 2028 night and the transition |

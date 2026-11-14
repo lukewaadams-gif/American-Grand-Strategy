@@ -1,6 +1,6 @@
 // The engine: the Java simulation compiled to JavaScript (target/preview/engine/engine.js), behind one call that
 // takes and returns JSON. Everything the interface shows comes from its view models; everything it does is a command.
-import type { CabinetView, HillView, WestWingView, WwPerson, PressView, ResidenceView, TermsView, VerdictView, SitRoomView, ForeignCountryView, HormuzView, TaiwanView, ElectionNightView, TransitionView, CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView, ScoreView } from './types.js';
+import type { CabinetView, HillView, WestWingView, WwPerson, PressView, ResidenceView, TermsView, VerdictView, SitRoomView, ForeignCountryView, HormuzView, TaiwanView, ElectionNightView, TransitionView, CampaignView, CountryView, Decision, EconomyView, NewsItem, PaperView, PresidencyView, ScoreView, VotersView } from './types.js';
 import type { NewGame, StartOptions } from '../start.js';
 
 interface EngineModule { call(request: string): string; }
@@ -52,6 +52,7 @@ export const engine = {
   economy(): EconomyView { return request<EconomyView>({ op: 'view', name: 'economy' }); },
   cabinet(): CabinetView { return request<CabinetView>({ op: 'view', name: 'cabinet' }); },
   hill(): HillView { return request<HillView>({ op: 'view', name: 'hill' }); },
+  voters(state: string): VotersView { return request<VotersView>({ op: 'view', name: 'voters', state }); },
   westWing(): WestWingView { return request<WestWingView>({ op: 'view', name: 'westwing' }); },
   westWingOptions(kind: 'staff' | 'post', index: number): { options: WwPerson[] } { return request<{ options: WwPerson[] }>({ op: 'view', name: 'westwingOptions', kind, index }); },
   press(): PressView { return request<PressView>({ op: 'view', name: 'press' }); },

@@ -6,7 +6,6 @@ What is known and not yet fixed, as of 14 November 2026. Each item names its sev
 
 | Issue | Severity | Detail |
 |---|---|---|
-| **The 2032 campaign pauses the presidency.** The re-election campaign runs the 2028 campaign's turns. The economy now moves through it (B-08), but the world, Congress, the West Wing and the president's slots wait for about 15 weeks. | Medium | DECISIONS_TO_REVIEW, "The two terms"; BUG_FIX_REPORT B-08 |
 | **Staff-run presidents often step aside in 2032.** Unanswered, the "Another four years?" question takes the chief of staff's advice, which is to step aside below 36% approval. This matters for watch mode; a player is asked. | Low | SECOND_TERM_VALIDATION, observations |
 | **Removal from office is frequent in staff-run games:** 19 of the 126 presidencies in the lifecycle run. Whether it is too frequent for a player is a balance question. | Low | SECOND_TERM_VALIDATION |
 | **A hostile Senate can reject Supreme Court nominees over and over;** one staff-run game saw ten nominations in two and a half years. | Low | Lifecycle run |
@@ -22,7 +21,6 @@ What is known and not yet fixed, as of 14 November 2026. Each item names its sev
 |---|---|---|
 | **Individual Crisis starts only in the sample presidency (September 2029).** There is no choice of administration or year, and no custom preset. | Medium | DECISIONS_TO_REVIEW, "The four games"; HORMUZ.md |
 | **The older interfaces offer only Full Game and Campaign Only.** That covers the desktop (Swing), the command line and the earlier browser slice (now at `classic/`). The plan is for the desktop to serve the browser game locally; that is not built. | Medium | MODES.md |
-| **The campaign war room's Message and Polls tabs and its Voters desk are not built.** They show, disabled, with "not in this version". | Medium | `campaign/warroom.ts` |
 | **Island Chain on its own is not saved.** | Low | ISLAND_CHAIN.md |
 | **Removal from office is not reached by any browser save.** The engine covers it. | Low | MODE_TEST_MATRIX |
 

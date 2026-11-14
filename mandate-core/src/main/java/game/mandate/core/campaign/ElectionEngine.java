@@ -122,6 +122,7 @@ public final class ElectionEngine {
         edit.accept(o);
         e.player.orders.copyFrom(o, true, true, true);
         e.player.orders.message = o.message;
+        e.player.orders.messageTone = o.messageTone;
         e.player.orders.hq = o.hq;
     }
 
@@ -195,10 +196,11 @@ public final class ElectionEngine {
         return x.environment + x.quality + x.momentum + x.campaign - p.margin2024();
     }
 
-    /** The national swing's parts, D minus R: the environment, candidate quality, campaign momentum, and news, debates and promises. */
-    record Parts(double environment, double quality, double momentum, double campaign) {}
+    /** The national swing's parts, D minus R: the environment (for a re-election, the president's record), candidate
+     *  quality, campaign momentum, and news, debates and promises. */
+    public record Parts(double environment, double quality, double momentum, double campaign) {}
 
-    Parts parts(ElectionState e, ElectoralEnvironment env) {
+    public Parts parts(ElectionState e, ElectoralEnvironment env) {
         Candidate d = e.side(Party.DEMOCRAT).candidate(), r = e.side(Party.REPUBLICAN).candidate();
         double environment;
         if (env.incumbent()) {
@@ -211,8 +213,10 @@ public final class ElectionEngine {
             environment = env.scenarioEnvironment();
         }
         double quality = p.qualityWeight() * (d.quality() - r.quality()) - p.extremityWeight() * (d.extremity() - r.extremity());
-        return new Parts(environment, quality, campaigns.momentumSwing(e.side(Party.DEMOCRAT), e.side(Party.REPUBLICAN), env.salience()),
-                e.campaignSwingForPlayer * e.player.party().sign());
+        // a re-election is a referendum: the record sets the race, and the campaign moves it less (docs/MODES.md, "The 2032 campaign")
+        double campaignWeight = env.incumbent() ? p.incCampaign() : 1.0;
+        return new Parts(environment, quality, campaignWeight * campaigns.momentumSwing(e.side(Party.DEMOCRAT), e.side(Party.REPUBLICAN), env.salience()),
+                campaignWeight * e.campaignSwingForPlayer * e.player.party().sign());
     }
 
     public double localShift(ElectionState e, String state) {
@@ -315,6 +319,9 @@ public final class ElectionEngine {
         e.opponentPledges.clear();
         e.opponentPledges.addAll(ids);
     }
+
+    /** How many promises a campaign can make and be believed. */
+    public int pledgeMax() { return p.pledgeMax(); }
 
     /** The penalty for each promise left off the agenda at the transition. */
     public double brokenPledgeMood() { return p.pledgeBrokenMood(); }
@@ -455,6 +462,39 @@ public final class ElectionEngine {
     }
 
     /** Poll crosstabs by voter group (bloc, age, sex), when the electorate model has groups. Same noise as the national poll. */
+    /** What an internal poll costs, $M: a state's, and the nation's. */
+    public static final double STATE_POLL_COST = 0.12, NATIONAL_POLL_COST = 0.3;
+
+    /**
+     * Commissions an internal poll (the War room's Polls tab): the true margin for the player, with an error of about a
+     * point, against the public polls' miss and noise. Paid from the campaign's cash; one of each a week.
+     */
+    public ElectionState.InternalPoll internalPoll(ElectionState e, ElectoralEnvironment env, String state, java.time.LocalDate date,
+                                                  DeterministicRandomManager rng) {
+        boolean nation = state.equals("US");
+        if (!nation && !calculator.expectedMargins(nationalSwing(e, env), s -> localShift(e, s)).containsKey(state))
+            throw new IllegalArgumentException("Unknown state " + state);
+        for (ElectionState.InternalPoll x : e.internalPolls)
+            if (x.state().equals(state) && !x.date().isBefore(date.minusDays(6))) throw new IllegalArgumentException("Already polled this week");
+        double cost = nation ? NATIONAL_POLL_COST : STATE_POLL_COST;
+        if (e.player.cash < cost) throw new IllegalArgumentException("Not enough cash for the poll");
+        int sign = e.player.party().sign();
+        double truth = nation ? calculator.tally(date.getYear(), expectedMargins(e, env)).popularMargin() : expectedMargins(e, env).get(state);
+        double sd = nation ? 0.8 : 1.1;
+        double margin = truth * sign + sd * rng.gaussian("campaign.internalPoll");
+        CampaignEngine.pay(e.player, cost, -1, 0);
+        ElectionState.InternalPoll poll = new ElectionState.InternalPoll(date, state, margin, sd);
+        e.internalPolls.add(poll);
+        if (e.internalPolls.size() > 60) e.internalPolls.remove(0);
+        return poll;
+    }
+
+    /** A state's voters by bloc (the War room's Voters desk), as the polls see them: their size, lean, turnout and how movable. */
+    public List<CellElectorateModel.StateGroup> stateGroups(ElectionState e, ElectoralEnvironment env, String state, double pollMargin) {
+        if (!(model instanceof CellElectorateModel cells)) return List.of();
+        return cells.stateGroups(state, nationalSwing(e, env), s -> localShift(e, s), pollMargin);
+    }
+
     public Optional<CellElectorateModel.GroupResults> crosstabs(ElectionState e, ElectoralEnvironment env, long viewSeed) {
         if (!(model instanceof CellElectorateModel cells)) return Optional.empty();
         DeterministicRandomManager view = new DeterministicRandomManager(viewSeed);

@@ -162,6 +162,42 @@ public final class CellElectorateModel implements ElectorateModel {
     }
 
     /**
+     * A state's voters by bloc (the War room's Voters desk).
+     *
+     * @param share    the bloc's share of the state's expected votes
+     * @param margin   its margin, D minus R, now; the blocs are shifted together so the state's total matches the poll
+     * @param base     its margin at the 2024 baseline (no swing), to show how the campaign is doing with it
+     * @param turnout  its base turnout
+     * @param movable  how much a point of swing moves it, relative to the state as a whole (1 = average)
+     */
+    public record StateGroup(String label, double share, double margin, double base, double turnout, double movable) {}
+
+    public List<StateGroup> stateGroups(String code, double nationalSwing, ToDoubleFunction<String> localShift, double pollMargin) {
+        int s = cells.indexOf(code), nb = cells.blocLabels.size();
+        double shift = (nationalSwing + localShift.applyAsDouble(code)) * k;
+        double[] d = new double[nb], d0 = new double[nb], t = new double[nb], turn = new double[nb], mov = new double[nb];
+        double dv = 0, tv = 0, movAll = 0;
+        for (int c = 0; c < weight[s].length; c++) {
+            double w = weight[s][c], p = logistic(logit0[s][c] + cells.elasticity[s][c] * shift), p0 = logistic(logit0[s][c]);
+            int b = cells.bloc[c];
+            d[b] += w * p; d0[b] += w * p0; t[b] += w;
+            turn[b] += w * cells.turnout[s][c];
+            double m = p * (1 - p) * cells.elasticity[s][c];
+            mov[b] += w * m; movAll += w * m;
+            dv += w * p; tv += w;
+        }
+        double offset = pollMargin - marginOf(dv, tv);
+        double avgMov = tv > 0 ? movAll / tv : 1;
+        List<StateGroup> out = new java.util.ArrayList<>();
+        for (int b = 0; b < nb; b++) {
+            if (t[b] <= 0) continue;
+            out.add(new StateGroup(cells.blocLabels.get(b), t[b] / tv, marginOf(d[b], t[b]) + offset, marginOf(d0[b], t[b]),
+                    turn[b] / t[b], avgMov > 0 ? mov[b] / t[b] / avgMov : 1));
+        }
+        return out;
+    }
+
+    /**
      * How much each age group counts in a state's swing: sum(w p(1-p) e) per age group over the state's cells, normalised.
      * A campaign term that differs by age (BG's digital persuasion) moves the state as its age-weighted average would.
      */

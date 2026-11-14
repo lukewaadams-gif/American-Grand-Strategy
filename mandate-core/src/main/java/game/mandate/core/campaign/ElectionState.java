@@ -32,6 +32,11 @@ public final class ElectionState {
     final List<String> pledges = new ArrayList<>(), opponentPledges = new ArrayList<>();
     /** The polling the player saw, week by week. */
     final List<PollPoint> polls = new ArrayList<>();
+    /** Internal polls the player's campaign commissioned (the War room's Polls tab), newest last. */
+    final List<InternalPoll> internalPolls = new ArrayList<>();
+
+    /** An internal poll: of a state (its code) or the nation ("US"), the margin for the player, and its error (one sd). */
+    public record InternalPoll(java.time.LocalDate date, String state, double margin, double sd) {}
     /** The race as it stood at the last poll, so the next poll can say what moved. */
     ElectionEngine.Snapshot lastSnapshot;
 
@@ -53,6 +58,7 @@ public final class ElectionState {
     public List<String> pledges() { return List.copyOf(pledges); }
     public List<String> opponentPledges() { return List.copyOf(opponentPledges); }
     public List<PollPoint> polls() { return List.copyOf(polls); }
+    public List<InternalPoll> internalPolls() { return List.copyOf(internalPolls); }
 
     public Map<String, Object> toJson() {
         Map<String, Object> m = new LinkedHashMap<>();
@@ -71,6 +77,11 @@ public final class ElectionState {
         } else m.put("midterm", null);
         m.put("playerOrders", playerOrders.toJson()); m.put("opponentOrders", opponentOrders.toJson()); m.put("opponentReasoning", opponentReasoning);
         m.put("pledges", new ArrayList<>(pledges)); m.put("opponentPledges", new ArrayList<>(opponentPledges));
+        if (!internalPolls.isEmpty()) {
+            List<Object> ip = new ArrayList<>();
+            for (InternalPoll x : internalPolls) ip.add(java.util.Arrays.asList(x.date().toString(), x.state(), x.margin(), x.sd()));
+            m.put("internalPolls", ip);
+        }
         List<Object> ps = new ArrayList<>();
         for (PollPoint x : polls) ps.add(x.toJson());
         m.put("polls", ps);
@@ -97,6 +108,10 @@ public final class ElectionState {
         e.opponentOrders = CampaignStrategy.Orders.fromJsonOrDefault(m.get("opponentOrders"));
         e.opponentReasoning = m.get("opponentReasoning") == null ? "" : (String) m.get("opponentReasoning");
         if (m.get("pledges") != null) for (Object o : Json.array(m.get("pledges"))) e.pledges.add((String) o);
+        if (m.get("internalPolls") != null) for (Object o : Json.array(m.get("internalPolls"))) {
+            List<Object> l = Json.array(o);
+            e.internalPolls.add(new InternalPoll(java.time.LocalDate.parse((String) l.get(0)), (String) l.get(1), Json.num(l.get(2)), Json.num(l.get(3))));
+        }
         if (m.get("opponentPledges") != null) for (Object o : Json.array(m.get("opponentPledges"))) e.opponentPledges.add((String) o);
         if (m.get("polls") != null) for (Object o : Json.array(m.get("polls"))) e.polls.add(PollPoint.fromJson(Json.object(o)));
         e.lastSnapshot = m.get("lastSnapshot") == null ? null : ElectionEngine.Snapshot.fromJson(Json.object(m.get("lastSnapshot")));

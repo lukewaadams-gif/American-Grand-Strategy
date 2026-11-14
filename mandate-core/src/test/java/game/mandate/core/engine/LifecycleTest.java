@@ -19,6 +19,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -192,9 +193,15 @@ class LifecycleTest {
 
     @Test
     void theSuccessorsNightIsAnElectionNightAndSurvivesAReload() {
-        GameEngine g = GameEngine.start(setup(0, 1));
-        int guard = 0;
-        while (!g.over() && g.electionNightPending() != 2036 && guard++ < 6000) AutoPilot.playTurn(g);
+        // the first of a few games whose president serves two terms (which games do depends on how their races go)
+        GameEngine g = null;
+        for (long seed = 1; seed <= 12 && g == null; seed++) {
+            GameEngine x = GameEngine.start(setup(0, seed));
+            int guard = 0;
+            while (!x.over() && x.electionNightPending() != 2036 && guard++ < 6000) AutoPilot.playTurn(x);
+            if (x.electionNightPending() == 2036) g = x;
+        }
+        assertNotNull(g, "a two-term presidency reaches the 2036 night");
         assertEquals(2036, g.electionNightPending(), "the 2036 night waits to be watched");
         assertEquals("succession", g.electionKind(2036));
         assertEquals(LocalDate.of(2036, 11, 4), g.electionDayOf(2036), "the first Tuesday after the first Monday of November");

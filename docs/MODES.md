@@ -30,7 +30,7 @@ Both modes run the same code from the transition on. Nothing in the presidency a
 
    Day 100 brings the **100-day report**. Reading it is optional: it is offered once, after day 100's paper, and stays in the menu. The presidency then goes on, in the same weekly turns, with the Roosevelt Room, the West Wing and the Situation Room open. There is no longer a separate hundred-days game.
 3. **Governing,** week by week, then the **2030 midterms**.
-4. **Re-election in 2032.** A weak president can draw a primary challenge; a president can also choose not to run.
+4. **Re-election in 2032.** A weak president can draw a primary challenge; a president can also choose not to run. The campaign runs from the convention, about fifteen weeks, in the war room (see "The 2032 campaign" below).
    - **Lost or not run:** the lame-duck weeks to January 20, 2033, then the verdict of history on four years.
    - **Won:** the second inauguration and a second term with its own theme and legacy goals, the lame-duck decline and the **2034 midterms**. There is no third term: the **2036 election** is for the party's successor, with primaries, the president's endorsement and the campaign from the White House. The game ends on January 20, 2037, with the verdict of history on eight years.
    - **Removed from office** (impeached and convicted): the game ends that day, with the verdict on the years served.
@@ -40,9 +40,29 @@ Both modes run the same code from the transition on. Nothing in the presidency a
    - 2036, the successor's.
 
    Its last word is the player's ("Four more years") or the party's ("Your party keeps the White House"). Weekly turns report a Tuesday election with the week that holds it, on the Monday after. The night itself is dated on Election Day.
-6. **A crisis never moves the calendar.** The midterms, the re-election campaign, Election Day, the second oath and the handoff keep their dates during a crisis's days and hours. The rest of the presidency's week (Congress, the West Wing, the president's slots) pauses until it ends.
+6. **A crisis never moves the calendar.** The midterms, the re-election campaign, Election Day, the second oath and the handoff keep their dates during a crisis's days and hours. The rest of the presidency's week (Congress, the West Wing, the president's slots) pauses until it ends. The re-election campaign does not pause the presidency: see "The 2032 campaign".
 
 Saves carry the whole state across the terms: the economy, the budget and the debt, Congress, the appointments, the laws and policies, diplomacy and the military's inventories.
+
+## The 2032 campaign
+
+The president runs for re-election while still governing (14 November 2026).
+- **The war room is the screen.** The president's own time goes to the campaign: the schedule, the money, the field.
+- **The presidency goes on underneath, every campaign week.** In the daily final stretch, it moves each Monday for the week just past (`GameEngine.campaignOffice`).
+  - Congress: the Hill's bills, votes and members.
+  - The West Wing: the staff, the press and the developing stories.
+  - The world: hot spots, alliances, trade and war.
+  - The terms of office, opinion and approval, the military's month, and the era's news.
+- **Their questions interrupt the campaign.** The war room's **White House** card shows:
+  - the record: approval, growth and unemployment;
+  - what the record and the campaign are each worth in the race;
+  - the questions waiting. Each has a deadline: left, the staff answer it when it is due. "Decide later" moves on to the next;
+  - doors to Congress, the West Wing, the Situation Room and the press room, which open over the war room.
+- **A crisis that begins mid-campaign** is fought from the Oval Office, as in office. The war room waits for it, and the calendar keeps its dates.
+- **The race is a referendum.** Approval and the economy set it, and the campaign moves it a few points:
+  - the campaign's momentum, and its news, debates and promises, count 0.6 of what they count in an open race (`election.incumbent.campaign`);
+  - in 24 races (`RecordBalanceRun`), the record at the campaign's start explains 69% of the result (r² = 0.69), and the campaign and the night move it by about ±3.8 points (one standard deviation).
+- **The 2036 race to succeed the president is unchanged.** It runs in the background, from the White House.
 
 ## Governing Only's start
 

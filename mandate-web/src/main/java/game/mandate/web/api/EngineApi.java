@@ -68,6 +68,7 @@ public final class EngineApi {
             case "islandChain" -> TaiwanViews.islandChain(req);
             case "view" -> switch ((String) req.get("name")) {
                 case "campaign" -> campaign(need());
+                case "voters" -> voters(need(), (String) req.get("state"));
                 case "decisions" -> ok("decisions", decisions(need()));
                 case "presidency" -> presidency(need());
                 case "paper" -> PresidencyViews.paper(need());
@@ -123,6 +124,29 @@ public final class EngineApi {
         v.put("pledges", g.election().pledges().stream().map(id -> g.bill(id).name()).toList());
         v.put("opponentPledges", g.election().opponentPledges().stream().map(id -> g.bill(id).name()).toList());
         v.put("pendingDecisions", g.pendingEvents().size() + (g.debateThisWeek().isPresent() && g.election().pendingPosture() == null ? 1 : 0));
+        v.put("crisis", g.taiwanActive() || g.hormuzActive() || g.state().military().operationActive());
+        // what moves the race, for the player (positive helps you): the record (or the year's mood), the candidates,
+        // the campaign's momentum, and its news, debates and promises
+        if (g.phase() == Phase.GENERAL_CAMPAIGN_2028 || g.phase() == Phase.REELECTION_CAMPAIGN_2032) {
+            var parts = g.raceParts();
+            Map<String, Object> race = new LinkedHashMap<>();
+            race.put("record", r2(parts.environment() * sign)); race.put("candidates", r2(parts.quality() * sign));
+            race.put("momentum", r2(parts.momentum() * sign)); race.put("campaign", r2(parts.campaign() * sign));
+            race.put("incumbent", g.phase() == Phase.REELECTION_CAMPAIGN_2032);
+            v.put("race", race);
+        }
+        // running for re-election while in office: the record, and the White House's questions (docs/MODES.md)
+        if (g.phase() == Phase.REELECTION_CAMPAIGN_2032 && g.inOffice()) {
+            Map<String, Object> office = new LinkedHashMap<>();
+            office.put("approval", r2(g.approval()));
+            office.put("growth", r2(g.state().economy().growth()));
+            office.put("unemployment", r2(g.state().economy().unemployment()));
+            office.put("inflation", r2(g.state().economy().inflation()));
+            int questions = 0;
+            for (List<Object> room : List.of(HillViews.decisions(g), WestWingViews.decisions(g), TermsViews.decisions(g), ForeignViews.decisions(g))) questions += room.size();
+            office.put("questions", questions);
+            v.put("office", office);
+        }
 
         List<PollPoint> polls = g.polls();
         List<Object> history = new ArrayList<>();
@@ -166,6 +190,8 @@ public final class EngineApi {
             v.put("field", field(g));
             v.put("money", moneyView(g));
             v.put("ads", adsView(g));
+            v.put("message", messageView(g));
+            v.put("pollsDesk", pollsDesk(g));
         }
         v.put("news", news(g, 0));
         // the race being run, or after the vote the latest presidential election (2032's once it is held)
@@ -624,6 +650,110 @@ public final class EngineApi {
         studio.put("produceCost", game.mandate.core.campaign.AirWar.PRODUCE_COST); studio.put("testCost", game.mandate.core.campaign.AirWar.TEST_COST);
         m.put("studio", studio);
         return m;
+    }
+
+    // ---- the war room's Message and Polls tabs, and the Voters desk (docs/CAMPAIGN_WAR_ROOM.md) ----------------------
+
+    /** The national message (its issue and tone, the issues as voters weigh them) and the plans and promises. */
+    static Map<String, Object> messageView(GameEngine g) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        var side = g.election().player();
+        var orders = side.orders();
+        var party = g.player().party();
+        m.put("issue", orders.message() == null ? null : orders.message().name());
+        m.put("staffChooses", g.election().playerOrders().message() == null);
+        m.put("tone", orders.messageTone().name());
+        m.put("weeksOnMessage", side.weeksOnMessage());
+        m.put("lastMessage", side.lastMessage() == null ? null : side.lastMessage().name());
+        Map<game.mandate.core.campaign.Issue, Double> sal = g.salience();
+        double total = 0;
+        for (var i : game.mandate.core.campaign.Issue.values()) total += sal.getOrDefault(i, i.baseSalience());
+        List<Object> issues = new ArrayList<>();
+        for (var i : game.mandate.core.campaign.Issue.values()) {
+            Map<String, Object> x = new LinkedHashMap<>();
+            x.put("id", i.name()); x.put("label", i.label());
+            x.put("weight", r3(sal.getOrDefault(i, i.baseSalience()) / Math.max(1e-9, total)));   // the share of voters' attention
+            x.put("advantage", r2(i.advantageFor(party)));                                         // your party's edge on it, points
+            issues.add(x);
+        }
+        m.put("issues", issues);
+        List<Object> tones = new ArrayList<>();
+        for (var t : game.mandate.core.campaign.AirWar.Tone.values()) {
+            Map<String, Object> x = new LinkedHashMap<>();
+            x.put("id", t.name());
+            x.put("label", switch (t) { case POSITIVE -> "Positive"; case CONTRAST -> "Contrast"; case NEGATIVE -> "Attack"; });
+            x.put("detail", switch (t) {
+                case POSITIVE -> "Your vision. The message works a fifth less hard, but it lifts your own side's enthusiasm, and it cannot backfire.";
+                case CONTRAST -> "You against them, side by side: the message at full strength, with no special risk.";
+                case NEGATIVE -> "Define your opponent: the message works almost a third harder and dampens their side, but about one week in seven it backfires and the week is lost.";
+            });
+            tones.add(x);
+        }
+        m.put("tones", tones);
+        // plans and promises: in 2028, a plan unveiled is a promise the agenda must keep
+        boolean first = g.phase() == Phase.GENERAL_CAMPAIGN_2028;
+        m.put("canPledge", first);
+        m.put("pledgeMax", g.pledgeMax());
+        List<Object> plans = new ArrayList<>();
+        for (var b : g.bills().all()) {
+            if (!b.availableTo(party)) continue;
+            Map<String, Object> x = new LinkedHashMap<>();
+            x.put("id", b.id()); x.put("name", b.name()); x.put("issue", b.issue().label());
+            x.put("appeal", r2(b.publicAppeal())); x.put("costBn", r2(b.annualCostBn()));
+            x.put("pledged", g.election().pledges().contains(b.id()));
+            plans.add(x);
+        }
+        m.put("plans", plans);
+        return m;
+    }
+
+    /** The polling desk: commissioned internal polls, the groups, and how the issues stand with voters. */
+    static Map<String, Object> pollsDesk(GameEngine g) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("stateCost", game.mandate.core.campaign.ElectionEngine.STATE_POLL_COST);
+        m.put("nationalCost", game.mandate.core.campaign.ElectionEngine.NATIONAL_POLL_COST);
+        List<Object> internal = new ArrayList<>();
+        var ip = g.election().internalPolls();
+        for (int i = ip.size() - 1; i >= 0 && internal.size() < 12; i--) {
+            var x = ip.get(i);
+            Map<String, Object> p = new LinkedHashMap<>();
+            p.put("date", x.date().toString()); p.put("state", x.state()); p.put("margin", r2(x.margin())); p.put("sd", r2(x.sd()));
+            p.put("fresh", !x.date().isBefore(g.date().minusDays(6)));
+            internal.add(p);
+        }
+        m.put("internal", internal);
+        int sign = g.player().party().sign();
+        g.crosstabs().ifPresent(c -> {
+            Map<String, Object> groups = new LinkedHashMap<>();
+            for (var e : List.of(java.util.Map.entry("By group", c.byBloc()), java.util.Map.entry("By age", c.byAge()), java.util.Map.entry("By sex", c.bySex()))) {
+                List<Object> rows = new ArrayList<>();
+                for (var gm : e.getValue()) {
+                    Map<String, Object> r = new LinkedHashMap<>();
+                    r.put("label", gm.label()); r.put("margin", r2(gm.margin() * sign)); r.put("share", r3(gm.share()));
+                    rows.add(r);
+                }
+                groups.put(e.getKey(), rows);
+            }
+            m.put("groups", groups);
+        });
+        return m;
+    }
+
+    /** A state's voters by group (the Voters desk), consistent with this week's poll there. */
+    static Map<String, Object> voters(GameEngine g, String state) {
+        Map<String, Object> v = ok();
+        int sign = g.player().party().sign();
+        v.put("state", state);
+        List<Object> rows = new ArrayList<>();
+        for (var x : g.stateGroups(state)) {
+            Map<String, Object> r = new LinkedHashMap<>();
+            r.put("label", x.label()); r.put("share", r3(x.share()));
+            r.put("margin", r2(x.margin() * sign)); r.put("base", r2(x.base() * sign));
+            r.put("turnout", r3(x.turnout())); r.put("movable", r2(x.movable()));
+            rows.add(r);
+        }
+        v.put("groups", rows);
+        return v;
     }
 
     /** What waits for an answer before the turn can end: events and the week's debate, each option with its command. */

@@ -14,6 +14,8 @@ export interface WestWingActions {
   decide(): void;
   cabinetRoom(): void;
   back(): void;
+  /** The exit button's words (the Oval Office's by default; the war room says its own). */
+  backLabel?: string;
   issues: { id: string; label: string }[];
 }
 
@@ -54,7 +56,7 @@ export function westWingRoom(act: WestWingActions, first: Tab = 'Staff'): HTMLEl
         h('p', { class: 'muted' }, 'Week of ' + day(v.date, true))),
       h('div', { class: 'cab-buttons' },
         h('button', { class: 'btn', type: 'button', onclick: act.cabinetRoom }, 'The Cabinet Room: the policy table'),
-        h('button', { class: 'btn primary', type: 'button', onclick: act.back }, 'Back to the Oval Office')));
+        h('button', { class: 'btn primary', type: 'button', onclick: act.back }, act.backLabel ?? 'Back to the Oval Office')));
     if (!v.staff) { root.replaceChildren(top, h('p', null, v.reason ?? '')); return; }
     const nav = h('nav', { class: 'cab-tabs', 'aria-label': 'The West Wing' }, ...TABS.map(t =>
       h('button', { class: 'btn small toggle' + (t === tab ? ' on' : ''), type: 'button', 'aria-pressed': String(t === tab), onclick: () => { tab = t; draw(); } }, t)));

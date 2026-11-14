@@ -22,7 +22,7 @@ import java.util.Map;
 final class TermsViews {
     private TermsViews() {}
 
-    static boolean open(GameEngine g) { return g.terms().isPresent() && g.phase() == Phase.GOVERNING; }
+    static boolean open(GameEngine g) { return g.terms().isPresent() && g.inOffice(); }
 
     /** The questions about the term on the desk. */
     static List<Object> decisions(GameEngine g) {

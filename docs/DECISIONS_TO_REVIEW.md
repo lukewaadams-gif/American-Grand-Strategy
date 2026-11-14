@@ -66,7 +66,7 @@ Choices made while building overnight that we had not discussed. Each was made i
 9. **The lame-duck decline** is new (Resolute Desk has only the end-of-term week rule): it weakens the president's pull on bills, more after the second term's midterms, fully once a successor is chosen.
 10. **The verdict replaces the old legacy score** for any game with a presidency; a game lost in 2028 keeps the campaign's score. The historians' ranking is the C-SPAN 2021 survey Resolute Desk uses, real presidents as a reference table only.
 11. **The weeks between Election Day and the handoff** start on the Monday after the election and end on January 20 itself.
-12. **The 2032 re-election campaign still pauses the presidency's weekly systems** (Congress, the West Wing, the economy) for its fifteen weeks, as before this milestone; running them alongside the campaign is left for the final audits.
+12. **The 2032 re-election campaign once paused the presidency's weekly systems** for its fifteen weeks. Since 14 November 2026 they run alongside it: see "The 2032 campaign: governing while running" below.
 
 ## Milestone 8: the world and the Situation Room
 
@@ -250,3 +250,29 @@ Docs/BALANCE_TAIWAN.md has the detail and the measurements.
 5. **Beijing's resolve varies by ±9 points** of its go/no-go threshold. It is 5 points bolder in the pessimistic case and 3 points less bold in the optimistic case.
 6. **The president's staff starts its preparations one warning level later** than a computer-run America. The major preparations are the president's to order.
 7. **Individual Crisis draws a new seed each time** it is started from the start screen.
+
+## The 2032 campaign: governing while running (14 November 2026)
+
+Docs/MODES.md, "The 2032 campaign", has the detail.
+
+1. **The war room stays the screen for the fifteen weeks from the convention.** Congress, the West Wing, the world, the terms of office and opinion move on each campaign week. In the daily final stretch, they move each Monday.
+2. **The president's own weekly slots are the campaign's.** The Oval Office's calendar is not played during the campaign.
+3. **The White House's questions are not blocking.** The staff answers them at their deadlines, as in office (E-04). Only events and debates must be answered before a turn runs.
+4. **The rooms open over the war room:** Congress, the West Wing, the Situation Room and the press room. The Cabinet Room waits for the Oval Office.
+5. **A crisis that begins mid-campaign takes the screen to the Oval Office** until it ends.
+6. **A re-election is a referendum.** The campaign's momentum and its news, debates and promises count 0.6 (`election.incumbent.campaign`). The record's weights are unchanged (approval 0.55 a point, and growth, inflation and unemployment as before).
+7. **The 2036 race to succeed the president is unchanged,** as asked.
+
+## The war room's Message and Polls tabs and the Voters desk (14 November 2026)
+
+Docs/CAMPAIGN_WAR_ROOM.md has the detail.
+
+1. **The message's tone:**
+   - positive is 0.8 of the message's effect and lifts your own side's enthusiasm;
+   - contrast is the baseline;
+   - an attack is 1.3, dampens their side, and backfires about one week in seven, when the week's message counts against you twice over.
+
+   The opponent stays on contrast.
+2. **A plan unveiled is a campaign promise:** one mechanism, the existing pledges, up to three. Promises are made in 2028 only. In 2032 the tab shows them, since a re-election runs on the record.
+3. **Internal polls cost $120,000 a state and $300,000 for the nation,** once a week each, with an error of about a point.
+4. **The Voters desk shows a state's blocs shifted to match its public poll.** It reveals nothing the polls do not.

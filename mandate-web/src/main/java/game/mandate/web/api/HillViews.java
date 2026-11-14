@@ -29,7 +29,7 @@ final class HillViews {
 
     static final String[] PAY_FOR = {"Borrow", "Tax the wealthy", "Cut elsewhere"};
 
-    static boolean open(GameEngine g) { return g.hill().isPresent() && g.phase() == Phase.GOVERNING; }
+    static boolean open(GameEngine g) { return g.hill().isPresent() && g.inOffice(); }
 
     static String party(Party p) { return p == null ? null : p.code(); }
 

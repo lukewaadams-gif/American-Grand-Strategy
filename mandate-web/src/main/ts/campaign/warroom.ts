@@ -2,7 +2,7 @@
 // schedule first), the map in the middle with the race under it, and on the right the state desk (a state picked on the
 // map) or the national picture. Everything on it comes from the engine's campaign view, which holds only what the
 // player can see (this week's polls, never the true margins).
-import type { CampaignView, NewsItem, StateView } from '../core/types.js';
+import type { CampaignView, NewsItem, StateView, VotersView } from '../core/types.js';
 import { countTo, h, reducedMotion } from '../core/dom.js';
 import { chance, day, margin, money, signed } from '../core/format.js';
 import { openMenu } from '../core/menu.js';
@@ -12,9 +12,12 @@ import { pathTo270, raceTo270, trendChart } from './charts.js';
 import { quickVisit, scheduleTab, type ScheduleActions } from './schedule.js';
 import { fieldDesk, fieldTab, type FieldActions } from './field.js';
 import { adsDesk, moneyTab, type MoneyActions } from './money.js';
+import { messageTab } from './message.js';
+import { pollsTab } from './polls.js';
+import { votersDesk } from './voters.js';
 
 export type TabId = 'schedule' | 'money' | 'field' | 'message' | 'polls' | 'wire';
-export type DeskTab = 'overview' | 'ads' | 'field';
+export type DeskTab = 'overview' | 'ads' | 'field' | 'voters';
 /** BG's "Week in review": what the turn just run did, shown over the map until dismissed. */
 export interface Digest { title: string; lines: string[]; }
 export interface WarRoomState { layer: LayerId; selected: string | null; tab: TabId; picking: number | null; desk: DeskTab; digest: Digest | null; }
@@ -31,11 +34,19 @@ export interface WarRoomActions {
   setDesk(tab: DeskTab): void;
   studio(): void;
   dismissDigest(): void;
+  /** Unveil a plan, a campaign promise (Command.Pledge); false if refused. */
+  pledge?(billId: string): boolean;
+  /** A state's voters by group, for the Voters desk. */
+  voters?(code: string): VotersView | null;
+  /** Running for re-election: the White House's questions, and its rooms. */
+  openQuestions?(): void;
+  openRoom?(room: OfficeRoom): void;
 }
+export type OfficeRoom = 'congress' | 'westwing' | 'sitroom' | 'press';
 
 const TABS: { id: TabId; label: string; ready: boolean }[] = [
   { id: 'schedule', label: 'Schedule', ready: true }, { id: 'money', label: 'Money', ready: true }, { id: 'field', label: 'Field', ready: true },
-  { id: 'message', label: 'Message', ready: false }, { id: 'polls', label: 'Polls', ready: false }, { id: 'wire', label: 'Wire', ready: true },
+  { id: 'message', label: 'Message', ready: true }, { id: 'polls', label: 'Polls', ready: true }, { id: 'wire', label: 'Wire', ready: true },
 ];
 
 /** Figures shown last time, so a new week's numbers count from the old ones and the map's colours cross-fade. */
@@ -91,6 +102,8 @@ export function warRoom(v: CampaignView, st: WarRoomState, act: WarRoomActions):
   const fieldAct: FieldActions = { order: act.order, open: c => { act.setDesk('field'); act.select(c); } };
   const moneyAct: MoneyActions = { order: act.order, studio: act.studio };
   const panel = st.tab === 'wire' ? wireList(v) : st.tab === 'field' && v.field ? fieldTab(v, fieldAct)
+    : st.tab === 'message' && v.message ? messageTab(v, { order: act.order, pledge: id => act.pledge?.(id) ?? false })
+    : st.tab === 'polls' && v.pollsDesk ? pollsTab(v, { order: act.order })
     : st.tab === 'money' && v.money ? moneyTab(v, moneyAct) : scheduleTab(v, sched);
   const left = h('aside', { class: 'cw-left' }, tabs,
     h('div', { class: 'side-panel', id: 'tab-panel', role: 'tabpanel', 'aria-labelledby': 'tab-' + st.tab, tabindex: 0 }, panel));
@@ -137,7 +150,7 @@ export function warRoom(v: CampaignView, st: WarRoomState, act: WarRoomActions):
 
   // ---- the right: a state, or the nation ---------------------------------------------------------------------
   const right = h('aside', { class: 'cw-right', 'aria-label': selected ? `${selected.name} in detail` : 'The national picture' },
-    ...(selected ? [stateDesk(selected, v, st, act, sched, fieldAct, moneyAct)] : national(v, last)));
+    ...(selected ? [stateDesk(selected, v, st, act, sched, fieldAct, moneyAct)] : [...(v.office ? [whiteHouse(v, act)] : []), ...national(v, last)]));
 
   return h('div', { class: 'cw', 'data-world': 'campaign' },
     bar,
@@ -158,6 +171,34 @@ function placePicked(v: CampaignView, slot: number, code: string, act: WarRoomAc
   if (!s) return;
   if (act.order({ type: 'Slot', slot, activity: s.activity, state: code, param: s.param }))
     act.toast(`Moved to ${v.states.find(x => x.code === code)?.name ?? code}.`);
+}
+
+/**
+ * Running for re-election while in office (docs/MODES.md, "The 2032 campaign"): the record the race is a referendum on,
+ * what it and the campaign are worth, the White House's questions waiting, and its rooms.
+ */
+function whiteHouse(v: CampaignView, act: WarRoomActions): HTMLElement {
+  const o = v.office!, r = v.race;
+  const pts = (x: number) => `${x >= 0 ? '+' : '\u2212'}${Math.abs(x).toFixed(1)}`;
+  const campaign = r ? r.momentum + r.campaign : 0;
+  const door = (room: OfficeRoom, label: string, hint: string) => h('button', { class: 'btn small', type: 'button', title: hint,
+    onclick: () => act.openRoom?.(room) }, label);
+  return h('section', { class: 'card white-house', 'aria-label': 'The White House' },
+    h('h2', null, 'The White House'),
+    h('p', { class: 'muted small' }, 'You are still president. Congress, the West Wing and the world go on through the campaign, and their questions come here.'),
+    h('div', { class: 'state-figs' }, fig('Approval', `${Math.round(o.approval)}%`), fig('Growth', `${o.growth.toFixed(1)}%`),
+      fig('Unemployment', `${o.unemployment.toFixed(1)}%`)),
+    r ? h('p', { class: 'wh-weights' }, h('strong', null, 'Your record: '), `${pts(r.record)} points for you`, h('span', { class: 'faint' }, '  ·  '),
+      h('strong', null, 'The campaign: '), `${pts(campaign)}`) : null,
+    h('p', { class: 'hint-line' }, 'A re-election is a referendum: approval and the economy set the race, and the campaign moves it a few points.'),
+    o.questions > 0 ? h('button', { class: 'btn primary small wh-questions', type: 'button', onclick: () => act.openQuestions?.(),
+      title: 'Each has a deadline; left, the staff answer it when it is due' }, `Questions from the White House (${o.questions})`)
+      : h('p', { class: 'faint small' }, 'Nothing waiting on the desk.'),
+    h('div', { class: 'send-row wh-rooms' },
+      door('congress', 'Congress', 'The Roosevelt Room: the Hill, bills and members'),
+      door('westwing', 'The West Wing', 'The staff, the cabinet, orders and rules'),
+      door('sitroom', 'The Situation Room', 'The world, alliances, trade and wars'),
+      door('press', 'The press room', 'The press, speeches and your party')));
 }
 
 function national(v: CampaignView, last: CampaignView['polls'][number] | undefined): HTMLElement[] {
@@ -191,12 +232,17 @@ function stateDesk(x: StateView, v: CampaignView, st: WarRoomState, act: WarRoom
     'aria-pressed': id === st.desk ? 'true' : 'false', 'aria-disabled': id ? null : 'true', title: id ? null : `${label}: not in this version`,
     onclick: () => { if (id) act.setDesk(id); } }, label);
   const deskTabs = h('div', { class: 'desk-tabs', role: 'group', 'aria-label': 'State desk' },
-    deskTab('overview', 'Overview'), deskTab(v.ads ? 'ads' : null, 'Ads'), deskTab(v.field ? 'field' : null, 'Field'), deskTab(null, 'Voters'));
+    deskTab('overview', 'Overview'), deskTab(v.ads ? 'ads' : null, 'Ads'), deskTab(v.field ? 'field' : null, 'Field'), deskTab(act.voters ? 'voters' : null, 'Voters'));
   const head = h('div', { class: 'state-head' },
     h('div', null, h('h3', null, x.name), h('span', { class: 'faint' }, `${x.ev} electoral votes · 2024: ${margin(x.baseline)}`)),
     h('button', { class: 'btn quiet close', type: 'button', onclick: () => act.select(null), 'aria-label': `Close ${x.name}`, title: 'Close (Esc)' }, '×'));
   if (st.desk === 'field' && v.field) return h('section', { class: 'card state-desk', 'aria-label': `${x.name}: field` }, head, deskTabs, ...fieldDesk(x.code, v, fieldAct));
   if (st.desk === 'ads' && v.ads) return h('section', { class: 'card state-desk', 'aria-label': `${x.name}: ads` }, head, deskTabs, ...adsDesk(x.code, v, moneyAct));
+  if (st.desk === 'voters' && act.voters) {
+    const vv = act.voters(x.code);
+    return h('section', { class: 'card state-desk', 'aria-label': `${x.name}: voters` }, head, deskTabs,
+      ...(vv && vv.groups.length ? votersDesk(vv) : [h('p', { class: 'faint' }, 'No breakdown of this state’s voters.')]));
+  }
   const send = quickVisit(v, x.code, sched);
   return h('section', { class: 'card state-desk', 'aria-label': `${x.name} in detail` },
     head,

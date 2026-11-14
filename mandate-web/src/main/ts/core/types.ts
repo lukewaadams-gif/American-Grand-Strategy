@@ -25,10 +25,37 @@ export interface StateView {
   adsMe: number; adsThem: number; fieldMe: number; fieldThem: number; visitsMe: number; visitsThem: number;
 }
 
+export interface MessageDesk {
+  issue: string | null; staffChooses: boolean; tone: 'POSITIVE' | 'CONTRAST' | 'NEGATIVE'; weeksOnMessage: number; lastMessage: string | null;
+  /** weight: the share of voters' attention; advantage: your party's edge on the issue, in points. */
+  issues: { id: string; label: string; weight: number; advantage: number }[];
+  tones: { id: 'POSITIVE' | 'CONTRAST' | 'NEGATIVE'; label: string; detail: string }[];
+  canPledge: boolean; pledgeMax: number;
+  plans: { id: string; name: string; issue: string; appeal: number; costBn: number; pledged: boolean }[];
+}
+export interface PollsDesk {
+  stateCost: number; nationalCost: number;
+  internal: { date: string; state: string; margin: number; sd: number; fresh: boolean }[];
+  /** Margins for the player (positive leads) and shares of the electorate, by group, age and sex. */
+  groups?: Record<string, { label: string; margin: number; share: number }[]>;
+}
+/** A state's voters by group (the Voters desk): margins for the player now and at the 2024 baseline. */
+export interface VotersView { state: string; groups: { label: string; share: number; margin: number; base: number; turnout: number; movable: number }[] }
+
 export interface CampaignView {
   phase: string; date: string; dateLabel: string; electionDay: string; weeksLeft: number; week: number; weeks: number;
   debate: string | null; player: Side; opponent: Side; opponentPlan: string; opponentReasoning: string;
   pledges: string[]; opponentPledges: string[]; pendingDecisions: number;
+  /** A crisis or a war is being fought (the war room waits for it). */
+  crisis?: boolean;
+  /** What moves the race, in points of margin for the player: the record (or the year's mood), the candidates, momentum, and news, debates and promises. */
+  race?: { record: number; candidates: number; momentum: number; campaign: number; incumbent: boolean };
+  /** Running for re-election while in office: the record, and the White House's questions waiting. */
+  office?: { approval: number; growth: number; unemployment: number; inflation: number; questions: number };
+  /** The Message tab: the national message, its tone, and the plans and promises. */
+  message?: MessageDesk;
+  /** The Polls tab: internal polls and the groups. */
+  pollsDesk?: PollsDesk;
   polls: PollWeek[]; errorSd: number; states: StateView[]; tipping: string | null; news: NewsItem[];
   /** Present while a campaign is running. */
   turn?: TurnInfo; staff?: Staff; trail?: Trail; schedule?: Slot[]; activities?: ActivityInfo[]; field?: Field; money?: Money; ads?: Ads;

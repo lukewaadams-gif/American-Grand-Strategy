@@ -75,7 +75,10 @@ The world is **real people** by default: the candidates, senators, congressional
    - the headquarters;
    - the candidate's schedule on the map;
    - the ground game;
-   - the money and the air war: TV buys, digital, and an ad studio.
+   - the money and the air war: TV buys, digital, and an ad studio;
+   - the message: the week's issue and its tone (positive, contrast or attack), and plans unveiled as campaign promises;
+   - the polls: the trend, internal polls you commission, the closest states, and the groups;
+   - each state's voters by group: who they are, how they lean, who turns out and who can be moved.
 
    You play weekly turns, then the final stretch day by day. The polls run on a calibrated 96-cell electorate, with correlated error and a hidden polling miss. The opponent adapts and tells you why.
 2. **Election night, and the transition office.** Shortlists, interviews and background checks for the cabinet and the staff, and the agenda you take to Congress.
@@ -108,6 +111,7 @@ The world is **real people** by default: the candidates, senators, congressional
      You set the rules of engagement and the theatre directives; the staff runs the units.
    - **Their fallout** reaches the whole presidency: the dead, approval, the economy and markets, the deficit, the allies, and the record.
 6. **The midterms, the 2032 campaign, and a second term.**
+   - **The 2032 campaign** runs in the war room while you govern. Congress, the West Wing and the world go on, and their questions come to the war room's White House card. The race is a referendum on your record: approval and the economy set it, and the campaign moves it a few points.
    - **A lost 2032:** the lame-duck weeks to January 20, 2033.
    - **A second term** has its own theme and legacy goals, staff turnover at the oath, the lame-duck decline and the 2034 midterms. It ends with the race to succeed you in 2036, with its own election night, and the handoff on January 20, 2037.
    - **No third term.**
@@ -239,6 +243,7 @@ docs/           the port plans, the crises, the economy's model, decisions to re
 | [docs/PRESIDENCY_PORT.md](docs/PRESIDENCY_PORT.md) | The presidency: Resolute Desk's systems, the milestones and what each built |
 | [docs/CAMPAIGN_PORT.md](docs/CAMPAIGN_PORT.md) | The campaign: Battleground 2028's war room, ported |
 | [docs/CRISES.md](docs/CRISES.md), [docs/HORMUZ.md](docs/HORMUZ.md), [docs/ISLAND_CHAIN.md](docs/ISLAND_CHAIN.md) | The two in-depth crises: design, calibration and how they reach the presidency |
+| [docs/CAMPAIGN_WAR_ROOM.md](docs/CAMPAIGN_WAR_ROOM.md) | The war room's tabs and desks: the message and its tone, plans and promises, internal polls, voters by group, and the White House card in 2032 |
 | [docs/BALANCE_TAIWAN.md](docs/BALANCE_TAIWAN.md) | How the Taiwan crisis turns on the president's orders, and the runs that measured it |
 | [docs/ECONOMY_MODEL.md](docs/ECONOMY_MODEL.md) | The structural economy and the policy table |
 | [docs/MODES.md](docs/MODES.md) | The four games on one engine: Full Game, Campaign Only, Governing Only, Individual Crisis |

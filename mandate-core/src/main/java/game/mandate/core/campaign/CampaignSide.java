@@ -236,6 +236,7 @@ public final class CampaignSide {
         CampaignOrders o = CampaignOrders.fromJson(Json.object(m.get("orders")), geo);
         s.orders.copyFrom(o, true, true, true);
         s.orders.message = o.message;
+        s.orders.messageTone = o.messageTone;
         s.orders.hq = o.hq;
         for (Object a : Json.array(m.get("ads"))) s.ads.add(Ad.fromJson(Json.object(a)));
         s.airing = Json.integer(m.get("airing"));

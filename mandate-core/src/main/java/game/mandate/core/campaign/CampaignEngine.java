@@ -1,5 +1,7 @@
 package game.mandate.core.campaign;
 
+import game.mandate.core.campaign.AirWar.Tone;
+
 import game.mandate.core.campaign.AirWar.Ad;
 import game.mandate.core.campaign.AirWar.DigitalMessage;
 import game.mandate.core.campaign.AirWar.Network;
@@ -135,7 +137,19 @@ public final class CampaignEngine {
         if (t.day() <= 0) side.setMessage(msg);
         double consistency = Math.min(p.consistencyCap(), 1.0 + p.consistencyStep() * (side.weeksOnMessage() - 1));
         double sal = t.salience().getOrDefault(msg, msg.baseSalience()) / Math.max(1e-9, total);
-        side.momentum += F * (p.messageWeight() * sal * msg.advantageFor(side.party()) * consistency + p.charismaMomentum() * (side.candidate().charisma() - 5.5));
+        double message = p.messageWeight() * sal * msg.advantageFor(side.party()) * consistency;
+        Tone tone = o.messageTone();
+        // the national message's tone (docs/CAMPAIGN_WAR_ROOM.md, "Message"): contrast is the baseline
+        if (tone == Tone.POSITIVE) { message *= 0.8; side.enthusiasm = Math.min(0.9, side.enthusiasm + 0.004 * F); }
+        else if (tone == Tone.NEGATIVE) {
+            message *= 1.3;
+            other.enthusiasm = Math.max(0.1, other.enthusiasm - 0.004 * F);
+            if (rng.uniform("campaign.tone") < 0.15 * F) {
+                message = -2 * Math.abs(message) - 0.05;
+                if (human) news.add("Your attacks on " + other.candidate().name() + " backfire: the coverage turns on the tone, and the message is lost this week.");
+            }
+        }
+        side.momentum += F * (message + p.charismaMomentum() * (side.candidate().charisma() - 5.5));
         // books
         double s4 = dk(0.75, F);
         double vol = 0, dr = 0;

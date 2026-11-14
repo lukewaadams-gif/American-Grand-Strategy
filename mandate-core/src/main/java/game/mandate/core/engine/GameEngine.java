@@ -494,6 +494,8 @@ public final class GameEngine implements WorldView {
         boolean weeklyTurn = w.clock.mode() == Granularity.WEEKLY;
         w.clock.advance();
         campaignEconomy(turnFrom, weeklyTurn);
+        campaignOffice(turnFrom, weeklyTurn);
+        if (over()) return;                 // removed from office
         LocalDate electionDay = electionDay();
         if (w.clock.mode() == Granularity.WEEKLY && !date().isBefore(dailyStart(electionDay))) {
             w.clock.setMode(Granularity.DAILY);
@@ -641,6 +643,14 @@ public final class GameEngine implements WorldView {
                 var brief = e.playerOrders();
                 electionEngine.setOrders(e, true, new game.mandate.core.campaign.CampaignStrategy.Orders(brief.strategy(), brief.rate(), o.issue()), "");
                 electionEngine.editOrders(e, x -> x.message(o.issue() != null ? o.issue() : CampaignAi.bestMessage(this, player())));
+            }
+            case game.mandate.core.campaign.CampaignOrder.MessageTone o -> electionEngine.editOrders(e, x -> x.messageTone(o.tone()));
+            case game.mandate.core.campaign.CampaignOrder.InternalPoll o -> {
+                try {
+                    var poll = electionEngine.internalPoll(e, environment(), o.state(), date(), rng);
+                    log(Fmt.format("Internal poll of %s: you %s by %.1f (give or take %.1f).", o.state().equals("US") ? "the nation" : o.state(),
+                            poll.margin() >= 0 ? "lead" : "trail", Math.abs(poll.margin()), poll.sd()));
+                } catch (IllegalArgumentException x) { throw new IllegalCommandException(x.getMessage()); }
             }
             case game.mandate.core.campaign.CampaignOrder.PullAds o -> electionEngine.editOrders(e, x -> {
                 if (o.tv()) x.clearAirtime();
@@ -982,6 +992,39 @@ public final class GameEngine implements WorldView {
         else if (date().getDayOfWeek() == DayOfWeek.MONDAY) economyWeek(date().minusWeeks(1), date());
     }
 
+    /**
+     * The presidency does not stop for the re-election campaign (docs/MODES.md, "The 2032 campaign"): each week of it,
+     * Congress, the West Wing, the world, the terms of office and opinion move on as in office, and their questions come to
+     * the war room. The president's own slots are the campaign's. In the daily final stretch, each Monday steps the week
+     * just past. A crisis that begins is fought as in office, and the campaign waits for it.
+     */
+    private void campaignOffice(LocalDate from, boolean weeklyTurn) {
+        if (w.phase != Phase.REELECTION_CAMPAIGN_2032 || w.president == null) return;
+        if (!weeklyTurn && date().getDayOfWeek() != DayOfWeek.MONDAY) return;
+        LocalDate start = weeklyTurn ? from : date().minusWeeks(1);
+        inGoverningWeek = true;
+        try {
+            hillWeek();
+            if (w.phase != Phase.REELECTION_CAMPAIGN_2032) return;      // removed from office
+            westWingWeek();
+            termsWeek();
+            if (w.phase != Phase.REELECTION_CAMPAIGN_2032) return;
+            foreignWeek();
+            politicsEngine.step(w.politics, 1.0, opinionInputs(), rng);
+            for (String line : politicsEngine.partyWeek(w.politics, midtermSeason(), termWeek(), rng))
+                news(new News(date(), News.Kind.INFO, line, null, 1.0, null));
+            if (start.getMonthValue() != date().getMonthValue()) militaryEngine.stepMonth(w.military);
+            recordIndicators();
+            ambientWeek();
+        } finally { inGoverningWeek = false; }
+        if (w.taiwanAttack) {
+            w.taiwanAttack = false;
+            if (taiwanMayBegin()) startTaiwan(0, "invasion", TaiwanScenario.Commitment.INTERVENE, "Chinese forces move to attack Taiwan");
+            else foreignEngine.taiwanWarRefused(w.foreign);
+        }
+        if (!crisisActive()) { maybeHormuz(); maybeTaiwan(); }
+    }
+
     /** Whether the ordinary governing week is being stepped (a crisis that starts inside it waits for its end). */
     private boolean inGoverningWeek;
 
@@ -1038,6 +1081,12 @@ public final class GameEngine implements WorldView {
 
     /** After a week: the era's news, then the chief of staff writes the next week if the calendar is delegated. */
     private void afterWeek() {
+        ambientWeek();
+        presidentEngine.afterWeek(w.president, weekContext());
+    }
+
+    /** The era's news for the week just past (Resolute Desk's ambient stories). */
+    private void ambientWeek() {
         LocalDate weekAgo = date().minusDays(7);
         double busy = 0;
         for (News n : w.news) if (n.section() == null && !n.date().isBefore(weekAgo)) busy += n.weight();
@@ -1048,7 +1097,6 @@ public final class GameEngine implements WorldView {
             int decision = w.ledger.decide(date(), "In the news: " + r.news().head());
             dispatchAll(decision, "In the news", r.effects());
         }
-        presidentEngine.afterWeek(w.president, weekContext());
     }
 
     /** The state of the country for an era story's conditions (Resolute Desk's {@code Stories.var}); NaN for what this game does not model. */
@@ -1253,7 +1301,7 @@ public final class GameEngine implements WorldView {
     }
 
     private void foreignOrder(ForeignOrder o) {
-        if (w.foreign == null || w.phase != Phase.GOVERNING) throw new IllegalCommandException("The Situation Room opens once the hundred days are over");
+        if (w.foreign == null || !inOffice()) throw new IllegalCommandException("The Situation Room opens once the hundred days are over");
         if (w.military.operationActive()) throw new IllegalCommandException("The war has the president's full attention");
         ForeignEngine.Outcome out;
         try {
@@ -1710,7 +1758,7 @@ public final class GameEngine implements WorldView {
     }
 
     private void termsOrder(TermsOrder o) {
-        if (w.terms == null || w.phase != Phase.GOVERNING) throw new IllegalCommandException("Only in office");
+        if (w.terms == null || !inOffice()) throw new IllegalCommandException("Only in office");
         int stage = w.terms.runStage();
         TermsEngine.Outcome out;
         try {
@@ -1900,7 +1948,7 @@ public final class GameEngine implements WorldView {
 
     private void westWingOrder(WestWingOrder o) {
         if (o instanceof WestWingOrder.TransitionStep x) { transitionStep(x); return; }
-        if (w.westWing == null || w.phase != Phase.GOVERNING) throw new IllegalCommandException("The West Wing is yours once the hundred days are over");
+        if (w.westWing == null || !inOffice()) throw new IllegalCommandException("The West Wing is yours once the hundred days are over");
         WestWingEngine.Outcome out;
         try {
             out = o instanceof WestWingOrder.PolicyAction x ? policyAction(x) : westWingEngine.apply(w.westWing, westWingContext(), o, rng);
@@ -2029,7 +2077,7 @@ public final class GameEngine implements WorldView {
             } else dispatch(decision, cause, e);
         }
         for (News n : o.news()) news(n);
-        if ("removed".equals(w.hill.impeachment()) && w.phase == Phase.GOVERNING) {
+        if ("removed".equals(w.hill.impeachment()) && inOffice()) {
             log("The Senate convicts. The president is removed from office.");
             if (w.terms != null) termsEngine.removed(w.terms);
             finish();
@@ -2037,7 +2085,7 @@ public final class GameEngine implements WorldView {
     }
 
     private void hillOrder(HillOrder o) {
-        if (w.hill == null || w.phase != Phase.GOVERNING) throw new IllegalCommandException("Congress is yours to work once the hundred days are over");
+        if (w.hill == null || !inOffice()) throw new IllegalCommandException("Congress is yours to work once the hundred days are over");
         HillEngine.Outcome out;
         try {
             out = hillEngine.apply(w.hill, hillContext(), o, rng);
@@ -2157,6 +2205,11 @@ public final class GameEngine implements WorldView {
     //  Governing commands
     // =========================================================================================
 
+    /** In office after the hundred days: governing, or running for re-election while governing. */
+    public boolean inOffice() {
+        return w.president != null && (w.phase == Phase.GOVERNING || w.phase == Phase.REELECTION_CAMPAIGN_2032);
+    }
+
     private void requireGoverning() {
         if (w.phase != Phase.GOVERNING) throw new IllegalCommandException("Only while governing");
         if (w.military.operationActive()) throw new IllegalCommandException("The war has the president's full attention");
@@ -2178,7 +2231,7 @@ public final class GameEngine implements WorldView {
     }
 
     private boolean hillTakesBill(LegislativeStrategy strategy) {
-        return w.hill != null && w.phase == Phase.GOVERNING && strategy != LegislativeStrategy.EXECUTIVE_ORDER;
+        return w.hill != null && inOffice() && strategy != LegislativeStrategy.EXECUTIVE_ORDER;
     }
 
     /** A bipartisan bill is drafted smaller and narrower; the others at full size. */
@@ -2317,6 +2370,16 @@ public final class GameEngine implements WorldView {
 
     public WorldState state() { return w; }
     public double nationalSwing() { return electionEngine.nationalSwing(w.election, environment()); }
+    /** The race's parts, D minus R: the record (or the scenario), the candidates, momentum, and news, debates and promises. */
+    public game.mandate.core.campaign.ElectionEngine.Parts raceParts() { return electionEngine.parts(w.election, environment()); }
+    /** How many campaign promises are believed. */
+    public int pledgeMax() { return electionEngine.pledgeMax(); }
+
+    /** A state's voters by bloc, consistent with this week's poll there (the War room's Voters desk). */
+    public List<game.mandate.core.electorate.CellElectorateModel.StateGroup> stateGroups(String state) {
+        Double poll = statePolls().get(state);
+        return poll == null ? List.of() : electionEngine.stateGroups(w.election, environment(), state, poll);
+    }
     public double localShift(String state) { return electionEngine.localShift(w.election, state); }
     public Map<String, Double> expectedMargins() { return electionEngine.expectedMargins(w.election, environment()); }
     /** The state polls the player sees this week (stable within a week: looking never changes them). */

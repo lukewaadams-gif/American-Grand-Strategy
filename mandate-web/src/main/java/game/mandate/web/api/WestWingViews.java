@@ -27,7 +27,7 @@ import java.util.Map;
 final class WestWingViews {
     private WestWingViews() {}
 
-    static boolean open(GameEngine g) { return g.westWing().isPresent() && g.phase() == Phase.GOVERNING; }
+    static boolean open(GameEngine g) { return g.westWing().isPresent() && g.inOffice(); }
 
     static Map<String, Object> person(WestWingState s, Person p, int week) {
         if (p == null) return null;

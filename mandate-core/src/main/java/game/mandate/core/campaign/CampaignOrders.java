@@ -42,6 +42,8 @@ public final class CampaignOrders {
     final boolean[] redBox;
     final int[] officeOrder, organizerOrder;
     Issue message;
+    /** The national message's tone (the War room's Message tab): contrast is the baseline. */
+    Tone messageTone = Tone.CONTRAST;
     int hq = 1;
 
     public CampaignOrders(int states, int markets) {
@@ -61,6 +63,7 @@ public final class CampaignOrders {
         CampaignOrders c = new CampaignOrders(digital.length, tvGrp.length);
         c.copyFrom(this, true, true, true);
         c.message = message;
+        c.messageTone = messageTone;
         c.hq = hq;
         return c;
     }
@@ -105,6 +108,8 @@ public final class CampaignOrders {
     public void redBox(int state, boolean on) { redBox[state] = on; }
     public void field(int state, int offices, int organizers) { officeOrder[state] = offices; organizerOrder[state] = organizers; }
     public void message(Issue i) { message = i; }
+    public void messageTone(Tone t) { messageTone = t == null ? Tone.CONTRAST : t; }
+    public Tone messageTone() { return messageTone; }
     public void hq(int tier) { hq = Math.max(0, Math.min(2, tier)); }
     public void clearAirtime() { Arrays.fill(tvGrp, 0); Arrays.fill(nationalGrp, 0); }
     public void clearDigital() { Arrays.fill(digital, 0); }
@@ -158,6 +163,7 @@ public final class CampaignOrders {
             if (officeOrder[s] != 0 || organizerOrder[s] != 0) f.put(geo.code(s), List.of(officeOrder[s], organizerOrder[s]));
         m.put("field", f);
         m.put("message", message == null ? null : message.name());
+        if (messageTone != Tone.CONTRAST) m.put("messageTone", messageTone.name());
         m.put("hq", hq);
         return m;
     }
@@ -193,6 +199,7 @@ public final class CampaignOrders {
             o.organizerOrder[s] = Json.integer(l.get(1));
         });
         o.message = m.get("message") == null ? null : Issue.valueOf((String) m.get("message"));
+        if (m.get("messageTone") != null) o.messageTone = Tone.valueOf((String) m.get("messageTone"));
         o.hq = Json.integer(m.get("hq"));
         return o;
     }
