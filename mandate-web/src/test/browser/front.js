@@ -65,7 +65,7 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
     const page = await open(GAME(), w, hgt);
     const items = (await page.locator('.front-item .front-item-label').allTextContents()).map(s => s.trim());
     console.log(`${w}: the title menu:`, items.join(' | '));
-    if (items.join('|') !== 'New Game|Continue|Start at a moment') fail(`${w}: the title menu is ${items.join(', ')}`);
+    if (items.join('|') !== 'New Game|Continue|Start at a moment|Tutorial') fail(`${w}: the title menu is ${items.join(', ')}`);
     // the menu sits above the Capitol: nothing of the art under the buttons
     const clear = await page.evaluate(() => {
       const menu = document.querySelector('.front-menu').getBoundingClientRect(), art = document.querySelector('.front-capitol').getBoundingClientRect();

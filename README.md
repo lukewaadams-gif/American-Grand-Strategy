@@ -24,7 +24,14 @@ The front page is the game's title screen. Choose **New Game** and it walks you 
 
 Nothing to install: the simulation runs in the page. Use a current Chrome, Edge, Firefox or Safari, on a computer or a phone.
 
-**The title screen:** **New Game**, **Continue** (open a game you saved) and **Start at a moment**. The arrow keys move through it, Enter chooses.
+**The title screen:** **New Game**, **Continue** (open a game you saved), **Start at a moment** and **Tutorial**. The arrow keys move through it, Enter chooses.
+
+**The tutorial** is a guided game of about fifteen to twenty minutes, through the 2028 campaign and the first year in office (`docs/TUTORIAL.md`).
+- A coach narrates, rings the place to click, and waits for your move, or makes it with "Do it for me".
+- Routine stretches play themselves at the speed you choose.
+- After each move, a card shows what it moved. Twice, the same moment plays two ways.
+- A map of the game's systems lights up as you go.
+- You can jump between chapters, pick up where you left off, or leave with "Play from here" and keep the game.
 
 **The setup, step by step.** Each step is one choice, shown as cards; **Back** and **Next** (or Escape and Enter) move between them, and the bar at the top shows where you are.
 - For a campaign or a presidency: the game, your side (party and cast), your candidate (with their file: charisma, debate, money, policy and discipline), your opponent, the country (the national mood, the difficulty) and a face-off of the two tickets before you begin.
@@ -78,7 +85,8 @@ The world is **real people** by default: the candidates, senators, congressional
    - the money and the air war: TV buys, digital, and an ad studio;
    - the message: the week's issue and its tone (positive, contrast or attack), and plans unveiled as campaign promises;
    - the polls: the trend, internal polls you commission, the closest states, and the groups;
-   - each state's voters by group: who they are, how they lean, who turns out and who can be moved.
+   - each state's voters by group: who they are, how they lean, who turns out and who can be moved;
+   - the team: senior staff you hire (well-known operatives of recent campaigns, with the real cast), and surrogates on tour (the running mate you choose, your spouse and two allies), each tour run by an advance lead.
 
    You play weekly turns, then the final stretch day by day. The polls run on a calibrated 96-cell electorate, with correlated error and a hidden polling miss. The opponent adapts and tells you why.
 2. **Election night, and the transition office.** Shortlists, interviews and background checks for the cabinet and the staff, and the agenda you take to Congress.
@@ -243,6 +251,7 @@ docs/           the port plans, the crises, the economy's model, decisions to re
 | [docs/PRESIDENCY_PORT.md](docs/PRESIDENCY_PORT.md) | The presidency: Resolute Desk's systems, the milestones and what each built |
 | [docs/CAMPAIGN_PORT.md](docs/CAMPAIGN_PORT.md) | The campaign: Battleground 2028's war room, ported |
 | [docs/CRISES.md](docs/CRISES.md), [docs/HORMUZ.md](docs/HORMUZ.md), [docs/ISLAND_CHAIN.md](docs/ISLAND_CHAIN.md) | The two in-depth crises: design, calibration and how they reach the presidency |
+| [docs/TUTORIAL.md](docs/TUTORIAL.md) | The tutorial: how it plays, its eight chapters, and its tests |
 | [docs/CAMPAIGN_WAR_ROOM.md](docs/CAMPAIGN_WAR_ROOM.md) | The war room's tabs and desks: the message and its tone, plans and promises, internal polls, voters by group, and the White House card in 2032 |
 | [docs/BALANCE_TAIWAN.md](docs/BALANCE_TAIWAN.md) | How the Taiwan crisis turns on the president's orders, and the runs that measured it |
 | [docs/ECONOMY_MODEL.md](docs/ECONOMY_MODEL.md) | The structural economy and the policy table |

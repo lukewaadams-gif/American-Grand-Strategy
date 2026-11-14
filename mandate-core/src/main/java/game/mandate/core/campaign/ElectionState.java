@@ -14,7 +14,7 @@ public final class ElectionState {
     public record Midterm(int year, double marginForPresident, int houseChange, int senateChange) {}
 
     /** The parts of the player's campaign the staff can run (BG Staff.AREA: schedule, ads, field). */
-    public enum StaffArea { SCHEDULE, ADS, FIELD }
+    public enum StaffArea { SCHEDULE, ADS, FIELD, SURROGATES }
 
     CampaignSide player, opponent;
     DebatePosture pendingPosture;

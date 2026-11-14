@@ -44,6 +44,13 @@ public final class CampaignEngine {
     private final StateCatalog states;
     private final CampaignParams p;
     private final CampaignGeography geo;
+    /** The staff a campaign can hire (docs/CAMPAIGN_WAR_ROOM.md, "Team"). */
+    private final CampaignStaff staff = CampaignStaff.load();
+
+    public CampaignStaff staff() { return staff; }
+
+    /** How much harder a senior post's work goes for a side: 1 with the default staff. */
+    double factor(CampaignSide k, CampaignStaff.Post post) { return staff.get(k.staffAt(post)).factor(); }
     private final CellElectorateModel cells;
     /** Logit per point of margin in the electorate (CellElectorateModel.logitPerPoint). */
     private final double k;
@@ -127,6 +134,7 @@ public final class CampaignEngine {
         side.location = prev;
         side.stamina = clamp(side.stamina + (38 + 0.12 * r.sta()) * F, 5, 100);
         fundraising(side, t, resources);
+        surrogates(side, t, human, rng, news);
         advertising(side, other, t, human, news);
         field(side, t);
         superPacs(side, t);
@@ -149,7 +157,7 @@ public final class CampaignEngine {
                 if (human) news.add("Your attacks on " + other.candidate().name() + " backfire: the coverage turns on the tone, and the message is lost this week.");
             }
         }
-        side.momentum += F * (message + p.charismaMomentum() * (side.candidate().charisma() - 5.5));
+        side.momentum += F * (message + p.charismaMomentum() * (side.candidate().charisma() - 5.5)) * factor(side, CampaignStaff.Post.MANAGER);
         // books
         double s4 = dk(0.75, F);
         double vol = 0, dr = 0;
@@ -226,14 +234,14 @@ public final class CampaignEngine {
             }
             case FUNDRAISER -> {
                 double hub = geo.state(s).donorHub() ? 1.0 : 0.45;
-                double amt = (0.35 + 2.2 * big) * hub * moneyMomentum(k) * saturation(k) * eff;
+                double amt = (0.35 + 2.2 * big) * hub * moneyMomentum(k) * saturation(k) * eff * factor(k, CampaignStaff.Post.FINANCE);
                 raise(k, amt);
                 k.donorsTapped += amt;
                 k.localImage[s] -= 0.001;
                 risk = 0.6;
             }
             case CALL_TIME -> {
-                double amt = (0.12 + 0.85 * big) * moneyMomentum(k) * saturation(k);
+                double amt = (0.12 + 0.85 * big) * moneyMomentum(k) * saturation(k) * factor(k, CampaignStaff.Post.FINANCE);
                 raise(k, amt);
                 k.donorsTapped += amt;
                 risk = 0.1;
@@ -431,12 +439,52 @@ public final class CampaignEngine {
     /** Big donors max out (BG saturation): a general-election cycle of limits. */
     static double saturation(CampaignSide k) { return clamp(1 - k.donorsTapped / k.donorCap(), 0.12, 1); }
 
+    /**
+     * The surrogates' week (docs/CAMPAIGN_WAR_ROOM.md, "Team"): each assigned surrogate tours a state or raises money. A
+     * moderate persuades (visits and the local image); a firebrand fires up the base (volunteers and enthusiasm). Their pull
+     * is their charisma, more in their home region and most at home; the advance lead's skill makes a better stop, and a
+     * careless lead (never a real person) can make a bad story. Then the hired staff's pay.
+     */
+    private void surrogates(CampaignSide k, Turn t, boolean human, DeterministicRandomManager rng, List<String> news) {
+        double F = t.fraction();
+        CampaignOrders o = k.orders;
+        double wages = 0;
+        for (CampaignStaff.Post post : CampaignStaff.Post.SENIOR) wages += staff.get(k.staffAt(post)).salary();
+        for (int slot = 0; slot < CampaignStaff.SURROGATES; slot++) {
+            int target = o.surrogate(slot);
+            if (target == CampaignStaff.NONE) continue;
+            Candidate c = k.surrogate(slot);
+            if (slot != 1 && c == null) continue;
+            CampaignStaff.Member lead = staff.get(o.tourLead(slot));
+            wages += lead.salary();
+            double star = CampaignStaff.star(c) * (slot == 0 ? 1.2 : 1.0);
+            String who = c != null ? c.name() : "your spouse";
+            if (target == CampaignStaff.FUNDRAISE) {
+                double amt = (0.12 + 0.5 * star) * moneyMomentum(k) * saturation(k) * lead.factor() * factor(k, CampaignStaff.Post.FINANCE) * F;
+                raise(k, amt);
+                k.donorsTapped += amt;
+                continue;
+            }
+            String code = geo.code(target), home = c != null ? c.homeState() : k.candidate().homeState();
+            double pull = home.equals(code) ? 1.8 : CampaignStaff.region(home).equals(CampaignStaff.region(code)) ? 1.3 : 1.0;
+            double w = star * pull * lead.factor() * F;
+            if (CampaignStaff.persuader(c)) { k.visit[target] += 2.0 * w; k.localImage[target] += 0.008 * w; }
+            else { k.visit[target] += 1.0 * w; k.volunteers[target] += 1500 * w; k.enthusiasm += 0.002 * w * (1 - k.enthusiasm); }
+            if (lead.risk() > 0 && rng.uniform("campaign.surrogate") < lead.risk() * F) {
+                k.localImage[target] -= 0.006;
+                if (human) news.add("Advance-team trouble in " + states.get(geo.code(target)).name() + ": " + lead.name() + "'s team double-booked "
+                        + who + "'s stop, and the local coverage is about the mix-up.");
+            }
+        }
+        if (wages > 0) pay(k, wages * F, -1, 0);
+    }
+
     private void fundraising(CampaignSide k, Turn t, double resources) {
         double F = t.fraction();
         double phaseMul = 5.0 * (t.weeksToVote() < 7 ? 1.35 : 1);
         double small = effectiveList(k.smallList) * 0.22 * (0.4 + 0.6 * k.ratings().smd() / 100) * (0.6 + 0.8 * k.enthusiasm)
                 * phaseMul * moneyMomentum(k) * F * resources / 1e6;
-        raise(k, small);
+        raise(k, small * factor(k, CampaignStaff.Post.FINANCE));
         k.smallList *= Math.pow(1 + 0.0012 * k.ratings().vir() / 50.0 - 0.004, F);
     }
 
@@ -466,7 +514,7 @@ public final class CampaignEngine {
     }
 
     private void advertising(CampaignSide k, CampaignSide other, Turn t, boolean human, List<String> news) {
-        double F = t.fraction(), quality = adQuality(k, human);
+        double F = t.fraction(), quality = adQuality(k, human) * factor(k, CampaignStaff.Post.MEDIA);
         CampaignOrders o = k.orders;
         int n = geo.size();
         double[] addTv = new double[n];
@@ -652,7 +700,7 @@ public final class CampaignEngine {
             double sh = active * perVol * F * (t.day() >= 5 ? 1.35 : t.day() >= 0 ? 0.88 : 1);
             double dr = sh * 0.55 * st.doorDensity(), calls = sh * 0.22 * 150, texts = sh * 0.13 * 1200, rel = sh * 0.10 * 12;
             boolean gotvWindow = left <= 5;
-            double contacts = dr * (gotvWindow ? 0.30 : 0.22) + calls * 0.09 * 0.6 + texts * 0.04 * 0.3 + rel * 0.35 * 1.6;
+            double contacts = (dr * (gotvWindow ? 0.30 : 0.22) + calls * 0.09 * 0.6 + texts * 0.04 * 0.3 + rel * 0.35 * 1.6) * factor(k, CampaignStaff.Post.FIELD);
             double adults = Math.max(1, st.adults());
             k.shifts[s] = sh; k.doors[s] = dr; k.calls[s] = calls; k.texts[s] = texts; k.relational[s] = rel;
             k.doorsTotal[s] += dr;

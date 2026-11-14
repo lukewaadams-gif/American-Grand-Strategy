@@ -44,8 +44,8 @@ export function mountCampaign(opts: CampaignHost = {}): void {
 /** Gives up the screen and the keyboard. */
 export function unmountCampaign(): void { active = false; }
 const state: WarRoomState = { layer: 'margin', selected: null, tab: 'schedule', picking: null, desk: 'overview', digest: null };
-// keys 1-6 switch the left panel's tabs (as in Battleground 2028), when no dialog or menu is open and focus is not in a field
-const TAB_KEYS: Record<string, WarRoomState['tab']> = { '1': 'schedule', '2': 'money', '3': 'field', '4': 'message', '5': 'polls', '6': 'wire' };
+// keys 1-7 switch the left panel's tabs (as in Battleground 2028), when no dialog or menu is open and focus is not in a field
+const TAB_KEYS: Record<string, WarRoomState['tab']> = { '1': 'schedule', '2': 'money', '3': 'field', '4': 'message', '5': 'polls', '6': 'team', '7': 'wire' };
 
 function render(): void {
   let v: CampaignView;

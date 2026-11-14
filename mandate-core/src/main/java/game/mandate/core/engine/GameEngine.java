@@ -543,6 +543,7 @@ public final class GameEngine implements WorldView {
      */
     private void planCampaignTurn() {
         if (w.phase != Phase.GENERAL_CAMPAIGN_2028 && w.phase != Phase.REELECTION_CAMPAIGN_2032) return;
+        electionEngine.nameSurrogates(w.election, candidates);
         CampaignAi.Adaptation a = setup.difficulty().adaptive() ? CampaignAi.adapt(this, w.election.opponent())
                 : new CampaignAi.Adaptation(game.mandate.core.campaign.CampaignStrategy.Orders.DEFAULT, "It runs the same campaign every week: rallies and money in the closest states.");
         boolean changed = !a.orders().equals(w.election.opponentOrders()) || w.election.opponentReasoning().isEmpty();
@@ -562,7 +563,7 @@ public final class GameEngine implements WorldView {
         boolean sch = e.staffRuns(game.mandate.core.campaign.ElectionState.StaffArea.SCHEDULE);
         boolean ads = e.staffRuns(game.mandate.core.campaign.ElectionState.StaffArea.ADS);
         boolean fld = e.staffRuns(game.mandate.core.campaign.ElectionState.StaffArea.FIELD);
-        if (!sch && !ads && !fld && !briefChanged) return;
+        if (!sch && !ads && !fld && !briefChanged && !e.staffRuns(game.mandate.core.campaign.ElectionState.StaffArea.SURROGATES)) return;
         electionEngine.applyPlan(e, true, CampaignAi.planOrders(this, e.player(), e.playerOrders(), sch, ads, fld), sch, ads, fld);
     }
 
@@ -645,6 +646,28 @@ public final class GameEngine implements WorldView {
                 electionEngine.editOrders(e, x -> x.message(o.issue() != null ? o.issue() : CampaignAi.bestMessage(this, player())));
             }
             case game.mandate.core.campaign.CampaignOrder.MessageTone o -> electionEngine.editOrders(e, x -> x.messageTone(o.tone()));
+            case game.mandate.core.campaign.CampaignOrder.Hire o -> {
+                try { electionEngine.hire(e, o.post(), o.staff(), setup.realRoster()); }
+                catch (IllegalArgumentException x) { throw new IllegalCommandException(x.getMessage()); }
+                log("Your campaign hires " + electionEngine.staff().get(o.staff()).name() + " as " + o.post().label.toLowerCase(java.util.Locale.ROOT) + ".");
+            }
+            case game.mandate.core.campaign.CampaignOrder.RunningMate o -> {
+                if (w.phase != Phase.GENERAL_CAMPAIGN_2028) throw new IllegalCommandException("The ticket is set for the re-election");
+                try { electionEngine.chooseRunningMate(e, candidates, o.candidate()); }
+                catch (IllegalArgumentException x) { throw new IllegalCommandException(x.getMessage()); }
+                log("Your running mate: " + e.player().runningMate().name() + ".");
+            }
+            case game.mandate.core.campaign.CampaignOrder.Surrogate o -> {
+                int target = o.state() == null || o.state().isEmpty() ? game.mandate.core.campaign.CampaignStaff.NONE
+                        : o.state().equals("FUNDRAISE") ? game.mandate.core.campaign.CampaignStaff.FUNDRAISE : state.apply(o.state());
+                if (o.slot() < 0 || o.slot() >= game.mandate.core.campaign.CampaignStaff.SURROGATES) throw new IllegalCommandException("No surrogate " + o.slot());
+                if (o.lead() != null) {
+                    var m = electionEngine.staff().get(o.lead());
+                    if (m.post() != game.mandate.core.campaign.CampaignStaff.Post.ADVANCE) throw new IllegalCommandException(m.name() + " does not run tours");
+                }
+                electionEngine.editOrders(e, x -> x.surrogate(o.slot(), target, o.lead()));
+                electionEngine.setStaff(e, game.mandate.core.campaign.ElectionState.StaffArea.SURROGATES, false);
+            }
             case game.mandate.core.campaign.CampaignOrder.InternalPoll o -> {
                 try {
                     var poll = electionEngine.internalPoll(e, environment(), o.state(), date(), rng);
@@ -2372,6 +2395,9 @@ public final class GameEngine implements WorldView {
     public double nationalSwing() { return electionEngine.nationalSwing(w.election, environment()); }
     /** The race's parts, D minus R: the record (or the scenario), the candidates, momentum, and news, debates and promises. */
     public game.mandate.core.campaign.ElectionEngine.Parts raceParts() { return electionEngine.parts(w.election, environment()); }
+    /** The staff a campaign can hire (docs/CAMPAIGN_WAR_ROOM.md, "Team"). */
+    public game.mandate.core.campaign.CampaignStaff campaignStaff() { return electionEngine.staff(); }
+
     /** How many campaign promises are believed. */
     public int pledgeMax() { return electionEngine.pledgeMax(); }
 

@@ -191,6 +191,7 @@ public final class EngineApi {
             v.put("money", moneyView(g));
             v.put("ads", adsView(g));
             v.put("message", messageView(g));
+            v.put("team", teamView(g));
             v.put("pollsDesk", pollsDesk(g));
         }
         v.put("news", news(g, 0));
@@ -704,6 +705,73 @@ public final class EngineApi {
             plans.add(x);
         }
         m.put("plans", plans);
+        return m;
+    }
+
+    /** The team and the surrogates (docs/CAMPAIGN_WAR_ROOM.md, "Team"). */
+    static Map<String, Object> teamView(GameEngine g) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        var staff = g.campaignStaff();
+        var side = g.election().player();
+        var party = g.player().party();
+        boolean real = g.setup().realRoster();
+        List<Object> posts = new ArrayList<>();
+        for (var post : game.mandate.core.campaign.CampaignStaff.Post.SENIOR) {
+            Map<String, Object> p = new LinkedHashMap<>();
+            p.put("post", post.name()); p.put("label", post.label); p.put("effect", post.effect);
+            p.put("current", member(staff.get(side.staffAt(post))));
+            List<Object> opts = new ArrayList<>();
+            for (var x : staff.pool(post, party, real)) opts.add(member(x));
+            p.put("options", opts);
+            posts.add(p);
+        }
+        m.put("posts", posts);
+        List<Object> leads = new ArrayList<>();
+        for (var x : staff.pool(game.mandate.core.campaign.CampaignStaff.Post.ADVANCE, party, real)) leads.add(member(x));
+        m.put("leads", leads);
+        m.put("staffRuns", g.election().staffRuns(game.mandate.core.campaign.ElectionState.StaffArea.SURROGATES));
+        var orders = side.orders();
+        var geo = g.campaignEngine().geography();
+        List<Object> sur = new ArrayList<>();
+        for (int slot = 0; slot < game.mandate.core.campaign.CampaignStaff.SURROGATES; slot++) {
+            var c = side.surrogate(slot);
+            if (slot != 1 && c == null) continue;
+            Map<String, Object> x = new LinkedHashMap<>();
+            String home = c != null ? c.homeState() : side.candidate().homeState();
+            x.put("slot", slot); x.put("role", game.mandate.core.campaign.CampaignStaff.SLOT_ROLES[slot]);
+            x.put("id", c == null ? null : c.id());
+            x.put("name", c == null ? "Your spouse" : c.name());
+            x.put("home", home); x.put("region", game.mandate.core.campaign.CampaignStaff.region(home));
+            x.put("pull", r2(game.mandate.core.campaign.CampaignStaff.star(c) * (slot == 0 ? 1.2 : 1.0)));
+            x.put("kind", game.mandate.core.campaign.CampaignStaff.persuader(c) ? "persuade" : "mobilise");
+            int t = orders.surrogate(slot);
+            x.put("target", t >= 0 ? geo.code(t) : t == game.mandate.core.campaign.CampaignStaff.FUNDRAISE ? "FUNDRAISE" : null);
+            x.put("lead", orders.tourLead(slot));
+            if (c != null) x.put("look", look(c.id()));
+            sur.add(x);
+        }
+        m.put("surrogates", sur);
+        boolean first = g.phase() == Phase.GENERAL_CAMPAIGN_2028;
+        m.put("canChooseMate", first);
+        if (first) {
+            List<Object> mates = new ArrayList<>();
+            for (var c : game.mandate.core.campaign.CampaignStaff.shortlist(g.candidates(), side.candidate(), g.opponent().candidate())) {
+                Map<String, Object> x = new LinkedHashMap<>();
+                x.put("id", c.id()); x.put("name", c.name()); x.put("home", c.homeState());
+                x.put("pull", r2(game.mandate.core.campaign.CampaignStaff.star(c) * 1.2));
+                x.put("kind", game.mandate.core.campaign.CampaignStaff.persuader(c) ? "persuade" : "mobilise");
+                mates.add(x);
+            }
+            m.put("mates", mates);
+        }
+        return m;
+    }
+
+    static Map<String, Object> member(game.mandate.core.campaign.CampaignStaff.Member x) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", x.id()); m.put("name", x.name()); m.put("skill", x.skill()); m.put("salary", x.salary());
+        m.put("real", x.real()); m.put("risk", r2(x.risk())); m.put("note", x.note());
+        m.put("default", x.id().startsWith("staff_default_"));
         return m;
     }
 

@@ -16,6 +16,7 @@ import { takeLaunch, type Launch } from './core/launch.js';
 import { taiwanRoom } from './presidency/taiwan.js';
 import { electionNight } from './presidency/election-night.js';
 import { soundMenuItem } from './core/sound.js';
+import { startTutorial, tutorialProgress } from './tutorial/tutorial.js';
 import type { VerdictView } from './core/types.js';
 
 const root = document.getElementById('app')!;
@@ -75,6 +76,8 @@ const startActions: StartActions = {
   loadFile: text => { try { engine.load(text); route(); } catch (e) { toast('That file is not a saved game: ' + String(e)); showStart(); } },
   quick: async (save, then) => { try { engine.load(await buildFile(save)); if (then) engine.command(then); route(); } catch (e) { toast(String(e)); showStart(); } },
   islandChain: o => { try { engine.islandChain.start(o); showIslandChain(); } catch (e) { toast(e instanceof Refused ? e.message : String(e)); showStart(); } },
+  tutorial: () => { void startTutorial({ refresh: route, done: keep => { if (keep) route(); else showStart(); } }); },
+  tutorialChapter: () => tutorialProgress(),
 };
 
 function showStart(): void {
@@ -92,6 +95,7 @@ function launch(l: Launch): void {
     case 'quick': startActions.quick(l.save, l.then); return;
     case 'load': startActions.loadFile(l.text); return;
     case 'islandChain': startActions.islandChain(l.options); return;
+    case 'tutorial': startActions.tutorial!(); return;
   }
 }
 

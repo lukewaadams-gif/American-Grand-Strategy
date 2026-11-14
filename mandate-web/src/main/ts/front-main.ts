@@ -5,6 +5,7 @@ import { h } from './core/dom.js';
 import { toast } from './core/dialog.js';
 import { startScreen } from './start.js';
 import { handOff, type Launch } from './core/launch.js';
+import { tutorialProgress } from './tutorial/tutorial.js';
 
 const root = document.getElementById('app')!;
 /** The game's own page, next to this module's folder. */
@@ -23,6 +24,8 @@ async function boot(): Promise<void> {
     loadFile: text => go({ kind: 'load', text }),
     quick: (save, then) => go({ kind: 'quick', save, then }),
     islandChain: options => go({ kind: 'islandChain', options }),
+    tutorial: () => go({ kind: 'tutorial' }),
+    tutorialChapter: () => tutorialProgress(),
     links: [{ label: 'The earlier playable slice', href: 'classic/' }, { label: 'The game’s own page', href: GAME }],
   }));
 }

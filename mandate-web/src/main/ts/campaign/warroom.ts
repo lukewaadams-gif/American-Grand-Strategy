@@ -15,8 +15,9 @@ import { adsDesk, moneyTab, type MoneyActions } from './money.js';
 import { messageTab } from './message.js';
 import { pollsTab } from './polls.js';
 import { votersDesk } from './voters.js';
+import { teamTab } from './team.js';
 
-export type TabId = 'schedule' | 'money' | 'field' | 'message' | 'polls' | 'wire';
+export type TabId = 'schedule' | 'money' | 'field' | 'message' | 'polls' | 'team' | 'wire';
 export type DeskTab = 'overview' | 'ads' | 'field' | 'voters';
 /** BG's "Week in review": what the turn just run did, shown over the map until dismissed. */
 export interface Digest { title: string; lines: string[]; }
@@ -46,7 +47,8 @@ export type OfficeRoom = 'congress' | 'westwing' | 'sitroom' | 'press';
 
 const TABS: { id: TabId; label: string; ready: boolean }[] = [
   { id: 'schedule', label: 'Schedule', ready: true }, { id: 'money', label: 'Money', ready: true }, { id: 'field', label: 'Field', ready: true },
-  { id: 'message', label: 'Message', ready: true }, { id: 'polls', label: 'Polls', ready: true }, { id: 'wire', label: 'Wire', ready: true },
+  { id: 'message', label: 'Message', ready: true }, { id: 'polls', label: 'Polls', ready: true }, { id: 'team', label: 'Team', ready: true },
+  { id: 'wire', label: 'Wire', ready: true },
 ];
 
 /** Figures shown last time, so a new week's numbers count from the old ones and the map's colours cross-fade. */
@@ -104,6 +106,7 @@ export function warRoom(v: CampaignView, st: WarRoomState, act: WarRoomActions):
   const panel = st.tab === 'wire' ? wireList(v) : st.tab === 'field' && v.field ? fieldTab(v, fieldAct)
     : st.tab === 'message' && v.message ? messageTab(v, { order: act.order, pledge: id => act.pledge?.(id) ?? false })
     : st.tab === 'polls' && v.pollsDesk ? pollsTab(v, { order: act.order })
+    : st.tab === 'team' && v.team ? teamTab(v, { order: act.order })
     : st.tab === 'money' && v.money ? moneyTab(v, moneyAct) : scheduleTab(v, sched);
   const left = h('aside', { class: 'cw-left' }, tabs,
     h('div', { class: 'side-panel', id: 'tab-panel', role: 'tabpanel', 'aria-labelledby': 'tab-' + st.tab, tabindex: 0 }, panel));

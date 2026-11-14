@@ -1,6 +1,7 @@
 // The war room's Message and Polls tabs and the Voters desk (docs/CAMPAIGN_WAR_ROOM.md), on the campaign save (week 9 of
 // 2028): the week's issue and tone, the staff choosing, a plan unveiled and the limit on promises; internal polls of the
-// nation and a state, and once a week; a state's voters by group; keys 4 and 5. At 1600 and 390 pixels wide and in the
+// nation and a state, and once a week; the Team tab (a hire, a surrogate's week and lead, the staff's tours, the running
+// mate); a state's voters by group; keys 4, 5 and 6. At 1600 and 390 pixels wide and in the
 // other palettes (axe-core WCAG 2.1 AA, text size, sideways scroll). Fails on any console error.
 // Usage: node warroom.js [out-dir]
 const { chromium } = require('playwright');
@@ -96,7 +97,42 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
     await page.close();
   }
 
-  // 3. the Voters desk, at two widths and in the other palettes
+  // 3. the Team tab: a hire, a surrogate's week and its lead, the staff's tours, the running mate
+  {
+    const page = await open();
+    await page.keyboard.press('6');
+    await page.waitForTimeout(300);
+    if (!(await page.locator('.team-tab').count())) fail('key 6 does not open the Team tab');
+    const n = await page.locator('.surrogate-row').count();
+    if (n !== 4) fail(`${n} surrogates, not four (running mate, spouse, two allies)`);
+    await check(page, '1600: Team');
+    await page.screenshot({ path: `${OUT}/1600-team.png` });
+    await page.click('.team-row button >> nth=0'); await page.waitForTimeout(300);
+    const hire = page.locator('[role="menuitem"]').nth(1);
+    const hiring = ((await hire.textContent()) || '').split('·')[0].replace(/\(fictional\)/, '').trim();
+    await hire.click(); await page.waitForTimeout(400);
+    const now = ((await page.locator('.team-row strong').first().textContent()) || '').replace(/\(fictional\)/, '').trim();
+    if (now !== hiring) fail(`hired ${hiring}, the post shows ${now}`);
+    await page.click('.surrogate-row >> nth=0 >> .surrogate-controls button >> nth=0'); await page.waitForTimeout(300);
+    await page.locator('[role="menuitem"]:has-text("Raise money")').click(); await page.waitForTimeout(300);
+    if (!/Raising money/.test(await page.locator('.surrogate-row >> nth=0 >> .surrogate-controls button >> nth=0').textContent())) fail('the running mate does not raise money');
+    if (!/Let the staff/.test(await page.locator('.team-tab .sched-controls button').textContent())) fail('a tour by hand leaves the staff planning');
+    await page.click('.surrogate-row >> nth=1 >> .surrogate-controls button >> nth=1'); await page.waitForTimeout(300);
+    await page.locator('[role="menuitem"]').nth(1).click(); await page.waitForTimeout(300);
+    console.log('the spouse\'s lead:', (await page.locator('.surrogate-row >> nth=1 >> .surrogate-controls button >> nth=1').textContent()).trim());
+    await page.click('.team-tab .sched-controls button'); await page.waitForTimeout(300);
+    if (!/Staff plans the tours: on/.test(await page.locator('.team-tab .sched-controls button').textContent())) fail('the staff does not take the tours back');
+    const mates = page.locator('.team-tab .send-row button');
+    if (await mates.count()) {
+      const pick = mates.nth(3), name = (await pick.textContent()).trim();
+      await pick.click(); await page.waitForTimeout(400);
+      const mate = (await page.locator('.surrogate-row >> nth=0 >> strong').textContent()).trim();
+      if (mate !== name) fail(`chose ${name} as running mate, the ticket shows ${mate}`);
+    } else fail('no running mate shortlist in 2028');
+    await page.close();
+  }
+
+  // 4. the Voters desk, at two widths and in the other palettes
   for (const [label, q, w, hgt] of [['1600', '', 1600, 1000], ['390', '', 390, 844], ['high contrast', '&palette=high-contrast', 1280, 800],
     ['colour-blind', '&palette=colour-blind', 1280, 800], ['text 125%', '&size=1.25', 1280, 800]]) {
     const page = await open(q, w, hgt);
@@ -112,6 +148,8 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
       await check(page, `${label}: Message`);
       await page.click('#tab-polls'); await page.waitForTimeout(300);
       await check(page, `${label}: Polls`);
+      await page.click('#tab-team'); await page.waitForTimeout(300);
+      await check(page, `${label}: Team`);
     }
     await page.close();
   }

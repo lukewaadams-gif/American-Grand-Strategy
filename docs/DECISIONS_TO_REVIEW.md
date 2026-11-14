@@ -276,3 +276,26 @@ Docs/CAMPAIGN_WAR_ROOM.md has the detail.
 2. **A plan unveiled is a campaign promise:** one mechanism, the existing pledges, up to three. Promises are made in 2028 only. In 2032 the tab shows them, since a re-election runs on the record.
 3. **Internal polls cost $120,000 a state and $300,000 for the nation,** once a week each, with an error of about a point.
 4. **The Voters desk shows a state's blocs shifted to match its public poll.** It reveals nothing the polls do not.
+
+## The campaign's team and surrogates (14 November 2026)
+
+Docs/CAMPAIGN_WAR_ROOM.md, "Team", has the detail.
+
+1. **Real operatives are in the pool, as asked:** well-known senior staff of recent presidential campaigns, with one line of their record. They come only with the real cast. Their skill is a rating, labelled as the game's judgement. They carry no risk: the game never pins a mishap on a real person. Mishaps come from fictional junior advance leads.
+2. **Five senior posts:** the manager, pollster, media, field and finance. Each works 3% harder a skill point above the default staff's 5. A hire costs a weekly salary and a signing fee of two weeks' pay.
+3. **The surrogates are the running mate, the spouse and two allies.** The allies are the party's most charismatic figures, from the same cast. The running mate is the strongest of the field unless chosen; the choice is 2028's only.
+4. **Both campaigns' staffs plan their surrogates' tours by default,** so the race stays even. The player can take them over. The golden games' outcomes were unchanged.
+5. **A surrogate's tour:**
+   - a moderate persuades and a firebrand mobilises;
+   - their pull is their charisma, 1.3× in their home region and 1.8× at home;
+   - a week's tour adds roughly a tenth to a fifth of the candidate's own week in that state.
+
+## The tutorial (14 November 2026)
+
+Docs/TUTORIAL.md has the detail.
+
+1. **It plays the real game** from the shipped moments, not a mock-up. Each chapter starts from a known moment when jumped to or resumed, so progress is remembered by chapter only (no game is kept in the browser).
+2. **A lost election in the tutorial continues from a presidency that won,** said so on a card, so every chapter can be shown.
+3. **Autoplay answers every question with the staff's recommendation,** and hands the whole campaign to the staff before Election Day.
+4. **The before-and-after comparisons are real replays:** one week played twice from a save, then put back. The bill's comparison is the budget office's score, with the bill against without it.
+5. **Its length:** eight chapters of one to three minutes' reading each, plus autoplay that the speed buttons control: about fifteen to twenty minutes for a careful first read. It was timed by its steps, not by a human playtest.

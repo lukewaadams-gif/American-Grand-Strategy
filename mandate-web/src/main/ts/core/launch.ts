@@ -6,7 +6,8 @@ export type Launch =
   | { kind: 'new'; game: NewGame }
   | { kind: 'quick'; save: string; then?: object }
   | { kind: 'load'; text: string }
-  | { kind: 'islandChain'; options: { year: number; preset: number; side: 'US' | 'PRC' } };
+  | { kind: 'islandChain'; options: { year: number; preset: number; side: 'US' | 'PRC' } }
+  | { kind: 'tutorial' };
 
 const KEY = 'ags-launch';
 

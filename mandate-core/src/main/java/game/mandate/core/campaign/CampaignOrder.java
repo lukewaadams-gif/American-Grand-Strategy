@@ -53,6 +53,12 @@ public sealed interface CampaignOrder {
     record MessageTone(Tone tone) implements CampaignOrder {}
     /** Commission an internal poll of a state (its code) or of the nation ("US"): this week, more accurate than the public polls, at a cost. */
     record InternalPoll(String state) implements CampaignOrder {}
+    /** Hire a staff member (an id in campaign_staff.csv) for a senior post; the default staff's id lets them go. */
+    record Hire(CampaignStaff.Post post, String staff) implements CampaignOrder {}
+    /** Choose the running mate (2028): a candidate id from the party's field. */
+    record RunningMate(String candidate) implements CampaignOrder {}
+    /** A surrogate's week: slot 0-3, a state's code, "FUNDRAISE" or null for none; and the advance lead (an id) or null to keep. */
+    record Surrogate(int slot, String state, String lead) implements CampaignOrder {}
     /** Pulls all TV (local and national) and/or all digital. */
     record PullAds(boolean tv, boolean digital) implements CampaignOrder {}
     /** Ad Studio: produce an ad. {@code tone} 0 positive, 1 contrast, 2 attack; {@code group} a voter group or -1 for everyone. */
@@ -82,6 +88,9 @@ public sealed interface CampaignOrder {
             case Message x -> m.put("issue", x.issue() == null ? null : x.issue().name());
             case MessageTone x -> m.put("tone", x.tone().name());
             case InternalPoll x -> m.put("state", x.state());
+            case Hire x -> { m.put("post", x.post().name()); m.put("staff", x.staff()); }
+            case RunningMate x -> m.put("candidate", x.candidate());
+            case Surrogate x -> { m.put("slot", x.slot()); m.put("state", x.state()); m.put("lead", x.lead()); }
             case PullAds x -> { m.put("tv", x.tv()); m.put("digital", x.digital()); }
             case ProduceAd x -> { m.put("tone", x.tone()); m.put("issue", x.issue().name()); m.put("group", x.group()); m.put("messenger", x.messenger().name()); }
             case TestAd x -> m.put("index", x.index());
@@ -111,6 +120,9 @@ public sealed interface CampaignOrder {
             case "Message" -> new Message(m.get("issue") == null ? null : Issue.valueOf((String) m.get("issue")));
             case "MessageTone" -> new MessageTone(Tone.valueOf((String) m.get("tone")));
             case "InternalPoll" -> new InternalPoll((String) m.get("state"));
+            case "Hire" -> new Hire(CampaignStaff.Post.valueOf((String) m.get("post")), (String) m.get("staff"));
+            case "RunningMate" -> new RunningMate((String) m.get("candidate"));
+            case "Surrogate" -> new Surrogate(Json.integer(m.get("slot")), (String) m.get("state"), (String) m.get("lead"));
             case "PullAds" -> new PullAds((Boolean) m.get("tv"), (Boolean) m.get("digital"));
             case "ProduceAd" -> new ProduceAd(Json.integer(m.get("tone")), Issue.valueOf((String) m.get("issue")), Json.integer(m.get("group")),
                     Messenger.valueOf((String) m.get("messenger")));

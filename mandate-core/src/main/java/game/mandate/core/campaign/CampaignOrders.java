@@ -44,6 +44,10 @@ public final class CampaignOrders {
     Issue message;
     /** The national message's tone (the War room's Message tab): contrast is the baseline. */
     Tone messageTone = Tone.CONTRAST;
+    /** Each surrogate's week (CampaignStaff.NONE, FUNDRAISE, or a state's index) and the advance lead running it. */
+    final int[] surrogate = {CampaignStaff.NONE, CampaignStaff.NONE, CampaignStaff.NONE, CampaignStaff.NONE};
+    final String[] tourLead = {CampaignStaff.defaultId(CampaignStaff.Post.ADVANCE), CampaignStaff.defaultId(CampaignStaff.Post.ADVANCE),
+            CampaignStaff.defaultId(CampaignStaff.Post.ADVANCE), CampaignStaff.defaultId(CampaignStaff.Post.ADVANCE)};
     int hq = 1;
 
     public CampaignOrders(int states, int markets) {
@@ -64,6 +68,7 @@ public final class CampaignOrders {
         c.copyFrom(this, true, true, true);
         c.message = message;
         c.messageTone = messageTone;
+        c.copySurrogates(this);
         c.hq = hq;
         return c;
     }
@@ -109,6 +114,14 @@ public final class CampaignOrders {
     public void field(int state, int offices, int organizers) { officeOrder[state] = offices; organizerOrder[state] = organizers; }
     public void message(Issue i) { message = i; }
     public void messageTone(Tone t) { messageTone = t == null ? Tone.CONTRAST : t; }
+    /** A surrogate's week: NONE, FUNDRAISE or a state's index; and who runs the tour. */
+    public void surrogate(int slot, int target, String lead) { surrogate[slot] = target; if (lead != null) tourLead[slot] = lead; }
+    public int surrogate(int slot) { return surrogate[slot]; }
+    public String tourLead(int slot) { return tourLead[slot]; }
+    void copySurrogates(CampaignOrders o) {
+        System.arraycopy(o.surrogate, 0, surrogate, 0, surrogate.length);
+        System.arraycopy(o.tourLead, 0, tourLead, 0, tourLead.length);
+    }
     public Tone messageTone() { return messageTone; }
     public void hq(int tier) { hq = Math.max(0, Math.min(2, tier)); }
     public void clearAirtime() { Arrays.fill(tvGrp, 0); Arrays.fill(nationalGrp, 0); }
@@ -164,6 +177,15 @@ public final class CampaignOrders {
         m.put("field", f);
         m.put("message", message == null ? null : message.name());
         if (messageTone != Tone.CONTRAST) m.put("messageTone", messageTone.name());
+        boolean anySurrogate = false;
+        for (int i = 0; i < surrogate.length; i++)
+            if (surrogate[i] != CampaignStaff.NONE || !tourLead[i].equals(CampaignStaff.defaultId(CampaignStaff.Post.ADVANCE))) anySurrogate = true;
+        if (anySurrogate) {
+            List<Object> l = new ArrayList<>();
+            for (int i = 0; i < surrogate.length; i++)
+                l.add(java.util.Arrays.asList(surrogate[i] >= 0 ? geo.code(surrogate[i]) : surrogate[i] == CampaignStaff.FUNDRAISE ? "$" : "", tourLead[i]));
+            m.put("surrogates", l);
+        }
         m.put("hq", hq);
         return m;
     }
@@ -200,6 +222,15 @@ public final class CampaignOrders {
         });
         o.message = m.get("message") == null ? null : Issue.valueOf((String) m.get("message"));
         if (m.get("messageTone") != null) o.messageTone = Tone.valueOf((String) m.get("messageTone"));
+        if (m.get("surrogates") != null) {
+            List<Object> l = Json.array(m.get("surrogates"));
+            for (int i = 0; i < Math.min(l.size(), o.surrogate.length); i++) {
+                List<Object> r = Json.array(l.get(i));
+                String t = (String) r.get(0);
+                o.surrogate[i] = t.isEmpty() ? CampaignStaff.NONE : t.equals("$") ? CampaignStaff.FUNDRAISE : geo.index(t);
+                o.tourLead[i] = (String) r.get(1);
+            }
+        }
         o.hq = Json.integer(m.get("hq"));
         return o;
     }

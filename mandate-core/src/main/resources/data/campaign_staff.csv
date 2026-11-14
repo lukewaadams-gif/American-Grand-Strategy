@@ -1,0 +1,39 @@
+# The campaign staff a candidate can hire (docs/CAMPAIGN_WAR_ROOM.md, "Team"): id,party(D/R/-),name,post,skill(1-10),salary($M a week),real(1/0),risk(0-1),note
+# Real people are well-known senior operatives of recent presidential campaigns. Their skill is the game's judgement for
+# play, not a fact; their risk is always 0: the game never pins a mishap on a real person. Mishaps come from fictional
+# junior staff (the advance leads). The default staff (skill 5) is the campaign without a hire, and costs nothing extra.
+staff_default_manager,-,Your staff (no hire),MANAGER,5,0,0,0,The campaign's own senior staff
+staff_default_pollster,-,Your staff (no hire),POLLSTER,5,0,0,0,The campaign's own polling unit
+staff_default_media,-,Your staff (no hire),MEDIA,5,0,0,0,The campaign's own media shop
+staff_default_field,-,Your staff (no hire),FIELD,5,0,0,0,The campaign's own field desk
+staff_default_finance,-,Your staff (no hire),FINANCE,5,0,0,0,The campaign's own finance office
+staff_default_advance,-,The advance team (no hire),ADVANCE,5,0,0,0.08,The campaign's own advance team
+d_omalley_dillon,D,Jen O'Malley Dillon,MANAGER,9,0.06,1,0,Managed Biden's 2020 campaign
+d_plouffe,D,David Plouffe,MANAGER,9,0.06,1,0,Managed Obama's 2008 campaign
+d_messina,D,Jim Messina,MANAGER,8,0.05,1,0,Managed Obama's 2012 re-election
+d_mook,D,Robby Mook,MANAGER,7,0.04,1,0,Managed Clinton's 2016 campaign
+d_shakir,D,Faiz Shakir,MANAGER,7,0.04,1,0,Managed Sanders's 2020 campaign
+d_benenson,D,Joel Benenson,POLLSTER,8,0.04,1,0,Obama's pollster
+d_dunn,D,Anita Dunn,MEDIA,8,0.05,1,0,Biden's adviser on message and media
+d_cutter,D,Stephanie Cutter,MEDIA,8,0.05,1,0,Obama's 2012 deputy campaign manager
+d_gifford,D,Rufus Gifford,FINANCE,8,0.04,1,0,Obama's 2012 finance director
+d_chavez_rodriguez,D,Julie Chavez Rodriguez,FIELD,7,0.04,1,0,Managed the Biden-Harris campaign in 2024
+r_lacivita,R,Chris LaCivita,MANAGER,9,0.06,1,0,Co-ran Trump's 2024 campaign
+r_roe,R,Jeff Roe,MANAGER,8,0.05,1,0,Ran Cruz's 2016 campaign and Youngkin's 2021 race
+r_stepien,R,Bill Stepien,MANAGER,7,0.05,1,0,Managed Trump's 2020 campaign
+r_conway,R,Kellyanne Conway,MEDIA,8,0.05,1,0,Managed Trump's 2016 campaign in its final months
+r_fabrizio,R,Tony Fabrizio,POLLSTER,8,0.04,1,0,Trump's pollster
+f_d_manager,D,Maya Ostrander,MANAGER,6,0.02,0,0,A state party's executive director ready for the big one
+f_d_pollster,D,Elliot Varga,POLLSTER,7,0.03,0,0,Runs a polling shop with a good record in the Midwest
+f_d_media,D,Priya Castellanos,MEDIA,7,0.03,0,0,Made the ads in two winning Senate races
+f_d_field,D,Darnell Whitaker,FIELD,8,0.04,0,0,Built the field program in a battleground state
+f_d_finance,D,Grace Holloway,FINANCE,7,0.03,0,0,A bundler's bundler on both coasts
+f_r_manager,R,Colton Brandt,MANAGER,6,0.02,0,0,Twice a governor's campaign manager
+f_r_pollster,R,Hannah Kessler,POLLSTER,7,0.03,0,0,Runs a data firm known for its turnout models
+f_r_media,R,Wade Harrington,MEDIA,7,0.03,0,0,Made the ads in three Senate pickups
+f_r_field,R,Lucia Ferraro,FIELD,8,0.04,0,0,Ran the ground game in a battleground state
+f_r_finance,R,Preston Gale,FINANCE,7,0.03,0,0,Knows every major donor in Texas and Florida
+f_adv_1,-,Sam Okafor,ADVANCE,8,0.03,0,0.03,Twenty years of advance work: careful and expensive
+f_adv_2,-,Jordan Pell,ADVANCE,7,0.02,0,0.06,Moves fast; most of the time that is a good thing
+f_adv_3,-,Casey Lindqvist,ADVANCE,6,0.01,0,0.12,Cheap and keen to prove themselves
+f_adv_4,-,Riley Duchamp,ADVANCE,4,0,0,0.3,A volunteer coordinator stepping up: free but a gamble

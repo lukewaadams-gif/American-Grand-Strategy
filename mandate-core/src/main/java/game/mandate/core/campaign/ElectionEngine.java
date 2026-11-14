@@ -113,6 +113,8 @@ public final class ElectionEngine {
         CampaignSide side = player ? e.player : e.opponent;
         side.orders.copyFrom(plan, schedule, ads, field);
         side.orders.message = plan.message;
+        // the surrogates' weeks: the opponent's always by its planner, the player's when the staff runs them
+        if (!player || e.staffRuns(ElectionState.StaffArea.SURROGATES)) side.orders.copySurrogates(plan);
         if (!player) side.orders.hq = plan.hq;
     }
 
@@ -123,6 +125,7 @@ public final class ElectionEngine {
         e.player.orders.copyFrom(o, true, true, true);
         e.player.orders.message = o.message;
         e.player.orders.messageTone = o.messageTone;
+        e.player.orders.copySurrogates(o);
         e.player.orders.hq = o.hq;
     }
 
@@ -320,6 +323,50 @@ public final class ElectionEngine {
         e.opponentPledges.addAll(ids);
     }
 
+    // ---- the team and the surrogates (docs/CAMPAIGN_WAR_ROOM.md, "Team") ------------------------------------------------
+
+    public CampaignStaff staff() { return campaigns.staff(); }
+
+    /** Names each side's running mate (the strongest of its field, unless chosen) and two allies, once per campaign. */
+    public void nameSurrogates(ElectionState e, CandidateCatalog cat) {
+        for (CampaignSide side : new CampaignSide[]{e.player, e.opponent}) {
+            CampaignSide other = side == e.player ? e.opponent : e.player;
+            if (side.runningMate == null) side.runningMate = CampaignStaff.defaultRunningMate(cat, side.candidate(), other.candidate());
+            if (side.allies[0] == null) {
+                List<Candidate> a = CampaignStaff.allies(cat, side.candidate(), other.candidate(), side.runningMate);
+                for (int i = 0; i < a.size(); i++) side.allies[i] = a.get(i);
+            }
+        }
+    }
+
+    public void chooseRunningMate(ElectionState e, CandidateCatalog cat, String id) {
+        Candidate c = cat.get(id);
+        if (c.party() != e.player.party()) throw new IllegalArgumentException(c.name() + " is in the other party");
+        if (c.id().equals(e.player.candidate().id()) || c.id().equals(e.opponent.candidate().id())) throw new IllegalArgumentException("Not someone on a ticket already");
+        if (c.isReal() != e.player.candidate().isReal()) throw new IllegalArgumentException(c.name() + " is not in this game's cast");
+        e.player.runningMate = c;
+        // an ally named as running mate leaves the allies; the next of the party's field joins them
+        for (int i = 0; i < 2; i++) if (e.player.allies[i] != null && e.player.allies[i].id().equals(id)) e.player.allies[i] = null;
+        List<Candidate> next = CampaignStaff.allies(cat, e.player.candidate(), e.opponent.candidate(), c);
+        for (int i = 0; i < 2; i++) if (e.player.allies[i] == null)
+            for (Candidate x : next) if (!x.id().equals(id) && (e.player.allies[1 - i] == null || !e.player.allies[1 - i].id().equals(x.id()))) { e.player.allies[i] = x; break; }
+    }
+
+    /** Hires for a senior post (the post's default lets the hire go), with a signing fee of two weeks' salary. */
+    public void hire(ElectionState e, CampaignStaff.Post post, String id, boolean realRoster) {
+        if (post == CampaignStaff.Post.ADVANCE) throw new IllegalArgumentException("Advance leads are chosen for each tour");
+        CampaignStaff.Member m = staff().get(id);
+        if (m.post() != post) throw new IllegalArgumentException(m.name() + " is not a " + post.label.toLowerCase(java.util.Locale.ROOT));
+        if (m.party() != null && m.party() != e.player.party()) throw new IllegalArgumentException(m.name() + " works for the other party");
+        if (m.real() && !realRoster) throw new IllegalArgumentException(m.name() + " is not in this game's cast");
+        int i = CampaignStaff.Post.SENIOR.indexOf(post);
+        if (e.player.team[i].equals(id)) throw new IllegalArgumentException(m.name() + " already holds the post");
+        double fee = 2 * m.salary();
+        if (e.player.cash < fee) throw new IllegalArgumentException("Not enough cash for the signing fee");
+        CampaignEngine.pay(e.player, fee, -1, 0);
+        e.player.team[i] = id;
+    }
+
     /** How many promises a campaign can make and be believed. */
     public int pledgeMax() { return p.pledgeMax(); }
 
@@ -480,7 +527,7 @@ public final class ElectionEngine {
         if (e.player.cash < cost) throw new IllegalArgumentException("Not enough cash for the poll");
         int sign = e.player.party().sign();
         double truth = nation ? calculator.tally(date.getYear(), expectedMargins(e, env)).popularMargin() : expectedMargins(e, env).get(state);
-        double sd = nation ? 0.8 : 1.1;
+        double sd = (nation ? 0.8 : 1.1) * Math.max(0.6, 1 - 0.07 * (staff().get(e.player.staffAt(CampaignStaff.Post.POLLSTER)).skill() - 5));
         double margin = truth * sign + sd * rng.gaussian("campaign.internalPoll");
         CampaignEngine.pay(e.player, cost, -1, 0);
         ElectionState.InternalPoll poll = new ElectionState.InternalPoll(date, state, margin, sd);

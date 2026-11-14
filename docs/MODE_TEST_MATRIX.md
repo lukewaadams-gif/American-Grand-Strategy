@@ -29,6 +29,7 @@ Also tested on every path: removal from office (impeached and convicted), which 
 | G | `ModesTest.governingOnlyOpensOnElectionNightWithTheChosenAdministration` (both parties; a toss-up and an unfavourable mood); `governingOnlyGoesOnThroughTheSamePresidencyAsTheFullGame`; `LifecycleTest` (every other game is Governing Only) | The chosen president-elect elected; the 2028 night first; exact replay; the same presidency to its end | 13 Nov 2026, M8 code |
 | H | `ModesTest.anIndividualCrisisEndsAtItsOutcomeWithAnAfterActionReport`; `anIndividualCrisisBeginsOnlyFromAGoverningPresidency`; `CrisisAccountingTest`; `TaiwanOutcomeTest` | Hormuz won, lost and ended in part; Taiwan won and lost by the president's orders, each crisis seeded and replayed; the report saved; the crisis's costs ended with it (E-06) | 14 Nov 2026 |
 | All | `ModesTest.anOlderSaveOfTheHundredDaysSliceLoadsAsTheFullGame`; `OlderSavesTest` | Saves from before this round load, play on and save again (E-08) | 13 Nov 2026, M8 code |
+| A, E, F | `CampaignTeamTest` | The running mate and allies (party, cast), the staff's tours, a hire and its rules, a tour by hand, saved and replayed | 14 Nov 2026 |
 | A, E, F | `WarRoomDeskTest` | Internal polls (paid, once a week, saved), the message's tone, a state's voters adding up to its poll | 14 Nov 2026 |
 | All | `DeterminismTest`; `GoldenRegressionTest` | The same seed gives the same world; the golden fingerprints | 13 Nov 2026, M8 code |
 
@@ -48,14 +49,15 @@ The seed is the index plus one.
 | A | `election.js` (eve2028-lose) | Run the day to the vote, the broadcast, then the campaign's end page |
 | B | `election.js` (eve2032-lose, night2032-lose) | The 2032 loss's night and the Oval Office after it; resuming after a reload |
 | C | `election.js` (night2032-successor) | A 2032 night without the president: "The White House changes hands" or "Your party keeps it" |
-| A, E, F | `warroom.js` | The war room's Message and Polls tabs and the Voters desk |
+| A, E, F | `warroom.js` | The war room's Message, Polls and Team tabs and the Voters desk |
 | B, D | `office2032.js` | The war room's White House card in 2032: the record, the questions, the four rooms |
 | D | `election.js` (eve2032-win, night2036); `terms.js` | Four more years, the second term's theme, the race to succeed, the 2036 night, the verdict at the handoff |
 | E, F | `modes.js` (eve2028-campaign-win, eve2028-campaign-lose) | The night, the campaign's end (the assessment, the vote, every state), the night again, the replay |
 | G | `modes.js` | Governing Only from the title screen's setup to the 2028 night and the transition |
 | H | `modes.js` (crisis-hormuz-last, crisis-taiwan-last); `hormuz.js`; `taiwan.js` | The last turn and the after-action report; the crisis started from the setup; the crisis rooms |
 | All | `play.js`, `presidency.js`, `economy.js`, `congress.js`, `westwing.js`, `residence.js`, `sitroom.js`, `preview.js` | The title screen, the setup and a new game; the hundred days and day 100's report (`modes.js`); every room. Each at 1600, 1280 and 390 px, in every palette, at 125% text and with reduced motion (axe-core WCAG 2.1 AA, text size, sideways scroll) |
-| All | `front.js` | The title screen and every step of the setup, the real 2028 field and the fictional cast, the face-off, the keyboard; the site's front page handing a new game and a moment to the game's page; the earlier slice at `classic/`. At 1600 and 390 px, in every palette, at 125% text and with reduced motion |
+| All | `front.js` | The title screen (with the Tutorial) and every step of the setup, the real 2028 field and the fictional cast, the face-off, the keyboard; the site's front page handing a new game and a moment to the game's page; the earlier slice at `classic/`. At 1600 and 390 px, in every palette, at 125% text and with reduced motion |
+| All | `tutorial.js` | The tutorial: the campaign to the first year, by hand and by "Do it for me", its comparisons, chapters, remembered progress and "Play from here" |
 | All | `broadcast-unit.mjs` | 398 synthetic nights: every race called for its winner, the final count the result |
 | Older site | `flow.js` | The earlier slice's own flow (now at `classic/`), with no console errors |
 

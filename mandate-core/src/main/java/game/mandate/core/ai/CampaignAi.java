@@ -7,6 +7,8 @@ import game.mandate.core.campaign.CampaignEngine;
 import game.mandate.core.campaign.CampaignGeography;
 import game.mandate.core.campaign.CampaignOrders;
 import game.mandate.core.campaign.CampaignSide;
+import game.mandate.core.campaign.CampaignStaff;
+import game.mandate.core.campaign.Candidate;
 import game.mandate.core.campaign.Show;
 import game.mandate.core.campaign.CampaignStrategy;
 import game.mandate.core.campaign.CampaignStrategy.Orders;
@@ -110,9 +112,33 @@ public final class CampaignAi {
         if (schedule) schedule(g, side, brief, o, v, rng);
         if (ads || field) budget(g, side, brief, o, v, ads, field);
         o.message(brief.message() != null ? brief.message() : bestMessage(g, side));
+        surrogates(side, o, v, geo);
         double burn = 4.2;
         o.hq(side.cash() < burn * 3 ? 0 : side.cash() > burn * 40 ? 2 : 1);
         return o;
+    }
+
+    /**
+     * The surrogates' week (docs/CAMPAIGN_WAR_ROOM.md, "Team"): each to one of the most valuable states, preferring their
+     * home region when a state there is nearly as valuable; an ally raises money when the campaign is short.
+     */
+    static void surrogates(CampaignSide side, CampaignOrders o, double[] v, CampaignGeography geo) {
+        int[] top = topStates(v, 8);
+        if (top.length == 0) return;
+        boolean poor = side.cash() < CampaignEngine.hqWeek(side) * 4;
+        boolean[] used = new boolean[geo.size()];
+        for (int slot = 0; slot < CampaignStaff.SURROGATES; slot++) {
+            if (slot == 3 && poor) { o.surrogate(slot, CampaignStaff.FUNDRAISE, null); continue; }
+            Candidate c = side.surrogate(slot);
+            String home = c != null ? c.homeState() : side.candidate().homeState();
+            String region = CampaignStaff.region(home);
+            int best = -1;
+            for (int s : top) if (!used[s] && (best < 0 || v[s] > v[best])) best = s;
+            for (int s : top) if (!used[s] && best >= 0 && CampaignStaff.region(geo.code(s)).equals(region) && v[s] >= 0.7 * v[best]) { best = s; break; }
+            if (best < 0 || v[best] <= 0) { o.surrogate(slot, CampaignStaff.NONE, null); continue; }
+            used[best] = true;
+            o.surrogate(slot, best, null);
+        }
     }
 
     /** BG AI.schedule (l.5992). */

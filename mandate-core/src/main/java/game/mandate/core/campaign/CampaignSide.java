@@ -49,6 +49,11 @@ public final class CampaignSide {
     String bestRally = "";
     /** One row per turn: raised, spent, volunteers, doors knocked (for the money and field charts). */
     final List<double[]> history = new ArrayList<>();
+    // the team and the surrogates (docs/CAMPAIGN_WAR_ROOM.md, "Team"): staff ids by senior post; the running mate and two
+    // allies (null until the campaign's first turn names them); the spouse needs no record
+    final String[] team = new String[CampaignStaff.Post.SENIOR.size()];
+    Candidate runningMate;
+    final Candidate[] allies = new Candidate[2];
 
     CampaignSide(Party party, Candidate candidate, double cash, CampaignGeography geo) {
         this.party = party;
@@ -64,10 +69,17 @@ public final class CampaignSide {
         digital = new double[n][CampaignGeography.NAGE];
         orders = new CampaignOrders(n, geo.marketCount());
         location = geo.contains(candidate.homeState()) ? geo.index(candidate.homeState()) : 0;
+        for (int i = 0; i < team.length; i++) team[i] = CampaignStaff.defaultId(CampaignStaff.Post.SENIOR.get(i));
         Arrays.fill(lastOnShow, Long.MIN_VALUE / 2);
     }
 
     public Party party() { return party; }
+    /** The staff member holding a senior post (its id). */
+    public String staffAt(CampaignStaff.Post post) { return team[CampaignStaff.Post.SENIOR.indexOf(post)]; }
+    public Candidate runningMate() { return runningMate; }
+    public List<Candidate> allies() { return java.util.Arrays.stream(allies).filter(java.util.Objects::nonNull).toList(); }
+    /** The surrogate in a slot (0 the running mate, 1 the spouse, 2-3 the allies); null for the spouse, or an empty slot. */
+    public Candidate surrogate(int slot) { return slot == 0 ? runningMate : slot >= 2 ? allies[slot - 2] : null; }
     public Candidate candidate() { return candidate; }
     public TrailRatings ratings() { return ratings; }
 
@@ -207,6 +219,11 @@ public final class CampaignSide {
         List<Object> h = new ArrayList<>();
         for (double[] r : history) h.add(CampaignOrders.list(r));
         m.put("history", h);
+        boolean hired = false;
+        for (int i = 0; i < team.length; i++) if (!team[i].equals(CampaignStaff.defaultId(CampaignStaff.Post.SENIOR.get(i)))) hired = true;
+        if (hired) m.put("team", java.util.Arrays.asList(team.clone()));
+        if (runningMate != null) m.put("runningMate", runningMate.id());
+        if (allies[0] != null) m.put("allies", allies().stream().map(Candidate::id).toList());
         return m;
     }
 
@@ -233,10 +250,14 @@ public final class CampaignSide {
             s.calls[i] = r[12]; s.texts[i] = r[13]; s.relational[i] = r[14]; s.doorsTotal[i] = r[15]; s.spendTurn[i] = r[16]; s.spend4[i] = r[17];
             s.adSpend4[i] = r[18]; s.fieldSpend4[i] = r[19]; s.digital[i][0] = r[20]; s.digital[i][1] = r[21]; s.digital[i][2] = r[22];
         });
+        if (m.get("team") != null) { List<Object> t = Json.array(m.get("team")); for (int i = 0; i < Math.min(t.size(), s.team.length); i++) s.team[i] = (String) t.get(i); }
+        if (m.get("runningMate") != null) s.runningMate = catalog.get((String) m.get("runningMate"));
+        if (m.get("allies") != null) { List<Object> a = Json.array(m.get("allies")); for (int i = 0; i < Math.min(2, a.size()); i++) s.allies[i] = catalog.get((String) a.get(i)); }
         CampaignOrders o = CampaignOrders.fromJson(Json.object(m.get("orders")), geo);
         s.orders.copyFrom(o, true, true, true);
         s.orders.message = o.message;
         s.orders.messageTone = o.messageTone;
+        s.orders.copySurrogates(o);
         s.orders.hq = o.hq;
         for (Object a : Json.array(m.get("ads"))) s.ads.add(Ad.fromJson(Json.object(a)));
         s.airing = Json.integer(m.get("airing"));

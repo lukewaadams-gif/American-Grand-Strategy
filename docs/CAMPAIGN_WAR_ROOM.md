@@ -2,7 +2,7 @@
 
 The war room is where both campaigns are run, 2028's and the 2032 re-election. The campaign's engine and its port from Battleground 2028 are in `docs/CAMPAIGN_PORT.md`. This page covers the war room's tabs and desks, as built on 14 November 2026.
 
-## The left panel's tabs (keys 1 to 6)
+## The left panel's tabs (keys 1 to 7)
 
 | Key | Tab | What it does |
 |---|---|---|
@@ -11,7 +11,8 @@ The war room is where both campaigns are run, 2028's and the 2032 re-election. T
 | 3 | Field | Offices, organisers, volunteers, transfers to the state parties |
 | 4 | **Message** | The week's national message and its tone; plans and promises |
 | 5 | **Polls** | The national trend, internal polling, the closest states, the national polls by group, age and sex |
-| 6 | Wire | The news |
+| 6 | **Team** | The senior staff you hire; the surrogates on tour, and who runs each tour; the running mate |
+| 7 | Wire | The news |
 
 ### Message
 
@@ -48,6 +49,29 @@ The war room is where both campaigns are run, 2028's and the 2032 re-election. T
 - **The closest states,** with their change since the last poll.
 - **The national polls by group, age and sex,** from the electorate model's crosstabs, with the public polls' noise.
 
+### Team
+
+- **The senior staff.** Five posts. Each holder's skill (1 to 10) makes their part of the campaign work harder, by 3% a point from the default staff's 5:
+
+  | Post | What it moves |
+  |---|---|
+  | Campaign manager | The message's momentum |
+  | Pollster | The internal polls' error: 7% smaller a point |
+  | Media director | TV and digital |
+  | Field director | Volunteers' and organisers' contacts |
+  | Finance director | Every fundraiser, call-time session, small-dollar gift and surrogate's donor event |
+
+  - **The cost of a hire:** a weekly salary, and a signing fee of two weeks' pay (`CampaignOrder.Hire`). The default staff cost nothing extra.
+  - **The pool** (`data/campaign_staff.csv`) holds well-known senior operatives of recent presidential campaigns (with the real cast only) and fictional hires.
+  - **Real people get a skill rating only,** labelled as the game's judgement for play, and never any risk.
+- **The surrogates.** The running mate, your spouse, and two allies: the party's most charismatic figures from the same cast, not on either ticket (`CampaignStaff`).
+  - **A week's tour** (`CampaignOrder.Surrogate`): a state, raising money, or nothing.
+  - **Moderates persuade** (visits and the local image). **Firebrands mobilise** (volunteers and enthusiasm).
+  - **Their pull is their charisma.** The running mate's counts a fifth more. It is 1.3× in their home region and 1.8× in their home state.
+  - **A tour is run by an advance lead.** The lead's skill multiplies the stop. A lead's risk is the weekly chance of a mishap (a double-booked stop, a bad local story). Only fictional junior staff carry risk.
+  - **The staff plans the tours by default** for both campaigns: the most valuable states, a home-region state when it is nearly as good, and an ally raising money when cash is short. An order of the player's own hands the tours over.
+- **The running mate** (2028): chosen from the party's strongest eight (`CampaignOrder.RunningMate`). Otherwise the strongest is named on the campaign's first turn. An ally named running mate leaves the allies, and the next of the party joins them.
+
 ## The state desk's tabs
 
 When a state is picked on the map, the right column shows its desk: Overview, Ads, Field and **Voters**.
@@ -72,6 +96,12 @@ When no state is picked, the right column shows the matchup, the national race a
 - the doors to Congress, the West Wing, the Situation Room and the press room.
 
 ## Tests
+
+- `CampaignTeamTest` (engine):
+  - each ticket's running mate and allies: their party, their cast, not on a ticket;
+  - the staff's tours;
+  - a running mate chosen, a hire (its fee, the party and cast rules), a tour by hand: saved and replayed;
+  - a hired manager moving the race.
 
 - `WarRoomDeskTest` (engine):
   - internal polls: close to the truth, paid for, once a week, saved and replayed;

@@ -33,6 +33,16 @@ export interface MessageDesk {
   canPledge: boolean; pledgeMax: number;
   plans: { id: string; name: string; issue: string; appeal: number; costBn: number; pledged: boolean }[];
 }
+export interface StaffMember { id: string; name: string; skill: number; salary: number; real: boolean; risk: number; note: string; default: boolean }
+export interface TeamDesk {
+  posts: { post: string; label: string; effect: string; current: StaffMember; options: StaffMember[] }[];
+  leads: StaffMember[];
+  staffRuns: boolean;
+  surrogates: { slot: number; role: string; id: string | null; name: string; home: string; region: string; pull: number; kind: 'persuade' | 'mobilise';
+    target: string | null; lead: string; look?: Look | null }[];
+  canChooseMate: boolean;
+  mates?: { id: string; name: string; home: string; pull: number; kind: 'persuade' | 'mobilise' }[];
+}
 export interface PollsDesk {
   stateCost: number; nationalCost: number;
   internal: { date: string; state: string; margin: number; sd: number; fresh: boolean }[];
@@ -56,6 +66,8 @@ export interface CampaignView {
   message?: MessageDesk;
   /** The Polls tab: internal polls and the groups. */
   pollsDesk?: PollsDesk;
+  /** The Team tab: the staff and the surrogates. */
+  team?: TeamDesk;
   polls: PollWeek[]; errorSd: number; states: StateView[]; tipping: string | null; news: NewsItem[];
   /** Present while a campaign is running. */
   turn?: TurnInfo; staff?: Staff; trail?: Trail; schedule?: Slot[]; activities?: ActivityInfo[]; field?: Field; money?: Money; ads?: Ads;

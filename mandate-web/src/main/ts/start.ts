@@ -27,6 +27,10 @@ export interface StartActions {
   islandChain(o: { year: number; preset: number; side: 'US' | 'PRC' }): void;
   /** Extra links for the title screen's foot (the site's front page links its older slice). */
   links?: { label: string; href: string }[];
+  /** The tutorial (docs/TUTORIAL.md): a guided game, from where it last stopped. */
+  tutorial?(): void;
+  /** The chapter the tutorial last stopped at (0 if new). */
+  tutorialChapter?(): number;
 }
 
 type Mode = GameMode | 'CRISIS';
@@ -210,7 +214,12 @@ export function startScreen(act: StartActions): HTMLElement {
           if (f) act.loadFile(await f.text());
         } })),
       h('button', { class: 'front-item', type: 'button', 'data-action': 'moments', onclick: () => go('moments') },
-        h('span', { class: 'front-item-label' }, 'Start at a moment'), h('span', { class: 'front-item-hint' }, 'Jump into the Full Game at a turning point')));
+        h('span', { class: 'front-item-label' }, 'Start at a moment'), h('span', { class: 'front-item-hint' }, 'Jump into the Full Game at a turning point')),
+      act.tutorial ? h('button', { class: 'front-item', type: 'button', 'data-action': 'tutorial', onclick: () => act.tutorial!() },
+        h('span', { class: 'front-item-label' }, 'Tutorial'),
+        h('span', { class: 'front-item-hint' }, (act.tutorialChapter?.() ?? 0) > 0
+          ? `Pick up at chapter ${(act.tutorialChapter?.() ?? 0) + 1}: how it all fits together`
+          : 'A guided game, about fifteen minutes: how it all fits together')) : null);
     menu.addEventListener('keydown', e => {
       if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
       const items = [...menu.querySelectorAll<HTMLElement>('.front-item')];

@@ -34,6 +34,9 @@ class CampaignTrailTest {
         for (StaffArea a : StaffArea.values()) g.apply(new Command.Campaign(new CampaignOrder.Staff(a, false)));
         g.apply(new Command.Campaign(new CampaignOrder.ClearSchedule()));
         g.apply(new Command.Campaign(new CampaignOrder.PullAds(true, true)));
+        // no surrogates either: these tests measure the candidate's own trail
+        for (int slot = 0; slot < game.mandate.core.campaign.CampaignStaff.SURROGATES; slot++)
+            g.apply(new Command.Campaign(new CampaignOrder.Surrogate(slot, null, null)));
         return g;
     }
 
