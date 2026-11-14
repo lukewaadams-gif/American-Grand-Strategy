@@ -49,6 +49,7 @@ export const engine = {
     economy() { return request({ op: 'view', name: 'economy' }); },
     cabinet() { return request({ op: 'view', name: 'cabinet' }); },
     hill() { return request({ op: 'view', name: 'hill' }); },
+    voters(state) { return request({ op: 'view', name: 'voters', state }); },
     westWing() { return request({ op: 'view', name: 'westwing' }); },
     westWingOptions(kind, index) { return request({ op: 'view', name: 'westwingOptions', kind, index }); },
     press() { return request({ op: 'view', name: 'press' }); },

@@ -29,7 +29,7 @@ export function rooseveltRoom(act, first = 'The Hill') {
         const v = act.view();
         const keep = document.activeElement instanceof HTMLElement && root.contains(document.activeElement)
             ? document.activeElement.getAttribute('aria-label') ?? document.activeElement.textContent : null;
-        const top = h('div', { class: 'room-top' }, h('div', null, h('div', { class: 'eyebrow' }, 'Across the hall'), h('h2', { class: 'dialog-title' }, 'The Roosevelt Room'), h('p', { class: 'muted' }, (v.congress ? v.congress + ', week of ' : 'Week of ') + day(v.date, true))), h('button', { class: 'btn primary', type: 'button', onclick: act.back }, 'Back to the Oval Office'));
+        const top = h('div', { class: 'room-top' }, h('div', null, h('div', { class: 'eyebrow' }, 'Across the hall'), h('h2', { class: 'dialog-title' }, 'The Roosevelt Room'), h('p', { class: 'muted' }, (v.congress ? v.congress + ', week of ' : 'Week of ') + day(v.date, true))), h('button', { class: 'btn primary', type: 'button', onclick: act.back }, act.backLabel ?? 'Back to the Oval Office'));
         if (!v.blocs) {
             root.replaceChildren(top, h('p', null, v.reason ?? 'Congress is not in session.'));
             return;

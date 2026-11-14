@@ -29,7 +29,7 @@ export function sitRoom(act, first = 'The world') {
     const order = (o) => { act.order(o); draw(); };
     function draw() {
         const v = act.view();
-        const top = h('div', { class: 'room-top' }, h('div', null, h('div', { class: 'eyebrow' }, 'Below the West Wing'), h('h2', { class: 'dialog-title' }, 'The Situation Room'), h('p', { class: 'muted' }, 'Week of ' + day(v.date, true) + (v.defcon !== undefined ? ' · ' : ''), v.defcon !== undefined ? h('span', { class: 'sit-defcon d' + v.defcon }, 'DEFCON ' + v.defcon) : null)), h('button', { class: 'btn primary', type: 'button', onclick: act.back }, 'Back to the Oval Office'));
+        const top = h('div', { class: 'room-top' }, h('div', null, h('div', { class: 'eyebrow' }, 'Below the West Wing'), h('h2', { class: 'dialog-title' }, 'The Situation Room'), h('p', { class: 'muted' }, 'Week of ' + day(v.date, true) + (v.defcon !== undefined ? ' · ' : ''), v.defcon !== undefined ? h('span', { class: 'sit-defcon d' + v.defcon }, 'DEFCON ' + v.defcon) : null)), h('button', { class: 'btn primary', type: 'button', onclick: act.back }, act.backLabel ?? 'Back to the Oval Office'));
         if (!v.countries) {
             root.replaceChildren(top, h('p', null, v.reason ?? ''));
             return;
