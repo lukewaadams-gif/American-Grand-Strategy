@@ -4,7 +4,7 @@
 //   2. the keyboard: the title's menu by arrows, Enter on New Game, Escape back, Enter forward;
 //   3. the setup: the real 2028 field by default, the fictional cast on request, the chosen candidate's file, the face-off,
 //      and Begin opening the war room; the moments;
-//   4. the site's front page (the root, served on 8767 with preview/ and classic/ beside it): the same title screen on the
+//   4. the site's front page (the root, served on 8767 with play/ and classic/ beside it): the same title screen on the
 //      game's engine, a new game and a moment handed to the game's page, and the earlier slice at classic/.
 // Fails on any console error. Usage: node front.js [out-dir]
 const { chromium } = require('playwright');
@@ -172,7 +172,7 @@ const fail = (what) => { failures++; console.log('FAIL', what); };
     await page.click('.mode-card[data-mode="CAMPAIGN_ONLY"]');
     for (let i = 0; i < 5; i++) { await page.click('.setup-next'); await page.waitForTimeout(150); }
     await page.click('.setup-begin');
-    await page.waitForURL(/preview\/index\.html/, { timeout: 30000 }).catch(() => fail('the front page does not hand over to the game'));
+    await page.waitForURL(/play\/index\.html/, { timeout: 30000 }).catch(() => fail('the front page does not hand over to the game'));
     await page.waitForSelector('.cw-bar', { timeout: 30000 }).catch(() => fail('the handed-over game does not open the war room'));
     console.log('the front page handed a new game to', page.url());
     await page.reload();

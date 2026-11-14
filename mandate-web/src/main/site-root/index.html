@@ -7,15 +7,15 @@
 <meta name="description" content="American Grand Strategy, an American political strategy game: win the White House in 2028, then govern for as long as you serve. Four games: the Full Game, Campaign Only, Governing Only and Individual Crisis.">
 <meta name="color-scheme" content="dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23090d13'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-weight='700' font-size='14' text-anchor='middle' fill='%23e0ad4a'%3EAGS%3C/text%3E%3C/svg%3E">
-<!-- The site's front page: the game's title screen and setup, run from the game's own folder (preview/), which carries
-     out the choice. The earlier playable slice lives on at classic/. Source: mandate-web/src/main/site-root/index.html. -->
-<link rel="stylesheet" href="preview/preview.css">
-<link rel="stylesheet" href="preview/presidency.css">
-<link rel="stylesheet" href="preview/front.css">
+<!-- The site's front page: the game's title screen and setup, run from the approved game's own folder (play/), which
+     carries out the choice. preview/ holds the next build under review; the earlier playable slice lives on at classic/. Source: mandate-web/src/main/site-root/index.html. -->
+<link rel="stylesheet" href="play/preview.css">
+<link rel="stylesheet" href="play/presidency.css">
+<link rel="stylesheet" href="play/front.css">
 </head>
 <body class="presidency start-page">
 <div id="app" class="app"><div class="boot" role="status"><span class="boot-mark">American Grand Strategy</span><span class="boot-text">Starting the engine…</span></div></div>
 <noscript><p class="boot-error">American Grand Strategy runs in your browser and needs JavaScript.</p></noscript>
-<script type="module" src="preview/app/front-main.js"></script>
+<script type="module" src="play/app/front-main.js"></script>
 </body>
 </html>

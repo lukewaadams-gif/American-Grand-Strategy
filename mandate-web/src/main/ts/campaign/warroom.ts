@@ -81,7 +81,7 @@ export function warRoom(v: CampaignView, st: WarRoomState, act: WarRoomActions):
   const tabs = h('div', { class: 'side-tabs', role: 'tablist', 'aria-label': 'Campaign' },
     ...TABS.map((t, i) => h('button', { type: 'button', role: 'tab', id: 'tab-' + t.id, class: 'side-tab' + (t.id === st.tab ? ' on' : '') + (t.ready ? '' : ' soon'),
       'aria-selected': t.id === st.tab ? 'true' : 'false', 'aria-controls': 'tab-panel', tabindex: t.id === st.tab ? 0 : -1,
-      'aria-disabled': t.ready ? null : 'true', title: t.ready ? `${t.label} (${i + 1})` : `${t.label}: in the next preview`,
+      'aria-disabled': t.ready ? null : 'true', title: t.ready ? `${t.label} (${i + 1})` : `${t.label}: not in this version`,
       onclick: () => { if (t.ready) act.setTab(t.id); },
       onkeydown: ((e: KeyboardEvent) => {
         const ready = TABS.filter(x => x.ready), k = ready.findIndex(x => x.id === st.tab);
@@ -188,7 +188,7 @@ function stateDesk(x: StateView, v: CampaignView, st: WarRoomState, act: WarRoom
       h('span', { class: 'duel-nums' }, `${me.toFixed(1)} · ${them.toFixed(1)}`));
   };
   const deskTab = (id: DeskTab | null, label: string) => h('button', { type: 'button', class: 'tab' + (id === st.desk ? ' on' : '') + (id ? '' : ' soon'),
-    'aria-pressed': id === st.desk ? 'true' : 'false', 'aria-disabled': id ? null : 'true', title: id ? null : `${label}: in the next preview`,
+    'aria-pressed': id === st.desk ? 'true' : 'false', 'aria-disabled': id ? null : 'true', title: id ? null : `${label}: not in this version`,
     onclick: () => { if (id) act.setDesk(id); } }, label);
   const deskTabs = h('div', { class: 'desk-tabs', role: 'group', 'aria-label': 'State desk' },
     deskTab('overview', 'Overview'), deskTab(v.ads ? 'ads' : null, 'Ads'), deskTab(v.field ? 'field' : null, 'Field'), deskTab(null, 'Voters'));

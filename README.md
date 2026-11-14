@@ -20,7 +20,7 @@ Those repositories are kept untouched; see `docs/SOURCE_AUDIT.md`.
 
 **Start here:** https://lukewaadams-gif.github.io/American-Grand-Strategy/
 
-The front page is the game's title screen. Choose **New Game** and it walks you through the setup one step at a time, then opens the game (served from `preview/`, which you can also open directly: https://lukewaadams-gif.github.io/American-Grand-Strategy/preview/).
+The front page is the game's title screen. Choose **New Game** and it walks you through the setup one step at a time, then opens the game (served from `play/`, which you can also open directly: https://lukewaadams-gif.github.io/American-Grand-Strategy/play/).
 
 Nothing to install: the simulation runs in the page. Use a current Chrome, Edge, Firefox or Safari, on a computer or a phone.
 
@@ -63,7 +63,11 @@ The world is **real people** by default: the candidates, senators, congressional
 - **Ctrl+Enter** (⌘+Enter on a Mac) plays the turn, in the Oval Office or inside a crisis room.
 - **Escape** closes a room, or takes the controls back from watch mode.
 
-The first playable slice, in the earlier interface (the 2028 election and the presidency's first years, with Full Game and Campaign Only), is kept unchanged at https://lukewaadams-gif.github.io/American-Grand-Strategy/classic/. The title screen links it at its foot.
+**The site's folders:**
+- the root: the front page, the title screen;
+- `play/`: the approved game (approved 14 November 2026; its build stamp, at the foot of the title screen, names the commit);
+- `preview/`: a build under review, before it is approved. Today it is the same build as `play/`;
+- `classic/`: the first playable slice, in the earlier interface (the 2028 election and the presidency's first years, with Full Game and Campaign Only), kept unchanged. The title screen links it at its foot.
 
 ## What a game plays
 
@@ -221,7 +225,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md).
 ```
 mandate-core/   the simulation (no UI imports, enforced by a test)
 mandate-web/    the browser game: the core compiled to JavaScript by TeaVM, and the TypeScript interface (src/main/ts)
-                src/main/site-root/index.html is the site's front page: the title screen, run from preview/
+                src/main/site-root/index.html is the site's front page: the title screen, run from play/
 mandate-ui/     the desktop interface (Swing): design system, screens, automated UI checks, screenshot tool
 mandate-cli/    the executable (desktop by default), the terminal game and the designer tools; builds mandate.jar
 tools/          BgExport: one-off export of Battleground 2028's electorate and roster
