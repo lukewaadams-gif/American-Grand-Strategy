@@ -1,5 +1,5 @@
-// The site's front page: the game's title screen and setup (start.ts), on the engine of the game's own page (preview/),
-// which then carries out the choice there. The page at the site's root loads this module from preview/app/.
+// The site's front page: the game's title screen and setup (start.ts), on the engine of the game's own page (play/,
+// the approved build), which then carries out the choice there. The page at the site's root loads this module from play/app/.
 import { engine, Refused, start } from './core/engine.js';
 import { h } from './core/dom.js';
 import { toast } from './core/dialog.js';

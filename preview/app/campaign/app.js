@@ -177,7 +177,7 @@ function electionOver(v) {
         return;
     // the campaign preview on its own (campaign.html): the night's result, and the campaign again
     const won = r.winner === v.player.party;
-    host.open(h('div', { class: 'dialog-card' }, h('div', { class: 'eyebrow' }, 'Election night · ' + day(v.electionDay, true)), h('h2', { class: 'dialog-title big' }, won ? 'You win the presidency' : 'You lose'), h('p', null, `Democrats ${r.dem}, Republicans ${r.rep}. Popular vote: ${r.popular >= 0 ? 'Democrats' : 'Republicans'} by ${Math.abs(r.popular).toFixed(1)}.`), h('p', { class: 'muted' }, 'This preview covers the campaign war room. The whole game, from the campaign to the verdict, is on the preview’s front page.'), h('div', { class: 'dialog-foot' }, h('button', { class: 'btn primary', type: 'button', onclick: () => { host.close(); hostOpts.restart?.(); } }, 'Play the campaign again'))), 'Election night');
+    host.open(h('div', { class: 'dialog-card' }, h('div', { class: 'eyebrow' }, 'Election night · ' + day(v.electionDay, true)), h('h2', { class: 'dialog-title big' }, won ? 'You win the presidency' : 'You lose'), h('p', null, `Democrats ${r.dem}, Republicans ${r.rep}. Popular vote: ${r.popular >= 0 ? 'Democrats' : 'Republicans'} by ${Math.abs(r.popular).toFixed(1)}.`), h('p', { class: 'muted' }, 'This page is the campaign war room on its own. The whole game, from the campaign to the verdict, starts at the game’s title screen.'), h('div', { class: 'dialog-foot' }, h('button', { class: 'btn primary', type: 'button', onclick: () => { host.close(); hostOpts.restart?.(); } }, 'Play the campaign again'))), 'Election night');
 }
 document.addEventListener('keydown', e => {
     if (!active)
