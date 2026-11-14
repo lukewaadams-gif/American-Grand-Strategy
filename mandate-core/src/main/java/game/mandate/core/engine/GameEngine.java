@@ -362,7 +362,7 @@ public final class GameEngine implements WorldView {
                 if (latestPresidentialYear() < c.year() || c.year() <= 0) throw new IllegalCommandException("There has been no " + c.year() + " election night");
                 w.electionNightSeen = Math.max(w.electionNightSeen, c.year());
             }
-            case Command.IndividualCrisis c -> individualCrisis(c.crisis(), c.preset());
+            case Command.IndividualCrisis c -> individualCrisis(c.crisis(), c.preset(), c.seed());
         }
         history.add(command);
         w.commandsApplied++;
@@ -1412,7 +1412,7 @@ public final class GameEngine implements WorldView {
     // ---- Individual Crisis (docs/MODES.md) ------------------------------------------------------------------------------
 
     /** The game becomes one crisis: begun now, ended at its outcome with an after-action report. */
-    private void individualCrisis(String kind, int preset) {
+    private void individualCrisis(String kind, int preset, long seed) {
         if (!CrisisRecord.KINDS.contains(kind)) throw new IllegalCommandException("No such crisis: " + kind + " (taiwan or hormuz)");
         if (w.mode == GameSetup.Mode.CRISIS) throw new IllegalCommandException("This game is already a crisis");
         if (w.phase != Phase.GOVERNING || w.foreign == null) throw new IllegalCommandException("A crisis begins from a governing presidency, once the Situation Room is open");
@@ -1422,8 +1422,10 @@ public final class GameEngine implements WorldView {
         w.crisis = new CrisisRecord(kind, p, date(), approval(), w.economy.misery(), munitionsIndex(), null);
         log("Individual Crisis: " + w.crisis.title() + ", " + CrisisRecord.PRESETS.get(p).toLowerCase(java.util.Locale.ROOT)
                 + ". The game ends when the crisis does, with an after-action report.");
-        if (kind.equals("taiwan")) startTaiwan(p, null, TaiwanScenario.Commitment.INTERVENE, "China's coast guard and navy close in on Taiwan");
-        else startHormuz(p, 2, "the Guards seize a tanker, and Tehran threatens to close the strait");
+        if (kind.equals("taiwan")) {
+            startTaiwan(p, null, TaiwanScenario.Commitment.INTERVENE, "China's coast guard and navy close in on Taiwan");
+            TaiwanEngine.vary(w.taiwan, rng, seed);
+        } else startHormuz(p, 2, "the Guards seize a tanker, and Tehran threatens to close the strait");
     }
 
     private boolean crisisModeFor(String kind) {
@@ -1466,6 +1468,8 @@ public final class GameEngine implements WorldView {
                     : "Taiwan was defended: the invasion failed, at the cost the figures show.";
             case PARTIAL -> "Neither side got what it went to war for: Taiwan stands, but the strait is not at peace.";
             case LOST -> st == TaiwanResult.Status.NUCLEAR ? "The war crossed the nuclear threshold: whatever else is true, it was lost."
+                    : r.code() == 10 ? "America backed down: Washington accepted terms that leave Beijing's gains in place."
+                    : r.code() == 6 ? "Taiwan was forced to terms: its government accepted Beijing's demands."
                     : "Taiwan fell: China holds the island.";
         };
         return new CrisisRecord.Report(w.crisis.title(), res, r.outcome(), r.reason() == null ? "" : r.reason(), date(), days, verdict, f, lastOf(s.log()));

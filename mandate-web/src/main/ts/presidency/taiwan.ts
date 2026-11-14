@@ -367,7 +367,7 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
           p.pct > 0 ? meter(p.pct, 100, `${p.name}: ${Math.round(p.pct)}% done`, p.pct >= 100 ? 'good' : '', p.pct >= 100 ? 'done' : `${Math.round(p.pct)}%`) : null),
         p.pct >= 100 ? h('span', { class: 'muted small' }, 'Done')
           : h('button', { class: 'btn small toggle' + (p.on ? ' on' : ''), type: 'button', 'aria-pressed': String(p.on), disabled: !live, onclick: () => order({ type: 'Programme', id: p.id, run: !p.on }) }, p.on ? 'Under way' : 'Start')))),
-      h('p', { class: 'muted small' }, v.side === 'US' ? 'Each preparation deters, and each is seen in Beijing: some calm the crisis, some make China hurry.'
+      h('p', { class: 'muted small' }, v.side === 'US' ? 'Your staff starts the routine preparations; the major ones wait for clearer warning, or for your order. Each preparation deters, and each is seen in Beijing: some calm the crisis, some make China hurry.'
         : 'Each preparation can be seen. Exercise cover hides some of them; what is seen raises America’s warning.'));
   }
 
@@ -389,7 +389,7 @@ export function taiwanRoom(act: TaiwanActions): HTMLElement {
           : heavy ? grave('m-' + id, 'Impose', { type: 'Economic', measure: id }, !live)
             : h('button', { class: 'btn small', type: 'button', disabled: !live, onclick: () => order({ type: 'Economic', measure: id }) }, 'Impose'));
       })),
-      h('p', { class: 'muted small' }, 'Sanctions deter before a war and punish during one, but every measure costs America and its allies too.'));
+      h('p', { class: 'muted small' }, 'Sanctions deter before a war and punish during one, but every measure costs America and its allies too. Against a blockade, sanctions shared with allies (ask them under Diplomacy) weigh on Beijing at home, and may make it lift the blockade.'));
   }
 
   function nuclearCard(v: TaiwanView, live: boolean): HTMLElement {

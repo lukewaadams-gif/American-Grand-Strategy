@@ -26,7 +26,7 @@ Also tested on every path: removal from office (impeached and convicted), which 
 | B, C, D | `LifecycleTest.aCrisisDoesNotMoveTheMidterms`; `aCrisisDoesNotMoveTheReelectionCampaignOrElectionDay`; `theSuccessorsNightIsAnElectionNightAndSurvivesAReload` | The calendar kept in a crisis (B-02); an ended game takes no turns (B-03); the 2036 night (B-04, B-05) | 13 Nov 2026, M8 code |
 | E, F | `ModesTest.campaignOnlyEndsOnElectionNightWonOrLost` | Both outcomes end the game; the assessment; the verdict's grade | 13 Nov 2026, M8 code |
 | G | `ModesTest.governingOnlyOpensOnElectionNightWithTheChosenAdministration` (both parties; a toss-up and an unfavourable mood); `governingOnlyGoesOnThroughTheSamePresidencyAsTheFullGame`; `LifecycleTest` (every other game is Governing Only) | The chosen president-elect elected; the 2028 night first; exact replay; the same presidency to its end | 13 Nov 2026, M8 code |
-| H | `ModesTest.anIndividualCrisisEndsAtItsOutcomeWithAnAfterActionReport`; `anIndividualCrisisBeginsOnlyFromAGoverningPresidency`; `CrisisAccountingTest` | Hormuz won, lost and ended in part; Taiwan won and ended in part; the report saved; the crisis's costs ended with it (E-06) | 13 Nov 2026, M8 code |
+| H | `ModesTest.anIndividualCrisisEndsAtItsOutcomeWithAnAfterActionReport`; `anIndividualCrisisBeginsOnlyFromAGoverningPresidency`; `CrisisAccountingTest`; `TaiwanOutcomeTest` | Hormuz won, lost and ended in part; Taiwan won and lost by the president's orders, each crisis seeded and replayed; the report saved; the crisis's costs ended with it (E-06) | 14 Nov 2026 |
 | All | `ModesTest.anOlderSaveOfTheHundredDaysSliceLoadsAsTheFullGame`; `OlderSavesTest` | Saves from before this round load, play on and save again (E-08) | 13 Nov 2026, M8 code |
 | All | `DeterminismTest`; `GoldenRegressionTest` | The same seed gives the same world; the golden fingerprints | 13 Nov 2026, M8 code |
 
@@ -70,7 +70,6 @@ Test saves for these come from `game.mandate.ui.ElectionSaves`. They are generat
 
 ## Not covered by an automated test
 
-- Taiwan falling in Individual Crisis: no line of play found in testing reaches it. See BUG_FIX_REPORT, M-01.
 - Removal from office in the browser. The engine covers it (`LifecycleTest` accepts and checks it); no browser save reaches it.
 - The desktop and command-line interfaces' Governing Only and Individual Crisis: they are not offered there.
 - A human playtest of the whole game's length: the playtime figures in the README are estimates from turn counts.

@@ -6,7 +6,6 @@ What is known and not yet fixed, as of 14 November 2026. Each item names its sev
 
 | Issue | Severity | Detail |
 |---|---|---|
-| **Taiwan never falls in Individual Crisis.** In the sample world the crisis's outcome depends on the preset (China's plan), not on the president's orders: "diplomatic only" gives the same result as fighting. A win and an end in part were reached, a loss was not. | Medium | BUG_FIX_REPORT M-01. Needs a look at the ported war model's presets and how the president's rules of engagement reach it. |
 | **The 2032 campaign pauses the presidency.** The re-election campaign runs the 2028 campaign's turns. The economy now moves through it (B-08), but the world, Congress, the West Wing and the president's slots wait for about 15 weeks. | Medium | DECISIONS_TO_REVIEW, "The two terms"; BUG_FIX_REPORT B-08 |
 | **Staff-run presidents often step aside in 2032.** Unanswered, the "Another four years?" question takes the chief of staff's advice, which is to step aside below 36% approval. This matters for watch mode; a player is asked. | Low | SECOND_TERM_VALIDATION, observations |
 | **Removal from office is frequent in staff-run games:** 19 of the 126 presidencies in the lifecycle run. Whether it is too frequent for a player is a balance question. | Low | SECOND_TERM_VALIDATION |

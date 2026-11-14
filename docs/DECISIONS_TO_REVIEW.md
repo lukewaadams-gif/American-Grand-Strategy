@@ -238,3 +238,15 @@ Choices made while building overnight that we had not discussed. Each was made i
 3. **Real people are the default cast.** The candidate step shows the real 2028 field with each candidate's ratings (the game's judgement, labelled as such). The fictional cast is one choice away, on the side step.
 4. **The earlier playable slice moved to `classic/`,** unchanged, and the title screen links it at its foot. Moving it back to the root is a matter of moving those files back and removing the new `index.html`. `front.js` tests that layout locally (port 8767).
 5. **The approved game has its own folder,** `play/` (14 November 2026). The front page runs from it, so a new build can go to `preview/` for review without changing what players get. A build moves to `play/` only when it is approved.
+
+## The Taiwan crisis turns on the president's orders (14 November 2026)
+
+Docs/BALANCE_TAIWAN.md has the detail and the measurements.
+
+1. **Backing down is a loss.** A ceasefire that leaves the PLA more than 1,500 km² of Taiwan, unification talks, or a ceasefire accepted as public support collapses with the blockade unbroken all end in "America backs down".
+2. **A blockade still choking Taiwan at eleven weeks forces terms** (a loss), where the source judged "Partial PRC success".
+3. **"Diplomatic only" keeps America out of the war.** China then does not strike US forces, and its deterrence calculation drops by 8 points.
+4. **Sanctions shared with partners weigh on Beijing during a blockade.** Beijing may lift it below a stability of 40. The weights are 0.6, up to 28 points, and a daily chance of (40 − stability) / 500.
+5. **Beijing's resolve varies by ±9 points** of its go/no-go threshold. It is 5 points bolder in the pessimistic case and 3 points less bold in the optimistic case.
+6. **The president's staff starts its preparations one warning level later** than a computer-run America. The major preparations are the president's to order.
+7. **Individual Crisis draws a new seed each time** it is started from the start screen.

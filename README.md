@@ -239,6 +239,7 @@ docs/           the port plans, the crises, the economy's model, decisions to re
 | [docs/PRESIDENCY_PORT.md](docs/PRESIDENCY_PORT.md) | The presidency: Resolute Desk's systems, the milestones and what each built |
 | [docs/CAMPAIGN_PORT.md](docs/CAMPAIGN_PORT.md) | The campaign: Battleground 2028's war room, ported |
 | [docs/CRISES.md](docs/CRISES.md), [docs/HORMUZ.md](docs/HORMUZ.md), [docs/ISLAND_CHAIN.md](docs/ISLAND_CHAIN.md) | The two in-depth crises: design, calibration and how they reach the presidency |
+| [docs/BALANCE_TAIWAN.md](docs/BALANCE_TAIWAN.md) | How the Taiwan crisis turns on the president's orders, and the runs that measured it |
 | [docs/ECONOMY_MODEL.md](docs/ECONOMY_MODEL.md) | The structural economy and the policy table |
 | [docs/MODES.md](docs/MODES.md) | The four games on one engine: Full Game, Campaign Only, Governing Only, Individual Crisis |
 | [docs/SECOND_TERM_VALIDATION.md](docs/SECOND_TERM_VALIDATION.md) | The presidency to its end in both modes that govern: whole games simulated, what carries across terms |

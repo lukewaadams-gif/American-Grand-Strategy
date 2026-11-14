@@ -18,7 +18,7 @@ import java.util.Locale;
 final class Ctx {
     static final String R_AIR = "taiwan.air", R_SALVO = "taiwan.salvo", R_SUB = "taiwan.sub", R_INTEL = "taiwan.intel", R_GROUND = "taiwan.ground",
             R_AMPHIB = "taiwan.amphib", R_SEA = "taiwan.sea", R_WORLD = "taiwan.world", R_DIPLO = "taiwan.diplo", R_STAFF = "taiwan.staff",
-            R_SHIP = "taiwan.ship", R_PROD = "taiwan.production";
+            R_SHIP = "taiwan.ship", R_PROD = "taiwan.production", R_POLITICS = "taiwan.politics";
 
     final TaiwanState s;
     final TaiwanData d;

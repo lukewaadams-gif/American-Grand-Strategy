@@ -146,14 +146,14 @@ The assumption `forcesYear=2027` keeps the 2027 forces in any crisis year, for c
 
 ## How it ends, and the fallout (spec 11.6, 11.7)
 
-The source's ten outcomes map onto the presidency's statuses:
+The source's ten outcomes, and the eleventh this port adds (America backs down, docs/BALANCE_TAIWAN.md), map onto the presidency's statuses:
 
 | Outcome (code) | Status |
 |---|---|
 | Deterrence holds (0): China stood down, or did not attack by day 110 | DETERRED |
 | Taiwan defended (1), Pyrrhic defence (2), China stands down (9) | DEFENDED |
 | Stalemate (3), Partial PRC success (4), Negotiated ceasefire (8) | STALEMATE |
-| PRC victory (5), Taiwan capitulates (6) | FALLEN |
+| PRC victory (5), Taiwan capitulates (6), America backs down (10) | FALLEN |
 | Nuclear catastrophe (7) | NUCLEAR |
 
 **During the war, each turn's `Outcome.effects`:**
@@ -395,3 +395,14 @@ Map<String, Object> json = s.toJson();  TaiwanState t = TaiwanState.fromJson(jso
 - one ended in a "Partial PRC success" after 124 days, with 9,210 Americans killed.
 
 A crisis adds 70–230 turns to a game.
+
+## The balance (14 November 2026)
+
+Docs/BALANCE_TAIWAN.md has the rules that make the crisis turn on the president's orders, and the runs that measured it:
+- America backs down (outcome 10);
+- a blockade still choking Taiwan at eleven weeks forces terms;
+- Beijing keeps America out when Washington says it will not fight;
+- the world's economic front against a blockade;
+- Beijing's resolve;
+- the president's staff waiting for clearer warning;
+- the seed of each Individual Crisis.

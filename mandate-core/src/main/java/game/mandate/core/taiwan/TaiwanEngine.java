@@ -38,7 +38,7 @@ public final class TaiwanEngine {
 
     /** The source's ten outcomes (spec 8.9), by code. */
     public static final String[] OUTCOMES = {"Deterrence holds", "Taiwan defended", "Pyrrhic defence of Taiwan", "Stalemate", "Partial PRC success",
-            "PRC victory", "Taiwan capitulates", "Nuclear catastrophe", "Negotiated ceasefire", "China stands down"};
+            "PRC victory", "Taiwan capitulates", "Nuclear catastrophe", "Negotiated ceasefire", "China stands down", "America backs down"};
 
     private final TaiwanData data;
 
@@ -47,6 +47,15 @@ public final class TaiwanEngine {
     public TaiwanEngine(TaiwanData data) { this.data = data; }
 
     public TaiwanData data() { return data; }
+
+    /** An Individual Crisis started anew (docs/BALANCE_TAIWAN.md): China's plan and timing, and the war's own draws, vary by the
+     *  seed. The seed is in the command, so the save replays the same crisis. 0 changes nothing. */
+    public static void vary(TaiwanState s, DeterministicRandomManager rng, long seed) {
+        if (seed == 0) return;
+        s.vary(seed);
+        for (String name : new String[]{Ctx.R_AIR, Ctx.R_SALVO, Ctx.R_SUB, Ctx.R_INTEL, Ctx.R_GROUND, Ctx.R_AMPHIB, Ctx.R_SEA, Ctx.R_WORLD, Ctx.R_DIPLO,
+                Ctx.R_STAFF, Ctx.R_SHIP, Ctx.R_PROD, Ctx.R_POLITICS}) rng.perturb(name, seed);
+    }
 
     static int planIndex(String plan) {
         for (int i = 0; i < TaiwanData.PLANS.length; i++) if (TaiwanData.PLANS[i].equals(plan)) return i;

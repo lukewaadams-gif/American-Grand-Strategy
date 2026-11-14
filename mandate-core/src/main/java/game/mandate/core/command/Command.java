@@ -82,5 +82,8 @@ public sealed interface Command {
      * crisis, "taiwan" or "hormuz", begun at once with a preset (0 the base case, 1 optimistic, 2 pessimistic); it ends
      * at the crisis's outcome, with an after-action report.
      */
-    record IndividualCrisis(String crisis, int preset) implements Command {}
+    /** The game becomes one crisis. The seed varies how the crisis unfolds (0 for the crisis the save itself would give). */
+    record IndividualCrisis(String crisis, int preset, long seed) implements Command {
+        public IndividualCrisis(String crisis, int preset) { this(crisis, preset, 0); }
+    }
 }

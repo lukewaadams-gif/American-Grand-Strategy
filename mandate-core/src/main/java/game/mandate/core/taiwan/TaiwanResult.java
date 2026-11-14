@@ -38,7 +38,7 @@ public record TaiwanResult(Status status, String outcome, int code, String reaso
             case 0 -> Status.DETERRED;
             case 1, 2, 9 -> Status.DEFENDED;
             case 3, 4, 8 -> Status.STALEMATE;
-            case 5, 6 -> Status.FALLEN;
+            case 5, 6, 10 -> Status.FALLEN;
             case 7 -> Status.NUCLEAR;
             default -> null;
         };

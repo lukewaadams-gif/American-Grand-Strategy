@@ -512,6 +512,7 @@ final class TaiwanWorld {
         if (s.atWar()) {
             if (s.plan == 0) sAnchor += TaiwanLand.heldKm2(s) / 36000.0 * 30 - amphibLostFrac(c) * 12;
             if (s.plan == 1 || s.plan == 2) sAnchor += (1 - s.elec) * 8 - (s.throughput > 0.6 && s.warHours() > 24 * 14 ? 6 : 0);
+            if (s.plan == 1 || s.plan == 2) sAnchor -= coalition(c);
         }
         if (s.mainlandHits > 0) sAnchor -= Math.min(8, s.mainlandHits / 150.0);
         s.prcStability = TMath.clamp(s.prcStability + (sAnchor - s.prcStability) * 0.08, 0, 100);
@@ -719,6 +720,7 @@ final class TaiwanWorld {
                 case 4 -> { s.rung[PRC] = Math.max(s.rung[PRC], 4); s.blockade = Math.max(s.blockade, 2); }
                 default -> { s.rung[PRC] = Math.max(s.rung[PRC], 4); s.blockade = Math.max(s.blockade, 4); }
             }
+            if (usWillNotFight(s)) { s.optStrikeUS = false; s.optStrikeJapan = false; }   // Beijing keeps America out of it
             if (s.optStrikeUS && s.plan != 2) s.rung[PRC] = Math.max(s.rung[PRC], 5);
             String h = switch (s.plan) {
                 case 2 -> "China's coast guard begins a customs quarantine of Taiwan";
@@ -960,7 +962,16 @@ final class TaiwanWorld {
         if (s.will < 15 && squeezed) { end(c, 6, "Taiwan's government, its will to resist exhausted, accepts Beijing's terms."); return; }
         if (s.sectors.get(c.d.sector("s_taipei")).ctrl > 0.8 && held > 18000) { end(c, 5, "The PLA holds Taipei and most of Taiwan's west coast."); return; }
         if (s.prcStability < 12) { end(c, 9, "Facing unrest at home, Beijing halts operations and declares its objectives met."); return; }
-        if (s.usSupport < 18 && s.usCombat) { end(c, 8, "With public support collapsing, Washington accepts a ceasefire on current lines."); return; }
+        // a blockade that costs Beijing more at home each day: the leadership may blink before Taiwan does (docs/BALANCE_TAIWAN.md)
+        if ((s.plan == 1 || s.plan == 2) && s.hour % 24 == 0 && s.prcStability < BLINK && c.u(Ctx.R_POLITICS) < (BLINK - s.prcStability) / BLINK_SCALE) {
+            end(c, 9, "With the economy reeling under the world's sanctions, Beijing lifts the blockade and declares its point made.");
+            return;
+        }
+        if (s.usSupport < 18 && s.usCombat) {
+            if (intact(c)) end(c, 8, "With public support collapsing, Washington accepts a ceasefire on current lines.");
+            else end(c, 10, "With public support collapsing, Washington accepts a ceasefire that leaves Beijing's gains in place.");
+            return;
+        }
         if (s.plan == 0 && wd > 6) {
             double lift = 1 - amphibLostFrac(c);
             if (ashore < 1.5 && (lift < 0.25 || wd > 20)) { end(c, 1, "The invasion has been defeated; no PLA forces remain on Taiwan."); return; }
@@ -975,7 +986,43 @@ final class TaiwanWorld {
             for (String id : new String[]{"s_kinmen", "s_matsu", "s_penghu"}) if (s.sectors.get(c.d.sector(id)).ctrl > 0.8) taken++;
             if (taken >= 2 && !s.usCombat && wd > 30) { end(c, 4, "China has seized Taiwan's outlying islands; the main island remains free."); return; }
         }
-        if (wd >= 75) end(c, judge(c), "After eleven weeks the fighting settles into a ceasefire on current lines.");
+        if (wd >= 75) {
+            if ((s.plan == 1 || s.plan == 2 || s.blockade >= 2) && s.elec < 0.45 && avgThroughput(s, 10) < 0.5 && held < 12000)
+                end(c, 6, "Eleven weeks of blockade have left Taiwan dark and short of fuel; Taipei accepts Beijing's terms.");
+            else end(c, judge(c), "After eleven weeks the fighting settles into a ceasefire on current lines.");
+        }
+    }
+
+    /**
+     * The world's economic front against a blockade (docs/BALANCE_TAIWAN.md): America's measures and the partners that have
+     * joined its sanctions, as a weight on Beijing's stability. With enough of the world behind it, a blockade costs China
+     * more at home than it can bear, and Beijing lifts it: the way diplomacy without force can still save Taiwan.
+     */
+    static double coalition(Ctx c) {
+        TaiwanState s = c.s;
+        double p = s.sanctUS * 4 + (s.swift ? 5 : 0) + (s.freeze ? 3 : 0) + (s.chipEmbargo ? 4 : 0) + (s.fullEmbargo ? 3 : 0);
+        for (String k : COALITION) if (country(c, k).sanctions) p += k.equals("EU") ? 7 : k.equals("JPN") ? 5 : 3;
+        return Math.min(COALITION_CAP, p * COALITION_WEIGHT);
+    }
+
+    static final String[] COALITION = {"JPN", "AUS", "KOR", "GBR", "EU", "PHL", "IND"};
+    /** Below this stability, Beijing may lift a blockade any day. */
+    static final double BLINK = 40;
+    /** The daily chance of lifting a blockade is (BLINK - stability) / BLINK_SCALE. */
+    static final double BLINK_SCALE = 500;
+    /** The coalition's weight on Beijing's stability, and its most (tuned in docs/BALANCE_TAIWAN.md). */
+    static final double COALITION_WEIGHT = 0.6, COALITION_CAP = 28;
+
+    /** Taiwan whole and free: almost no ground held by the PLA, and no blockade still choking it (strike damage alone is not
+     *  Beijing's gain to keep). */
+    static boolean intact(Ctx c) {
+        TaiwanState s = c.s;
+        return TaiwanLand.heldKm2(s) < 200 && (s.blockade < 2 || avgThroughput(s, 10) > 0.5);
+    }
+
+    /** Washington has declared it will not fight: the president holds the rules of engagement at "diplomatic only". */
+    static boolean usWillNotFight(TaiwanState s) {
+        return s.rung[US] == 0 && s.held.contains("rung") && s.playerSide == US;
     }
 
     static double avgThroughput(TaiwanState s, int days) {
@@ -1014,7 +1061,7 @@ final class TaiwanWorld {
 
     static double score(Ctx c, int side) {
         TaiwanState s = c.s;
-        double v = switch (s.outcome) { case 0 -> 85; case 1 -> 75; case 2 -> 58; case 3 -> 45; case 8 -> 40; case 4 -> 32; case 5 -> 15; case 6 -> 8; case 9 -> 80; default -> 0; };
+        double v = switch (s.outcome) { case 0 -> 85; case 1 -> 75; case 2 -> 58; case 3 -> 45; case 8 -> 40; case 4 -> 32; case 5 -> 15; case 6 -> 8; case 9 -> 80; case 10 -> 12; default -> 0; };
         if (s.outcome == 8 || s.outcome == 3) v -= TaiwanLand.heldKm2(s) / 1000.0;
         Loss us = c.loss("USA"), cn = c.loss("CHN");
         if (side == US) v -= Math.min(10, us.killed / 1500.0) + Math.min(6, us.ships / 4.0) + s.gap[E_USA] * 40 - Math.min(8, cn.ships / 15.0);
@@ -1034,18 +1081,25 @@ final class TaiwanWorld {
         c.alert((side == US ? "Washington" : "Beijing") + " proposes a ceasefire: " + t[terms] + ".");
     }
 
+    /**
+     * What an agreed ceasefire comes to (docs/BALANCE_TAIWAN.md): status quo ante defends Taiwan (or, with the PLA still
+     * ashore, is a stalemate); unification talks, or a ceasefire in place that leaves the PLA more than 1,500 km2 of Taiwan,
+     * is America backing down; a smaller lodgement is a stalemate, and Taiwan whole and lit is defended.
+     */
+    static int ceasefireOutcome(int terms, double heldKm2, double elec) {
+        if (terms == 0) return heldKm2 > 500 ? 3 : 1;
+        if (terms == 2) return 10;
+        if (heldKm2 < 200 && elec > 0.6) return 1;
+        return heldKm2 > 1500 ? 10 : heldKm2 > 200 ? 3 : 8;
+    }
+
     static void respond(Ctx c, boolean accept) {
         TaiwanState s = c.s;
         if (s.offerFrom < 0) return;
         int from = s.offerFrom, terms = s.offerTerms;
         s.offerFrom = -1;
         if (!accept) { c.log((from == US ? "Beijing" : "Washington") + " rejects the ceasefire proposal.", true); return; }
-        double held = TaiwanLand.heldKm2(s);
-        int o;
-        if (terms == 0) o = held > 500 ? 3 : 1;
-        else if (terms == 2) o = 5;
-        else o = held > 12000 ? 5 : held > 1500 ? 4 : held > 200 ? 3 : 8;
-        if (terms == 1 && held < 200 && s.elec > 0.6) o = 1;
+        int o = ceasefireOutcome(terms, TaiwanLand.heldKm2(s), s.elec);
         end(c, o, "Ceasefire agreed: " + (terms == 0 ? "status quo ante" : terms == 1 ? "a ceasefire in place" : "unification talks") + ".");
     }
 }

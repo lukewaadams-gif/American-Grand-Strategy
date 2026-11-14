@@ -188,7 +188,7 @@ export function startScreen(act: StartActions): HTMLElement {
     return true;
   }
   function begin(): void {
-    if (mode === 'CRISIS') { act.quick('saves/governing.json', { type: 'IndividualCrisis', crisis, preset }); return; }
+    if (mode === 'CRISIS') { act.quick('saves/governing.json', { type: 'IndividualCrisis', crisis, preset, seed: 1 + Math.floor(Math.random() * 1e9) }); return; }
     act.newGame({ seed: Math.floor(Math.random() * 1e9), party, player, opponent, scenario, difficulty, realRoster: real, mode });
   }
 

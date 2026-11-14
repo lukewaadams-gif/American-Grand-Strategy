@@ -29,6 +29,12 @@ public final class DeterministicRandomManager {
         return z ^ (z >>> 31);
     }
 
+    /** Moves one stream to a state of its own for this salt: a run that differs, and still replays (the salt is in the command). */
+    public void perturb(String name, long salt) {
+        long[] s = states.computeIfAbsent(name, n -> new long[]{mix(masterSeed, n)});
+        s[0] ^= mix(salt, name);
+    }
+
     /** Uniform in [0, 1). */
     public double uniform(String name) { return (nextLong(name) >>> 11) * 0x1.0p-53; }
 

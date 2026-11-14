@@ -182,7 +182,24 @@ The same path hit the 2032 re-election, in both outcomes.
 - **Tests:**
   - `ModesTest.anIndividualCrisisEndsAtItsOutcomeWithAnAfterActionReport`: Hormuz reached all three results; Taiwan reached a win and an end in part.
   - `modes.js`.
-- **Remaining:** no line of play found in the tests makes Taiwan fall in Individual Crisis. In the sample world, Taiwan's outcome depends on the preset and not on the president's orders (staying "diplomatic only" gives the same result as fighting). This is to be examined in the Milestone 8 crisis audit.
+- **Remaining (fixed 14 November 2026, T-02 below):** no line of play found in the tests made Taiwan fall in Individual Crisis. Taiwan's outcome depended on the preset and not on the president's orders.
+
+## T-02: Taiwan's outcome did not turn on the president's orders (owner's request, 14 November 2026; medium): fixed
+
+- **What happened:** in Individual Crisis, the staff left alone never lost on the base case. The pessimistic case ended in part whatever was done. Staying "diplomatic only" was overruled when China struck American forces. A ceasefire Washington accepted as its support collapsed counted as an end in part. Every crisis from the sample save was the same crisis.
+- **Fix:** seven changes, in docs/BALANCE_TAIWAN.md:
+  - America backing down is a loss;
+  - a blockade still choking Taiwan at eleven weeks forces terms;
+  - Beijing keeps America out when Washington says it will not fight;
+  - sanctions shared with partners weigh on Beijing during a blockade;
+  - Beijing's resolve varies;
+  - the president's staff waits for clearer warning before the major preparations;
+  - each Individual Crisis has its own seed.
+- **Measured:** `TaiwanBalanceRun`, 36 crises per cell. On the base case:
+  - the patient president holds Taiwan 97% of the time;
+  - the staff left alone loses 36%;
+  - diplomacy alone holds 19% (44% in the optimistic case).
+- **Tests:** `TaiwanOutcomeTest` (2), `TaiwanTest.aCeasefireThatLeavesBeijingItsGainsIsAmericaBackingDown`.
 
 ## U-03: status labels pushed phone screens sideways (found in this audit's browser run; low): fixed
 

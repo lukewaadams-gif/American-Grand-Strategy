@@ -513,4 +513,18 @@ class TaiwanTest {
         assertTrue(blk.usKilled() > 300 && blk.usKilled() < 5000, blk.line());
         assertTrue(blk.prcShips() > 120 && blk.prcShips() < 260, blk.line());
     }
+
+    /** Backing down is a loss (docs/BALANCE_TAIWAN.md): a ceasefire that leaves Beijing its gains, or unification talks. */
+    @Test
+    void aCeasefireThatLeavesBeijingItsGainsIsAmericaBackingDown() {
+        assertEquals(10, TaiwanWorld.ceasefireOutcome(2, 0, 1), "unification talks");
+        assertEquals(10, TaiwanWorld.ceasefireOutcome(1, 2000, 0.8), "a ceasefire in place with the PLA holding 2,000 km2");
+        assertEquals(3, TaiwanWorld.ceasefireOutcome(1, 600, 0.8), "a small lodgement is a stalemate");
+        assertEquals(8, TaiwanWorld.ceasefireOutcome(1, 100, 0.4), "Taiwan whole but dark: a negotiated ceasefire");
+        assertEquals(1, TaiwanWorld.ceasefireOutcome(1, 100, 0.8), "Taiwan whole and lit is defended");
+        assertEquals(1, TaiwanWorld.ceasefireOutcome(0, 0, 0.5), "status quo ante");
+        assertEquals(3, TaiwanWorld.ceasefireOutcome(0, 900, 0.5), "status quo ante with the PLA still ashore");
+        assertEquals("America backs down", TaiwanEngine.OUTCOMES[10]);
+        assertEquals(TaiwanResult.Status.FALLEN, TaiwanResult.status(10), "a loss for the presidency");
+    }
 }

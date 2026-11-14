@@ -888,6 +888,8 @@ public final class TaiwanState {
     /** The outcome's name ("Taiwan defended" ...), or null while it goes on. */
     public String outcome() { return outcomeText; }
     public String endReason() { return endReason; }
+    /** Varies China's plan, timing and options by a seed (an Individual Crisis started anew); 0 changes nothing. */
+    void vary(long seed) { if (seed != 0) planSeed ^= seed * 0x9E3779B97F4A7C15L + 0x632BE59BD9B4E019L; }
     /** Scores 0-100 (spec 8.9). */
     public double score(int side) { return side == US ? scoreUS : scorePRC; }
 

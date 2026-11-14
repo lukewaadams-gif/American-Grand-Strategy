@@ -103,9 +103,33 @@ final class TaiwanAI {
         d += TaiwanWorld.progDone(c, US, "subs") ? 2 : 0;
         d += TaiwanWorld.progDone(c, US, "disperse") ? 2 : 0;
         d += TaiwanWorld.progDone(c, US, "mobilise") ? 4 : 0;
+        if (TaiwanWorld.usWillNotFight(s)) d -= 8;                 // Washington has said it will not fight
         if (s.commitment.equals("STAND_ASIDE")) d -= 25;
         else if (s.commitment.equals("ARM_AND_SANCTION")) d -= 12;
         return d;
+    }
+
+    /**
+     * Beijing's appetite for risk in this crisis (docs/BALANCE_TAIWAN.md): drawn once from the plan's seed, bolder in the
+     * pessimistic case. However well Washington prepares, a determined leadership sometimes goes ahead.
+     */
+    static double resolve(TaiwanState s) {
+        double r = (roll0(s, 41) - 0.5) * RESOLVE_SPREAD;
+        return r + (s.preset == 2 ? 5 : s.preset == 1 ? -3 : 0);
+    }
+
+    /** How many warning levels the president's own staff waits beyond a computer-run staff (docs/BALANCE_TAIWAN.md). */
+    static final int STAFF_CAUTION = 1;
+    /** The spread of Beijing's resolve, in points of the go/no-go threshold. */
+    static final double RESOLVE_SPREAD = 18;
+
+    /** A draw from the plan's seed that does not change from day to day. */
+    static double roll0(TaiwanState s, long salt) {
+        long z = s.planSeed + salt * 0x9E3779B97F4A7C15L;
+        z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
+        z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
+        z = z ^ (z >>> 31);
+        return (z >>> 11) * 0x1.0p-53;
     }
 
     static void red(Ctx c, List<TaiwanOrder> l) {
@@ -134,7 +158,7 @@ final class TaiwanAI {
             if (s.sanctUS >= 1 && !s.boycott && roll(s, 31) < 0.3) l.add(new TaiwanOrder.Economic("boycott"));
             if (day == dd - 2 && s.fixedPlan == null) {        // a plan fixed by the scenario goes ahead (as the source's harness forced it)
                 double d = deterrence(c);
-                double thr = s.difficultyPRC == 0 ? 56 : s.difficultyPRC == 1 ? 60 : 66;
+                double thr = (s.difficultyPRC == 0 ? 56 : s.difficultyPRC == 1 ? 60 : 66) + resolve(s);
                 if (d > thr) {
                     if (s.postponed < 2) l.add(new TaiwanOrder.DDay(dd + 7 + (int) Math.floor(roll(s, 21) * 5)));
                     else if (s.plan == 0 && d < thr + 15) {
@@ -186,6 +210,9 @@ final class TaiwanAI {
         if (s.phase.equals("crisis")) {
             if (s.hour % 24 != 0) return;
             int w = s.warnLevel[US] - (diff == 0 ? 1 : 0) + (diff == 2 ? 1 : 0);
+            // the president's own staff waits for clearer warning before the big preparations: those are the president's to
+            // order (docs/BALANCE_TAIWAN.md); a computer-run America prepares as the source's staff did
+            if (s.playerSide == US) w -= STAFF_CAUTION;
             if (arm) { prog(c, l, "arms"); if (s.sanctUS < 2) l.add(new TaiwanOrder.Economic(s.sanctUS < 1 ? "sanctions1" : "sanctions2")); }
             if (w >= 1 && !stand) { prog(c, l, "readiness"); if (day % 5 == 0) l.add(new TaiwanOrder.Diplomacy("JPN", "consult")); }
             if (w >= 2) {
