@@ -1,6 +1,6 @@
 # Remaining issues
 
-What is known and not yet fixed, as of 13 November 2026. Each item names its severity, where it was found, and the document with the detail. Fixed bugs are in `BUG_FIX_REPORT.md`; choices to review are in `DECISIONS_TO_REVIEW.md`.
+What is known and not yet fixed, as of 14 November 2026. Each item names its severity, where it was found, and the document with the detail. Fixed bugs are in `BUG_FIX_REPORT.md`; choices to review are in `DECISIONS_TO_REVIEW.md`.
 
 ## Gameplay and simulation
 
@@ -22,8 +22,8 @@ What is known and not yet fixed, as of 13 November 2026. Each item names its sev
 | Issue | Severity | Detail |
 |---|---|---|
 | **Individual Crisis starts only in the sample presidency (September 2029).** There is no choice of administration or year, and no custom preset. | Medium | DECISIONS_TO_REVIEW, "The four games"; HORMUZ.md |
-| **The older interfaces offer only Full Game and Campaign Only.** That covers the desktop (Swing), the command line and the old browser build at the site's root. The plan is for the desktop to serve the browser game locally; that is not built. | Medium | MODES.md |
-| **The site's root still serves the older vertical slice.** It changes only when the preview is approved. Its `version.json` now says what it is. | — | README; BUG_FIX_REPORT E-05 |
+| **The older interfaces offer only Full Game and Campaign Only.** That covers the desktop (Swing), the command line and the earlier browser slice (now at `classic/`). The plan is for the desktop to serve the browser game locally; that is not built. | Medium | MODES.md |
+| **The campaign war room's Message and Polls tabs and its Voters desk are not built.** They show, disabled, with "not in this version". | Medium | `campaign/warroom.ts` |
 | **Island Chain on its own is not saved.** | Low | ISLAND_CHAIN.md |
 | **Removal from office is not reached by any browser save.** The engine covers it. | Low | MODE_TEST_MATRIX |
 
