@@ -22,6 +22,7 @@ fs.mkdirSync(OUT, { recursive: true });
     try {
     await page.waitForTimeout(60);
     if (await page.locator('text=The end of the slice').count()) { await page.waitForTimeout(500); await shot('99-end'); break; }
+    if (await page.locator('.coach').count() && !(await page.locator('.scrim').count())) { const t = ((await page.locator('.coach b').textContent().catch(() => '')) || '').trim(); log('tip', t); await once('tip:' + t, 'tip-' + t.replace(/[^a-z0-9]+/gi, '_').slice(0, 24)); await page.click('.coach [data-ok]'); continue; }
     if (await page.locator('.dice').count()) { await once('dice', '70-dice'); await page.click('.dice'); continue; }
     if (await page.locator('.night').count() && !(await page.locator('.scrim').count())) {
       if (await page.locator('#ndone:visible').count()) { await once('night-end', '61-night-end'); await page.click('#ndone'); continue; }

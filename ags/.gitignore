@@ -3,3 +3,5 @@ web/gen/
 web/dist/
 sim/target/
 web/shots/
+sim/target-mvp/
+dist-artifact/

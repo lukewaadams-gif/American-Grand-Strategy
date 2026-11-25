@@ -1,6 +1,8 @@
 // The table: a walnut tabletop, the paper map lying on it, washes of party colour inked onto the hexes, and painted
 // miniatures standing on top. PixiJS draws it; the map is tilted slightly away from you, and the pieces stand upright.
 import { Application, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
+// eval-free shader and uniform code, so the board also draws on pages whose security policy forbids eval
+import 'pixi.js/unsafe-eval';
 import { MW, MH, RES, SQ3, DIRS, EDGE, MapData, corners, hexPath, hexA, paintMap, paintTable, shade, mix } from '../art/paper';
 import { miniature, pieceFor, hqHouse, counter, ring } from '../art/pieces';
 

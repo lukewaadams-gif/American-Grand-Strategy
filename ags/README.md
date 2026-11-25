@@ -9,7 +9,7 @@ A turn-based strategy game about American power, played on a paper map of hexes 
 
 | Part | What | Where |
 |---|---|---|
-| Simulation | Rust, compiled to WebAssembly with no wasm-bindgen; a JSON request goes in and a JSON reply comes out. It is deterministic: SplitMix64, and only `+ − × ÷` and `sqrt`, so the browser and native builds play the same game bit for bit. | `sim/` |
+| Simulation | Rust, compiled to WebAssembly with no wasm-bindgen; a JSON request goes in and a JSON reply comes out. It is deterministic: SplitMix64, and only `+ − × ÷` and `sqrt`, so the browser and native builds play the same game bit for bit. The same module is also converted to plain JavaScript (binaryen's wasm2js) for pages that refuse WebAssembly; the game switches to it on its own, and the parity check plays a whole game on both. | `sim/` |
 | Data | Every leader, faction, unit, idea, doctrine, law, calendar turn and event card, as JSON. | `data/` |
 | Map | Hexes built from real geography (us-atlas, Albers USA): terrain from latitude and longitude, 76 cities, rivers, state lines. The world board comes from world-atlas. | `tools/build-world.mjs` → `web/gen/` |
 | Front end | TypeScript and PixiJS 8 for the board; HTML for the paper cards, binder and dossiers. Bundled with esbuild. | `web/src/` |
@@ -34,6 +34,14 @@ python3 -m http.server 8795 --directory ags/web/dist
 ```
 
 Then open http://127.0.0.1:8795/.
+
+To build the game as a hosted page (a Claude artifact: one HTML fragment with everything inline, and the data files beside it):
+
+```bash
+cd ags/web && npm run artifact
+```
+
+The output goes to `dist-artifact/`. To try it under the same strict security policy, with eval and WebAssembly blocked, run `node test/artifact-server.cjs 8796 strict` and open http://127.0.0.1:8796/.
 
 ## Tests
 

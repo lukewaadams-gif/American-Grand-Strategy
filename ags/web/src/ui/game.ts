@@ -18,6 +18,7 @@ const REPEATABLE = ['stump', 'rally', 'canvass', 'poll', 'ads'];
 const ACT_NAME: Record<string, string> = { stump: 'Stump speech', rally: 'Rally', canvass: 'Canvass', office: 'Field office', hq: 'Open an HQ', poll: 'Poll', ads: 'Air ads · $3', attack_ad: 'Attack ad · $4', contest: 'Contest', plane: 'Campaign plane', charter: 'Charter · $2', great: 'Great move', skip: 'Skip' };
 export const SAVE_KEY = 'ags-autosave', SLOTS_KEY = 'ags-saves';
 import { store } from '../store';
+import { coach, howToPlay, tipsOn, setTips } from './coach';
 export { store };
 
 export class GameUI {
@@ -55,13 +56,16 @@ export class GameUI {
     });
     this.data.factions.forEach((f: any) => this.fac[f.id] = f);
   }
-  async start() { this.build(); this.refresh(); const cap = this.v.you.hqs[0]; if (cap) this.board.centerHex(cap.hex, 2.3, 0); await this.runPending(); }
+  private coachTimer = 0;
+  async start() { this.build(); this.refresh(); const cap = this.v.you.hqs[0]; if (cap) this.board.centerHex(cap.hex, 2.3, 0);
+    this.coachTimer = window.setInterval(() => { if (this.root.querySelector('.game')) coach(this.busy ? null : this.v); else { clearInterval(this.coachTimer); coach(null); } }, 500);
+    await this.runPending(); }
   refresh() { this.v = this.sim.view; this.renderAll(); }
   get you() { return this.v.you.leader.state ? (this.v as any).colours?.you : ''; }
   col(side: number) { return side === 0 ? Settings.you : Settings.them; }
 
   /* ---------------- rendering ---------------- */
-  renderAll() { this.renderStrip(); this.renderTally(); this.renderResearch(); this.renderNotes(); this.renderUnit(); this.renderSeal(); this.paint(); this.renderMinimap(); }
+  renderAll() { this.renderStrip(); this.renderTally(); this.renderResearch(); this.renderNotes(); this.renderUnit(); this.renderSeal(); this.paint(); this.renderMinimap(); coach(this.busy ? null : this.v); }
   paint() {
     const v = this.v; const off = [...v.you.offices.map((h: number) => ({ hex: h, side: 0 })), ...v.rival.offices.map((h: number) => ({ hex: h, side: 1 }))];
     const hqs = [...v.you.hqs.map((q: any) => ({ hex: q.hex, side: 0, capital: q.capital, city: q.city })), ...v.rival.hqs.map((q: any) => ({ hex: q.hex, side: 1, capital: q.capital, city: q.city }))];
@@ -86,8 +90,8 @@ export class GameUI {
       ${res('gp', 'laurel', '#b8913a', `${Math.round(v.you.gp.pts)}/${v.you.gp.need}`, 'great operative', 'gp')}
       <span class="space"></span>
       ${[['ideas', 'ideas', 'Ideas', !v.you.idea_cur], ['doctrines', 'inf', 'Doctrines', v.you.influence >= v.you.doctrine_cost], ['factions', 'people', 'Factions', false], ['platform', 'scroll', 'Platform', false], ['world', 'globe', 'World', false], ['victory', 'trophy', 'Victory', false], ['century', 'hourglass', 'Century', false]]
-        .map(([k, ic, n, p]) => `<button class="tab" type="button" data-open="${k}"><span class="${pip(p as boolean)}">${icon(ic as string)}</span>${n}</button>`).join('')}
-      <button class="tab" type="button" data-menu>${icon('menu')}Menu</button>`;
+        .map(([k, ic, n, p]) => `<button class="tab" type="button" data-open="${k}" title="${n}" aria-label="${n}"><span class="${pip(p as boolean)}">${icon(ic as string)}</span><span class="tl">${n}</span></button>`).join('')}
+      <button class="tab" type="button" data-menu title="Menu" aria-label="Menu">${icon('menu')}<span class="tl">Menu</span></button>`;
     $('[data-menu]', $('.strip')).onclick = () => this.menu();
     $$('[data-tip]', $('.strip')).forEach(b => { b.onmouseenter = () => { const r = b.getBoundingClientRect(); showTip(this.tip(b.dataset.tip!), r.left, r.bottom - 8); }; b.onmouseleave = hideTip; b.onfocus = b.onmouseenter as any; b.onblur = hideTip; });
   }
@@ -432,13 +436,17 @@ export class GameUI {
   menu() {
     const iron = !!this.sim.save()?.ironman;
     const node = el(`<div class="ecard card paper" style="width:min(440px,100%)"><div class="card-in"><div class="ebody"><div class="kicker">Paused</div><h2>Menu</h2>
-      <div class="menu"><button class="btn" type="button" data-m="resume">Resume</button>${iron ? '' : '<button class="btn" type="button" data-m="save">Save the game</button>'}<button class="btn" type="button" data-m="settings">Settings</button><button class="btn" type="button" data-m="quit">Quit to the title</button></div>
+      <div class="mscreens">${[['ideas', 'ideas', 'Ideas'], ['doctrines', 'inf', 'Doctrines'], ['factions', 'people', 'Factions'], ['platform', 'scroll', 'Platform'], ['world', 'globe', 'World'], ['victory', 'trophy', 'Victory'], ['century', 'hourglass', 'Century'], ['report', 'chart', 'Last turn']].map(([k, ic, n]) => `<button class="btn" type="button" data-s="${k}">${icon(ic)}${n}</button>`).join('')}</div>
+      <div class="menu"><button class="btn" type="button" data-m="resume">Resume</button>${iron ? '' : '<button class="btn" type="button" data-m="save">Save the game</button>'}<button class="btn" type="button" data-m="how">How to play</button><button class="btn" type="button" data-m="tips">${tipsOn() ? 'Hide the tips' : 'Show the tips again'}</button><button class="btn" type="button" data-m="settings">Settings</button><button class="btn" type="button" data-m="quit">Quit to the title</button></div>
       <p class="note">${iron ? 'Ironman: one save, kept automatically at the start of every turn.' : 'The game also saves itself at the start of every turn.'}</p></div></div></div>`);
     const m = custom(node, 'Menu');
-    node.onclick = e => { const b = (e.target as HTMLElement).closest('[data-m]') as HTMLElement | null; if (!b) return; const k = b.dataset.m; m.close();
+    node.onclick = e => { const sc = (e.target as HTMLElement).closest('[data-s]') as HTMLElement | null; if (sc) { m.close(); if (sc.dataset.s === 'report') this.report(); else this.screen(sc.dataset.s!); return; }
+      const b = (e.target as HTMLElement).closest('[data-m]') as HTMLElement | null; if (!b) return; const k = b.dataset.m; m.close();
       if (k === 'save') { const s = this.sim.save(); const slots = store.get(SLOTS_KEY, []); slots.unshift({ when: new Date().toISOString(), save: s }); store.set(SLOTS_KEY, slots.slice(0, 6)); toast('scroll', 'Saved', s.label); }
       if (k === 'settings') import('./settings').then(x => x.settingsCard(() => this.renderAll()));
-      if (k === 'quit') { this.autosave(); this.onQuit(); } };
+      if (k === 'how') howToPlay();
+      if (k === 'tips') { setTips(!tipsOn()); coach(this.v); toast('bulb', tipsOn() ? 'Tips on' : 'Tips off', tipsOn() ? 'They appear as you meet each part of the game.' : 'Turn them back on from the menu.'); }
+      if (k === 'quit') { this.autosave(); clearInterval(this.coachTimer); coach(null); this.onQuit(); } };
   }
 }
 const ACH: Record<string, string> = { ally: 'Coalition builder', expansion: 'Expansion', doctrine: 'A creed', surge: 'Surge', contest: 'First blood', legend: 'A legend at work', great: 'A legend joins', chads: 'Hanging chads', landslide: 'Landslide', first_law: 'The pen', slice: 'The end of the beginning' };

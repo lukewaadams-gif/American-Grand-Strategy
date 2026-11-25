@@ -27,6 +27,8 @@ const AXE = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
   await check('event card with choices');
   for (let i = 0; i < 20 && await page.locator('.scrim').count(); i++) { const s = page.locator('.scrim').last(); const c = s.locator('.choice:not([disabled])'); if (await c.count()) await c.first().click(); else await s.locator('[data-ok]:not([disabled]), .btn.red:not([disabled])').last().click(); await page.waitForTimeout(400); }
   await check('the board');
+  if (await page.locator('.coach').count()) await check('a first-turn tip');
+  await page.evaluate(() => window.__ui.menu()); await check('menu'); await page.click('[data-m="how"]'); await check('how to play'); await page.click('.scrim .btn.red');
   await page.evaluate(() => window.__ui.screen('factions')); await check('binder: factions'); await page.click('.binder [data-close]');
   await page.evaluate(() => window.__ui.screen('ideas')); await check('binder: ideas'); await page.click('.binder [data-close]');
   await page.evaluate(() => window.__ui.openCity(window.__sim.view.you.hqs[0].hex)); await check('city dossier');

@@ -11,7 +11,7 @@ import { active, modStatus } from './mods';
 import { toast } from './ui/kit';
 
 const app = document.getElementById('app')!;
-async function boot() {
+async function boot(hot: any = {}) {
   applySettings();
   app.innerHTML = '<p style="color:#efe6d0;font:16px Georgia,serif;padding:40px">Laying out the board…</p>';
   try { await document.fonts.ready; } catch { /* fonts are optional */ }
@@ -27,13 +27,17 @@ async function boot() {
     board.centerOn(560, 300, Math.max(board.view.minZ * 1.4, 1.5), 0);
     titleScreen(app, data, boardEl, start, load);
   };
-  const play = async () => { const ui = new GameUI(app, sim, board, map, data, title); (window as any).__ui = ui; await ui.start(); };
+  let inGame = false;
+  const play = async () => { inGame = true; const ui = new GameUI(app, sim, board, map, data, () => { inGame = false; title(); }); (window as any).__ui = ui; await ui.start(); };
   const start = async (s: any) => { [Settings.you, Settings.them] = colourPair(s.colour); store.set('ags-colour', s.colour);
     sim.newGame({ leader: s.leader, first: s.first || undefined, last: s.last || undefined, state: s.state || undefined, party: s.party, factions: s.factions, difficulty: s.difficulty, seed: s.seed, ironman: s.ironman }); await play(); };
-  const load = async (save: any) => { try { [Settings.you, Settings.them] = colourPair(store.get('ags-colour', 'Navy')); sim.restore(save); await play(); } catch (e) { alert((e as Error).message); } };
+  const load = async (save: any) => { try { [Settings.you, Settings.them] = colourPair(store.get('ags-colour', 'Navy')); sim.restore(save); await play(); } catch (e) { toast('close', 'That game would not load', (e as Error).message); } };
   (window as any).__sim = sim; (window as any).__board = board;
-  title();
+  // when the page is updated under a viewer (a hosted artifact), the game in progress carries over
+  (window as any).claude?.hot?.snapshot?.(() => ({ save: inGame && !sim.view?.over ? sim.save() : null }));
+  if (hot?.save) await load(hot.save); else title();
   if (sim.modError) toast('close', 'Mods not applied', sim.modError);
 }
-boot();
+const hot = (window as any).claude?.hot;
+if (hot?.ready) hot.ready(boot); else boot(hot?.data ?? {});
 export { SAVE_KEY };

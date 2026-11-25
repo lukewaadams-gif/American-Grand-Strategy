@@ -4,7 +4,9 @@ export type View = any;
 export type Fx = { kind: string; [k: string]: any };
 
 export class Sim {
-  private x!: WebAssembly.Exports & { memory: WebAssembly.Memory; ags_alloc(n: number): number; ags_free(p: number, n: number): void; ags_call(p: number, n: number): bigint };
+  private x!: { memory: { buffer: ArrayBuffer }; ags_alloc(n: number): number; ags_free(p: number, n: number): void; ags_call(p: number, n: number): number; ags_out_len(): number };
+  /** Which build runs the game: WebAssembly, or the same simulation as plain JavaScript where a page refuses WebAssembly. */
+  engine: 'wasm' | 'js' = 'wasm';
   private enc = new TextEncoder();
   private dec = new TextDecoder();
   view: View = null;
@@ -14,11 +16,10 @@ export class Sim {
   modError = '';
 
   async init(base = '.', mods: Mod[] = []) {
-    const [wasm, base0, map] = await Promise.all([
-      fetch(`${base}/ags_sim.wasm`).then(r => { if (!r.ok) throw new Error('the simulation did not load'); return r.arrayBuffer(); }),
-      fetch(`${base}/data.json`).then(r => r.json()), fetch(`${base}/map.json`).then(r => r.json())]);
-    const { instance } = await WebAssembly.instantiate(wasm, {});
-    this.x = instance.exports as any;
+    const [x, base0, map] = await Promise.all([this.boot(base),
+      fetch(`${base}/data.json`).then(r => { if (!r.ok) throw new Error('the game data did not load'); return r.json(); }),
+      fetch(`${base}/map.json`).then(r => { if (!r.ok) throw new Error('the map did not load'); return r.json(); })]);
+    this.x = x;
     // modded data first; if the simulation refuses it, say why and start unmodded rather than not at all
     let data = base0;
     if (mods.length) {
@@ -28,11 +29,20 @@ export class Sim {
     const r = this.raw({ op: 'load', data, map }); if (!r.ok) throw new Error(r.error);
     return { data, map };
   }
+  /** WebAssembly when the page allows it; otherwise the JavaScript build, which plays the identical game. */
+  private async boot(base: string): Promise<any> {
+    try {
+      const r = await fetch(`${base}/ags_sim.wasm`); if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const { instance } = await WebAssembly.instantiate(await r.arrayBuffer(), {}); this.engine = 'wasm'; return instance.exports;
+    } catch (e) {
+      console.info('WebAssembly unavailable here, so the game runs on its JavaScript build:', (e as Error).message);
+      this.engine = 'js'; return await import('../gen/ags_sim.js');
+    }
+  }
   raw(req: object): any {
     const b = this.enc.encode(JSON.stringify(req)); const p = this.x.ags_alloc(b.length);
     new Uint8Array(this.x.memory.buffer, p, b.length).set(b);
-    const r = this.x.ags_call(p, b.length); this.x.ags_free(p, b.length);
-    const rp = Number(r >> 32n), rl = Number(r & 0xffffffffn);
+    const rp = this.x.ags_call(p, b.length) >>> 0, rl = this.x.ags_out_len() >>> 0; this.x.ags_free(p, b.length);
     const out = JSON.parse(this.dec.decode(new Uint8Array(this.x.memory.buffer, rp, rl))); this.x.ags_free(rp, rl);
     return out;
   }

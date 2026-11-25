@@ -11,10 +11,12 @@
     "test": "cd ../sim && cargo test --release",
     "play": "node test/playthrough.cjs shots 8795",
     "mods": "node test/mods.cjs 8795",
-    "a11y": "node test/a11y.cjs 8795"
+    "a11y": "node test/a11y.cjs 8795",
+    "artifact": "node build-artifact.mjs"
   },
   "devDependencies": {
     "axe-core": "4.10.3",
+    "binaryen": "119.0.0",
     "esbuild": "0.27.0",
     "typescript": "6.0.3",
     "us-atlas": "3.0.1",

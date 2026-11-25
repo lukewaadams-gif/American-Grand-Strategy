@@ -117,11 +117,16 @@ mod wasm {
     pub extern "C" fn ags_alloc(len: usize) -> *mut u8 { let mut v = Vec::<u8>::with_capacity(len); let p = v.as_mut_ptr(); std::mem::forget(v); p }
     #[no_mangle]
     pub extern "C" fn ags_free(ptr: *mut u8, len: usize) { unsafe { drop(Vec::from_raw_parts(ptr, 0, len)); } }
-    /// Run a request; returns the reply's address and length packed in one number (address << 32 | length).
+    static mut OUT_LEN: usize = 0;
+    /// Run a request; returns the reply's address, with its length from `ags_out_len`. Only 32-bit numbers cross the
+    /// boundary, so the same module also runs as plain JavaScript (wasm2js) where WebAssembly is not allowed.
     #[no_mangle]
-    pub extern "C" fn ags_call(ptr: *const u8, len: usize) -> u64 {
+    pub extern "C" fn ags_call(ptr: *const u8, len: usize) -> *mut u8 {
         let req = unsafe { std::str::from_utf8_unchecked(std::slice::from_raw_parts(ptr, len)) };
-        let out = super::call(req).into_bytes().into_boxed_slice(); let l = out.len() as u64;
-        let p = Box::into_raw(out) as *mut u8 as u64; (p << 32) | l
+        let out = super::call(req).into_bytes().into_boxed_slice(); unsafe { OUT_LEN = out.len(); }
+        Box::into_raw(out) as *mut u8
     }
+    /// The length of the last reply.
+    #[no_mangle]
+    pub extern "C" fn ags_out_len() -> usize { unsafe { OUT_LEN } }
 }

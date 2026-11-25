@@ -5,6 +5,7 @@ import { portrait } from '../art/print';
 import { Settings, settingsCard, setSound } from './settings';
 import { SAVE_KEY, SLOTS_KEY, store } from './game';
 import { installed, setInstalled, problem, modStatus, Installed } from '../mods';
+import { howToPlay } from './coach';
 
 export interface Setup { leader: string; first?: string; last?: string; state?: string; party: string; factions: string[]; difficulty: string; seed: number; ironman: boolean; colour: string }
 const COLOURS = [['Navy', '#2f5d8c', '#a3342b'], ['Brick', '#a3342b', '#2f5d8c'], ['Forest', '#3f6b3a', '#8a3a6b'], ['Ochre', '#b07c1e', '#4a3a8a'], ['Plum', '#6b3a7a', '#b07c1e'], ['Teal', '#1f6f73', '#a3342b']];
@@ -21,6 +22,7 @@ export function titleScreen(root: HTMLElement, data: any, boardEl: HTMLElement, 
         <button class="btn red" type="button" data-go="new">New game <small style="color:#f3d9cf">The Long Game · 2000</small></button>
         <button class="btn" type="button" data-go="continue" ${auto ? '' : 'disabled'}>Continue <small>${auto ? esc(auto.label) : 'No game in progress'}</small></button>
         <button class="btn" type="button" data-go="load" ${slots.length ? '' : 'disabled'}>Load a saved game <small>${slots.length} saved</small></button>
+        <button class="btn" type="button" data-go="how">How to play <small>The rules on one card</small></button>
         <button class="btn" type="button" data-go="hall">Hall of Presidents <small>Legacy</small></button>
         <button class="btn" type="button" data-go="settings">Settings <small>Sound, colour, text</small></button>
         <button class="btn" type="button" data-go="mods">Mods <small>${modStatus.error ? 'Not applied: see why' : modStatus.sig ? esc(modStatus.sig.replace(/ #.*/, '')) : `${installed().length} installed`}</small></button>
@@ -35,6 +37,7 @@ export function titleScreen(root: HTMLElement, data: any, boardEl: HTMLElement, 
     if (go === 'continue') onLoad(auto);
     if (go === 'load') loadCard(slots, onLoad);
     if (go === 'hall') hallCard();
+    if (go === 'how') howToPlay();
     if (go === 'settings') settingsCard();
     if (go === 'mods') modsCard(data, () => titleScreen(root, data, boardEl, onStart, onLoad));
   };
@@ -46,17 +49,18 @@ function modsCard(data: any, refresh: () => void) {
   const draw = () => {
     s.innerHTML = '';
     const node = el(`<div class="ecard card paper" style="width:min(620px,100%)"><div class="card-in"><div class="ebody"><div class="kicker">Data packs</div><h2>Mods</h2>
-      <p class="story">A mod is one JSON file that adds or changes events, leaders, units, laws, factions, the calendar and the rest. They apply in this order when the page loads. Saved games remember their mods and only load under the same set. <a href="mods/hanging-chads.json" download>Download an example</a>, and read docs/MODDING.md to write your own.</p>
+      <p class="story">A mod is one JSON file that adds or changes events, leaders, units, laws, factions, the calendar and the rest. They apply in this order when the page loads. Saved games remember their mods and only load under the same set. Try the example below, and read docs/MODDING.md in the project to write your own.</p>
       ${modStatus.error ? `<p class="advice"><b>Not applied · </b>The simulation refused your mods, so this session runs without them: ${esc(modStatus.error)}</p>` : ''}
       ${msg ? `<p class="advice"><b>Mod file · </b>${esc(msg)}</p>` : ''}
       <div class="mods">${list.map((x, i) => `<div class="modrow"><label class="row" style="gap:8px;flex:1;min-width:0"><input type="checkbox" data-on="${i}" ${x.on ? 'checked' : ''}><span style="min-width:0"><b>${esc(x.mod.name)}</b>${x.mod.version ? ` <span class="muted">${esc(x.mod.version)}</span>` : ''}${x.mod.author ? ` <span class="muted">· ${esc(x.mod.author)}</span>` : ''}<small class="muted" style="display:block">${esc(x.mod.about || Object.keys(x.mod.files).join(', '))}</small></span></label>
         <span class="row" style="gap:4px;flex:none"><button class="btn" type="button" data-up="${i}" ${i ? '' : 'disabled'} aria-label="Apply earlier">↑</button><button class="btn" type="button" data-rm="${i}">Remove</button></span></div>`).join('') || '<p class="muted">No mods installed.</p>'}</div>
-      <div class="efoot"><label class="btn"><input type="file" accept=".json,application/json" hidden data-file>Add a mod file…</label><span class="row" style="gap:6px">${dirty ? '<button class="btn red" type="button" data-reload>Reload to apply</button>' : ''}<button class="btn" type="button" data-x>Close</button></span></div></div></div></div>`);
+      <div class="efoot"><span class="row" style="gap:6px"><label class="btn"><input type="file" accept=".json,application/json" hidden data-file>Add a mod file…</label><button class="btn" type="button" data-example ${list.some(x => x.mod.name === 'Hanging Chads') ? 'disabled' : ''}>Install the example</button></span><span class="row" style="gap:6px">${dirty ? '<button class="btn red" type="button" data-reload>Reload to apply</button>' : ''}<button class="btn" type="button" data-x>Close</button></span></div></div></div></div>`);
     s.append(node);
     node.onclick = e => {
       const t = e.target as HTMLElement, num = (a: string) => +(t.closest(`[${a}]`) as HTMLElement).getAttribute(a)!;
       if (t.closest('[data-x]')) { s.remove(); refresh(); return; }
       if (t.closest('[data-reload]')) { location.reload(); return; }
+      if (t.closest('[data-example]')) { fetch('mods/hanging-chads.json').then(r => r.json()).then(m => { list = list.filter(x => x.mod.name !== m.name).concat([{ mod: m, on: true }]); setInstalled(list); dirty = true; msg = `Installed ${m.name}. Reload to play with it.`; draw(); }).catch(() => { msg = 'The example could not be fetched.'; draw(); }); return; }
       if (t.closest('[data-rm]')) { list.splice(num('data-rm'), 1); }
       else if (t.closest('[data-up]')) { const i = num('data-up'); [list[i - 1], list[i]] = [list[i], list[i - 1]]; }
       else return;
