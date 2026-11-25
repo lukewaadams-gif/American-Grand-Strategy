@@ -30,14 +30,20 @@ const RENDER: Record<string, (ui: GameUI) => { tab: string; html: string }> = {
     const dep = (i: any): number => depth[i.id] ?? (depth[i.id] = i.requires.length ? 1 + Math.max(...i.requires.map((r: string) => dep(list.find((x: any) => x.id === r)))) : 0); list.forEach(dep);
     const cols: Record<number, any[]> = {}; for (const i of list) (cols[depth[i.id]] ||= []).push(i);
     // lanes: each idea takes the free row nearest the average row of what it needs, so links run mostly straight
-    const NW = 184, PX = 202, NH = 122, PY = 138, rows = Math.max(...Object.values(cols).map(a => a.length)), row: Record<string, number> = {};
+    const NW = 176, PX = 194, NH = 122, PY = 138, rows = Math.max(...Object.values(cols).map(a => a.length)), row: Record<string, number> = {};
     Object.keys(cols).map(Number).sort((a, b) => a - b).forEach(d => {
       const want = (i: any) => i.requires.length ? i.requires.reduce((s: number, r: string) => s + row[r], 0) / i.requires.length : cols[d].indexOf(i);
       const taken = new Set<number>(); for (const i of [...cols[d]].sort((a, b) => want(a) - want(b))) {
         const w = want(i); let best = 0, bd = 1e9; for (let r = 0; r < rows; r++) if (!taken.has(r) && Math.abs(r - w) < bd) { bd = Math.abs(r - w); best = r; } taken.add(best); row[i.id] = best; } });
     const pos: Record<string, [number, number]> = {}; for (const i of list) pos[i.id] = [6 + depth[i.id] * PX, 6 + row[i.id] * PY];
     const W = 12 + Math.max(...Object.keys(cols).map(Number)) * PX + NW, H = 12 + (rows - 1) * PY + NH, y = ui.v.you.yields.ideas;
-    const lines = list.flatMap((i: any) => i.requires.map((r: string) => { const [x1, y1] = pos[r], [x2, y2] = pos[i.id], m = NH / 2, gx = (PX - NW) / 2; return `<path d="M${x1 + NW} ${y1 + m} L${x1 + NW + gx} ${y1 + m} L${x2 - gx} ${y2 + m} L${x2} ${y2 + m}" stroke="${ui.v.you.ideas_done.includes(r) ? '#2b2118' : 'rgba(43,33,24,.4)'}" stroke-width="2" fill="none" stroke-linejoin="round"/>`; })).join('');
+    // links run square: along a row that is empty between the two columns, turning in the gutter before or after them
+    const taken = new Set(list.map((i: any) => depth[i.id] + ',' + row[i.id])), m = NH / 2, gx = (PX - NW) / 2;
+    const clear = (r: number, c1: number, c2: number) => { for (let c = c1 + 1; c < c2; c++) if (taken.has(c + ',' + r)) return false; return true; };
+    const lines = list.flatMap((i: any) => i.requires.map((r: string) => {
+      const [x1, y1] = pos[r], [x2, y2] = pos[i.id], c1 = depth[r], c2 = depth[i.id], a = y1 + m, b = y2 + m;
+      const d = clear(row[r], c1, c2) ? `M${x1 + NW} ${a} H${x2 - gx} V${b} H${x2}` : clear(row[i.id], c1, c2) ? `M${x1 + NW} ${a} H${x1 + NW + gx} V${b} H${x2}` : `M${x1 + NW} ${a} L${x2} ${b}`;
+      return `<path d="${d}" stroke="${ui.v.you.ideas_done.includes(r) ? '#2b2118' : 'rgba(43,33,24,.4)'}" stroke-width="2" fill="none" stroke-linejoin="round"/>`; })).join('');
     return { tab: 'Ideas', html: head('Ideas', 'The think tank', `It turns out +${y.toFixed(0)} Ideas a turn. Pick what it studies; finished ideas unlock buildings and strengthen your pieces. Some wait for their year: nobody runs a social-media campaign in 2000.`) +
       `<div class="tree"><div class="tree-in" style="width:${W}px;height:${H}px"><svg width="${W}" height="${H}" style="position:absolute;inset:0">${lines}</svg>${list.map((i: any) => `<button class="tnode ${i.state}" type="button" data-idea="${i.id}" style="left:${pos[i.id][0]}px;top:${pos[i.id][1]}px" title="${esc(i.name + ': ' + i.text)}" ${i.state === 'done' ? 'disabled' : ''}>
         <span class="ti">${icon(i.icon)}</span><span><b>${esc(i.name)}</b><small>${esc(i.text)}</small><span class="cost">${i.state === 'done' ? 'Done' : i.state === 'year' ? `From ${i.year}` : `${i.cost} Ideas · ${Math.max(1, Math.ceil((i.cost - i.prog) / Math.max(1, y)))} turns`}</span></span>${i.prog ? `<span class="pbar"><i style="width:${Math.min(100, i.prog / i.cost * 100)}%"></i></span>` : ''}</button>`).join('')}</div></div>` };
