@@ -94,7 +94,10 @@ fn the_slice_plays_to_the_end() {
 #[test]
 fn every_leader_plays_through() {
     for (i, l) in ["governor", "senator", "general", "founder", "organiser", "mayor"].iter().enumerate() {
-        let (v, _, _) = play(100 + i as u64, l); assert_eq!(v["over"], true, "{l}");
+        let (v, log, _) = play(100 + i as u64, l); assert_eq!(v["over"], true, "{l}");
+        // the new year opens on the right side of the result: an inauguration if you won, the rival's if you lost
+        let want = if v["election"]["won"] == true { "inauguration" } else { "opposition" };
+        assert!(log.iter().any(|x| x.ends_with(&format!("\"{want}\""))), "{l}: expected the {want} card in {log:?}");
         println!("{l}: won {} ev {}", v["election"]["won"], v["election"]["ev"]);
     }
 }
@@ -179,4 +182,55 @@ fn an_ads_order_lapses_when_the_money_runs_out() {
     assert!(v["you"]["money"].as_f64().unwrap() >= 0.0, "no spending into debt");
     assert!(v["notes"][0]["title"].as_str().unwrap().contains("needs new orders"), "a note says so: {}", v["notes"][0]);
     println!("{}: {}", v["notes"][0]["title"], v["notes"][0]["text"]);
+}
+
+/// A competent player: units go to the close, big states and act there; production keeps the field growing.
+fn smart_turn(t: &mut T, m: &Value) -> bool {
+    for _ in 0..60 {
+        let v = t.view(); if v["over"] == true { return false; }
+        if !v["pending"].is_null() { settle(t); continue; }
+        if v["you"]["idea_cur"].is_null() { if let Some(i) = v["ideas"].as_array().unwrap().iter().find(|i| i["state"] == "open") { t.cmd(json!({ "c": "research", "idea": i["id"] })); } }
+        for (k, hq) in v["you"]["hqs"].as_array().unwrap().iter().enumerate() { if hq["prod"].is_null() {
+            let money = v["you"]["money"].as_f64().unwrap(); let pick = if money > 14.0 && k % 2 == 0 { "ads" } else if (v["turn"].as_u64().unwrap() + k as u64) % 2 == 0 { "organizer" } else { "surrogate" };
+            if t.cmd(json!({ "c": "prod", "hq": hq["hex"], "kind": "unit", "id": pick }))["ok"] != true { t.cmd(json!({ "c": "prod", "hq": hq["hex"], "kind": "unit", "id": "organizer" })); } } }
+        if v["you"]["influence"].as_f64().unwrap() >= v["you"]["doctrine_cost"].as_f64().unwrap() {
+            if let Some(p) = v["doctrines"].as_array().unwrap().iter().flat_map(|d| d["policies"].as_array().unwrap().iter()).find(|p| p["state"] == "open") { t.cmd(json!({ "c": "adopt", "policy": p["id"] })); } }
+        if let Some(o) = v["office"].as_object() { if o["holder"] == 0 && o["law"].is_null() { if let Some(l) = v["laws"].as_array().unwrap().iter().find(|l| l["passed"] == false) { t.cmd(json!({ "c": "law", "law": l["id"] })); } } }
+        let states = v["states"].as_array().unwrap().clone();
+        let worth = |code: &str| -> f64 { let s = states.iter().find(|s| s["code"] == code); s.map_or(0.0, |s| { let mg = s["margin"].as_f64().unwrap(); let x = (mg - 1.0) / 3.0; s["ev"].as_f64().unwrap() / (1.0 + x * x) }) };
+        let hexes = m["hexes"].as_array().unwrap();
+        let score = |h: usize| -> f64 { let x = &hexes[h]; match x["s"].as_str() { Some(c) => worth(c) * (1.0 + x["p"].as_f64().unwrap_or(1.0) / 8.0), None => -1.0 } };
+        for u in v["units"].as_array().unwrap().iter().filter(|u| u["side"] == 0) {
+            let id = u["id"].as_u64().unwrap(); if u["acted"] == true { continue; }
+            if u["mp"].as_f64().unwrap() > 0.0 { let r = t.req(json!({ "op": "reach", "unit": id }));
+                let here = u["hex"].as_u64().unwrap() as usize; let mut best = (score(here), here);
+                for h in r["hexes"].as_array().cloned().unwrap_or_default() { let hx = h[0].as_u64().unwrap() as usize; let s = score(hx); if s > best.0 { best = (s, hx); } }
+                if best.1 != here { t.cmd(json!({ "c": "move", "unit": id, "to": best.1 })); } }
+            let v2 = t.view(); let u2 = v2["units"].as_array().unwrap().iter().find(|x| x["id"] == id).cloned(); let Some(u2) = u2 else { continue };
+            for want in ["stump", "rally", "ads", "canvass", "poll", "contest"] {
+                if let Some(a) = u2["actions"].as_array().unwrap().iter().find(|a| a["id"] == want && a["block"] == "") {
+                    let target = a["targets"].as_array().and_then(|x| x.first()).cloned();
+                    if t.cmd(json!({ "c": "act", "unit": id, "action": want, "target": target }))["ok"] == true { break; } } }
+        }
+        let r = t.cmd(json!({ "c": "end_turn" })); assert_eq!(r["ok"], true, "end_turn: {r}"); return true;
+    }
+    panic!("stuck")
+}
+
+#[test]
+fn difficulty_bites_and_a_good_campaign_can_win() {
+    // a competent bot over every leader: the forgiving level is usually won, the brutal one rarely, and harder never wins more
+    let m = map(); let mut rate = vec![];
+    for diff in ["intern", "operative", "kingmaker"] {
+        let mut wins = 0; let mut evs = vec![];
+        for (i, leader) in ["governor", "senator", "general", "founder", "organiser", "mayor"].iter().enumerate() { for k in 0..2u64 {
+            let mut t = T::new(); let mut s = setup(1000 + i as u64 * 10 + k, leader); s["difficulty"] = json!(diff); t.ok(json!({ "op": "new", "setup": s }));
+            for _ in 0..40 { let v = t.view(); if !v["election"].is_null() || v["over"] == true { break; } if !smart_turn(&mut t, &m) { break; } }
+            let v = t.view(); if v["election"]["won"] == true { wins += 1; } evs.push(v["election"]["ev"][0].as_u64().unwrap_or(0));
+        } }
+        println!("{diff}: won {wins}/12, EV {evs:?}"); rate.push(wins);
+    }
+    assert!(rate[0] >= 8, "intern should usually be won: {rate:?}");
+    assert!(rate[2] <= 5, "kingmaker should rarely be won: {rate:?}");
+    assert!(rate[0] >= rate[1] && rate[1] >= rate[2], "harder levels never win more: {rate:?}");
 }

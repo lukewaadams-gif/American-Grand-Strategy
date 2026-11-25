@@ -196,8 +196,11 @@ console.log('wrote', path.relative(process.cwd(), outPath), (fs.statSync(outPath
     const polys = g.type === 'Polygon' ? [g.arcs] : g.type === 'MultiPolygon' ? g.arcs : [];
     let d = '';
     for (const p of polys) for (const r of p.map(ring)) {
-      let last = null;
-      r.forEach(([lon, lat], k) => { const x = X(lon), y = Y(lat); d += (k === 0 || (last && Math.abs(x - last) > 500) ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1); last = x; });
+      // unwrap longitudes across the antimeridian so a ring stays one closed shape (Chukotka and Fiji run past the
+      // edge and the frame crops them) instead of a chord across the whole map
+      let prev = null, off = 0;
+      r.forEach(([lon, lat], k) => { if (prev != null) { if (lon - prev > 180) off -= 360; else if (lon - prev < -180) off += 360; } prev = lon;
+        d += (k === 0 ? 'M' : 'L') + X(lon + off).toFixed(1) + ' ' + Y(lat).toFixed(1); });
       d += 'Z';
     }
     const n = g.properties.name; if (d && n !== 'Antarctica') out.push({ n, d, eu: EU15.includes(n) });

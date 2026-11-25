@@ -61,7 +61,7 @@ fs.mkdirSync(OUT, { recursive: true });
     }
     turns++;
     if (turns <= 3 || turns === 9) { await page.evaluate(() => window.__ui.clearSel()); await page.waitForTimeout(250); await shot(`30-turn${turns}`); }
-    if (turns === 2) for (const k of ['factions', 'platform', 'world', 'victory', 'century', 'doctrines', 'ideas']) { await page.evaluate(x => window.__ui.screen(x), k); await page.waitForTimeout(250); await shot(`45-${k}`); await page.click('.binder [data-close]'); }
+    if (turns === 2) for (const k of ['factions', 'platform', 'world', 'victory', 'century', 'doctrines', 'ideas']) { await page.evaluate(x => window.__ui.screen(x), k); await page.waitForTimeout(800); await shot(`45-${k}`); await page.click('.binder [data-close]'); }
     if (turns === 3) { const rv = page.locator('.notecard').first(); if (await rv.count()) { await rv.click(); await page.waitForTimeout(300); await shot('46-note'); } }
     await seal.click(); await page.waitForTimeout(250);
     } catch (e) { console.log('step error:', String(e).split('\n')[0]); await shot('err-' + step); }

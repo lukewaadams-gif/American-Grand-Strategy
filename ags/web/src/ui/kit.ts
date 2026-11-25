@@ -88,9 +88,10 @@ export function talentCard(t: any, spot: string, factionsById: Record<string, an
 /** Deal an event card; resolves with the chosen choice's index. */
 export function dealCard(p: any, spot: string, spot2: string, extra = '', wide = false): Promise<number> {
   return new Promise(res => {
-    const node = el(`<div class="ecard card paper ${wide ? 'wide' : ''}"><div class="card-in">${p.art ? scene(p.art, spot, spot2) : ''}<div class="ebody">
-      <div class="kicker">${esc(p.kicker || '')}</div><h2>${esc(p.title)}</h2>${p.body ? `<p class="story">${esc(p.body)}</p>` : ''}${extra}
-      ${p.advice ? `<p class="advice"><b>Your adviser · </b>${esc(p.advice)}</p>` : ''}<div class="choices"></div></div></div></div>`);
+    // a spread on wide screens: the story on the left, the choices on the right, so no one scrolls to decide
+    const node = el(`<div class="ecard card paper spread ${wide ? 'wide' : ''}"><div class="card-in">${p.art ? scene(p.art, spot, spot2) : ''}<div class="ebody">
+      <div class="etext"><div class="kicker">${esc(p.kicker || '')}</div><h2>${esc(p.title)}</h2>${p.body ? `<p class="story">${esc(p.body)}</p>` : ''}${extra}
+      ${p.advice ? `<p class="advice"><b>Your adviser · </b>${esc(p.advice)}</p>` : ''}</div><div class="choices"></div></div></div></div>`);
     const m = openScrim(node, p.title), box = $('.choices', node);
     for (const c of p.choices || []) {
       const b = el(`<button class="choice" type="button"><b>${esc(c.label)}</b>${c.odds != null ? `<span class="odds" title="Chance it works">${Math.round(c.odds * 100)}%</span>` : '<span></span>'}${c.text ? `<p>${esc(c.text)}</p>` : ''}</button>`);

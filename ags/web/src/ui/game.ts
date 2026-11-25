@@ -116,8 +116,10 @@ export class GameUI {
   }
   renderNotes() {
     const box = $('.notes');
-    box.innerHTML = this.v.notes.slice(0, 7).map((n: any, i: number) => `<button class="notecard ${n.tone}" type="button" data-note="${i}" style="--rot:${(i % 3 - 1) * .7}deg"><b>${esc(n.title)}</b><span>${esc(n.text)}</span></button>`).join('');
-    box.onclick = e => { const b = (e.target as HTMLElement).closest('[data-note]') as HTMLElement | null; if (!b) return; const n = this.v.notes[+b.dataset.note!]; b.remove(); this.go(n.go); };
+    // newest first, one card per title: a recurring note ("Park's turn") replaces its older copy instead of piling up
+    const seen = new Set<string>(), list = this.v.notes.filter((n: any) => !seen.has(n.title) && !!seen.add(n.title)).slice(0, 7);
+    box.innerHTML = list.map((n: any, i: number) => `<button class="notecard ${n.tone}" type="button" data-note="${i}" style="--rot:${(i % 3 - 1) * .7}deg"><b>${esc(n.title)}</b><span>${esc(n.text)}</span></button>`).join('');
+    box.onclick = e => { const b = (e.target as HTMLElement).closest('[data-note]') as HTMLElement | null; if (!b) return; const n = list[+b.dataset.note!]; b.remove(); this.go(n.go); };
   }
   go(g: any) {
     if (!g) return; if (g.hex != null) this.board.centerHex(g.hex); if (g.city != null) this.openCity(g.city); if (g.unit != null) this.select(g.unit);
@@ -417,7 +419,11 @@ export class GameUI {
     const m = custom(node, R.leader.name); $('.btn', node).onclick = () => m.close();
   }
   report() {
-    const items = this.v.report;
+    // the same cause twice (two canvasses of one city) reads as one line with a count
+    const by = new Map<string, any>();
+    for (const x of this.v.report) { const g = by.get(x.why); if (!g) { by.set(x.why, { why: x.why, nat: x.nat, n: 1, top: new Map(x.top) }); continue; }
+      g.nat += x.nat; g.n++; for (const [c, d] of x.top) g.top.set(c, (g.top.get(c) || 0) + d); }
+    const items = [...by.values()].map(g => ({ why: g.n > 1 ? `${g.why} ×${g.n}` : g.why, nat: g.nat, top: [...g.top.entries()].sort((a: any, b: any) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 3) })).sort((a, b) => Math.abs(b.nat) - Math.abs(a.nat));
     const node = el(`<div class="ecard card paper"><div class="card-in"><div class="ebody"><div class="kicker">Turn report · ${esc(this.v.history[this.v.history.length - 1]?.[0] || '')}</div><h2>What moved the race</h2>
       <div style="display:grid">${items.map((x: any) => `<div class="row" style="justify-content:space-between;border-bottom:1px dotted var(--rule);padding:4px 0;flex-wrap:nowrap"><span>${esc(x.why)}${x.top.length ? ` <span class="muted">(${x.top.map(([c, d]: any) => `${c} ${sgn(d, 1)}`).join(', ')})</span>` : ''}</span><b class="${x.nat >= 0 ? 'up' : 'down'} tnum">${sgn(x.nat / 2, 2)}%</b></div>`).join('') || '<span class="muted">A quiet turn.</span>'}</div>
       <div class="efoot"><span class="type muted">Shares of the two-party vote, nationally; in brackets, the states that moved most.</span><button class="btn red" type="button">Back to the table</button></div></div></div></div>`);

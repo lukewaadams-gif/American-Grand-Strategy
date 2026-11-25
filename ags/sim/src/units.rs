@@ -95,7 +95,7 @@ impl Game {
             let block = self.act_block(&u, &order);
             if block.is_empty() { let _ = self.act(id, &order, None); continue; }
             self.unit_mut(id).unwrap().standing = None;
-            let name = self.unit_def(&u).name; let place = self.place(u.hex); let at = if place.starts_with("near") { place } else { format!("in {place}") };
+            let name = self.unit_def(&u).name; let at = self.at(u.hex);
             self.note("unit", &format!("{name} needs new orders"), &format!("Its standing order {at} lapsed. {block}"), json!({ "hex": u.hex, "unit": id }), "bad");
         }
     }
@@ -115,6 +115,8 @@ impl Game {
         (rings, mul)
     }
     pub fn city_mul(&self, side: usize) -> f64 { 1.0 + self.md(side, "city_pct") }
+    /// "in Dayton" or "near Dayton": a place with its preposition.
+    pub fn at(&self, h: usize) -> String { let p = self.place(h); if p.starts_with("near ") || p.starts_with("the ") { p } else { format!("in {p}") } }
     pub fn place(&self, h: usize) -> String {
         let hx = &self.map.hexes[h]; if let Some(c) = hx.c { return self.map.cities[c].name.clone(); }
         let si = match self.map.state_of[h] { Some(s) => s, None => return "the sea".into() };
@@ -175,7 +177,7 @@ impl Game {
             "stump" | "rally" => {
                 let (rings, mul) = self.rally_rings(&u); let heart = d.unique.as_ref().and_then(|x| x.heartland.clone()).and_then(|f| self.data.faction(&f));
                 let what = if a == "stump" { "stump speech".to_string() } else { format!("{} rally", d.name) };
-                self.push_area(u.hex, &rings, sign, &format!("{who} {what} in {place}"), mul, self.city_mul(side), heart);
+                self.push_area(u.hex, &rings, sign, &format!("{who} {what} {}", self.at(u.hex)), mul, self.city_mul(side), heart);
                 self.unit_mut(uid).unwrap().acted = true;
                 if side == YOU { if let Some(si) = self.map.state_of[u.hex] { let code = self.map.states[si].clone(); self.flags.insert(format!("rallied:{code}")); } self.quest_check(); if a == "stump" { self.sides[YOU].mom_bonus += 0.5; } }
             }
@@ -186,7 +188,7 @@ impl Game {
             }
             "office" => {
                 self.sides[side].offices.push(u.hex);
-                if side == YOU { self.note("office", "Field office opened", &format!("A field office {} will push every turn.", if place.starts_with("near") { place.clone() } else { format!("in {place}") }), json!({ "hex": u.hex }), "good"); }
+                if side == YOU { self.note("office", "Field office opened", &format!("A field office {} will push every turn.", self.at(u.hex)), json!({ "hex": u.hex }), "good"); }
                 if d.unique.as_ref().map_or(false, |x| x.keep_on_office) { let m = self.unit_mut(uid).unwrap(); m.acted = true; m.mp = 0.0; } else { self.remove_unit(uid); }
             }
             "hq" => {
@@ -217,14 +219,14 @@ impl Game {
                 let (p, am, bm) = self.contest_odds(&u, &t, ad);
                 let (a1, a2, b1, b2) = (self.rng.d6(), self.rng.d6(), self.rng.d6(), self.rng.d6());
                 let win = (a1 + a2) as f64 + am > (b1 + b2) as f64 + bm;
-                let tname = self.unit_def(&t).name; let tplace = self.place(t.hex);
+                let tname = self.unit_def(&t).name; let tat = self.at(t.hex);
                 self.fx.push(json!({ "kind": "dice", "a": [a1, a2], "b": [b1, b2], "am": am, "bm": bm, "p": p, "win": win, "side": side, "hex": t.hex,
-                    "title": if ad { format!("Attack ad on {}'s {}", if side == YOU { self.sides[RIVAL].leader.last.clone() } else { "your".into() }, tname) } else { format!("Contest in {tplace}") } }));
+                    "title": if ad { format!("Attack ad on {}'s {}", if side == YOU { self.sides[RIVAL].leader.last.clone() } else { "your".into() }, tname) } else { { let mut c = tat.clone(); c.replace_range(..1, &c[..1].to_uppercase()); format!("Contest {c}") } } }));
                 let (winner, loser) = if win { (side, t.id) } else { (t.side, uid) };
                 let wsign = if winner == YOU { 1.0 } else { -1.0 };
                 if ad { let si = self.map.state_of[t.hex].unwrap(); let sn = state_name(&self.data, &self.map.states[si]);
                     if win { self.push_state(si, sign * 0.6, &format!("{who} attack ad landed in {sn}")); } else { self.push_state(si, -sign * 0.4, &format!("{who} attack ad backfired in {sn}")); } }
-                else { self.push_area(t.hex, &[1.5, 0.6], wsign, &format!("{} won a contest in {tplace}", self.who(winner)), 1.0, 1.0, None); }
+                else { self.push_area(t.hex, &[1.5, 0.6], wsign, &format!("{} won a contest {tat}", self.who(winner)), 1.0, 1.0, None); }
                 if let Some(l) = self.unit_mut(loser) { l.rattled = true; }
                 let ls = if win { t.side } else { side }; self.sides[ls].mom_bonus -= 1.0;
                 if let Some(m) = self.unit_mut(uid) { m.acted = true; }

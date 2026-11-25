@@ -169,7 +169,7 @@ impl Game {
         let id = self.spawn("mate", hex, YOU); if let Some(u) = self.units.iter_mut().find(|u| u.id == id) { u.name = Some(t.name.clone()); u.home = Some(t.state.clone()); }
         self.push_state(si, 2.5, &format!("{} on the ticket", t.name));
         if let Some(k) = self.data.faction(&t.faction) { self.gain(k, 10.0, &format!("{} is on the ticket.", t.name)); }
-        self.note("medal", &format!("{} joins the ticket", t.last), &format!("{} is on the board in {}.", t.name, self.place(hex)), json!({ "unit": id }), "good");
+        self.note("medal", &format!("{} joins the ticket", t.last), &format!("{} is on the board {}.", t.name, self.at(hex)), json!({ "unit": id }), "good");
         self.mate = Some(t); self.offer.clear(); self.after_card(); Ok(())
     }
     fn choose_cabinet(&mut self, picks: &[usize]) -> Result<(), String> {

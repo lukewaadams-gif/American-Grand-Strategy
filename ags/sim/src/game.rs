@@ -130,9 +130,15 @@ impl Game {
         // the map: each state's lean, then each hex around it (cities lean to the urban factions)
         let up = mine.iter().map(|f| data.factions[data.faction(f).unwrap()].urbanism).sum::<f64>() / 3.0;
         let ur = theirs.iter().map(|f| data.factions[data.faction(f).unwrap()].urbanism).sum::<f64>() / 3.0;
-        let m0 = -0.5 + shift;
-        for (si, code) in map.states.iter().enumerate() {
-            let target = base[si] + m0 + if *code == home { 4.0 } else { 0.0 } + if *code == rs { -3.0 } else { 0.0 };
+        let m0 = shift;
+        // centre the map on the tipping-point state (the one that delivers the 270th electoral vote), not on the national
+        // vote: every coalition starts in a fair Electoral College race, though an urban one may bank wasted votes and win
+        // the popular vote while losing, as in 2000
+        let raw: Vec<f64> = map.states.iter().enumerate().map(|(si, code)| base[si] + if *code == home { 4.0 } else { 0.0 } + if *code == rs { -3.0 } else { 0.0 }).collect();
+        let tp = { let mut o: Vec<usize> = (0..raw.len()).collect(); o.sort_by(|a, b| raw[*b].partial_cmp(&raw[*a]).unwrap()); let mut acc = 0; let mut t = 0.0;
+            for si in o { acc += g.ev(si); if acc >= 270 { t = raw[si]; break; } } t };
+        for (si, _code) in map.states.iter().enumerate() {
+            let target = raw[si] - tp + m0;
             let ids = map.state_hexes[si].clone();
             let cn = |i: usize| cityness(map.pop[i]);
             let avg: f64 = ids.iter().map(|&i| cn(i) * map.pop[i]).sum::<f64>() / map.state_pop[si];

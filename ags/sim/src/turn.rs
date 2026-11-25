@@ -216,10 +216,10 @@ impl Game {
                     // contest a player's unit standing in the way, when the odds are good
                     let me = self.unit(id).unwrap().clone();
                     let target = self.targets(&me, "contest").into_iter().find(|t| { let tu = self.unit(*t).unwrap(); self.contest_odds(&me, tu, false).0 > 0.6 });
-                    if u.line != "operative" { if let Some(t) = target { let _ = self.act(id, "contest", Some(t as i64)); acts.push(format!("a contest in {}", self.place(to))); continue; } }
-                    if u.line == "operative" { let _ = self.act(id, "great", None); acts.push(format!("a barnstorm through {}", self.place(to))); continue; }
+                    if u.line != "operative" { if let Some(t) = target { let _ = self.act(id, "contest", Some(t as i64)); acts.push(format!("a contest {}", self.at(to))); continue; } }
+                    if u.line == "operative" { let _ = self.act(id, "great", None); acts.push(format!("a barnstorm {}", self.at(to))); continue; }
                     let a = if u.line == "candidate" { "stump" } else { "rally" }; let _ = self.act(id, a, None);
-                    acts.push(format!("{} in {}", if a == "stump" { "a stump speech" } else { "a rally" }, self.place(to)));
+                    acts.push(format!("{} {}", if a == "stump" { "a stump speech" } else { "a rally" }, self.at(to)));
                 }
                 "organizer" => {
                     let (best, _) = self.reach(&u); let mut pick = u.hex; let mut pv = f64::MIN;
@@ -228,13 +228,15 @@ impl Game {
                     if let Some(m) = self.units.iter_mut().find(|m| m.id == id) { m.hex = pick; }
                     let me = self.unit(id).unwrap().clone(); let h = &self.map.hexes[pick];
                     if h.c.is_some() && self.act_block(&me, "hq").is_empty() && self.sides[RIVAL].hqs.len() < 2 + self.turn { let _ = self.act(id, "hq", None); acts.push(format!("a new HQ in {}", self.place(pick))); }
-                    else if self.rng.chance(0.3) && self.act_block(&me, "office").is_empty() { let _ = self.act(id, "office", None); acts.push(format!("a field office {}", self.place(pick))); }
+                    else if self.rng.chance(0.3) && self.act_block(&me, "office").is_empty() { let _ = self.act(id, "office", None); acts.push(format!("a field office {}", self.at(pick))); }
                     else { let _ = self.act(id, "canvass", None); }
                 }
                 _ => {}
             }
         }
-        let k = self.rival_k; let l = self.sides[RIVAL].leader.last.clone(); self.push_national(-0.22 * k, &format!("{l}'s national ads"));
+        // the national air war: both campaigns buy it; difficulty scales only the rival's, so a fair fight nets to zero
+        let k = self.rival_k; let l = self.sides[RIVAL].leader.last.clone();
+        self.push_national(0.22 * (1.0 + self.md(YOU, "ads_pct") * 0.5), "Your national ads"); self.push_national(-0.22 * k * (1.0 + self.md(RIVAL, "ads_pct") * 0.5), &format!("{l}'s national ads"));
         if !acts.is_empty() { let text = acts.iter().take(5).cloned().collect::<Vec<_>>().join("; "); self.note("star", &format!("{l}'s turn"), &format!("{}{}.", text[..1].to_uppercase(), &text[1..]), json!({ "rival": true }), "bad"); }
         // the rival picks a doctrine when it can afford one
         let c = self.doctrine_cost(RIVAL);
@@ -288,14 +290,18 @@ impl Game {
                 let ec = self.md(side, "election_close"); if ec > 0.0 && sign * v > -3.0 && sign * v < 0.0 { v += sign * ec; } }
             m[si] = v;
         }
-        // history mode: the 2000 election comes down to Florida
+        // history mode: a close 2000 election comes down to Florida. Only a race that is already close is nudged there,
+        // and only states inside the margin of error can flip; a landslide or a collapse stands, so the campaign counts.
         let fl = self.map.state_index("FL"); let mut recount = false;
         if let (Some(fl), true) = (fl, self.year() < 2001.0) {
             let ev = |g: &Game, s: usize| g.ev(s) as i32; let mut ex: i32 = (0..n).filter(|&s| s != fl && m[s] > 0.0).map(|s| ev(self, s)).sum();
-            for _ in 0..40 { if (245..=268).contains(&ex) { break; }
-                if ex > 268 { if let Some(s) = (0..n).filter(|&s| s != fl && m[s] > 0.0 && ev(self, s) <= ex - 245).min_by(|a, b| m[*a].partial_cmp(&m[*b]).unwrap()) { m[s] = -0.4; ex -= ev(self, s); } else { break; } }
-                else if let Some(s) = (0..n).filter(|&s| s != fl && m[s] <= 0.0 && ev(self, s) <= 268 - ex).max_by(|a, b| m[*a].partial_cmp(&m[*b]).unwrap()) { m[s] = 0.4; ex += ev(self, s); } else { break; } }
-            if (245..=268).contains(&ex) { m[fl] = if m[fl] >= 0.0 { 0.02 } else { -0.02 }; recount = true; }
+            const CLOSE: f64 = 2.5;
+            if (230..=290).contains(&ex) {
+                for _ in 0..12 { if (245..=268).contains(&ex) { break; }
+                    if ex > 268 { if let Some(s) = (0..n).filter(|&s| s != fl && m[s] > 0.0 && m[s] < CLOSE && ev(self, s) <= ex - 245).min_by(|a, b| m[*a].partial_cmp(&m[*b]).unwrap()) { m[s] = -0.4; ex -= ev(self, s); } else { break; } }
+                    else if let Some(s) = (0..n).filter(|&s| s != fl && m[s] <= 0.0 && m[s] > -CLOSE && ev(self, s) <= 268 - ex).max_by(|a, b| m[*a].partial_cmp(&m[*b]).unwrap()) { m[s] = 0.4; ex += ev(self, s); } else { break; } }
+            }
+            if (245..=268).contains(&ex) && m[fl].abs() < 4.0 { m[fl] = if m[fl] >= 0.0 { 0.02 } else { -0.02 }; recount = true; }
         }
         let mut evs = [0u32, 0u32]; for si in 0..n { if recount && Some(si) == fl { continue; } if m[si] > 0.0 { evs[0] += self.ev(si) } else { evs[1] += self.ev(si) } }
         let wn: f64 = (0..n).map(|s| weight(&self.data, s, "2020")).sum(); let nat: f64 = (0..n).map(|s| weight(&self.data, s, "2020") * m[s]).sum::<f64>() / wn;

@@ -9,7 +9,7 @@
   {"title": "Oct 16, 2000", "label": "The surprise", "kind": "fortnight", "year": 2000.8, "open": ["surprise_mate", "surprise_record"]},
   {"title": "Oct 30, 2000", "label": "The final push", "kind": "fortnight", "year": 2000.83, "open": ["closing"]},
   {"title": "Nov 7, 2000", "label": "Election night", "kind": "election", "year": 2000.85},
-  {"title": "Q1 2001", "label": "A new century", "kind": "quarter", "year": 2001.1, "office": true, "open": ["inauguration", "cabinet", "energy", "taxcut_fight", "threat_brief"]},
+  {"title": "Q1 2001", "label": "A new century", "kind": "quarter", "year": 2001.1, "office": true, "open": ["inauguration", "opposition", "cabinet", "energy", "taxcut_fight", "threat_brief"]},
   {"title": "Q2 2001", "label": "The Hainan incident", "kind": "quarter", "year": 2001.35, "office": true, "open": ["hainan"]},
   {"title": "Q3 2001", "label": "A summer of warnings", "kind": "quarter", "year": 2001.6, "office": true, "open": ["summer_warning"], "close": ["september"]},
   {"title": "Q4 2001", "label": "The year's end", "kind": "quarter", "year": 2001.85, "office": true, "open": ["year_end"]},

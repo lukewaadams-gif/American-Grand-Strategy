@@ -43,7 +43,7 @@ export class Board {
     // the board draws a frame only when something on it changes: no idle redraws, which spares batteries and slow GPUs
     this.app.ticker.stop();
     this.bindInput(); this.fit(); new ResizeObserver(() => { this.app.resize(); this.layoutTable(); this.clamp(); this.apply(); }).observe(el);
-    this.makeLabels(); document.fonts?.ready.then(() => this.invalidate());
+    this.makeLabels(); this.apply(); document.fonts?.ready.then(() => this.apply());
   }
   private raf = 0;
   /** Ask for one frame; tweens and floating numbers keep asking until they finish. */
@@ -67,9 +67,18 @@ export class Board {
     this.world.position.set(this.view.x, this.view.y); this.world.scale.set(this.view.z, this.view.z * TILT);
     this.layoutPieces(); this.layoutFloats();
     this.el.classList.toggle('far', this.view.z < 1.9);
-    for (const t of this.labels.children) (t as any).visible = this.view.z >= ((t as any).minZ || 0);
     const ls = Math.min(1.2, 1.6 / this.view.z); for (const t of this.labels.children) t.scale.set(ls, ls / TILT);
+    this.declutter();
     this.invalidate();
+  }
+  /** Show city names biggest first, hiding any that would overprint one already shown at this zoom. */
+  private declutter() {
+    const shown: { l: number; r: number; t: number; b: number }[] = [];
+    for (const t of this.labels.children as any[]) {
+      if (this.view.z < (t.minZ || 0)) { t.visible = false; continue; }
+      const w = t.width, h = t.height * TILT, box = { l: t.position.x - w / 2 - 1, r: t.position.x + w / 2 + 1, t: t.position.y * TILT, b: t.position.y * TILT + h };
+      t.visible = !shown.some(o => box.l < o.r && box.r > o.l && box.t < o.b && box.b > o.t); if (t.visible) shown.push(box);
+    }
   }
   clamp() {
     const r = this.el.getBoundingClientRect(), w = MW * this.view.z, h = MH * this.view.z * TILT, m = 60;
@@ -148,7 +157,7 @@ export class Board {
 
   /* ---------------- pieces ---------------- */
   private place(c: Container, mx: number, my: number, dx = 0) { const [x, y] = this.toScreen(mx, my); c.position.set(x + dx * this.view.z, y); const z = this.pieceScale(); c.scale.set(z, z); }
-  pieceScale() { return Math.max(.42, Math.min(1.25, this.view.z * .2)); }
+  pieceScale() { return Math.max(.5, Math.min(1.4, this.view.z * .34)); }
   syncPieces() {
     const s = this.state!; const want = new Set<string>();
     const mk = (key: string, build: () => Container) => { let c = this.sprites.get(key); if (!c) { c = build(); this.sprites.set(key, c); this.pieces.addChild(c); } want.add(key); return c; };
@@ -160,7 +169,7 @@ export class Board {
       const c = mk(key, () => { const ct = new Container(); const rg = new Sprite(Texture.from(ring('#f2c94c'))); rg.anchor.set(.5); rg.scale.set(.5); rg.position.set(0, -1); rg.visible = false; (ct as any).ring = rg; ct.addChild(rg);
         const sp = new Sprite(Texture.from(miniature(pieceFor(u.line), col, u.id))); sp.anchor.set(.5, 57 / 64); sp.scale.set(.5); ct.addChild(sp); (ct as any).fig = sp;
         const badge = new Text({ text: '', style: { fontFamily: '"Alegreya Sans SC", sans-serif', fontSize: 11, fontWeight: '700', fill: '#2b2118', stroke: { color: '#efe6d0', width: 3 } }, resolution: 3 }); badge.anchor.set(.5); badge.position.set(9, -4); ct.addChild(badge); (ct as any).badge = badge; return ct; });
-      const prevHex = (c as any).hex; (c as any).hex = hex; (c as any).dx = (n - (us.length - 1) / 2) * 9;
+      const prevHex = (c as any).hex; (c as any).hex = hex; (c as any).dx = (n - (us.length - 1) / 2) * Math.min(9, 24 / us.length);
       (c as any).ring.visible = this.hl.sel === hex && (c as any).selId === u.id;
       (c as any).fig.alpha = u.side === 0 && (u.acted || u.skip) ? .72 : 1; (c as any).fig.tint = u.rattled ? 0x999999 : 0xffffff;
       (c as any).badge.text = u.side === 0 ? (u.standing === 'sleep' ? 'z' : u.standing ? '↻' : u.acted ? '✓' : String(Math.max(0, Math.round(u.mp)))) : '';
@@ -179,7 +188,7 @@ export class Board {
     this.pieces.children.sort((a, b) => a.position.y - b.position.y); this.invalidate();
   }
   makeLabels() {
-    for (const c of this.map.cities) {
+    for (const c of [...this.map.cities].sort((a, b) => b.pop - a.pop)) {
       const t = new Text({ text: c.name.toUpperCase(), style: { fontFamily: '"Alegreya Sans SC", "Alegreya Sans", sans-serif', fontSize: 9, fontWeight: '700', letterSpacing: .6, fill: '#2b2118', stroke: { color: '#efe6d0', width: 3, join: 'round' } }, resolution: 4 });
       t.anchor.set(.5, 0); const h = this.map.hexes[c.h]; t.position.set(h.x, h.y + 4.5); (t as any).minZ = c.pop >= 4 ? 0 : c.pop >= 1.5 ? 1.7 : 2.6; this.labels.addChild(t);
     }

@@ -7,7 +7,7 @@ import { SAVE_KEY, SLOTS_KEY, store } from './game';
 
 export interface Setup { leader: string; first?: string; last?: string; state?: string; party: string; factions: string[]; difficulty: string; seed: number; ironman: boolean; colour: string }
 const COLOURS = [['Navy', '#2f5d8c', '#a3342b'], ['Brick', '#a3342b', '#2f5d8c'], ['Forest', '#3f6b3a', '#8a3a6b'], ['Ochre', '#b07c1e', '#4a3a8a'], ['Plum', '#6b3a7a', '#b07c1e'], ['Teal', '#1f6f73', '#a3342b']];
-const S: Setup & { step: number; custom: Record<string, string> } = { step: 0, leader: 'governor', party: 'Union', factions: ['labor', 'suburbs', 'justice'], difficulty: 'operative', seed: 0, ironman: false, colour: 'Navy', custom: {} };
+const S: Setup & { step: number; custom: Record<string, string>; touched?: boolean } = { step: 0, leader: 'governor', party: 'Union', factions: ['labor', 'suburbs', 'justice'], difficulty: 'operative', seed: 0, ironman: false, colour: 'Navy', custom: {} };
 export const colourPair = (name: string) => { const c = COLOURS.find(x => x[0] === name) || COLOURS[0]; return [c[1], c[2]]; };
 
 export function titleScreen(root: HTMLElement, data: any, boardEl: HTMLElement, onStart: (s: Setup) => void, onLoad: (save: any) => void) {
@@ -28,7 +28,8 @@ export function titleScreen(root: HTMLElement, data: any, boardEl: HTMLElement, 
   root.append(node); $('#tboard', node).append(boardEl); boardEl.style.position = 'absolute'; boardEl.style.inset = '0'; window.dispatchEvent(new Event('resize'));
   node.onclick = e => {
     const b = (e.target as HTMLElement).closest('[data-go]') as HTMLButtonElement | null; if (!b || b.disabled) return; const go = b.dataset.go;
-    if (go === 'new') setupScreen(root, data, onStart, () => titleScreen(root, data, boardEl, onStart, onLoad));
+    // a first campaign starts on the forgiving level; once you have a win in the Hall, the fair fight
+    if (go === 'new') { if (!S.touched) S.difficulty = store.get('ags-hall', []).length ? 'operative' : 'staffer'; setupScreen(root, data, onStart, () => titleScreen(root, data, boardEl, onStart, onLoad)); }
     if (go === 'continue') onLoad(auto);
     if (go === 'load') loadCard(slots, onLoad);
     if (go === 'hall') hallCard();
@@ -81,7 +82,7 @@ function setupScreen(root: HTMLElement, data: any, onStart: (s: Setup) => void, 
     if (l) { if (S.leader !== l.dataset.leader) S.custom = {}; S.leader = l.dataset.leader!; return redraw(); }
     if (c) { S.colour = c.dataset.col!; return redraw(); }
     if (f) { const id = f.dataset.fac!; S.factions = S.factions.includes(id) ? S.factions.filter(x => x !== id) : S.factions.length < 3 ? [...S.factions, id] : S.factions; return redraw(); }
-    if (d) { S.difficulty = d.dataset.diff!; return redraw(); }
+    if (d) { S.difficulty = d.dataset.diff!; S.touched = true; return redraw(); }
     if (t.closest('[data-weekly]')) { const wk = Math.floor(Date.now() / (7 * 864e5)); S.seed = 100000 + (wk * 7919) % 900000; toast('trophy', 'Weekly seed', `Seed ${S.seed}: everyone playing it this week gets the same game.`); return redraw(); }
     if (t.closest('[data-back]')) { if (S.step) { S.step--; redraw(); } else back(); return; }
     if (t.closest('[data-next]') && !(S.step === 1 && S.factions.length !== 3)) {
