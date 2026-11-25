@@ -96,13 +96,22 @@ export class Board {
 
   /* ---------------- input ---------------- */
   bindInput() {
-    const cv = this.app.canvas; let down: any = null, panned = false;
-    cv.addEventListener('pointerdown', e => { if (e.button > 0) return; down = { x: e.clientX, y: e.clientY, vx: this.view.x, vy: this.view.y }; panned = false; cv.setPointerCapture(e.pointerId); });
+    const cv = this.app.canvas; let down: any = null, panned = false; cv.style.touchAction = 'none';
+    // two fingers pinch to zoom about their midpoint; a pinch never counts as a click
+    const pts = new Map<number, { x: number; y: number }>(); let pinch: { d: number; z: number } | null = null;
+    const spread = () => { const [a, b] = [...pts.values()]; return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; };
+    const lift = (e: PointerEvent) => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; };
+    cv.addEventListener('pointercancel', e => { lift(e); down = null; });
+    cv.addEventListener('pointerdown', e => { if (e.button > 0) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); cv.setPointerCapture(e.pointerId);
+      if (pts.size === 2) { pinch = { d: Math.max(1, spread().d), z: this.view.z }; down = null; panned = true; return; }
+      down = { x: e.clientX, y: e.clientY, vx: this.view.x, vy: this.view.y }; panned = false; });
     cv.addEventListener('pointermove', e => {
+      if (pts.has(e.pointerId)) pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch && pts.size === 2) { const s = spread(), r = cv.getBoundingClientRect(); this.zoomAt(s.x - r.left, s.y - r.top, pinch.z * s.d / pinch.d); return; }
       if (down) { const dx = e.clientX - down.x, dy = e.clientY - down.y; if (!panned && Math.hypot(dx, dy) > 6) panned = true; if (panned) { this.view.x = down.vx + dx; this.view.y = down.vy + dy; this.clamp(); this.apply(); } return; }
       const [mx, my] = this.toMap(e.clientX, e.clientY); const i = this.hexAt(mx, my); this.hooks.hover?.(i != null && this.map.hexes[i].s ? i : null, e);
     });
-    cv.addEventListener('pointerup', e => { if (!down) return; const was = panned; down = null; if (was) return;
+    cv.addEventListener('pointerup', e => { lift(e); if (!down) return; const was = panned; down = null; if (was) return;
       const u = this.unitAt(e.clientX, e.clientY); if (u != null) return this.hooks.unit?.(u);
       const [mx, my] = this.toMap(e.clientX, e.clientY); const i = this.hexAt(mx, my); if (i != null) this.hooks.hex?.(i, e); });
     cv.addEventListener('pointerleave', () => this.hooks.hover?.(null));

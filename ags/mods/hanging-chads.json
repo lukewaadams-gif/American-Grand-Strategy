@@ -1,0 +1,21 @@
+{
+  "name": "Hanging Chads",
+  "version": "1.0",
+  "author": "American Grand Strategy",
+  "about": "An example mod: a new card in September 2000, a gentler difficulty and a retitled debate.",
+  "files": {
+    "events": [
+      { "id": "butterfly_ballot", "kind": "card", "art": "ledger", "focus": "FL",
+        "kicker": "Palm Beach County, Florida", "title": "The butterfly ballot",
+        "body": "A county elections supervisor has printed a ballot whose punch holes do not line up with the names beside them. Your lawyers say that in a close race it will cost you thousands of votes, nearly all of them yours.",
+        "advice": "If Florida is close, this is the cheapest point you will buy all year.",
+        "choices": [
+          { "label": "Sue to change the design", "text": "$4 in legal fees; Florida +0.6.", "effects": [{ "money": -4 }, { "state": "FL", "add": 0.6 }] },
+          { "label": "Leave it", "text": "Ballot design is not a campaign issue. Until it is.", "effects": [] }
+        ] },
+      { "id": "debate", "title": "The only debate that mattered" }
+    ],
+    "calendar": { "turns": [ { "title": "Sep 18, 2000", "open": ["third_party_watch", "butterfly_ballot"] } ] },
+    "difficulty": [ { "id": "canvasser", "name": "Canvasser", "note": "A walk in the park", "shift": 5, "_before": "intern" } ]
+  }
+}

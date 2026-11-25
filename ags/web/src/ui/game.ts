@@ -17,10 +17,8 @@ const ACT_ICON: Record<string, string> = { stump: 'megaphone', rally: 'flag', ca
 const REPEATABLE = ['stump', 'rally', 'canvass', 'poll', 'ads'];
 const ACT_NAME: Record<string, string> = { stump: 'Stump speech', rally: 'Rally', canvass: 'Canvass', office: 'Field office', hq: 'Open an HQ', poll: 'Poll', ads: 'Air ads · $3', attack_ad: 'Attack ad · $4', contest: 'Contest', plane: 'Campaign plane', charter: 'Charter · $2', great: 'Great move', skip: 'Skip' };
 export const SAVE_KEY = 'ags-autosave', SLOTS_KEY = 'ags-saves';
-export const store = {
-  get(k: string, d: any) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
-  set(k: string, v: any) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage unavailable */ } },
-};
+import { store } from '../store';
+export { store };
 
 export class GameUI {
   v!: View; fac: Record<string, any> = {};
@@ -31,11 +29,11 @@ export class GameUI {
   /* ---------------- setup ---------------- */
   build() {
     this.root.innerHTML = '';
-    const node = el(`<main class="game"><div id="board" tabindex="0" aria-label="The board. Arrow keys move the cursor, Enter chooses, N selects the next unit."></div><div class="lamp"></div>
+    const node = el(`<main class="game"><div id="board" tabindex="0" role="application" aria-label="The board. Arrow keys move the cursor, Enter chooses, N selects the next unit."></div><div class="lamp"></div>
       <header class="strip" aria-label="Your resources"></header>
       <button class="research card paper" type="button" data-open="ideas"></button>
       <button class="tally card paper" type="button" data-open="victory" aria-label="The electoral vote projection"></button>
-      <div class="notes" aria-label="Notifications"></div>
+      <div class="notes" role="region" aria-label="Notifications"></div>
       <div class="zoom"><button type="button" data-z="in" aria-label="Zoom in">${icon('plus')}</button><button type="button" data-z="out" aria-label="Zoom out">${icon('minus')}</button><button type="button" data-z="fit" aria-label="See the whole map">${icon('globe')}</button></div>
       <div class="lens" aria-label="Map lens"><button type="button" data-lens="lean" class="on" aria-label="Lean: who leads where">${icon('layers')}</button><button type="button" data-lens="approval" aria-label="Approval of the President">${icon('capitol')}</button></div>
       <div class="unitcard card paper" hidden></div>
@@ -379,13 +377,13 @@ export class GameUI {
     const draw = () => {
       const v = this.v; const hq = v.you.hqs.find((q: any) => q.hex === hex);
       if (v.office && v.office.wh === hex && v.office.holder === 0) { panel.innerHTML = this.whPanel(); return; }
-      if (!hq) { panel.innerHTML = `<button class="btn sm x" type="button" data-x>${icon('close')}</button><div><span class="sc">${esc(st?.name)} · ${st?.ev} electoral votes</span><h2>${esc(c?.name)}</h2></div>
+      if (!hq) { panel.innerHTML = `<button class="btn sm x" type="button" data-x aria-label="Close">${icon('close')}</button><div><span class="sc">${esc(st?.name)} · ${st?.ev} electoral votes</span><h2>${esc(c?.name)}</h2></div>
         <div class="statgrid"><div class="stat"><span>Metro</span><b>${c!.pop >= 1 ? c!.pop.toFixed(1) + 'M' : (c!.pop * 1000).toFixed(0) + 'k'}</b></div><div class="stat"><span>${esc(st?.name)}</span><b style="font-size:20px">${st.seen >= 0 ? 'You' : 'Them'} +${Math.abs(st.seen).toFixed(1)}</b></div></div>
         <div class="sheet"><p class="story" style="font-size:15px">${rhq ? `${esc(v.rival.leader.last)} runs a state HQ here: it pushes this whole area every turn. Contest it with your units, or out-campaign it.` : 'No HQ here. Move an Organizer onto this city and open a state HQ: it will build for you, and push three rings around it every turn.'}</p></div>`; return; }
       const cur = hq.prod;
       const row = (kind: string, o: any) => { const cost = o.cost, on = cur && cur.id === (o.line || o.id); const lock = kind === 'building' && (!o.open || hq.buildings.includes(o.id));
         return `<button class="prod ${on ? 'on' : ''}" type="button" data-pick="${kind}:${o.line || o.id}" ${lock ? 'disabled' : ''}><span class="pi">${icon(o.icon)}</span><span><b>${esc(o.name)}</b><small>${kind === 'building' ? (hq.buildings.includes(o.id) ? 'Built.' : o.open ? esc(o.text) : 'Needs ' + esc(o.requires)) : esc((o.role || '').split('.')[0] + '.')}</small></span><span class="t">${cost} vol<br>${Math.max(1, Math.ceil(cost / hq.vol))} turn${Math.ceil(cost / hq.vol) > 1 ? 's' : ''}</span></button>`; };
-      panel.innerHTML = `<button class="btn sm x" type="button" data-x>${icon('close')}</button><div><span class="sc">${hq.capital ? 'Your capital' : 'State HQ'} · ${esc(st?.name)}</span><h2>${esc(hq.name)}</h2></div>
+      panel.innerHTML = `<button class="btn sm x" type="button" data-x aria-label="Close">${icon('close')}</button><div><span class="sc">${hq.capital ? 'Your capital' : 'State HQ'} · ${esc(st?.name)}</span><h2>${esc(hq.name)}</h2></div>
         <div class="yields4"><div>${icon('vol')}<b>${hq.vol}</b><span>volunteers</span></div><div>${icon('money')}<b>+${Math.round(Math.sqrt(hq.pop))}</b><span>money</span></div><div>${icon('ideas')}<b>+1</b><span>ideas</span></div><div>${icon('scroll')}<b>${hq.buildings.length}</b><span>buildings</span></div></div>
         <div class="sheet"><span class="sc">Producing</span>${cur ? `<div class="row" style="justify-content:space-between;align-items:center"><span><b>${esc(cur.name)}</b> · ${Math.floor(cur.got)}/${cur.cost} · ${cur.turns} turn${cur.turns > 1 ? 's' : ''}</span><button class="btn sm red" type="button" data-buy ${v.you.money >= hq.buy ? '' : 'disabled'}>Buy $${hq.buy}</button></div><div class="bar"><i style="width:${Math.min(100, cur.got / cur.cost * 100)}%"></i></div>` : '<span class="muted">Nothing. Choose below.</span>'}</div>
         <div class="sheet"><span class="sc">Units</span>${v.build.units.map((o: any) => row('unit', o)).join('')}<span class="sc" style="margin-top:6px">Buildings</span>${v.build.buildings.map((o: any) => row('building', o)).join('')}</div>`;
@@ -400,7 +398,7 @@ export class GameUI {
   }
   whPanel() {
     const v = this.v, o = v.office;
-    return `<button class="btn sm x" type="button" data-x>${icon('close')}</button><div><span class="sc">Washington · your seat of power</span><h2>The White House</h2></div>
+    return `<button class="btn sm x" type="button" data-x aria-label="Close">${icon('close')}</button><div><span class="sc">Washington · your seat of power</span><h2>The White House</h2></div>
       <div class="statgrid"><div class="stat"><span>Approval</span><b>${o.approval.toFixed(0)}%</b></div><div class="stat"><span>Capital a turn</span><b>${o.rate.toFixed(0)}</b></div><div class="stat"><span>Senate</span><b>${o.senate}</b></div></div>
       <div class="sheet"><p class="story" style="font-size:15px;margin:0">Laws are this game's wonders: the White House builds them with political capital over several turns, one at a time. When one is ready, the Senate votes; approval and your seats set the odds.</p></div>
       ${o.law ? `<div class="sheet"><span class="sc">Building</span><b>${esc(o.law.name)}</b><div class="bar"><i style="width:${Math.min(100, o.law.progress / o.law.cost * 100)}%"></i></div><span class="type muted">${Math.floor(o.law.progress)}/${o.law.cost} · ${Math.max(1, Math.ceil((o.law.cost - o.law.progress) / o.rate))} turns</span></div>` : ''}

@@ -7,6 +7,8 @@ import { GameUI, store, SAVE_KEY } from './ui/game';
 import { titleScreen, colourPair } from './ui/title';
 import { setWorld } from './ui/screens';
 import { Settings, applySettings, sound } from './ui/settings';
+import { active, modStatus } from './mods';
+import { toast } from './ui/kit';
 
 const app = document.getElementById('app')!;
 async function boot() {
@@ -14,7 +16,7 @@ async function boot() {
   app.innerHTML = '<p style="color:#efe6d0;font:16px Georgia,serif;padding:40px">Laying out the board…</p>';
   try { await document.fonts.ready; } catch { /* fonts are optional */ }
   const sim = new Sim(); let data: any, map: any;
-  try { ({ data, map } = await sim.init('.')); } catch (e) { app.innerHTML = `<p style="color:#efe6d0;padding:40px;font:16px Georgia,serif">The game could not load (${(e as Error).message}). Reload the page to try again.</p>`; return; }
+  try { ({ data, map } = await sim.init('.', active())); modStatus.error = sim.modError; modStatus.sig = sim.mods; } catch (e) { app.innerHTML = `<p style="color:#efe6d0;padding:40px;font:16px Georgia,serif">The game could not load (${(e as Error).message}). Reload the page to try again.</p>`; return; }
   fetch('worldmap.json').then(r => r.json()).then(setWorld).catch(() => {});
   const boardEl = document.createElement('div'); boardEl.style.cssText = 'position:absolute;inset:0'; app.innerHTML = ''; app.append(boardEl);
   const board = new Board(); await board.init(boardEl, map);
@@ -31,6 +33,7 @@ async function boot() {
   const load = async (save: any) => { try { [Settings.you, Settings.them] = colourPair(store.get('ags-colour', 'Navy')); sim.restore(save); await play(); } catch (e) { alert((e as Error).message); } };
   (window as any).__sim = sim; (window as any).__board = board;
   title();
+  if (sim.modError) toast('close', 'Mods not applied', sim.modError);
 }
 boot();
 export { SAVE_KEY };

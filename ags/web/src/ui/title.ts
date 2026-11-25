@@ -4,6 +4,7 @@ import { el, $, esc, icon, grade, toast } from './kit';
 import { portrait } from '../art/print';
 import { Settings, settingsCard, setSound } from './settings';
 import { SAVE_KEY, SLOTS_KEY, store } from './game';
+import { installed, setInstalled, problem, modStatus, Installed } from '../mods';
 
 export interface Setup { leader: string; first?: string; last?: string; state?: string; party: string; factions: string[]; difficulty: string; seed: number; ironman: boolean; colour: string }
 const COLOURS = [['Navy', '#2f5d8c', '#a3342b'], ['Brick', '#a3342b', '#2f5d8c'], ['Forest', '#3f6b3a', '#8a3a6b'], ['Ochre', '#b07c1e', '#4a3a8a'], ['Plum', '#6b3a7a', '#b07c1e'], ['Teal', '#1f6f73', '#a3342b']];
@@ -22,6 +23,7 @@ export function titleScreen(root: HTMLElement, data: any, boardEl: HTMLElement, 
         <button class="btn" type="button" data-go="load" ${slots.length ? '' : 'disabled'}>Load a saved game <small>${slots.length} saved</small></button>
         <button class="btn" type="button" data-go="hall">Hall of Presidents <small>Legacy</small></button>
         <button class="btn" type="button" data-go="settings">Settings <small>Sound, colour, text</small></button>
+        <button class="btn" type="button" data-go="mods">Mods <small>${modStatus.error ? 'Not applied: see why' : modStatus.sig ? esc(modStatus.sig.replace(/ #.*/, '')) : `${installed().length} installed`}</small></button>
         <button class="btn" type="button" disabled>One Term <small>2028 · after the slice</small></button>
       </nav>
       <p class="note">A playable vertical slice: Q1 2000 to the end of 2001. The simulation runs in your browser (Rust compiled to WebAssembly); it saves on this device only.</p></section></main>`);
@@ -34,7 +36,43 @@ export function titleScreen(root: HTMLElement, data: any, boardEl: HTMLElement, 
     if (go === 'load') loadCard(slots, onLoad);
     if (go === 'hall') hallCard();
     if (go === 'settings') settingsCard();
+    if (go === 'mods') modsCard(data, () => titleScreen(root, data, boardEl, onStart, onLoad));
   };
+}
+/** Install, order, switch and remove mods. They apply the next time the page loads, before the simulation starts. */
+function modsCard(data: any, refresh: () => void) {
+  let list: Installed[] = installed(), msg = '', dirty = false;
+  const s = document.createElement('div'); s.className = 'scrim'; document.body.append(s);
+  const draw = () => {
+    s.innerHTML = '';
+    const node = el(`<div class="ecard card paper" style="width:min(620px,100%)"><div class="card-in"><div class="ebody"><div class="kicker">Data packs</div><h2>Mods</h2>
+      <p class="story">A mod is one JSON file that adds or changes events, leaders, units, laws, factions, the calendar and the rest. They apply in this order when the page loads. Saved games remember their mods and only load under the same set. <a href="mods/hanging-chads.json" download>Download an example</a>, and read docs/MODDING.md to write your own.</p>
+      ${modStatus.error ? `<p class="advice"><b>Not applied · </b>The simulation refused your mods, so this session runs without them: ${esc(modStatus.error)}</p>` : ''}
+      ${msg ? `<p class="advice"><b>Mod file · </b>${esc(msg)}</p>` : ''}
+      <div class="mods">${list.map((x, i) => `<div class="modrow"><label class="row" style="gap:8px;flex:1;min-width:0"><input type="checkbox" data-on="${i}" ${x.on ? 'checked' : ''}><span style="min-width:0"><b>${esc(x.mod.name)}</b>${x.mod.version ? ` <span class="muted">${esc(x.mod.version)}</span>` : ''}${x.mod.author ? ` <span class="muted">· ${esc(x.mod.author)}</span>` : ''}<small class="muted" style="display:block">${esc(x.mod.about || Object.keys(x.mod.files).join(', '))}</small></span></label>
+        <span class="row" style="gap:4px;flex:none"><button class="btn" type="button" data-up="${i}" ${i ? '' : 'disabled'} aria-label="Apply earlier">↑</button><button class="btn" type="button" data-rm="${i}">Remove</button></span></div>`).join('') || '<p class="muted">No mods installed.</p>'}</div>
+      <div class="efoot"><label class="btn"><input type="file" accept=".json,application/json" hidden data-file>Add a mod file…</label><span class="row" style="gap:6px">${dirty ? '<button class="btn red" type="button" data-reload>Reload to apply</button>' : ''}<button class="btn" type="button" data-x>Close</button></span></div></div></div></div>`);
+    s.append(node);
+    node.onclick = e => {
+      const t = e.target as HTMLElement, num = (a: string) => +(t.closest(`[${a}]`) as HTMLElement).getAttribute(a)!;
+      if (t.closest('[data-x]')) { s.remove(); refresh(); return; }
+      if (t.closest('[data-reload]')) { location.reload(); return; }
+      if (t.closest('[data-rm]')) { list.splice(num('data-rm'), 1); }
+      else if (t.closest('[data-up]')) { const i = num('data-up'); [list[i - 1], list[i]] = [list[i], list[i - 1]]; }
+      else return;
+      setInstalled(list); dirty = true; msg = ''; draw();
+    };
+    node.onchange = async e => {
+      const t = e.target as HTMLInputElement;
+      if (t.dataset.on != null) { list[+t.dataset.on].on = t.checked; setInstalled(list); dirty = true; draw(); return; }
+      if (t.dataset.file == null || !t.files?.[0]) return;
+      try { const m = JSON.parse(await t.files[0].text()); const why = problem(m, data); if (why) { msg = why; draw(); return; }
+        list = list.filter(x => x.mod.name !== m.name).concat([{ mod: m, on: true }]); setInstalled(list); dirty = true; msg = `Installed ${m.name}.`; }
+      catch (err) { msg = `That file is not valid JSON (${(err as Error).message}).`; }
+      draw();
+    };
+  };
+  draw();
 }
 function loadCard(slots: any[], onLoad: (s: any) => void) {
   const node = el(`<div class="ecard card paper" style="width:min(520px,100%)"><div class="card-in"><div class="ebody"><div class="kicker">Saved games</div><h2>Load a game</h2>

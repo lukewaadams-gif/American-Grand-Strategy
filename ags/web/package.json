@@ -7,9 +7,14 @@
     "world": "node ../tools/build-world.mjs",
     "sim": "node ../tools/build-sim.mjs",
     "build": "node ../tools/build-sim.mjs && node ../tools/build-world.mjs && node build.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "cd ../sim && cargo test --release",
+    "play": "node test/playthrough.cjs shots 8795",
+    "mods": "node test/mods.cjs 8795",
+    "a11y": "node test/a11y.cjs 8795"
   },
   "devDependencies": {
+    "axe-core": "4.10.3",
     "esbuild": "0.27.0",
     "typescript": "6.0.3",
     "us-atlas": "3.0.1",
