@@ -16,7 +16,7 @@ impl Game {
         }).collect() };
         let units: Vec<Value> = self.units.iter().map(|u| { let d = self.unit_def(u);
             let acts: Vec<Value> = if u.side == YOU { let mut a = d.actions.clone(); a.push("skip".into()); a.iter().map(|x| { let h = self.act_hint(u, x); json!({ "id": x, "block": h["block"], "hint": h["text"], "rings": h["rings"], "targets": self.targets(u, x) }) }).collect() } else { vec![] };
-            json!({ "id": u.id, "line": u.line, "side": u.side, "hex": u.hex, "name": u.name, "kind": d.name, "icon": d.icon, "mp": r2(u.mp), "max": self.max_moves(u), "acted": u.acted, "skip": u.skip,
+            json!({ "id": u.id, "line": u.line, "side": u.side, "hex": u.hex, "name": u.name, "kind": d.name, "icon": d.icon, "mp": r2(u.mp), "max": self.max_moves(u), "acted": u.acted, "skip": u.skip, "standing": u.standing,
                 "rattled": u.rattled, "flew": u.flew, "sight": d.sight, "power": d.power, "great": u.great, "home": u.home, "actions": acts, "upkeep": d.upkeep, "role": self.data.line(&u.line).map(|l| l.role.clone()) })
         }).collect();
         let states: Vec<Value> = (0..self.map.states.len()).map(|si| json!({ "code": self.map.states[si], "name": state_name(&self.data, &self.map.states[si]), "ev": self.ev(si),
@@ -43,7 +43,12 @@ impl Game {
         let powers: Vec<Value> = self.data.powers.era.iter().map(|p| json!({ "c": p.c, "who": p.who, "att": self.attitude.get(&p.c).copied().unwrap_or(p.att), "agenda": p.agenda, "look": p.look })).collect();
         let report: Vec<&Cause> = { let mut v: Vec<&Cause> = self.last_report.iter().filter(|c| c.nat.abs() > 0.002).collect(); v.sort_by(|a, b| b.nat.abs().partial_cmp(&a.nat.abs()).unwrap()); v.truncate(16); v };
         let n = self.national();
-        json!({
+        let lines = ["organizer", "surrogate", "pollster", "ads", "lawyer"];
+        let build = json!({
+            "units": lines.iter().map(|l| { let d = self.unit_def_for(YOU, l); json!({ "line": l, "name": d.name, "cost": d.cost, "icon": d.icon, "upkeep": d.upkeep, "role": self.data.line(l).map(|x| x.role.clone()) }) }).collect::<Vec<_>>(),
+            "buildings": self.data.buildings.iter().map(|b| json!({ "id": b.id, "name": b.name, "cost": b.cost, "icon": b.icon, "text": b.text, "requires": b.requires.as_ref().and_then(|r| self.data.idea(r)).map(|i| i.name.clone()),
+                "open": b.requires.as_ref().map_or(true, |r| you.ideas_done.contains(r)) })).collect::<Vec<_>>() });
+        json!({ "build": build,
             "turn": self.turn, "title": t.title, "label": t.label, "kind": t.kind, "year": t.year, "office_turn": t.office, "seed": self.seed, "over": self.over,
             "election_in": election_at.map(|e| e as i64 - self.turn as i64), "turns": self.data.calendar.turns.iter().map(|x| json!({ "title": x.title, "kind": x.kind })).collect::<Vec<_>>(),
             "you": { "party": you.party, "leader": you.leader, "money": r2(you.money), "influence": r2(you.influence), "yields": y, "ideas_done": you.ideas_done,

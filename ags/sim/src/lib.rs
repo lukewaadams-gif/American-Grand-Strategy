@@ -93,6 +93,7 @@ pub fn command(g: &mut Game, r: &Value) -> Result<(), String> {
         "move" => g.do_move(n("unit")? as u32, n("to")? as usize),
         "act" => { let id = n("unit")? as u32; let u = g.unit(id).ok_or("no such unit")?; if u.side != YOU { return Err("not your unit".into()); }
             let target = r.get("target").and_then(|v| v.as_i64()); g.act(id, &s("action")?, target) }
+        "standing" => g.set_standing(n("unit")? as u32, r.get("order").and_then(|v| v.as_str())),
         "prod" => g.set_production(n("hq")? as usize, &s("kind")?, &s("id")?),
         "buy" => g.buy(n("hq")? as usize),
         "research" => g.research(&s("idea")?),

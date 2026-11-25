@@ -57,6 +57,9 @@ fn play_turn(t: &mut T, log: &mut Vec<String>) -> bool {
         // every unit: move toward a nearby hex, then its first action that is open
         for u in v["units"].as_array().unwrap().iter().filter(|u| u["side"] == 0) {
             let id = u["id"].as_u64().unwrap();
+            if !u["standing"].is_null() { continue; }
+            // organizers go on standing orders to canvass where they stand, as a player tired of clicking would
+            if u["line"] == "organizer" && id % 2 == 0 && u["acted"] == false { if t.cmd(json!({ "c": "standing", "unit": id, "order": "canvass" }))["ok"] == true { continue; } }
             if u["mp"].as_f64().unwrap() > 0.0 { let r = t.req(json!({ "op": "reach", "unit": id })); if let Some(h) = r["hexes"].as_array().and_then(|a| a.get(a.len() / 3)) { t.cmd(json!({ "c": "move", "unit": id, "to": h[0] })); } }
             let v2 = t.view(); let u2 = v2["units"].as_array().unwrap().iter().find(|x| x["id"] == id).cloned();
             if let Some(u2) = u2 { for a in u2["actions"].as_array().unwrap() {
@@ -126,4 +129,54 @@ fn the_data_adds_up() {
     for census in ["1990", "2000", "2010", "2020"] { let s: u64 = d["states"].as_array().unwrap().iter().map(|s| s["ev"][census].as_u64().unwrap()).sum(); assert_eq!(s, 538, "{census}"); }
     let ids: Vec<&str> = d["events"].as_array().unwrap().iter().map(|e| e["id"].as_str().unwrap()).collect();
     for t in d["calendar"]["turns"].as_array().unwrap() { for k in ["open", "close"] { for e in t[k].as_array().map(|a| a.as_slice()).unwrap_or(&[]) { assert!(ids.contains(&e.as_str().unwrap()), "calendar names {e}"); } } }
+}
+
+/// Clears every card, then returns the view.
+fn settle(t: &mut T) -> Value {
+    for _ in 0..20 { let v = t.view(); let p = &v["pending"]; if p.is_null() { return v; }
+        let c = match p["kind"].as_str().unwrap_or("") { "mate" => { t.cmd(json!({ "c": "vet", "n": 0 })); json!({ "c": "choose", "n": 0 }) } "cabinet" => json!({ "c": "choose", "picks": [0, 3, 4] }),
+            _ => json!({ "c": "choose", "n": p["choices"].as_array().and_then(|a| a.first()).and_then(|c| c["n"].as_u64()).unwrap_or(0) }) };
+        t.ok({ let mut c = c; c["op"] = json!("cmd"); c }); }
+    panic!("cards never settled")
+}
+fn unit_of(v: &Value, id: u64) -> Value { v["units"].as_array().unwrap().iter().find(|u| u["id"] == id).cloned().unwrap() }
+
+#[test]
+fn standing_orders_act_every_turn_and_lapse() {
+    let mut t = T::new(); t.ok(json!({ "op": "new", "setup": setup(5, "governor") }));
+    let v = settle(&mut t);
+    let mine: Vec<Value> = v["units"].as_array().unwrap().iter().filter(|u| u["side"] == 0).cloned().collect();
+    let can = |u: &Value, a: &str| u["actions"].as_array().unwrap().iter().any(|x| x["id"] == a);
+    let worker = mine.iter().find(|u| can(u, "canvass") || can(u, "stump")).expect("a unit that can canvass or stump").clone();
+    let order = if can(&worker, "canvass") { "canvass" } else { "stump" }; let wid = worker["id"].as_u64().unwrap();
+    // targeted and one-shot actions cannot be standing orders
+    assert_eq!(t.cmd(json!({ "c": "standing", "unit": wid, "order": "plane" }))["ok"], false);
+    assert_eq!(t.cmd(json!({ "c": "standing", "unit": wid, "order": order }))["ok"], true);
+    let v = t.view(); let w = unit_of(&v, wid); assert_eq!(w["acted"], true, "an order acts at once"); assert_eq!(w["standing"], order);
+    // a second unit sleeps
+    let sleeper = mine.iter().find(|u| u["id"] != wid).unwrap()["id"].as_u64().unwrap();
+    t.ok(json!({ "op": "cmd", "c": "standing", "unit": sleeper, "order": "sleep" }));
+    t.ok(json!({ "op": "cmd", "c": "end_turn" })); let v = settle(&mut t);
+    let w = unit_of(&v, wid); assert_eq!(w["acted"], true, "the standing order acted at the start of the turn: {w}"); assert_eq!(w["standing"], order);
+    let s = unit_of(&v, sleeper); assert_eq!(s["skip"], true, "the sleeper sits: {s}"); assert_eq!(s["standing"], "sleep");
+    // moving wakes a unit
+    let r = t.req(json!({ "op": "reach", "unit": sleeper })); let to = r["hexes"].as_array().and_then(|a| a.first()).map(|h| h[0].clone());
+    if let Some(to) = to { t.ok(json!({ "op": "cmd", "c": "move", "unit": sleeper, "to": to })); assert!(unit_of(&t.view(), sleeper)["standing"].is_null(), "moving wakes the unit"); }
+    // clearing an order
+    t.ok(json!({ "op": "cmd", "c": "standing", "unit": wid })); assert!(unit_of(&t.view(), wid)["standing"].is_null());
+}
+
+#[test]
+fn an_ads_order_lapses_when_the_money_runs_out() {
+    let mut t = T::new(); t.ok(json!({ "op": "new", "setup": setup(6, "senator") })); settle(&mut t);
+    // an ad team in a state, on standing orders; then the campaign goes broke
+    let id = { let g = t.e.game.as_mut().unwrap(); let hex = g.sides[0].hqs[0].hex; g.spawn("ads", hex, 0) } as u64;
+    t.ok(json!({ "op": "cmd", "c": "standing", "unit": id, "order": "ads" }));
+    let v = t.view(); assert_eq!(unit_of(&v, id)["standing"], "ads"); assert_eq!(unit_of(&v, id)["acted"], true, "the first ad buy runs at once");
+    { let g = t.e.game.as_mut().unwrap(); g.sides[0].money = 1.0; for u in g.units.iter_mut() { if u.id == id as u32 { u.acted = false; } } g.run_standing(); }
+    let v = t.view(); let u = unit_of(&v, id);
+    assert!(u["standing"].is_null(), "the order lapsed: {u}"); assert_eq!(u["acted"], false, "and the unit is free for new orders");
+    assert!(v["you"]["money"].as_f64().unwrap() >= 0.0, "no spending into debt");
+    assert!(v["notes"][0]["title"].as_str().unwrap().contains("needs new orders"), "a note says so: {}", v["notes"][0]);
+    println!("{}: {}", v["notes"][0]["title"], v["notes"][0]["text"]);
 }

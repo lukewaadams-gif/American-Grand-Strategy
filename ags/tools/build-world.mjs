@@ -181,3 +181,27 @@ const simplify = r => { const o = []; let last = null; for (const [x, y] of r) {
 fs.writeFileSync(outPath, JSON.stringify({ R, w: 975, h: 610, hexes: hexes.map(h => { const o = { q: h.q, r: h.r, x: h.x, y: h.y, t: h.t }; if (h.s) { o.s = h.s; o.p = h.p; } if (h.f) o.f = h.f; if (h.city != null) o.c = h.city; return o; }),
   cities, rivers, outlines: polys.map(p => ({ c: p.c, rings: p.rings.map(simplify).filter(r => r.length > 3), l: p.l.map(v => +v.toFixed(1)) })) }));
 console.log('wrote', path.relative(process.cwd(), outPath), (fs.statSync(outPath).size / 1024).toFixed(0), 'KB');
+
+// ---------------------------------------------------------------------------------------------------------------
+// The world board: world-atlas 2.0.2 countries-110m (Natural Earth, public domain), equirectangular, 1000 × 500.
+{
+  const w = JSON.parse(fs.readFileSync(path.join(web, 'node_modules/world-atlas/countries-110m.json'), 'utf8'));
+  const [sx, sy] = w.transform.scale, [tx, ty] = w.transform.translate;
+  const arcs = w.arcs.map(a => { let x = 0, y = 0; return a.map(([dx, dy]) => { x += dx; y += dy; return [x * sx + tx, y * sy + ty]; }); });
+  const ring = idx => { const pts = []; for (const i of idx) { const a = i >= 0 ? arcs[i] : arcs[~i].slice().reverse(); a.forEach((p, k) => { if (k > 0 || pts.length === 0) pts.push(p); }); } return pts; };
+  const X = lon => (lon + 180) / 360 * 1000, Y = lat => (90 - lat) / 180 * 500;
+  const EU15 = ['France', 'Germany', 'Italy', 'Spain', 'Portugal', 'Netherlands', 'Belgium', 'Luxembourg', 'Austria', 'Denmark', 'Sweden', 'Finland', 'Ireland', 'Greece'];
+  const out = [];
+  for (const g of w.objects.countries.geometries) {
+    const polys = g.type === 'Polygon' ? [g.arcs] : g.type === 'MultiPolygon' ? g.arcs : [];
+    let d = '';
+    for (const p of polys) for (const r of p.map(ring)) {
+      let last = null;
+      r.forEach(([lon, lat], k) => { const x = X(lon), y = Y(lat); d += (k === 0 || (last && Math.abs(x - last) > 500) ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1); last = x; });
+      d += 'Z';
+    }
+    const n = g.properties.name; if (d && n !== 'Antarctica') out.push({ n, d, eu: EU15.includes(n) });
+  }
+  fs.writeFileSync(path.join(web, 'gen/worldmap.json'), JSON.stringify(out));
+  console.log('wrote gen/worldmap.json', out.length, 'countries', (fs.statSync(path.join(web, 'gen/worldmap.json')).size / 1024).toFixed(0), 'KB');
+}

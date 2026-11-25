@@ -38,7 +38,9 @@ pub struct Side {
 
 #[derive(Serialize, Clone, Debug)]
 pub struct Unit { pub id: u32, pub line: String, pub side: usize, pub hex: usize, pub mp: f64, pub acted: bool, pub skip: bool, pub flew: bool, pub rattled: bool,
-    pub name: Option<String>, pub home: Option<String>, pub great: Option<String> }
+    pub name: Option<String>, pub home: Option<String>, pub great: Option<String>,
+    /// A standing order: an action repeated at the start of every turn, or "sleep" to sit until woken.
+    pub standing: Option<String> }
 
 #[derive(Serialize, Clone, Debug)]
 pub struct Third { pub name: String, pub short: String, pub hurt_you: f64, pub cut: f64, pub formed: String }
@@ -90,7 +92,7 @@ impl Game {
         // the rival: another background, fictional, from a big state
         let others: Vec<&LeaderDef> = data.leaders.iter().filter(|l| l.id != ldef.id).collect();
         let rdef = (*rng.pick(&others)).clone();
-        let (rf, rl) = (rng.pick(&data.names.first).clone(), rng.pick(&data.names.last).clone());
+        let rf = rng.pick(&data.names.first).clone(); let lasts: Vec<String> = data.names.last.iter().filter(|l| **l != setup.last.clone().unwrap_or(ldef.last.clone())).cloned().collect(); let rl = rng.pick(&lasts).clone();
         let big = ["TX", "FL", "OH", "GA", "NC", "AZ", "MI", "NY", "CA", "IL"]; let cand: Vec<&str> = big.iter().copied().filter(|c| *c != home).collect();
         let rs = rng.pick(&cand).to_string();
         let parties: Vec<String> = data.names.party_names.iter().filter(|p| **p != setup.party).cloned().collect();

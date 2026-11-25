@@ -31,7 +31,7 @@ impl Game {
     }
     pub fn spawn(&mut self, line: &str, hex: usize, side: usize) -> u32 {
         let id = self.next_uid; self.next_uid += 1;
-        let mut u = Unit { id, line: line.into(), side, hex, mp: 0.0, acted: false, skip: false, flew: false, rattled: false, name: None, home: None, great: None };
+        let mut u = Unit { id, line: line.into(), side, hex, mp: 0.0, acted: false, skip: false, flew: false, rattled: false, name: None, home: None, great: None, standing: None };
         u.mp = self.max_moves(&u); self.units.push(u); id
     }
     pub fn unit(&self, id: u32) -> Option<&Unit> { self.units.iter().find(|u| u.id == id) }
@@ -63,7 +63,41 @@ impl Game {
         if to == u.hex || best[to] < 0.0 { return Err("out of reach".into()); }
         let mut path = vec![to]; while let Some(&p) = path.last() { if p == u.hex { break; } path.push(prev[p]); } path.reverse();
         self.fx.push(json!({ "kind": "move", "unit": uid, "path": path }));
-        let u = self.unit_mut(uid).unwrap(); u.hex = to; u.mp = best[to]; Ok(())
+        // moving a unit wakes it from any standing order, as in Civ
+        let u = self.unit_mut(uid).unwrap(); u.hex = to; u.mp = best[to]; u.standing = None; Ok(())
+    }
+
+    /// Actions a unit may repeat every turn on standing orders.
+    pub const REPEATABLE: [&'static str; 5] = ["stump", "rally", "canvass", "poll", "ads"];
+    /// Give a unit a standing order (or clear it with `None`). An action order acts at once if the unit still can.
+    pub fn set_standing(&mut self, uid: u32, order: Option<&str>) -> Result<(), String> {
+        let u = self.unit(uid).ok_or("no such unit")?.clone(); if u.side != YOU { return Err("not your unit".into()); }
+        match order {
+            None => { self.unit_mut(uid).unwrap().standing = None; }
+            Some("sleep") => { let m = self.unit_mut(uid).unwrap(); m.standing = Some("sleep".into()); m.skip = true; }
+            Some(a) => {
+                if !Self::REPEATABLE.contains(&a) { return Err("That action cannot be repeated every turn.".into()); }
+                if !self.unit_def(&u).actions.contains(&a.to_string()) { return Err("This unit cannot do that.".into()); }
+                self.unit_mut(uid).unwrap().standing = Some(a.into());
+                if !u.acted && self.act_block(&u, a).is_empty() { self.act(uid, a, None)?; }
+            }
+        }
+        Ok(())
+    }
+    /// At the start of your turn, units on standing orders act on their own. An order that can no longer be carried out
+    /// lapses, and the unit asks for orders again.
+    pub fn run_standing(&mut self) {
+        let ids: Vec<(u32, String)> = self.units.iter().filter(|u| u.side == YOU).filter_map(|u| u.standing.clone().map(|s| (u.id, s))).collect();
+        for (id, order) in ids {
+            let u = self.unit(id).unwrap().clone();
+            if order == "sleep" { self.unit_mut(id).unwrap().skip = true; continue; }
+            if u.rattled || u.acted { continue; }
+            let block = self.act_block(&u, &order);
+            if block.is_empty() { let _ = self.act(id, &order, None); continue; }
+            self.unit_mut(id).unwrap().standing = None;
+            let name = self.unit_def(&u).name; let place = self.place(u.hex); let at = if place.starts_with("near") { place } else { format!("in {place}") };
+            self.note("unit", &format!("{name} needs new orders"), &format!("Its standing order {at} lapsed. {block}"), json!({ "hex": u.hex, "unit": id }), "bad");
+        }
     }
 
     fn surge(&self, side: usize) -> f64 { if self.sides[side].surge_left > 0 { 1.5 } else { 1.0 } }

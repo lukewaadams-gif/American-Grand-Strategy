@@ -92,6 +92,7 @@ impl Game {
         let ids: Vec<u32> = self.units.iter().filter(|u| u.side == YOU).map(|u| u.id).collect();
         for id in ids { let mm = { let u = self.unit(id).unwrap(); self.max_moves(u) }; if let Some(u) = self.units.iter_mut().find(|u| u.id == id) { u.mp = mm; } }
         if t.office && self.office.is_none() { self.enter_office(); }
+        self.run_standing();
         self.queue = t.open.clone(); self.next_event();
     }
     /// Next turn. Runs the economy, the rival and the world, then any end-of-turn events.
