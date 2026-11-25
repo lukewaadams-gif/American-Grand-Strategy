@@ -1,0 +1,118 @@
+{
+ "era": [
+  {
+   "c": "China",
+   "who": "General Secretary Wen Haoran",
+   "att": 0,
+   "agenda": "Wants: entry to the World Trade Organization",
+   "look": "cn"
+  },
+  {
+   "c": "Russia",
+   "who": "President Nikolai Garin",
+   "att": 0,
+   "agenda": "Wants: respect, and no NATO in the Baltics",
+   "look": "ru"
+  },
+  {
+   "c": "European Union",
+   "who": "Commission President Henrik Aalto",
+   "att": 1,
+   "agenda": "Wants: a climate treaty with teeth",
+   "look": "eu"
+  },
+  {
+   "c": "United Kingdom",
+   "who": "Prime Minister Edward Lacey",
+   "att": 2,
+   "agenda": "Wants: the special relationship",
+   "look": "uk"
+  },
+  {
+   "c": "Japan",
+   "who": "Prime Minister Kenji Morita",
+   "att": 1,
+   "agenda": "Wants: an end to its lost decade",
+   "look": "jp"
+  },
+  {
+   "c": "India",
+   "who": "Prime Minister Arvind Rao",
+   "att": 0,
+   "agenda": "Wants: the sanctions lifted after its nuclear tests",
+   "look": "in"
+  },
+  {
+   "c": "Mexico",
+   "who": "President Ernesto Llamas",
+   "att": 1,
+   "agenda": "Wants: a migration accord",
+   "look": "mx"
+  },
+  {
+   "c": "Brazil",
+   "who": "President Otávio Brandão",
+   "att": 0,
+   "agenda": "Wants: a seat at the top table",
+   "look": "br"
+  }
+ ],
+ "term": [
+  {
+   "c": "China",
+   "who": "General Secretary Zhao Lianwei",
+   "att": -1,
+   "agenda": "Wants: Taiwan, on its own timetable",
+   "look": "cn"
+  },
+  {
+   "c": "Russia",
+   "who": "President Oleg Varenko",
+   "att": -2,
+   "agenda": "Wants: sanctions lifted, Ukraine settled on its terms",
+   "look": "ru"
+  },
+  {
+   "c": "European Union",
+   "who": "Commission President Ilse Vandermeer",
+   "att": 1,
+   "agenda": "Wants: a trade truce and AI rules",
+   "look": "eu"
+  },
+  {
+   "c": "United Kingdom",
+   "who": "Prime Minister Fiona Ashby",
+   "att": 2,
+   "agenda": "Wants: a tech partnership",
+   "look": "uk"
+  },
+  {
+   "c": "Japan",
+   "who": "Prime Minister Haruka Inoue",
+   "att": 2,
+   "agenda": "Wants: a firmer line in the Strait",
+   "look": "jp"
+  },
+  {
+   "c": "India",
+   "who": "Prime Minister Meera Kulkarni",
+   "att": 1,
+   "agenda": "Wants: chip factories, and a free hand",
+   "look": "in"
+  },
+  {
+   "c": "Mexico",
+   "who": "President Paola Ibarra",
+   "att": 0,
+   "agenda": "Wants: no tariffs on cars",
+   "look": "mx"
+  },
+  {
+   "c": "Brazil",
+   "who": "President Luiza Fontes",
+   "att": 0,
+   "agenda": "Wants: money for the Amazon",
+   "look": "br"
+  }
+ ]
+}

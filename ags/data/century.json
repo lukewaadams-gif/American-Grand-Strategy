@@ -1,0 +1,398 @@
+[
+ {
+  "id": "internet",
+  "name": "Commercial internet",
+  "lane": "econ",
+  "year": 1995,
+  "spread": 0,
+  "kind": "tech",
+  "note": "Email, the web, the first online shops."
+ },
+ {
+  "id": "broadband",
+  "name": "Broadband",
+  "lane": "econ",
+  "year": 2003,
+  "spread": 2,
+  "kind": "tech",
+  "note": "Always-on internet in most homes. Unlocks online video and social media."
+ },
+ {
+  "id": "social",
+  "name": "Social media",
+  "lane": "econ",
+  "year": 2006,
+  "spread": 1,
+  "kind": "tech",
+  "note": "The feed arrives. Scandals travel in hours, not days."
+ },
+ {
+  "id": "smartphone",
+  "name": "Smartphones",
+  "lane": "econ",
+  "year": 2007,
+  "spread": 1,
+  "kind": "tech",
+  "note": "A computer in every pocket. The press goes mobile."
+ },
+ {
+  "id": "deeplearning",
+  "name": "Deep learning",
+  "lane": "econ",
+  "year": 2012,
+  "spread": 2,
+  "kind": "tech",
+  "note": "Machines learn to see and hear."
+ },
+ {
+  "id": "llm",
+  "name": "Language models",
+  "lane": "econ",
+  "year": 2022,
+  "spread": 2,
+  "kind": "tech",
+  "note": "AI writes and codes. The first labour-shock forecasts."
+ },
+ {
+  "id": "agents",
+  "name": "AI agents",
+  "lane": "econ",
+  "year": 2026,
+  "spread": 2,
+  "kind": "tech",
+  "note": "Software that does office work end to end."
+ },
+ {
+  "id": "autotruck",
+  "name": "Self-driving freight",
+  "lane": "econ",
+  "year": 2031,
+  "spread": 3,
+  "kind": "tech",
+  "note": "3.5 million driving jobs at risk; freight costs fall 20–35%."
+ },
+ {
+  "id": "robots",
+  "name": "General-purpose robots",
+  "lane": "econ",
+  "year": 2035,
+  "spread": 4,
+  "kind": "tech",
+  "note": "Robots in warehouses, kitchens and care homes."
+ },
+ {
+  "id": "ailabs",
+  "name": "AI-run research",
+  "lane": "econ",
+  "year": 2039,
+  "spread": 5,
+  "kind": "tech",
+  "note": "AI systems run experiments. Every other lane speeds up."
+ },
+ {
+  "id": "tai",
+  "name": "Transformative AI?",
+  "lane": "econ",
+  "year": 2045,
+  "spread": 8,
+  "kind": "tech",
+  "note": "The widest forecast in the game. The forecast itself is a political issue."
+ },
+ {
+  "id": "aitf",
+  "name": "AI Transition Fund",
+  "lane": "econ",
+  "year": 2027,
+  "spread": 0,
+  "kind": "civic",
+  "note": "Wage insurance and retraining. Softens the labour shock."
+ },
+ {
+  "id": "dividend",
+  "name": "Automation dividend",
+  "lane": "econ",
+  "year": 2036,
+  "spread": 0,
+  "kind": "civic",
+  "note": "A share of automation profits paid to every adult. Needs: General-purpose robots."
+ },
+ {
+  "id": "ccgt",
+  "name": "Combined-cycle gas",
+  "lane": "energy",
+  "year": 1995,
+  "spread": 0,
+  "kind": "tech",
+  "note": "Efficient gas plants replace old coal."
+ },
+ {
+  "id": "hydrogen",
+  "name": "Hydrogen cars",
+  "lane": "energy",
+  "year": 2012,
+  "spread": 6,
+  "kind": "tech",
+  "note": "Much hyped. Historically, it did not arrive; the forecast says so."
+ },
+ {
+  "id": "shale",
+  "name": "Shale drilling",
+  "lane": "energy",
+  "year": 2008,
+  "spread": 2,
+  "kind": "tech",
+  "note": "Cheap gas. America becomes an energy exporter; coal declines."
+ },
+ {
+  "id": "solar",
+  "name": "Solar at grid parity",
+  "lane": "energy",
+  "year": 2015,
+  "spread": 3,
+  "kind": "tech",
+  "note": "Solar becomes the cheapest new power in most states."
+ },
+ {
+  "id": "ev",
+  "name": "Mass-market electric cars",
+  "lane": "energy",
+  "year": 2018,
+  "spread": 3,
+  "kind": "tech",
+  "note": "Petrol demand peaks."
+ },
+ {
+  "id": "battery",
+  "name": "Grid batteries",
+  "lane": "energy",
+  "year": 2021,
+  "spread": 3,
+  "kind": "tech",
+  "note": "Sunshine at night. Wind and solar firm up."
+ },
+ {
+  "id": "geothermal",
+  "name": "Enhanced geothermal",
+  "lane": "energy",
+  "year": 2028,
+  "spread": 3,
+  "kind": "tech",
+  "note": "Clean power anywhere you can drill."
+ },
+ {
+  "id": "smr",
+  "name": "Small modular reactors",
+  "lane": "energy",
+  "year": 2031,
+  "spread": 4,
+  "kind": "tech",
+  "note": "Factory-built nuclear plants."
+ },
+ {
+  "id": "dac",
+  "name": "Carbon removal at scale",
+  "lane": "energy",
+  "year": 2036,
+  "spread": 5,
+  "kind": "tech",
+  "note": "Pulling CO₂ out of the air for under $150 a tonne."
+ },
+ {
+  "id": "fusion",
+  "name": "Fusion pilot plant",
+  "lane": "energy",
+  "year": 2042,
+  "spread": 7,
+  "kind": "tech",
+  "note": "The first plant to put fusion power on the grid. Maybe."
+ },
+ {
+  "id": "carbonprice",
+  "name": "Carbon price",
+  "lane": "energy",
+  "year": 2030,
+  "spread": 0,
+  "kind": "civic",
+  "note": "Every tonne pays. Emissions fall; petrol rises."
+ },
+ {
+  "id": "hiv",
+  "name": "HIV antiretrovirals",
+  "lane": "health",
+  "year": 1996,
+  "spread": 0,
+  "kind": "tech",
+  "note": "A death sentence becomes a chronic illness."
+ },
+ {
+  "id": "genome",
+  "name": "Human genome",
+  "lane": "health",
+  "year": 2003,
+  "spread": 1,
+  "kind": "tech",
+  "note": "The map of human DNA, finished."
+ },
+ {
+  "id": "crispr",
+  "name": "Gene editing",
+  "lane": "health",
+  "year": 2013,
+  "spread": 2,
+  "kind": "tech",
+  "note": "Cut and paste DNA. Cures, and new ethics fights."
+ },
+ {
+  "id": "mrna",
+  "name": "mRNA vaccines",
+  "lane": "health",
+  "year": 2020,
+  "spread": 2,
+  "kind": "tech",
+  "note": "A vaccine designed in two days."
+ },
+ {
+  "id": "glp1",
+  "name": "GLP-1 drugs",
+  "lane": "health",
+  "year": 2021,
+  "spread": 2,
+  "kind": "tech",
+  "note": "Obesity falls; health spending bends."
+ },
+ {
+  "id": "aidiag",
+  "name": "AI diagnosis",
+  "lane": "health",
+  "year": 2027,
+  "spread": 2,
+  "kind": "tech",
+  "note": "Better than most doctors at reading scans."
+ },
+ {
+  "id": "cancervax",
+  "name": "Cancer vaccines",
+  "lane": "health",
+  "year": 2031,
+  "spread": 4,
+  "kind": "tech",
+  "note": "Personalised vaccines against tumours."
+ },
+ {
+  "id": "ageing",
+  "name": "Ageing drugs",
+  "lane": "health",
+  "year": 2038,
+  "spread": 6,
+  "kind": "tech",
+  "note": "Healthy lifespan +3–6 years. Pensions strain."
+ },
+ {
+  "id": "organs",
+  "name": "Lab-grown organs",
+  "lane": "health",
+  "year": 2044,
+  "spread": 6,
+  "kind": "tech",
+  "note": "No more transplant waiting lists."
+ },
+ {
+  "id": "drugcap",
+  "name": "Medicine price cap",
+  "lane": "health",
+  "year": 2029,
+  "spread": 0,
+  "kind": "civic",
+  "note": "Caps what patients pay for key drugs."
+ },
+ {
+  "id": "gps",
+  "name": "Precision weapons",
+  "lane": "security",
+  "year": 1995,
+  "spread": 0,
+  "kind": "tech",
+  "note": "GPS-guided munitions."
+ },
+ {
+  "id": "drones",
+  "name": "Armed drones",
+  "lane": "security",
+  "year": 2001,
+  "spread": 2,
+  "kind": "tech",
+  "note": "War by remote control."
+ },
+ {
+  "id": "cyber",
+  "name": "Cyber command",
+  "lane": "security",
+  "year": 2009,
+  "spread": 2,
+  "kind": "tech",
+  "note": "The fifth domain of war."
+ },
+ {
+  "id": "hypersonic",
+  "name": "Hypersonic missiles",
+  "lane": "security",
+  "year": 2019,
+  "spread": 3,
+  "kind": "tech",
+  "note": "Too fast to intercept, for now."
+ },
+ {
+  "id": "swarms",
+  "name": "Drone swarms",
+  "lane": "security",
+  "year": 2026,
+  "spread": 2,
+  "kind": "tech",
+  "note": "Thousands of cheap drones, one mind."
+ },
+ {
+  "id": "spacetrack",
+  "name": "Space missile tracking",
+  "lane": "security",
+  "year": 2029,
+  "spread": 3,
+  "kind": "tech",
+  "note": "Satellites that see every launch."
+ },
+ {
+  "id": "quantumsafe",
+  "name": "Quantum-safe encryption",
+  "lane": "security",
+  "year": 2030,
+  "spread": 3,
+  "kind": "tech",
+  "note": "Secrets that survive the quantum computer."
+ },
+ {
+  "id": "laser",
+  "name": "Laser missile defence",
+  "lane": "security",
+  "year": 2034,
+  "spread": 4,
+  "kind": "tech",
+  "note": "Shooting down missiles for dollars a shot."
+ },
+ {
+  "id": "qbreak",
+  "name": "Code-breaking quantum computer",
+  "lane": "security",
+  "year": 2037,
+  "spread": 6,
+  "kind": "tech",
+  "note": "Every unprotected secret becomes readable."
+ },
+ {
+  "id": "aitreaty",
+  "name": "Autonomous weapons treaty",
+  "lane": "security",
+  "year": 2033,
+  "spread": 0,
+  "kind": "civic",
+  "note": "A human decides every strike. If the others sign."
+ }
+]

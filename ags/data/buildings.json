@@ -1,0 +1,7 @@
+[
+ {"id": "phonebank", "name": "Phone Bank", "cost": 12, "icon": "phone", "text": "+2 Volunteers.", "yields": {"vol": 2}},
+ {"id": "finance", "name": "Finance Office", "cost": 14, "icon": "coin", "text": "+$3 a turn.", "yields": {"money": 3}},
+ {"id": "press", "name": "Press Shop", "cost": 14, "icon": "scroll", "text": "+2 Influence; Great Operative points +1.", "yields": {"inf": 2, "gp": 1}},
+ {"id": "studio", "name": "TV Studio", "cost": 16, "icon": "tv", "text": "+1 Influence, +$1; ad teams built here cost half.", "yields": {"inf": 1, "money": 1}, "requires": "cable"},
+ {"id": "datalab", "name": "Data Lab", "cost": 16, "icon": "bulb", "text": "+3 Ideas; Great Operative points +1.", "yields": {"ideas": 3, "gp": 1}, "requires": "micro"}
+]

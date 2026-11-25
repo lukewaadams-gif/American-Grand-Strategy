@@ -1,0 +1,17 @@
+{"start_year": 2000, "census": "1990",
+ "turns": [
+  {"title": "Q1 2000", "label": "A new millennium", "kind": "quarter", "year": 2000.1, "open": ["intro", "y2k", "insurgent", "bubble"], "close": ["crash_soft", "crash_hard"]},
+  {"title": "Q2 2000", "label": "The platform", "kind": "quarter", "year": 2000.35, "open": ["platform", "mate"]},
+  {"title": "Summer 2000", "label": "The conventions", "kind": "quarter", "year": 2000.55, "open": ["convention"]},
+  {"title": "Sep 4, 2000", "label": "Labor Day", "kind": "fortnight", "year": 2000.68, "open": ["stretch"]},
+  {"title": "Sep 18, 2000", "label": "The air war", "kind": "fortnight", "year": 2000.72, "open": ["third_party_watch"]},
+  {"title": "Oct 2, 2000", "label": "The first debate", "kind": "fortnight", "year": 2000.76, "open": ["debate"]},
+  {"title": "Oct 16, 2000", "label": "The surprise", "kind": "fortnight", "year": 2000.8, "open": ["surprise_mate", "surprise_record"]},
+  {"title": "Oct 30, 2000", "label": "The final push", "kind": "fortnight", "year": 2000.83, "open": ["closing"]},
+  {"title": "Nov 7, 2000", "label": "Election night", "kind": "election", "year": 2000.85},
+  {"title": "Q1 2001", "label": "A new century", "kind": "quarter", "year": 2001.1, "office": true, "open": ["inauguration", "cabinet", "energy", "taxcut_fight", "threat_brief"]},
+  {"title": "Q2 2001", "label": "The Hainan incident", "kind": "quarter", "year": 2001.35, "office": true, "open": ["hainan"]},
+  {"title": "Q3 2001", "label": "A summer of warnings", "kind": "quarter", "year": 2001.6, "office": true, "open": ["summer_warning"], "close": ["september"]},
+  {"title": "Q4 2001", "label": "The year's end", "kind": "quarter", "year": 2001.85, "office": true, "open": ["year_end"]},
+  {"title": "2002", "label": "The end of the slice", "kind": "end", "year": 2002.0}
+ ]}

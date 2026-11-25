@@ -1,0 +1,576 @@
+[
+ {
+  "id": "lockbox",
+  "name": "Social Security Lockbox",
+  "blurb": "Wall off the surplus: every dollar of payroll tax pays down debt until the boomers retire.",
+  "from": 1998,
+  "until": 2004,
+  "national": [
+   0.2,
+   0.5,
+   0.8
+  ],
+  "factions": {
+   "suburbs": 1,
+   "labor": 1,
+   "faith": 1
+  },
+  "forecast": [
+   {
+    "label": "Trust fund solvency",
+    "lo": 2,
+    "mid": 4,
+    "hi": 6,
+    "unit": "years",
+    "good": "up"
+   },
+   {
+    "label": "Debt paid down by 2010",
+    "lo": 1.6,
+    "mid": 2.3,
+    "hi": 2.9,
+    "unit": "$T",
+    "good": "up"
+   }
+  ]
+ },
+ {
+  "id": "rxbenefit",
+  "name": "Medicare Drug Benefit",
+  "blurb": "Prescription coverage for every senior, through Medicare.",
+  "from": 1998,
+  "until": 2004,
+  "national": [
+   0.3,
+   0.7,
+   1.1
+  ],
+  "factions": {
+   "labor": 1,
+   "justice": 1,
+   "suburbs": 1,
+   "faith": 1,
+   "liberty": -2
+  },
+  "forecast": [
+   {
+    "label": "Seniors covered",
+    "lo": 34,
+    "mid": 39,
+    "hi": 41,
+    "unit": "M",
+    "good": "up"
+   },
+   {
+    "label": "Cost over 10 years",
+    "lo": 350,
+    "mid": 400,
+    "hi": 550,
+    "unit": "$B",
+    "good": "down"
+   }
+  ]
+ },
+ {
+  "id": "taxcut",
+  "name": "Across-the-Board Tax Cut",
+  "blurb": "Cut every income bracket; return the surplus to the people who paid it.",
+  "from": 1998,
+  "until": 2004,
+  "national": [
+   -0.2,
+   0.3,
+   0.8
+  ],
+  "factions": {
+   "liberty": 3,
+   "suburbs": 1,
+   "tech": 1,
+   "justice": -2,
+   "labor": -1
+  },
+  "forecast": [
+   {
+    "label": "Growth 2001–02",
+    "lo": 0.1,
+    "mid": 0.3,
+    "hi": 0.6,
+    "unit": "pts",
+    "good": "up"
+   },
+   {
+    "label": "Surplus over 10 years",
+    "lo": -1.6,
+    "mid": -1.3,
+    "hi": -1,
+    "unit": "$T",
+    "good": "up"
+   }
+  ]
+ },
+ {
+  "id": "testing",
+  "name": "Standards & Testing",
+  "blurb": "Test every child, publish every school's results, fund the schools that improve.",
+  "from": 1998,
+  "until": 2004,
+  "national": [
+   0.1,
+   0.4,
+   0.7
+  ],
+  "factions": {
+   "suburbs": 2,
+   "faith": 1,
+   "labor": -1,
+   "liberty": -1
+  },
+  "forecast": [
+   {
+    "label": "Reading scores by 2005",
+    "lo": 0,
+    "mid": 2,
+    "hi": 4,
+    "unit": "%",
+    "good": "up"
+   }
+  ]
+ },
+ {
+  "id": "kyoto",
+  "name": "Ratify Kyoto",
+  "blurb": "Send the climate treaty to the Senate and fight for 67 votes.",
+  "from": 1998,
+  "until": 2004,
+  "national": [
+   -1,
+   -0.4,
+   0.2
+  ],
+  "factions": {
+   "green": 3,
+   "tech": 1,
+   "rural": -2,
+   "labor": -2,
+   "hawks": -1
+  },
+  "forecast": [
+   {
+    "label": "Emissions by 2012 vs 1990",
+    "lo": -9,
+    "mid": -7,
+    "hi": -4,
+    "unit": "%",
+    "good": "down"
+   },
+   {
+    "label": "Senate votes",
+    "lo": 28,
+    "mid": 34,
+    "hi": 41,
+    "unit": "of 67",
+    "good": "up"
+   }
+  ]
+ },
+ {
+  "id": "broadband",
+  "name": "Broadband for Every County",
+  "blurb": "Federal loans to wire rural America for high-speed internet.",
+  "from": 1998,
+  "until": 2004,
+  "national": [
+   0.1,
+   0.4,
+   0.7
+  ],
+  "factions": {
+   "rural": 2,
+   "tech": 2,
+   "suburbs": 1,
+   "liberty": -1
+  },
+  "forecast": [
+   {
+    "label": "Rural homes online by 2006",
+    "lo": 50,
+    "mid": 61,
+    "hi": 70,
+    "unit": "%",
+    "good": "up"
+   },
+   {
+    "label": "Broadband arrives",
+    "lo": -3,
+    "mid": -2,
+    "hi": -1,
+    "unit": "years",
+    "good": "down"
+   }
+  ]
+ },
+ {
+  "id": "missile",
+  "name": "Missile Defence",
+  "blurb": "Build a national missile shield; leave the ABM treaty if needed.",
+  "from": 1998,
+  "until": 2004,
+  "national": [
+   -0.1,
+   0.3,
+   0.6
+  ],
+  "factions": {
+   "hawks": 3,
+   "liberty": -1,
+   "green": -1
+  },
+  "forecast": [
+   {
+    "label": "Cost over 10 years",
+    "lo": 45,
+    "mid": 60,
+    "hi": 90,
+    "unit": "$B",
+    "good": "down"
+   },
+   {
+    "label": "Russia",
+    "lo": -2,
+    "mid": -1,
+    "hi": 0,
+    "unit": "attitude",
+    "good": "up"
+   }
+  ]
+ },
+ {
+  "id": "pntr",
+  "name": "Trade With China (PNTR)",
+  "blurb": "Permanent normal trade relations with China ahead of its entry to the WTO.",
+  "from": 1998,
+  "until": 2004,
+  "national": [
+   -0.3,
+   0,
+   0.3
+  ],
+  "factions": {
+   "tech": 2,
+   "suburbs": 1,
+   "rural": 1,
+   "labor": -3
+  },
+  "forecast": [
+   {
+    "label": "Exports to China by 2005",
+    "lo": 14,
+    "mid": 22,
+    "hi": 30,
+    "unit": "$B",
+    "good": "up"
+   },
+   {
+    "label": "Factory jobs by 2010",
+    "lo": -1100,
+    "mid": -700,
+    "hi": -400,
+    "unit": "k",
+    "good": "up"
+   }
+  ]
+ },
+ {
+  "id": "aitf",
+  "name": "AI Transition Fund",
+  "blurb": "Wage insurance and retraining for workers displaced by AI, paid for by a levy on large compute.",
+  "from": 2024,
+  "until": 2034,
+  "national": [
+   0.1,
+   0.5,
+   0.9
+  ],
+  "factions": {
+   "labor": 2,
+   "tech": -2,
+   "suburbs": 1,
+   "justice": 1
+  },
+  "forecast": [
+   {
+    "label": "Workers retrained by 2032",
+    "lo": 0.6,
+    "mid": 1.1,
+    "hi": 1.7,
+    "unit": "M",
+    "good": "up"
+   },
+   {
+    "label": "Deficit",
+    "lo": 6,
+    "mid": 9,
+    "hi": 14,
+    "unit": "$B a year",
+    "good": "down"
+   }
+  ]
+ },
+ {
+  "id": "carbon",
+  "name": "Carbon Dividend",
+  "blurb": "A rising fee on carbon; every dollar comes back to households as a quarterly cheque.",
+  "from": 2024,
+  "until": 2034,
+  "national": [
+   -0.8,
+   -0.2,
+   0.4
+  ],
+  "factions": {
+   "green": 3,
+   "tech": 1,
+   "rural": -2,
+   "labor": -1,
+   "liberty": -1
+  },
+  "forecast": [
+   {
+    "label": "Emissions by 2035",
+    "lo": -20,
+    "mid": -14,
+    "hi": -9,
+    "unit": "%",
+    "good": "down"
+   },
+   {
+    "label": "Petrol price",
+    "lo": 25,
+    "mid": 38,
+    "hi": 50,
+    "unit": "¢ a gallon",
+    "good": "down"
+   }
+  ]
+ },
+ {
+  "id": "border",
+  "name": "Border & Fentanyl Act",
+  "blurb": "Four thousand agents, scanners at every port of entry, and asylum courts that decide in months.",
+  "from": 2024,
+  "until": 2034,
+  "national": [
+   0.1,
+   0.5,
+   0.9
+  ],
+  "factions": {
+   "hawks": 2,
+   "suburbs": 1,
+   "rural": 1,
+   "justice": -2,
+   "liberty": -1
+  },
+  "forecast": [
+   {
+    "label": "Overdose deaths by 2031",
+    "lo": -15,
+    "mid": -8,
+    "hi": -2,
+    "unit": "%",
+    "good": "down"
+   },
+   {
+    "label": "Border crossings",
+    "lo": -45,
+    "mid": -30,
+    "hi": -15,
+    "unit": "%",
+    "good": "down"
+   }
+  ]
+ },
+ {
+  "id": "housing",
+  "name": "Housing Abundance Act",
+  "blurb": "Federal money for towns that legalise apartments near jobs and transit.",
+  "from": 2024,
+  "until": 2034,
+  "national": [
+   0,
+   0.4,
+   0.8
+  ],
+  "factions": {
+   "tech": 2,
+   "justice": 1,
+   "labor": 1,
+   "liberty": 1,
+   "suburbs": -1
+  },
+  "forecast": [
+   {
+    "label": "New homes by 2032",
+    "lo": 0.9,
+    "mid": 1.6,
+    "hi": 2.4,
+    "unit": "M",
+    "good": "up"
+   },
+   {
+    "label": "Rents",
+    "lo": -7,
+    "mid": -4,
+    "hi": -1,
+    "unit": "%",
+    "good": "down"
+   }
+  ]
+ },
+ {
+  "id": "drugs",
+  "name": "Medicine Price Cap",
+  "blurb": "Cap what patients pay for insulin, GLP-1s and cancer drugs at $200 a month.",
+  "from": 2024,
+  "until": 2034,
+  "national": [
+   0.4,
+   0.8,
+   1.2
+  ],
+  "factions": {
+   "suburbs": 1,
+   "labor": 1,
+   "justice": 1,
+   "faith": 1,
+   "liberty": -1,
+   "tech": -1
+  },
+  "forecast": [
+   {
+    "label": "Out-of-pocket costs",
+    "lo": -900,
+    "mid": -680,
+    "hi": -420,
+    "unit": "$ a patient",
+    "good": "down"
+   },
+   {
+    "label": "New drug approvals",
+    "lo": -8,
+    "mid": -3,
+    "hi": 0,
+    "unit": "%",
+    "good": "up"
+   }
+  ]
+ },
+ {
+  "id": "ctc",
+  "name": "Family Tax Credit",
+  "blurb": "$3,000 a child, paid monthly, to working and non-working parents alike.",
+  "from": 2024,
+  "until": 2034,
+  "national": [
+   0.2,
+   0.6,
+   1
+  ],
+  "factions": {
+   "faith": 2,
+   "justice": 1,
+   "labor": 1,
+   "liberty": -2
+  },
+  "forecast": [
+   {
+    "label": "Child poverty",
+    "lo": -35,
+    "mid": -28,
+    "hi": -20,
+    "unit": "%",
+    "good": "down"
+   },
+   {
+    "label": "Deficit",
+    "lo": 90,
+    "mid": 110,
+    "hi": 125,
+    "unit": "$B a year",
+    "good": "down"
+   }
+  ]
+ },
+ {
+  "id": "arsenal",
+  "name": "Arsenal Act",
+  "blurb": "Rebuild the shipyards and triple munitions output before 2031.",
+  "from": 2024,
+  "until": 2034,
+  "national": [
+   -0.1,
+   0.3,
+   0.7
+  ],
+  "factions": {
+   "hawks": 3,
+   "labor": 1,
+   "green": -1,
+   "liberty": -1
+  },
+  "forecast": [
+   {
+    "label": "Shell output",
+    "lo": 2,
+    "mid": 3,
+    "hi": 4,
+    "unit": "× today",
+    "good": "up"
+   },
+   {
+    "label": "Deficit",
+    "lo": 35,
+    "mid": 45,
+    "hi": 60,
+    "unit": "$B a year",
+    "good": "down"
+   }
+  ]
+ },
+ {
+  "id": "tariffs",
+  "name": "Reshoring Tariffs",
+  "blurb": "A 15% tariff on imports from strategic rivals; the revenue funds new factories.",
+  "from": 2024,
+  "until": 2034,
+  "national": [
+   -0.4,
+   0.1,
+   0.6
+  ],
+  "factions": {
+   "labor": 2,
+   "rural": 1,
+   "tech": -2,
+   "suburbs": -1
+  },
+  "forecast": [
+   {
+    "label": "Factory jobs by 2032",
+    "lo": 40,
+    "mid": 180,
+    "hi": 320,
+    "unit": "k",
+    "good": "up"
+   },
+   {
+    "label": "Inflation",
+    "lo": 0.3,
+    "mid": 0.6,
+    "hi": 1,
+    "unit": "pts",
+    "good": "down"
+   }
+  ]
+ }
+]

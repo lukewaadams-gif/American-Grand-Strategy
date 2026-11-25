@@ -1,0 +1,3 @@
+{"terrain": {"grass": {"name": "Grassland", "move": 1}, "plains": {"name": "Plains", "move": 1}, "desert": {"name": "Desert", "move": 1}, "tundra": {"name": "Tundra", "move": 1}, "snow": {"name": "Snow", "move": 2},
+  "coast": {"name": "Coast", "water": true}, "ocean": {"name": "Ocean", "water": true}, "lake": {"name": "Lake", "water": true}},
+ "features": {"forest": {"name": "Forest", "move": 2}, "jungle": {"name": "Jungle", "move": 2}, "hills": {"name": "Hills", "move": 2}, "mountain": {"name": "Mountains", "move": 3}, "marsh": {"name": "Marsh", "move": 2}}}

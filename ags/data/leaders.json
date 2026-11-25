@@ -1,0 +1,20 @@
+[
+ {"id": "governor", "background": "Governor", "title": "Governor", "first": "Claire", "last": "Halvorsen", "state": "PA", "pres": "f", "age": 54, "ratings": {"cha": 58, "pol": 61, "deal": 68, "integ": 60},
+  "ability": {"name": "Executive Record", "text": "Every HQ makes +1 Volunteers and +$1.", "mods": {"hq_vol": 1, "hq_money": 1}},
+  "unit": {"line": "organizer", "name": "Advance Team", "text": "Replaces the organizer line. +1 move; canvassing 25% stronger.", "moves": 1, "power": 0.25}},
+ {"id": "senator", "background": "Senator", "title": "Senator", "first": "Marcus", "last": "Okafor", "state": "OH", "pres": "m", "age": 61, "ratings": {"cha": 55, "pol": 69, "deal": 62, "integ": 58},
+  "ability": {"name": "Floor Leader", "text": "Doctrines cost 15% less Influence; laws are built 25% faster.", "mods": {"doctrine_cost_pct": -0.15, "law_pct": 0.25}},
+  "unit": {"line": "pollster", "name": "Committee Staffer", "text": "Replaces the pollster line. Every poll also gives +3 Ideas.", "poll_ideas": 3}},
+ {"id": "general", "background": "General", "title": "General", "first": "Ruth", "last": "Calloway", "state": "VA", "pres": "f", "age": 59, "ratings": {"cha": 60, "pol": 54, "deal": 52, "integ": 70},
+  "ability": {"name": "Chain of Command", "text": "All units +1 move. Security First starts as your ally.", "mods": {"unit_moves": 1}, "start_ally": "hawks"},
+  "unit": {"line": "surrogate", "name": "Veterans Brigade", "text": "Replaces the surrogate line. Rallies 30% stronger, double where Security First is strong.", "power": 0.3, "heartland": "hawks"}},
+ {"id": "founder", "background": "Founder", "title": "", "first": "Daniel", "last": "Park", "state": "CA", "pres": "m", "age": 47, "ratings": {"cha": 57, "pol": 64, "deal": 55, "integ": 57},
+  "ability": {"name": "Venture Capital", "text": "Start with $30 more. Every HQ makes +2 Ideas.", "mods": {"hq_ideas": 2, "start_money": 30}},
+  "unit": {"line": "ads", "name": "Growth Team", "text": "Replaces the ad line. Ads spill into neighbouring states at half strength.", "spill": true}},
+ {"id": "organiser", "background": "Organiser", "title": "", "first": "Imani", "last": "Thibodeaux", "state": "GA", "pres": "f", "age": 44, "ratings": {"cha": 66, "pol": 55, "deal": 52, "integ": 62},
+  "ability": {"name": "Movement", "text": "Field offices push twice as hard. Canvassing reaches one more ring.", "mods": {"office_pct": 1.0, "canvass_rings": 1}},
+  "unit": {"line": "organizer", "name": "Block Captain", "text": "Replaces the organizer line. Opens field offices without being used up.", "keep_on_office": true}},
+ {"id": "mayor", "background": "Mayor", "title": "Mayor", "first": "Hector", "last": "Quintero", "state": "TX", "pres": "m", "age": 52, "ratings": {"cha": 63, "pol": 57, "deal": 60, "integ": 55},
+  "ability": {"name": "City Hall", "text": "Every push is 50% stronger on city hexes.", "mods": {"city_pct": 0.5}},
+  "unit": {"line": "organizer", "name": "Precinct Captain", "text": "Replaces the organizer line. Canvassing a city hex counts double.", "city_double": true}}
+]

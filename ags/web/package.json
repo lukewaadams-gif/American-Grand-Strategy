@@ -1,0 +1,21 @@
+{
+  "name": "american-grand-strategy",
+  "private": true,
+  "type": "module",
+  "description": "American Grand Strategy: the web front end (TypeScript and PixiJS) over the Rust simulation compiled to WebAssembly.",
+  "scripts": {
+    "world": "node ../tools/build-world.mjs",
+    "sim": "node ../tools/build-sim.mjs",
+    "build": "node ../tools/build-sim.mjs && node ../tools/build-world.mjs && node build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "esbuild": "0.27.0",
+    "typescript": "6.0.3",
+    "us-atlas": "3.0.1",
+    "world-atlas": "2.0.2"
+  },
+  "dependencies": {
+    "pixi.js": "8.22.0"
+  }
+}

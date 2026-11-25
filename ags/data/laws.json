@@ -1,0 +1,16 @@
+[
+ {"id": "aviation", "name": "Aviation Security Act", "cost": 12, "from": 1999, "until": 2002, "text": "Locked cockpit doors, watch lists at check-in, federal screeners. Dull and expensive, until it is not.",
+  "effects": [{"forecast": "threat", "add": -30}, {"approval": -1}]},
+ {"id": "rxbenefit", "name": "Medicare Drug Benefit", "cost": 22, "from": 1999, "until": 2006, "plank": "rxbenefit", "text": "Prescription coverage for every senior, through Medicare.",
+  "effects": [{"approval": 3}, {"nat": 0.6}]},
+ {"id": "taxcut", "name": "Across-the-Board Tax Cut", "cost": 16, "from": 1999, "until": 2006, "plank": "taxcut", "text": "Cut every bracket; return the surplus to the people who paid it.",
+  "effects": [{"approval": 2}, {"nat": 0.3}, {"flag": "surplus_spent"}]},
+ {"id": "broadband", "name": "Broadband for Every County", "cost": 20, "from": 1999, "until": 2008, "plank": "broadband", "text": "Federal loans to wire rural America.",
+  "effects": [{"approval": 1}, {"century": "broadband", "add": -2}]},
+ {"id": "testing", "name": "Standards and Testing Act", "cost": 14, "from": 1999, "until": 2006, "plank": "testing", "text": "Test every child; fund the schools that improve.",
+  "effects": [{"approval": 1}]},
+ {"id": "energy", "name": "National Energy Plan", "cost": 14, "from": 2000, "until": 2004, "text": "New transmission lines, a strategic power reserve and help for California.",
+  "effects": [{"approval": 2}, {"state": "CA", "add": 2}]},
+ {"id": "patients", "name": "Patients' Bill of Rights", "cost": 16, "from": 1999, "until": 2004, "text": "The right to see a specialist, and to sue your health plan.",
+  "effects": [{"approval": 2}, {"friend": "labor", "add": 8}, {"friend": "suburbs", "add": 6}]}
+]

@@ -1,0 +1,14 @@
+[
+ {"id": "email", "name": "Email Lists", "year": 1996, "cost": 10, "requires": [], "icon": "scroll", "text": "Finance Offices make +$2.", "mods": {"finance_money": 2}},
+ {"id": "cable", "name": "Cable Strategy", "year": 1996, "cost": 14, "requires": [], "icon": "tv", "text": "Ads 25% stronger. Unlocks the TV Studio.", "mods": {"ads_pct": 0.25}},
+ {"id": "pollsci", "name": "Tracking Polls", "year": 1996, "cost": 12, "requires": [], "icon": "chart", "text": "Every poll gives +2 Ideas and reaches one state further.", "mods": {"poll_ideas": 2, "poll_reach": 1}},
+ {"id": "netroots", "name": "Online Fundraising", "year": 2003, "cost": 20, "requires": ["email"], "icon": "coin", "text": "Money income +25%.", "mods": {"money_pct": 0.25}},
+ {"id": "micro", "name": "Microtargeting", "year": 2004, "cost": 24, "requires": ["pollsci"], "icon": "eye", "text": "Canvassing 25% stronger. Unlocks the Data Lab.", "mods": {"canvass_pct": 0.25}},
+ {"id": "social", "name": "Social Media Campaigns", "year": 2007, "cost": 30, "requires": ["netroots", "cable"], "icon": "megaphone", "text": "Ads spill into neighbouring states at half strength.", "mods": {"ads_spill": 1}},
+ {"id": "apps", "name": "Canvassing Apps", "year": 2010, "cost": 30, "requires": ["micro"], "icon": "clipboard", "text": "Organizers +1 move.", "mods": {"organizer_moves": 1}},
+ {"id": "bigdata", "name": "Big Data Turnout", "year": 2011, "cost": 40, "requires": ["micro", "social"], "icon": "bulb", "text": "+1.5 points on Election Day in every state you lead by under 3.", "mods": {"election_close": 1.5}},
+ {"id": "rapid", "name": "Rapid Response", "year": 2012, "cost": 34, "requires": ["social"], "icon": "shield", "text": "Scandals and bad nights cost half as much.", "mods": {"scandal_pct": -0.5}},
+ {"id": "vbm", "name": "Vote-by-Mail Operations", "year": 2020, "cost": 40, "requires": ["bigdata"], "icon": "scroll", "text": "Each field office adds +1 on Election Day (up to +2 a state).", "mods": {"election_office": 1}},
+ {"id": "aiphone", "name": "AI Phone Banks", "year": 2025, "cost": 48, "requires": ["vbm"], "icon": "phone", "text": "Phone Banks make +2 more Volunteers.", "mods": {"phonebank_vol": 2}},
+ {"id": "deepfake", "name": "Deepfake Shield", "year": 2027, "cost": 50, "requires": ["rapid"], "icon": "eye", "text": "October surprises can be debunked.", "mods": {"deepfake": 1}}
+]

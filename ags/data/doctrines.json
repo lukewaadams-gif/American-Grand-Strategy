@@ -1,0 +1,203 @@
+[
+ {
+  "id": "grass",
+  "name": "Grassroots",
+  "tint": "#6aa84f",
+  "blurb": "Win it door to door.",
+  "policies": [
+   {
+    "id": "grass0",
+    "name": "Grassroots",
+    "text": "Every HQ makes +1 Volunteers.",
+    "mods": {
+     "hq_vol": 1
+    }
+   },
+   {
+    "id": "grass1",
+    "name": "Neighbor to Neighbor",
+    "text": "Canvassing reaches one more ring.",
+    "mods": {
+     "canvass_rings": 1
+    }
+   },
+   {
+    "id": "grass2",
+    "name": "Field Marshal",
+    "text": "Field offices push 50% harder.",
+    "mods": {
+     "office_pct": 0.5
+    }
+   },
+   {
+    "id": "grass3",
+    "name": "Movement",
+    "text": "Finisher: +3 Momentum a turn.",
+    "mods": {
+     "momentum": 3
+    }
+   }
+  ]
+ },
+ {
+  "id": "msg",
+  "name": "Message",
+  "tint": "#d8452f",
+  "blurb": "Own the conversation.",
+  "policies": [
+   {
+    "id": "msg0",
+    "name": "Message Discipline",
+    "text": "+1 Influence per HQ.",
+    "mods": {
+     "hq_inf": 1
+    }
+   },
+   {
+    "id": "msg1",
+    "name": "Earned Media",
+    "text": "Rallies and stump speeches +20%.",
+    "mods": {
+     "rally_pct": 0.2
+    }
+   },
+   {
+    "id": "msg2",
+    "name": "Air War",
+    "text": "Ads +25%.",
+    "mods": {
+     "ads_pct": 0.25
+    }
+   },
+   {
+    "id": "msg3",
+    "name": "Narrative",
+    "text": "Finisher: +0.6 points nationally every turn.",
+    "mods": {
+     "national": 0.6
+    }
+   }
+  ]
+ },
+ {
+  "id": "tent",
+  "name": "Big Tent",
+  "tint": "#e0a21f",
+  "blurb": "Every faction has a seat.",
+  "policies": [
+   {
+    "id": "tent0",
+    "name": "Big Tent",
+    "text": "Faction friendship fades half as fast.",
+    "mods": {
+     "friend_decay_pct": -0.5
+    }
+   },
+   {
+    "id": "tent1",
+    "name": "Outreach",
+    "text": "Friendship gains +50%.",
+    "mods": {
+     "friend_gain_pct": 0.5
+    }
+   },
+   {
+    "id": "tent2",
+    "name": "Unity Ticket",
+    "text": "Each allied faction gives +1 Influence.",
+    "mods": {
+     "ally_inf": 1
+    }
+   },
+   {
+    "id": "tent3",
+    "name": "Realignment",
+    "text": "Finisher: allied factions' heartlands shift your way each turn.",
+    "mods": {
+     "ally_pull": 1.5
+    }
+   }
+  ]
+ },
+ {
+  "id": "machine",
+  "name": "The Machine",
+  "tint": "#8c6d4a",
+  "blurb": "Money, favours, precincts.",
+  "policies": [
+   {
+    "id": "mach0",
+    "name": "Bundlers",
+    "text": "+$2 per HQ.",
+    "mods": {
+     "hq_money": 2
+    }
+   },
+   {
+    "id": "mach1",
+    "name": "Patronage",
+    "text": "Buying costs 25% less.",
+    "mods": {
+     "buy_pct": -0.25
+    }
+   },
+   {
+    "id": "mach2",
+    "name": "Precinct Captains",
+    "text": "Field offices make +$1.",
+    "mods": {
+     "office_money": 1
+    }
+   },
+   {
+    "id": "mach3",
+    "name": "The Machine",
+    "text": "Finisher: every HQ pushes three rings out.",
+    "mods": {
+     "hq_reach": 1
+    }
+   }
+  ]
+ },
+ {
+  "id": "reform",
+  "name": "Reform",
+  "tint": "#169aae",
+  "blurb": "Ideas first.",
+  "policies": [
+   {
+    "id": "ref0",
+    "name": "Think Tanks",
+    "text": "+2 Ideas per HQ.",
+    "mods": {
+     "hq_ideas": 2
+    }
+   },
+   {
+    "id": "ref1",
+    "name": "Clean Campaign",
+    "text": "+2 Momentum a turn; scandals are rarer.",
+    "mods": {
+     "momentum": 2,
+     "scandal_pct": -0.25
+    }
+   },
+   {
+    "id": "ref2",
+    "name": "Policy Shop",
+    "text": "Planks cost half the Influence.",
+    "mods": {
+     "plank_cost_pct": -0.5
+    }
+   },
+   {
+    "id": "ref3",
+    "name": "New Ideas",
+    "text": "Finisher: a free Idea.",
+    "mods": {
+     "free_idea": 1
+    }
+   }
+  ]
+ }
+]

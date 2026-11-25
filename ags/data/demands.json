@@ -1,0 +1,24 @@
+{
+ "term": {
+  "labor": "tariffs",
+  "faith": "ctc",
+  "rural": "tariffs",
+  "green": "carbon",
+  "tech": "housing",
+  "hawks": "arsenal",
+  "liberty": "housing",
+  "suburbs": "drugs",
+  "justice": "ctc"
+ },
+ "era": {
+  "labor": "rxbenefit",
+  "faith": "testing",
+  "rural": "broadband",
+  "green": "kyoto",
+  "tech": "pntr",
+  "hawks": "missile",
+  "liberty": "taxcut",
+  "suburbs": "lockbox",
+  "justice": "rxbenefit"
+ }
+}

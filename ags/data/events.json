@@ -1,0 +1,160 @@
+[
+ {"id": "intro", "kind": "intro", "art": "dawn",
+  "body": "The year is 2000. The computers survived the millennium; the stock market has doubled in eighteen months; the outgoing President is from your party and the country is at peace. {leader} of {leader_state} means to keep it that way. Ahead lie fifty years nobody can see: wars, crashes, machines that think. The {party} Party will live through all of it, or not."},
+
+ {"id": "y2k", "kind": "headline", "art": "ledger", "kicker": "January 1, 2000", "title": "The computers held",
+  "sub": "Y2K passes quietly. Markets open at records: the Nasdaq is up 86% in a year. The {party} Party holds the White House; the {rival_party} Party has its candidate in {rival}."},
+
+ {"id": "insurgent", "kind": "card", "art": "snow", "context": ["weakest", "challenger"], "focus": "NH",
+  "kicker": "New Hampshire · three weeks to the primary", "title": "An insurgent in the snow",
+  "body": "{challenger}, {challenger_office}, is running against you for the nomination on behalf of {weakest_name}, who say the party takes them for granted. A loss in New Hampshire would wound you. A long fight would wound the party.",
+  "advice": "Their demand costs little with the other factions. Fighting is close to a coin toss.",
+  "choices": [
+   {"label": "Adopt their demand: {weakest_demand_name}", "text": "They stand down and endorse you. The pledge costs no Influence.",
+    "effects": [{"pledge": "$weakest_demand", "free": true}, {"friend": "$weakest", "add": 10}],
+    "result": {"title": "{challenger_last} endorses you", "body": "The {weakest_demand_name} goes into your platform. {weakest_name} are back on side."}},
+   {"label": "Fight them in New Hampshire", "text": "Win and the challenge is over; lose and it drags into spring.",
+    "odds": {"base": 0.45, "stat": "cha", "vs": "challenger", "per": 0.0125},
+    "win": [{"state": "NH", "add": 3}, {"friend": "$weakest", "add": -12}], "lose": [{"nat": -1.0}, {"friend": "$weakest", "add": -4}, {"money": -8}],
+    "result": {"win": "You win New Hampshire", "lose": "{challenger_last} wins New Hampshire", "body_win": "The challenge is over. The faction is not happy.", "body_lose": "The fight goes on to Super Tuesday, and it costs money and goodwill."}},
+   {"label": "Promise them a cabinet post", "text": "A deal in a hotel room. They stand down; you owe them in 2001.",
+    "effects": [{"friend": "$weakest", "add": 10}, {"flag": "promise"}],
+    "result": {"title": "{challenger_last} stands down", "body": "{challenger} will expect a seat at the cabinet table."}}
+  ]},
+
+ {"id": "bubble", "kind": "card", "art": "ticker", "kicker": "Q1 2000 · the forecast", "title": "The dot-com bubble",
+  "body": "The Nasdaq has doubled in eighteen months on companies with no profits. The Fed chair wants political cover to lean against it before it pops.",
+  "forecast": {"title": "The bubble", "tag": "Economy · 12 months", "lines": [
+    {"label": "Chance the Nasdaq falls 30% or more", "lo": 50, "mid": 65, "hi": 80, "unit": "%", "good": "down", "level": [50, "More likely than not", "Less likely than not", "A coin toss"]},
+    {"label": "Growth in 2001 if it does, with no action", "lo": -2.4, "mid": -1.6, "hi": -0.9, "unit": "pts", "good": "up"},
+    {"label": "Growth in 2001 if it does, cooled now", "lo": -1.4, "mid": -0.9, "hi": -0.4, "unit": "pts", "good": "up"}]},
+  "choices": [
+   {"label": "Back the Fed", "text": "Slower growth now (−0.3 nationally); a softer landing when it comes.", "effects": [{"flag": "cooled"}, {"nat": -0.3}]},
+   {"label": "Let the boom run", "text": "Nothing now. The forecast stands.", "effects": []}
+  ]},
+ {"id": "crash_soft", "kind": "headline", "if": {"flag": "cooled"}, "art": "ticker", "kicker": "April 2000", "title": "Tech slides; no panic",
+  "sub": "The Nasdaq falls 24% from its March peak. Economists credit the Fed's early warning.", "effects": [{"nat": -0.3}]},
+ {"id": "crash_hard", "kind": "headline", "if": {"not_flag": "cooled"}, "art": "ticker", "kicker": "April 2000", "title": "The bubble bursts",
+  "sub": "The Nasdaq loses 37% in five weeks. Two trillion dollars of paper wealth, gone. Your party holds the White House, and owns the economy in November.", "effects": [{"nat": -1.2}]},
+
+ {"id": "platform", "kind": "card", "art": "convention", "kicker": "Q2 2000 · the platform committee", "title": "Who writes the platform?",
+  "body": "The platform committee meets in a hotel ballroom with three hundred delegates and one draft. How much of it is yours?",
+  "choices": [
+   {"label": "Write it yourself", "text": "+12 Influence to spend on pledges. The factions grumble (−3 each).", "effects": [{"influence": 12}, {"friend": "$allies", "add": -3}]},
+   {"label": "Let the factions write it", "text": "Every allied faction +8 friendship.", "effects": [{"friend": "$allies", "add": 8}]},
+   {"label": "Keep it short and vague", "text": "+2 Momentum. Nobody is offended; nobody is inspired.", "effects": [{"momentum": 2}]}
+  ]},
+ {"id": "mate", "kind": "mate", "art": "capitol", "kicker": "Q2 2000 · the shortlist", "title": "Choose a running mate",
+  "body": "The running mate joins the board as a unit: a second candidate who rallies twice as hard in their home state. What they hide you find out by vetting, or in October."},
+
+ {"id": "convention", "kind": "card", "art": "convention", "kicker": "The convention · the last night", "title": "The nomination is yours",
+  "body": "Twenty thousand delegates, a week of speeches, and a party that fought you through the primaries. Tonight you accept its nomination. The speech sets the tone for the fall.",
+  "choices": [
+   {"label": "Hope: one country, one future", "text": "Broad and warm: +1.0 nationally, +2 Momentum.", "effects": [{"nat": 1.0}, {"momentum": 2}]},
+   {"label": "Fight: name what is wrong", "text": "Your factions love it (+10 each); swing voters less so (+0.2 nationally).", "effects": [{"nat": 0.2}, {"friend": "$allies", "add": 10}]},
+   {"label": "The plan for day one", "text": "Dry, but it reads well: +0.6 nationally, +8 Ideas.", "effects": [{"nat": 0.6}, {"ideas": 8}]}
+  ]},
+ {"id": "stretch", "kind": "headline", "art": "ledger", "kicker": "Labor Day, 2000", "title": "Nine weeks to go",
+  "sub": "From now on, each turn is two weeks. Every rally, every ad and every faction counts double the attention."},
+ {"id": "third_party_watch", "kind": "card", "if": {"third_party": true}, "context": ["third"], "art": "convention", "kicker": "September 2000 · the spoiler", "title": "The {third_name} is on the ballot",
+  "body": "{third_name}, the party of {third_faction} voters you lost, is polling {third_share}% in its strongest states. Every vote it wins there could have been yours.",
+  "choices": [
+   {"label": "Court their voters", "text": "{third_faction} +15 friendship; if they come back, the third party fades.", "effects": [{"friend": "$third_faction_id", "add": 15}]},
+   {"label": "Attack them as spoilers", "text": "Their share falls by a third; their voters remember (−5).", "effects": [{"third_cut": 0.34}, {"friend": "$third_faction_id", "add": -5}]},
+   {"label": "Ignore them", "text": "Spend nothing on it.", "effects": []}
+  ]},
+ {"id": "debate", "kind": "card", "art": "debate", "kicker": "Boston · the first debate · 46 million watching", "title": "The first debate",
+  "body": "{rival} has spent a week at debate camp. Your team has three plans for the night. The odds come from your ratings.",
+  "choices": [
+   {"label": "Go deep on the plan", "text": "A policy night. Big if it works; dull if not.", "odds": {"base": 0.38, "stat": "pol", "per": 0.011},
+    "win": [{"nat": 1.8}, {"momentum": 2}], "lose": [{"nat": -0.7}, {"momentum": -2}], "result": {"win": "You won the night", "lose": "{rival_last} won the night"}},
+   {"label": "Land the line", "text": "One sentence that leads every newscast.", "odds": {"base": 0.32, "stat": "cha", "per": 0.011},
+    "win": [{"nat": 2.6}, {"momentum": 4}], "lose": [{"nat": -1.4}, {"momentum": -2}], "result": {"win": "You won the night", "lose": "{rival_last} won the night"}},
+   {"label": "Stay steady", "text": "No mistakes, no headlines.", "odds": {"fixed": 0.7},
+    "win": [{"nat": 0.7}, {"momentum": 1}], "lose": [{"nat": -0.3}], "result": {"win": "A solid night", "lose": "A flat night"}}
+  ]},
+ {"id": "surprise_mate", "kind": "card", "if": {"mate_risky": true}, "context": ["mate"], "art": "ledger", "kicker": "October 16 · the surprise", "title": "The story about {mate}",
+  "body": "Business records: a consulting firm, a foreign client, fees nobody disclosed. The story runs at six.",
+  "choices": [
+   {"label": "Stand by {mate_first}", "text": "Loyal. The story runs for a week.", "effects": [{"scandal": -1.4}, {"momentum": -2}, {"flag": "surprise_done"}]},
+   {"label": "Release everything tonight", "text": "A gamble that the details are dull.", "odds": {"base": 0.55, "stat": "integ", "per": 0.006},
+    "win": [{"scandal": -0.2}, {"flag": "surprise_done"}], "lose": [{"scandal": -1.8}, {"momentum": -3}, {"flag": "surprise_done"}], "result": {"win": "The details were dull", "lose": "The details were worse"}},
+   {"label": "Prove it is a fake", "if": {"mod": "deepfake"}, "text": "Your forensics team says the key document was generated.", "odds": {"fixed": 0.6},
+    "win": [{"nat": 0.3}, {"flag": "surprise_done"}], "lose": [{"scandal": -1.8}, {"flag": "surprise_done"}], "result": {"win": "Debunked", "lose": "It was real"}}
+  ]},
+ {"id": "surprise_record", "kind": "card", "if": {"not_flag": "surprise_done"}, "art": "ledger", "kicker": "October 16 · the surprise", "title": "An old arrest record",
+  "body": "A local reporter has a 1976 arrest record: you, twenty-two, a traffic stop, a night in a county jail. It is true, and it is five days from the debate prep you needed.",
+  "choices": [
+   {"label": "Confirm it and apologise", "text": "Honest and quick: −0.4 nationally.", "effects": [{"scandal": -0.4}]},
+   {"label": "Attack the timing and the source", "text": "If it works, the story becomes their dirty trick.", "odds": {"base": 0.5, "stat": "cha", "per": 0.01},
+    "win": [{"nat": 0.3}, {"momentum": 2}], "lose": [{"scandal": -1.6}, {"momentum": -3}], "result": {"win": "It became their story", "lose": "It became a week of stories"}},
+   {"label": "Say nothing", "text": "Let it burn out: −0.8 nationally.", "effects": [{"scandal": -0.8}]}
+  ]},
+ {"id": "closing", "kind": "card", "art": "convention", "kicker": "October 30 · the closing argument", "title": "The last word",
+  "body": "One more speech, run on every channel for the last week. Choose how you want to be remembered.",
+  "choices": [
+   {"label": "Optimism", "text": "+0.6 nationally, +3 Momentum.", "effects": [{"nat": 0.6}, {"momentum": 3}]},
+   {"label": "Contrast", "text": "+0.4 nationally; their momentum stalls.", "effects": [{"nat": 0.4}, {"rival_momentum": -3}]},
+   {"label": "Fear", "text": "+1.0 nationally, unless it backfires.", "odds": {"fixed": 0.65}, "win": [{"nat": 1.0}], "lose": [{"nat": -0.8}], "result": {"win": "It landed", "lose": "It backfired"}}
+  ]},
+
+ {"id": "inauguration", "kind": "headline", "if": {"won": true}, "art": "capitol", "kicker": "January 20, 2001", "title": "President {leader_last}",
+  "sub": "The {party} Party holds the White House with {ev_you} electoral votes, {senate} senators and {house} representatives. The map stays on the table: now you govern it."},
+ {"id": "opposition", "kind": "headline", "if": {"won": false}, "art": "capitol", "kicker": "January 20, 2001", "title": "President {rival_last}",
+  "sub": "The {rival_party} Party takes the White House. Your party holds {senate} Senate seats and {house} in the House. The 2002 midterms start now."},
+ {"id": "cabinet", "kind": "cabinet", "if": {"won": true}, "art": "oval", "kicker": "The transition", "title": "Form your cabinet",
+  "body": "Cabinet secretaries are your great people in office: their ratings shape their departments for years. A unity pick from outside your coalition wins approval and costs your factions."},
+ {"id": "energy", "kind": "card", "if": {"won": true}, "art": "blackout", "focus": "CA", "kicker": "Q1 2001 · California", "title": "The lights go out in California",
+  "body": "Rolling blackouts across the state; wholesale power prices up tenfold since last spring; traders gaming a market nobody fully understood. The governor wants federal price caps.",
+  "choices": [
+   {"label": "Impose federal price caps", "text": "The blackouts ease; the free-market wing is furious.", "effects": [{"state": "CA", "add": 2.5}, {"approval": 2}, {"friend": "liberty", "add": -10}]},
+   {"label": "Investigate the traders", "text": "Slow, popular, and right: +1.5 in California; it takes a year.", "effects": [{"state": "CA", "add": 1.5}, {"approval": 1}, {"flag": "traders"}]},
+   {"label": "Let the market sort it out", "text": "The base cheers; California does not.", "effects": [{"state": "CA", "add": -2.5}, {"friend": "liberty", "add": 10}, {"approval": -1}]}
+  ]},
+ {"id": "taxcut_fight", "kind": "card", "if": {"won": true}, "art": "capitol", "kicker": "Q1 2001 · the surplus", "title": "What to do with the surplus",
+  "body": "The budget office projects $5.6 trillion of surpluses over ten years. Every faction has a plan for it. Your first law sets the tone.",
+  "choices": [
+   {"label": "Cut taxes across the board", "text": "The Tax Cut becomes your first law, with a head start.", "effects": [{"law_start": "taxcut", "progress": 6}, {"friend": "liberty", "add": 8}, {"friend": "justice", "add": -5}]},
+   {"label": "A drug benefit for seniors", "text": "The Medicare Drug Benefit becomes your first law, with a head start.", "effects": [{"law_start": "rxbenefit", "progress": 6}, {"friend": "labor", "add": 6}, {"friend": "liberty", "add": -6}]},
+   {"label": "Pay down the debt", "text": "No law yet. Approval +2; the factions shrug.", "effects": [{"approval": 2}, {"flag": "debt_paydown"}]}
+  ]},
+ {"id": "threat_brief", "kind": "card", "art": "radar", "kicker": "Q1 2001 · the daily brief", "title": "A warning on the desk",
+  "body": "The counter-terrorism chief has been trying to get this in front of the new administration since the transition: a terrorist network is planning a major attack inside the United States. History has it on the calendar for September. History is a default, not a law.",
+  "forecast": {"title": "Threat assessment", "tag": "Security · by September", "var": "threat", "lines": [
+    {"label": "Chance of a major attack on U.S. soil", "spread": 12, "unit": "%", "good": "down", "level": [50, "More likely than not", "Less likely than not", "A coin toss"]}]},
+  "advice": "Cheap measures taken early are worth more than expensive ones taken late. The Aviation Security Act is on the White House's list of laws.",
+  "choices": [
+   {"label": "Convene the principals this week", "if": {"won": true}, "text": "Make it the first priority: −12 points on the forecast.", "effects": [{"forecast": "threat", "add": -12}]},
+   {"label": "Ask for a fuller report", "if": {"won": true}, "text": "Prudent, and slow.", "effects": []},
+   {"label": "Demand hearings", "if": {"won": false}, "text": "In opposition, all you can do is make noise: −6 on the forecast; accused of politicising intelligence (−0.2).", "effects": [{"forecast": "threat", "add": -6}, {"nat": -0.2}]},
+   {"label": "Keep it quiet", "if": {"won": false}, "text": "Do not use intelligence for politics.", "effects": []}
+  ]},
+ {"id": "hainan", "kind": "card", "art": "globe", "kicker": "April 1, 2001 · Hainan Island", "title": "A spy plane down in China",
+  "body": "A U.S. Navy surveillance plane has collided with a Chinese fighter over the South China Sea. The Chinese pilot is missing; the damaged plane landed on Hainan Island, and its twenty-four crew are being held.",
+  "choices": [
+   {"label": "Express regret, carefully worded", "if": {"won": true}, "text": "The crew come home in eleven days; hawks call it an apology.", "effects": [{"attitude": "China", "add": 1}, {"friend": "hawks", "add": -8}, {"approval": 1}]},
+   {"label": "Demand the crew back, no apology", "if": {"won": true}, "text": "Firm. It works fast or it does not.", "odds": {"base": 0.45, "stat": "deal", "per": 0.01},
+    "win": [{"approval": 3}, {"friend": "hawks", "add": 6}], "lose": [{"approval": -3}, {"attitude": "China", "add": -1}], "result": {"win": "The crew are home in a week", "lose": "A month-long standoff"}},
+   {"label": "Back the President, quietly", "if": {"won": false}, "text": "Politics stops at the water's edge: +2 Momentum.", "effects": [{"momentum": 2}]},
+   {"label": "Call it a humiliation", "if": {"won": false}, "text": "Hawks love it (+10); swing voters wince (−0.2).", "effects": [{"friend": "hawks", "add": 10}, {"nat": -0.2}]}
+  ]},
+ {"id": "summer_warning", "kind": "card", "art": "radar", "kicker": "August 2001 · the daily brief", "title": "\"Determined to strike\"",
+  "body": "The daily brief carries a warning in its title: the network is determined to strike inside the United States. Field offices have flagged men at flight schools. The forecast stands at {threat}%.",
+  "choices": [
+   {"label": "Order a summer surge", "if": {"won": true}, "text": "Airports, visas, the flight-school leads: −15 on the forecast, −1 approval.", "effects": [{"forecast": "threat", "add": -15}, {"approval": -1}]},
+   {"label": "Make the agencies share what they have", "if": {"won": true}, "text": "FBI and CIA in one room: −8 on the forecast.", "effects": [{"forecast": "threat", "add": -8}]},
+   {"label": "Note it and move on", "if": {"won": true}, "text": "It is August.", "effects": []},
+   {"label": "Go public with the warnings", "if": {"won": false}, "text": "−5 on the forecast; −0.3 nationally for alarmism.", "effects": [{"forecast": "threat", "add": -5}, {"nat": -0.3}]},
+   {"label": "Stay silent", "if": {"won": false}, "text": "Nothing changes.", "effects": []}
+  ]},
+ {"id": "september", "kind": "roll", "forecast": "threat", "hit": "attack", "miss": "foiled"},
+ {"id": "attack", "kind": "headline", "art": "sorrow", "kicker": "September 11, 2001", "title": "Attack on America",
+  "sub": "Hijacked airliners strike the World Trade Center and the Pentagon; a fourth crashes in Pennsylvania. Nearly three thousand people are killed. The country rallies to its President.",
+  "effects": [{"approval": 30}, {"flag": "attacked"}]},
+ {"id": "foiled", "kind": "headline", "art": "radar", "kicker": "September 2001", "title": "Plot foiled",
+  "sub": "Nineteen men are in custody after a coordinated sweep of flight schools and airports. Most Americans will never know how close it came; the people who stopped it do.",
+  "effects": [{"approval": 6}, {"flag": "foiled"}]},
+ {"id": "year_end", "kind": "card", "art": "ledger", "kicker": "December 2001", "title": "The end of the beginning",
+  "body": "Two years in. {year_end_line} The 2002 midterms are eleven months away, and the century has forty-seven years to go.",
+  "choices": [{"label": "Close the year", "text": "See the record, and what comes next.", "effects": []}]}
+]

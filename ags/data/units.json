@@ -1,0 +1,27 @@
+[
+ {"line": "candidate", "role": "Your candidate: a stump speech moves a whole region; the campaign plane flies anywhere once a turn.", "eras": [
+  {"from": 1990, "id": "candidate", "name": "Candidate", "icon": "star", "moves": 3, "sight": 2, "cost": 0, "upkeep": 0, "power": 1.0, "actions": ["stump", "plane", "contest"]}]},
+ {"line": "mate", "role": "The running mate: rallies like a surrogate, twice as hard at home.", "eras": [
+  {"from": 1990, "id": "mate", "name": "Running Mate", "icon": "medal", "moves": 3, "sight": 2, "cost": 0, "upkeep": 0, "power": 1.0, "actions": ["rally", "charter", "contest"]}]},
+ {"line": "organizer", "role": "Knocks doors, opens field offices and new state HQs.", "eras": [
+  {"from": 1990, "id": "field_organizer", "name": "Field Organizer", "icon": "clipboard", "moves": 2, "sight": 2, "cost": 6, "upkeep": 0.5, "power": 1.0, "actions": ["canvass", "office", "hq", "charter", "contest"]},
+  {"from": 2008, "id": "digital_organizer", "name": "Digital Organizer", "icon": "clipboard", "moves": 3, "sight": 2, "cost": 7, "upkeep": 0.5, "power": 1.3, "actions": ["canvass", "office", "hq", "charter", "contest"]},
+  {"from": 2026, "id": "ai_canvasser", "name": "AI Canvasser", "icon": "clipboard", "moves": 4, "sight": 3, "cost": 8, "upkeep": 0.4, "power": 1.7, "actions": ["canvass", "office", "hq", "charter", "contest"]}]},
+ {"line": "surrogate", "role": "A well-known supporter on tour: rallies move two rings of hexes.", "eras": [
+  {"from": 1990, "id": "surrogate", "name": "Surrogate", "icon": "megaphone", "moves": 3, "sight": 2, "cost": 10, "upkeep": 1, "power": 1.0, "actions": ["rally", "charter", "contest"]},
+  {"from": 2012, "id": "influencer", "name": "Influencer", "icon": "megaphone", "moves": 4, "sight": 2, "cost": 10, "upkeep": 1, "power": 1.25, "actions": ["rally", "charter", "contest"]},
+  {"from": 2030, "id": "holo_tour", "name": "Holo-Tour", "icon": "megaphone", "moves": 5, "sight": 2, "cost": 12, "upkeep": 1.2, "power": 1.5, "actions": ["rally", "charter", "contest"]}]},
+ {"line": "pollster", "role": "A poll replaces the public polls' guess with the truth in that state, and feeds the think tank.", "eras": [
+  {"from": 1990, "id": "phone_pollster", "name": "Phone Pollster", "icon": "chart", "moves": 3, "sight": 3, "cost": 6, "upkeep": 0.5, "power": 1.0, "actions": ["poll", "charter"]},
+  {"from": 2010, "id": "online_panel", "name": "Online Panel", "icon": "chart", "moves": 4, "sight": 3, "cost": 6, "upkeep": 0.5, "power": 1.2, "actions": ["poll", "charter"]},
+  {"from": 2025, "id": "ai_pollster", "name": "AI Pollster", "icon": "chart", "moves": 5, "sight": 4, "cost": 7, "upkeep": 0.4, "power": 1.5, "actions": ["poll", "charter"]}]},
+ {"line": "ads", "role": "Buys airtime: moves every hex in the state it stands in, or targets a rival unit.", "eras": [
+  {"from": 1990, "id": "tv_ad_team", "name": "TV Ad Team", "icon": "tv", "moves": 4, "sight": 1, "cost": 12, "upkeep": 1, "power": 1.0, "actions": ["ads", "attack_ad", "charter"]},
+  {"from": 2008, "id": "digital_ads", "name": "Digital Ad Team", "icon": "tv", "moves": 4, "sight": 1, "cost": 12, "upkeep": 1, "power": 1.2, "actions": ["ads", "attack_ad", "charter"]},
+  {"from": 2020, "id": "streaming_ads", "name": "Streaming Ad Team", "icon": "tv", "moves": 5, "sight": 1, "cost": 13, "upkeep": 1, "power": 1.35, "actions": ["ads", "attack_ad", "charter"]},
+  {"from": 2032, "id": "synthetic_media", "name": "Synthetic Media Unit", "icon": "tv", "moves": 5, "sight": 1, "cost": 14, "upkeep": 1.2, "power": 1.6, "actions": ["ads", "attack_ad", "charter"]}]},
+ {"line": "lawyer", "role": "Fights over the rules: wins contests, and decides recounts.", "eras": [
+  {"from": 1990, "id": "lawyer", "name": "Election Lawyers", "icon": "scales", "moves": 3, "sight": 1, "cost": 8, "upkeep": 1, "power": 1.0, "actions": ["contest", "charter"]}]},
+ {"line": "operative", "role": "A legend of the trade, with one great move.", "eras": [
+  {"from": 1990, "id": "operative", "name": "Great Operative", "icon": "laurel", "moves": 3, "sight": 2, "cost": 0, "upkeep": 0, "power": 1.0, "actions": ["great", "charter"]}]}
+]

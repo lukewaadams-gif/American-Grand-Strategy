@@ -1,0 +1,327 @@
+[
+ {
+  "id": "labor",
+  "name": "Working Families",
+  "who": "Union households, factory towns, service workers",
+  "icon": "gear",
+  "affinity": {
+   "base": 0.45,
+   "region": {
+    "mw": 0.5,
+    "ma": 0.35,
+    "ne": 0.15,
+    "so": -0.15,
+    "pl": 0.05
+   },
+   "urban": 0,
+   "suburban": 0.2,
+   "rural": 0,
+   "states": {
+    "WV": 0.35,
+    "NV": 0.2,
+    "MI": 0.15
+   }
+  },
+  "urbanism": 0.1,
+  "bonus": {
+   "kind": "vol",
+   "amount": 2,
+   "text": "+2 Volunteers"
+  },
+  "quest": "plank",
+  "third_party": {
+   "name": "Labor Party",
+   "short": "Labor"
+  }
+ },
+ {
+  "id": "faith",
+  "name": "Faith & Family",
+  "who": "Churchgoing voters, homeschoolers, charities",
+  "icon": "steeple",
+  "affinity": {
+   "base": 0.35,
+   "region": {
+    "so": 0.6,
+    "pl": 0.4,
+    "mt": 0.15,
+    "mw": 0.1
+   },
+   "urban": -0.4,
+   "suburban": 0,
+   "rural": 0,
+   "states": {
+    "UT": 0.6,
+    "ID": 0.2
+   }
+  },
+  "urbanism": -0.8,
+  "bonus": {
+   "kind": "inf",
+   "amount": 2,
+   "text": "+2 Influence"
+  },
+  "quest": "rally",
+  "third_party": {
+   "name": "Constitution Party",
+   "short": "Constitution"
+  }
+ },
+ {
+  "id": "rural",
+  "name": "Heartland",
+  "who": "Farmers, ranchers and small towns",
+  "icon": "wheat",
+  "affinity": {
+   "base": 0.15,
+   "region": {
+    "pl": 0.25,
+    "mt": 0.15,
+    "so": 0.05,
+    "ak": 0.2
+   },
+   "urban": 0,
+   "suburban": 0,
+   "rural": 0.95,
+   "states": {}
+  },
+  "urbanism": -1,
+  "bonus": {
+   "kind": "money",
+   "amount": 2,
+   "text": "+$2"
+  },
+  "quest": "rally",
+  "third_party": {
+   "name": "Heartland Party",
+   "short": "Heartland"
+  }
+ },
+ {
+  "id": "green",
+  "name": "Green Future",
+  "who": "Climate voters, young professionals, outdoorsy states",
+  "icon": "leaf",
+  "affinity": {
+   "base": 0.15,
+   "region": {
+    "pc": 0.5,
+    "ne": 0.3,
+    "mt": 0.05
+   },
+   "urban": 0.55,
+   "suburban": 0,
+   "rural": 0,
+   "states": {
+    "CO": 0.25,
+    "VT": 0.4,
+    "NM": 0.1,
+    "MN": 0.1
+   }
+  },
+  "urbanism": 0.7,
+  "bonus": {
+   "kind": "ideas",
+   "amount": 2,
+   "text": "+2 Ideas"
+  },
+  "quest": "plank",
+  "third_party": {
+   "name": "Green Party",
+   "short": "Green"
+  }
+ },
+ {
+  "id": "tech",
+  "name": "Innovators",
+  "who": "Engineers, founders and the cities they build",
+  "icon": "chip",
+  "affinity": {
+   "base": 0.1,
+   "region": {},
+   "urban": 0.55,
+   "suburban": 0,
+   "rural": 0,
+   "states": {
+    "CA": 0.6,
+    "WA": 0.5,
+    "MA": 0.4,
+    "TX": 0.2,
+    "CO": 0.3,
+    "NC": 0.2,
+    "VA": 0.25,
+    "OR": 0.2,
+    "UT": 0.25,
+    "NY": 0.2,
+    "GA": 0.15,
+    "AZ": 0.15
+   }
+  },
+  "urbanism": 0.8,
+  "bonus": {
+   "kind": "ideas",
+   "amount": 3,
+   "text": "+3 Ideas"
+  },
+  "quest": "idea",
+  "third_party": {
+   "name": "Future Party",
+   "short": "Future"
+  }
+ },
+ {
+  "id": "hawks",
+  "name": "Security First",
+  "who": "Veterans, military towns, the defence industry",
+  "icon": "shield",
+  "affinity": {
+   "base": 0.35,
+   "region": {
+    "so": 0.4,
+    "ak": 0.35,
+    "mt": 0.15,
+    "pl": 0.15,
+    "ne": -0.2,
+    "pc": -0.1
+   },
+   "urban": 0,
+   "suburban": 0,
+   "rural": 0,
+   "states": {
+    "VA": 0.25,
+    "NC": 0.1,
+    "HI": 0.15
+   }
+  },
+  "urbanism": -0.4,
+  "bonus": {
+   "kind": "mom",
+   "amount": 2,
+   "text": "+2 Momentum"
+  },
+  "quest": "rally",
+  "third_party": {
+   "name": "Patriot Party",
+   "short": "Patriot"
+  }
+ },
+ {
+  "id": "liberty",
+  "name": "Liberty Caucus",
+  "who": "Libertarians, gun owners, civil libertarians",
+  "icon": "torch",
+  "affinity": {
+   "base": 0.3,
+   "region": {
+    "mt": 0.5,
+    "ak": 0.45,
+    "sw": 0.2,
+    "pc": 0.05,
+    "ne": -0.05
+   },
+   "urban": 0,
+   "suburban": 0,
+   "rural": 0,
+   "states": {
+    "NH": 0.55,
+    "NV": 0.15,
+    "AZ": 0.1,
+    "ME": 0.1
+   }
+  },
+  "urbanism": -0.2,
+  "bonus": {
+   "kind": "money",
+   "amount": 3,
+   "text": "+$3"
+  },
+  "quest": "plank",
+  "third_party": {
+   "name": "Libertarian Party",
+   "short": "Libertarian"
+  }
+ },
+ {
+  "id": "suburbs",
+  "name": "Main Street",
+  "who": "Suburban families and small-business owners",
+  "icon": "house",
+  "affinity": {
+   "base": 0.3,
+   "region": {},
+   "urban": 0,
+   "suburban": 0.7,
+   "rural": 0,
+   "states": {
+    "PA": 0.15,
+    "GA": 0.15,
+    "AZ": 0.15,
+    "MI": 0.15,
+    "WI": 0.15,
+    "VA": 0.15,
+    "NJ": 0.1,
+    "NC": 0.15,
+    "CO": 0.1,
+    "NH": 0.1
+   }
+  },
+  "urbanism": 0.2,
+  "bonus": {
+   "kind": "mom",
+   "amount": 1,
+   "text": "+1 Momentum, +$1"
+  },
+  "quest": "rally",
+  "third_party": {
+   "name": "Reform Party",
+   "short": "Reform"
+  }
+ },
+ {
+  "id": "justice",
+  "name": "Civil Rights Coalition",
+  "who": "Black and Latino civic groups, churches and unions",
+  "icon": "scales",
+  "affinity": {
+   "base": 0.15,
+   "region": {},
+   "urban": 0.3,
+   "suburban": 0,
+   "rural": 0,
+   "states": {
+    "MS": 0.75,
+    "AL": 0.5,
+    "GA": 0.6,
+    "SC": 0.55,
+    "LA": 0.55,
+    "MD": 0.6,
+    "NC": 0.4,
+    "VA": 0.35,
+    "DC": 1.3,
+    "TX": 0.4,
+    "NM": 0.6,
+    "AZ": 0.35,
+    "CA": 0.5,
+    "NV": 0.35,
+    "FL": 0.4,
+    "NY": 0.5,
+    "IL": 0.45,
+    "MI": 0.35,
+    "NJ": 0.45,
+    "TN": 0.25,
+    "DE": 0.4
+   }
+  },
+  "urbanism": 0.8,
+  "bonus": {
+   "kind": "vol",
+   "amount": 2,
+   "text": "+2 Volunteers"
+  },
+  "quest": "plank",
+  "third_party": {
+   "name": "People's Party",
+   "short": "People's"
+  }
+ }
+]

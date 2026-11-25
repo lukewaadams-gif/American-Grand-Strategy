@@ -1,0 +1,38 @@
+[
+ {
+  "id": "intern",
+  "name": "Intern",
+  "note": "Learning",
+  "shift": 3
+ },
+ {
+  "id": "staffer",
+  "name": "Staffer",
+  "note": "Forgiving",
+  "shift": 1.5
+ },
+ {
+  "id": "operative",
+  "name": "Operative",
+  "note": "Fair fight",
+  "shift": 0
+ },
+ {
+  "id": "strategist",
+  "name": "Strategist",
+  "note": "Tough",
+  "shift": -1.5
+ },
+ {
+  "id": "kingmaker",
+  "name": "Kingmaker",
+  "note": "Brutal",
+  "shift": -3
+ },
+ {
+  "id": "machiavelli",
+  "name": "Machiavelli",
+  "note": "Unfair",
+  "shift": -4.5
+ }
+]
